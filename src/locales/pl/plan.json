@@ -1,0 +1,53 @@
+{
+  "badge": "Twoja ścieżka nauki",
+  "title": "Twój spersonalizowany plan szkoleniowy",
+  "subtitle": "Modułowy playbook stworzony na podstawie Twojego profilu, oceny i celów.",
+  "showInsight": "Pokaż spersonalizowaną wskazówkę",
+  "progress": {
+    "modules": "Wygenerowane moduły: {{completed}} / {{total}}",
+    "generating": "Generowanie modułów..."
+  },
+  "status": {
+    "generating": "Generowanie Twojego spersonalizowanego playbooka...",
+    "starting": "Rozpoczynanie generowania podręcznika..."
+  },
+  "empty": {
+    "message": "Brak planu szkoleniowego. Wygeneruj swój spersonalizowany playbook.",
+    "button": "Wygeneruj plan"
+  },
+  "card": {
+    "moduleNumber": "Moduł {{number}}",
+    "generatingHandbook": "Generowanie podręcznika...",
+    "clickToRead": "Kliknij, aby przeczytać więcej",
+    "failedRetry": "Generowanie nie powiodło się. Kliknij, aby ponowić.",
+    "waiting": "Oczekiwanie na rozpoczęcie..."
+  },
+  "quickTip": {
+    "loading": {
+      "title": "Szukam spersonalizowanej wskazówki...",
+      "subtitle": "Wyszukiwanie najnowszych technik AI"
+    },
+    "badge": "Wskazówka",
+    "subBadge": "Spersonalizowana dla Ciebie",
+    "readMore": "Czytaj więcej",
+    "sources": "Na podstawie {{count}} najnowszych źródeł",
+    "modalTitle": "Twoja spersonalizowana wskazówka",
+    "gotIt": "Rozumiem"
+  },
+  "diaryEntry": {
+    "loading": {
+      "title": "Piszemy Twój wpis do pamiętnika...",
+      "subtitle": "Wyobrażamy sobie Twoją przyszłość"
+    },
+    "badge": "Kartka z pamiętnika",
+    "subBadge": "Strona z Twojej przyszłości",
+    "readMore": "Przeczytaj cały wpis",
+    "modalTitle": "Kartka z Twojego pamiętnika",
+    "dateLabel": "Za 6 miesięcy",
+    "close": "Wracam do rzeczywistości",
+    "disclaimer": "Czysta fikcja. Podobieństwo do Twojego przyszłego sukcesu jest w pełni zamierzone.",
+    "showDiary": "Pokaż wpis z pamiętnika"
+  },
+  "continueLabel": "Zakup",
+  "regenerateLabel": "Wygeneruj ponownie plan"
+}

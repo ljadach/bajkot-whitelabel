@@ -1,0 +1,53 @@
+{
+  "badge": "Your Learning Roadmap",
+  "title": "Your Personalized Training Plan",
+  "subtitle": "A module based executive playbook tailored from your profile, assessment, and goals.",
+  "showInsight": "Show personalized insight",
+  "progress": {
+    "modules": "Modules generated: {{completed}} / {{total}}",
+    "generating": "Generating modules..."
+  },
+  "status": {
+    "generating": "Generating your personalized playbook...",
+    "starting": "Starting handbook generation..."
+  },
+  "empty": {
+    "message": "No training plan yet. Generate your personalized playbook.",
+    "button": "Generate Plan"
+  },
+  "card": {
+    "moduleNumber": "Module {{number}}",
+    "generatingHandbook": "Generating handbook...",
+    "clickToRead": "Click to read more",
+    "failedRetry": "Generation failed. Click to retry.",
+    "waiting": "Waiting to start..."
+  },
+  "quickTip": {
+    "loading": {
+      "title": "Finding a personalized insight...",
+      "subtitle": "Searching for the latest AI techniques"
+    },
+    "badge": "Insight",
+    "subBadge": "Personalized for you",
+    "readMore": "Read more",
+    "sources": "Based on {{count}} recent sources",
+    "modalTitle": "Your Personalized Insight",
+    "gotIt": "Got it"
+  },
+  "diaryEntry": {
+    "loading": {
+      "title": "Writing your diary entry...",
+      "subtitle": "Imagining your future self"
+    },
+    "badge": "Diary Entry",
+    "subBadge": "A page from your future",
+    "readMore": "Read the full entry",
+    "modalTitle": "A Page from Your Diary",
+    "dateLabel": "6 months from now",
+    "close": "Back to reality",
+    "disclaimer": "Pure fiction. Any resemblance to your future success is entirely intentional.",
+    "showDiary": "Show diary entry"
+  },
+  "continueLabel": "Purchase",
+  "regenerateLabel": "Regenerate Plan"
+}

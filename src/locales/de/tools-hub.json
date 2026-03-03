@@ -1,0 +1,146 @@
+{
+  "meta": {
+    "title": "KI-Tools-Schulungsleitfaden: Welches Tool solltest du zuerst lernen?",
+    "description": "Vergleiche 8 Top-KI-Tools nach Funktionen, Preisen und Anwendungsfällen. Finde heraus, welches Tool zu deiner Rolle passt und starte noch heute mit strukturiertem Training."
+  },
+  "hero": {
+    "title": "KI-Tools-Schulungsleitfaden: Welches Tool solltest du zuerst lernen?",
+    "intro": "Acht KI-Tools dominieren gerade -- und das Falsche zuerst zu lernen, verschwendet Wochen an Aufwand, die du besser in Fähigkeiten investierst, die sich auf deine tatsächliche Arbeit übertragen. Dieser KI-Tools-Schulungsleitfaden ordnet jedes große Tool der Aufgabe zu, die es am besten erledigt, vergleicht Preise und Funktionen nebeneinander und verweist auf strukturiertes Training, damit du echte Kompetenz aufbaust statt oberflächlicher Vertrautheit."
+  },
+  "lastUpdated": "Februar 2026",
+  "grid": {
+    "title": "KI-Tools auf einen Blick",
+    "intro": "Neun Tools, vier Kategorien. Jede Karte verlinkt auf einen detaillierten Schulungsleitfaden.",
+    "learnMore": "Mehr erfahren"
+  },
+  "nav": {
+    "comparisons": "Direkte Vergleiche",
+    "comparisonsDesc": "Sieh, wie sich die Tools in detaillierten Seite-an-Seite-Analysen messen",
+    "glossary": "KI-Glossar",
+    "glossaryDesc": "52 wichtige KI-Begriffe erklärt -- von Token bis Benchmarks"
+  },
+  "tools": [
+    {
+      "slug": "chatgpt",
+      "name": "ChatGPT",
+      "tagline": "Universal-KI für alles",
+      "description": "ChatGPT hat das breiteste Feature-Set und die größte Nutzerbasis. Es verarbeitet Text, Bilderzeugung (via GPT Image), Sprachgespräche, Deep Research und Code-Ausführung -- alles in einer Oberfläche. Wenn du ein einzelnes KI-Tool willst, das ein bisschen von allem kann, und keine starken Präferenzen bezüglich des Ökosystems hast, ist ChatGPT die sichere Wahl.",
+      "bestFor": "Universalnutzer, die ein Tool für alles wollen",
+      "pricing": "0 $ (Free) / 8 $/Monat (Go) / 20 $/Monat (Plus)"
+    },
+    {
+      "slug": "claude",
+      "name": "Claude",
+      "tagline": "Tiefe Argumentation und lange Dokumente",
+      "description": "Claude führt bei Coding und langer Textausgabe. Der Extended-Thinking-Modus zeigt den Argumentationsprozess, und Claude Code gibt Entwicklern einen speziell gebauten Coding-Agenten. Mit 200K Token Kontext (1M in der Beta) und 128K-Token-Ausgabe bewältigt Claude große Codebasen und Dokumente, an denen andere Tools scheitern.",
+      "bestFor": "Entwickler, Forscher und alle, die mit langen Dokumenten arbeiten",
+      "pricing": "0 $ (Free) / 20 $/Monat (Pro)"
+    },
+    {
+      "slug": "gemini",
+      "name": "Gemini",
+      "tagline": "Google-Integration und 1M Kontext",
+      "description": "Geminis Stärke ist die Google-Integration. Es arbeitet nativ mit Gmail, Docs, Drive und Search zusammen -- zieht Informationen aus deinem bestehenden Google-Ökosystem. Das 1M-Token-Kontextfenster ist das größte verfügbare und bedeutet, dass du ganze buchlange Dokumente zur Analyse einspeisen kannst.",
+      "bestFor": "Google-Workspace-Nutzer und Forscher, die massiven Kontext brauchen",
+      "pricing": "0 $ (Free) / 7,99 $/Monat (AI Plus) / 19,99 $/Monat (AI Pro)"
+    },
+    {
+      "slug": "copilot",
+      "name": "Microsoft Copilot",
+      "tagline": "KI in Microsoft 365",
+      "description": "Copilot fügt KI zu Word, Excel, PowerPoint, Outlook und Teams hinzu. Entwirf ein Dokument in Word, generiere eine Präsentation aus Notizen, fasse einen E-Mail-Thread zusammen, analysiere eine Tabelle -- alles, ohne die Apps zu verlassen, in denen du bereits arbeitest.",
+      "bestFor": "Alle, die im Microsoft-365-Ökosystem eingebettet sind -- besonders Enterprise-Nutzer",
+      "pricing": "0 $ (Free) / 20 $/Monat (Pro) / 21 $/Platz (Business)"
+    },
+    {
+      "slug": "midjourney",
+      "name": "Midjourney",
+      "tagline": "Künstlerische Bilderzeugung",
+      "description": "Midjourney ist der Qualitätsführer bei künstlerischen Bildern. V7 gibt dir tiefe Stilkontrolle durch Parameter wie --stylize, --exp und Personalisierungseinstellungen, die deine ästhetischen Präferenzen lernen. Du kannst Bilder nativ auf 2048x2048 (2x) hochskalieren oder für 4096x4096 (4x) auf V5.2 wechseln. Ein In-App-Editor ermöglicht weitere Verfeinerungen.",
+      "bestFor": "Designer, Kreative und alle, die einen unverwechselbaren visuellen Stil brauchen",
+      "pricing": "10 $/Monat (Basic) / 30 $/Monat (Standard)"
+    },
+    {
+      "slug": "dalle",
+      "name": "DALL-E",
+      "tagline": "Schnelle Bilder via ChatGPT",
+      "description": "DALL-E lebt in ChatGPT via GPT-4os integrierter Bilderzeugung, was es zum zugänglichsten Bildgenerator macht. Du beschreibst, was du willst, in einem ChatGPT-Gespräch und bekommst Bilder, ohne das Tool zu wechseln. DALL-E glänzt bei genauer Prompt-Umsetzung und der Darstellung von Text in Bildern.",
+      "bestFor": "Nicht-Designer, die schnelle Visuals brauchen -- Marketer, Content Creator, Pädagogen",
+      "pricing": "Kostenlos (via ChatGPT) / inklusive in Plus (20 $/Monat)"
+    },
+    {
+      "slug": "grok",
+      "name": "Grok",
+      "tagline": "Echtzeit-X/Twitter-Integration",
+      "description": "Grok ist xAIs konversationelle KI, direkt in die X-Plattform (ehemals Twitter) integriert. Es bietet Echtzeitozugang zu Posts, Trendthemen und Eilmeldungen über den X-Firehose, was es einzigartig geeignet macht, um bei schnell wechselnden Gesprächen und aktuellen Ereignissen am Ball zu bleiben.",
+      "bestFor": "X-Power-User und alle, die Echtzeit-Nachrichten und soziale Trends verfolgen",
+      "pricing": "Kostenlos (mit X) / 8 $/Monat (X Premium)"
+    },
+    {
+      "slug": "notebooklm",
+      "name": "NotebookLM",
+      "tagline": "Quellenbasierte Recherche",
+      "description": "NotebookLM ist Googles quellenbasierter Recherche-Assistent. Lade PDFs, Dokumente, Folien, YouTube-Videos oder Webseiten hoch -- NotebookLM liest sie und beantwortet Fragen ausschließlich basierend auf deinen Quellen. Keine [halluzinierten](/ai-tools/glossary#hallucination) Fakten aus allgemeinen Trainingsdaten. Das herausragende Feature sind Audio Overviews: Podcast-artige Zusammenfassungen deiner Quellen, automatisch generiert.",
+      "bestFor": "Forscher, Studenten und alle, die mehrere Quellen synthetisieren",
+      "pricing": "Kostenlos / via Google AI Pro (19,99 $/Monat)"
+    },
+    {
+      "slug": "perplexity",
+      "name": "Perplexity",
+      "tagline": "Quellenzitierte Antworten",
+      "description": "Jede Perplexity-Antwort enthält Inline-Quellenangaben mit Verlinkung zu den originalen Webseiten. Das ist kein Chatbot, der aus Trainingsdaten rät -- es durchsucht das Web in Echtzeit und baut Antworten aus dem auf, was es findet. Pro Search fügt mehrstufige Argumentation hinzu, und Spaces lassen dich Recherche nach Projekt organisieren.",
+      "bestFor": "Alle, die verifizierte, quellenbelegte Antworten brauchen -- Journalisten, Analysten, Studenten, Forscher",
+      "pricing": "0 $ (Free) / 20 $/Monat (Pro)"
+    }
+  ],
+  "sections": [
+    {
+      "id": "landscape",
+      "title": "Die KI-Tools-Landschaft 2026",
+      "body": "Die KI-Tools, die zählen, fallen in vier Kategorien, die jeweils ein grundlegend anderes Problem lösen:\n\n- **Textassistenten** (ChatGPT, Claude, Gemini) bewältigen Schreiben, Analyse, Coding und Recherche durch Konversation.\n- **Bildgeneratoren** (Midjourney, DALL-E) erstellen Visuals aus Text-Prompts.\n- **Produktivitäts-Suites** (Microsoft Copilot, NotebookLM) erweitern die Apps und Dokumente, die du bereits nutzt.\n- **Recherche-Tools** (Perplexity) liefern quellenzitierte Antworten aus dem Live-Web.\n\nDie Adoptionszahlen erzählen eine klare Geschichte. **[21 % der US-Arbeitnehmer nutzen jetzt KI bei der Arbeit](https://www.pewresearch.org/short-reads/2025/10/06/about-1-in-5-us-workers-now-use-ai-in-their-job-up-since-last-year/)**, gegenüber 14 % im Vorjahr (Pew 2025). Dennoch qualifizieren sich nur **[6 % der Unternehmen als KI-Hochleister](https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai)** mit messbarer Geschäftswirkung (McKinsey 2025). Die Lücke ist nicht der Zugang -- es sind die Fähigkeiten.\n\nJedes Tool auf dieser Liste bietet einen Free-Tarif. Die Einstiegsbarriere ist zusammengebrochen. Die echte Frage ist nicht mehr \"Kann ich KI ausprobieren?\" sondern **\"Welches Tool sollte ich meine Zeit ins Lernen investieren?\"**"
+    },
+    {
+      "id": "text-assistants",
+      "title": "Text-KI-Assistenten: ChatGPT, Claude und Gemini",
+      "body": "Text-KI-Assistenten sind die Schweizer Taschenmesser der KI-Welt. Du tippst eine Frage, fügst ein Dokument ein oder beschreibst eine Aufgabe -- und der Assistent antwortet mit Text, Analyse, Code oder strukturierter Ausgabe. Diese drei Tools dienen verschiedenen Nutzern am besten, obwohl sie oberflächlich ähnlich aussehen.\n\n### ChatGPT\n\n**Am besten für:** Universalnutzer, die ein Tool für alles wollen.\n\nChatGPT hat das breiteste Feature-Set und die größte Nutzerbasis. Es verarbeitet Text, Bilderzeugung (via GPT Image), Sprachgespräche, Deep Research und Code-Ausführung -- alles in einer Oberfläche.\n\nDer Free-Tarif gibt dir Zugang zu GPT-5.2 Instant mit Nutzungslimits. ChatGPT Plus für 20 $/Monat entfernt die meisten Limits, während ChatGPT Go für 8 $/Monat einen leichteren kostenpflichtigen Tarif bietet.\n\n### Claude\n\n**Am besten für:** Entwickler, Forscher und alle, die mit langen Dokumenten arbeiten.\n\nClaude führt bei Coding und langer Textausgabe. Der Extended-Thinking-Modus zeigt den Argumentationsprozess, und Claude Code gibt Entwicklern einen speziell gebauten Coding-Agenten. Mit 200K Token Kontext (1M in der Beta) und 128K-Token-Ausgabe bewältigt Claude große Codebasen und Dokumente, an denen andere Tools scheitern.\n\nDer Free-Tarif bietet begrenzten Zugang. Claude Pro startet bei 20 $/Monat (200 $/Jahr).\n\n### Gemini\n\n**Am besten für:** Google-Workspace-Nutzer und Forscher, die massiven Kontext brauchen.\n\nGeminis Stärke ist die Google-Integration. Es arbeitet nativ mit Gmail, Docs, Drive und Search zusammen. Das 1M-Token-Kontextfenster ist das größte verfügbare.\n\nGemini AI Plus startet bei 7,99 $/Monat, marginal der günstigste Einstiegspunkt mit weniger als 1 $ unter ChatGPT Go (8 $/Monat).\n\n| Feature | ChatGPT | Claude | Gemini |\n|---------|---------|--------|--------|\n| **Free-Tarif** | Ja (GPT-5.2 Instant) | Ja (begrenzt) | Ja (50 Credits/Tag) |\n| **Einstiegspreis** | 8 $/Monat (Go) | 20 $/Monat (Pro) | 7,99 $/Monat (AI Plus) |\n| **Kontextfenster** | 400K Token | 200K (1M Beta) | 1M Token |\n| **Kernstärke** | Breitestes Feature-Set | Stärkstes Coding/Output | Tiefste Google-Integration |"
+    },
+    {
+      "id": "image-generation",
+      "title": "Bilderzeugung: Midjourney und DALL-E",
+      "body": "Bildgeneratoren verwandeln Textbeschreibungen in Visuals. Beide Tools produzieren beeindruckende Ergebnisse, dienen aber verschiedenen kreativen Bedürfnissen und verschiedenen Nutzertypen.\n\n### Midjourney\n\n**Am besten für:** Designer, Kreative und alle, die einen unverwechselbaren visuellen Stil brauchen.\n\nMidjourney ist der Qualitätsführer bei künstlerischen Bildern. V7 gibt dir tiefe Stilkontrolle durch Parameter wie `--stylize`, `--exp` und Personalisierungseinstellungen, die deine ästhetischen Präferenzen lernen.\n\nDer Kompromiss: Es gibt keinen Free-Tarif. Pläne starten bei 10 $/Monat (Basic) und gehen bis 120 $/Monat (Mega), mit Optionen zum Kauf zusätzlicher schneller Generierungsstunden zu 4 $/Stunde.\n\n### DALL-E\n\n**Am besten für:** Nicht-Designer, die schnelle Visuals brauchen -- Marketer, Content Creator, Pädagogen.\n\nDALL-E lebt in ChatGPT via GPT-4os integrierter Bilderzeugung, was es zum zugänglichsten Bildgenerator macht. DALL-E glänzt bei genauer Prompt-Umsetzung und der Darstellung von Text in Bildern -- zwei Bereiche, in denen Midjourney historisch hinterherhinkte.\n\nWenn du bereits für ChatGPT Plus (20 $/Monat) zahlst, ist die Bilderzeugung inklusive.\n\n| Feature | Midjourney | DALL-E |\n|---------|-----------|--------|\n| **Free-Tarif** | Nein | Ja (via ChatGPT Free) |\n| **Einstiegspreis** | 10 $/Monat | Inklusive in ChatGPT Plus (20 $/Monat) |\n| **Eigenständig** | Ja (Web + Discord) | Nein (ChatGPT-Integration) |\n| **Kernstärke** | Künstlerische Qualität, Stilkontrolle | Benutzerfreundlichkeit, Prompt-Genauigkeit |"
+    },
+    {
+      "id": "productivity-tools",
+      "title": "Produktivitäts-Tools: Microsoft Copilot und NotebookLM",
+      "body": "Produktivitäts-KI ersetzt deine Tools nicht -- sie macht die Tools, die du bereits nutzt, intelligenter. Diese beiden dienen völlig verschiedenen Ökosystemen.\n\n### Microsoft Copilot\n\n**Am besten für:** Alle, die im Microsoft-365-Ökosystem eingebettet sind -- besonders Enterprise-Nutzer.\n\nCopilot fügt KI zu Word, Excel, PowerPoint, Outlook und Teams hinzu. Entwirf ein Dokument in Word, generiere eine Präsentation aus Notizen, fasse einen E-Mail-Thread zusammen, analysiere eine Tabelle -- alles, ohne die Apps zu verlassen, in denen du bereits arbeitest.\n\nDer kostenlose Copilot-Tarif bewältigt grundlegende KI-Aufgaben. Copilot Pro für 20 $/Monat schaltet KI-Funktionen in allen Microsoft-365-Apps frei. Für Unternehmen kostet Copilot Business 21 $/Platz/Monat (Aktionspreis 18 $/Platz bis März 2026).\n\n### NotebookLM\n\n**Am besten für:** Forscher, Studenten und alle, die mehrere Quellen synthetisieren.\n\nNotebookLM ist Googles quellenbasierter Recherche-Assistent. Lade PDFs, Dokumente, Folien, YouTube-Videos oder Webseiten hoch -- NotebookLM liest sie und beantwortet Fragen ausschließlich basierend auf deinen Quellen. Keine halluzinierten Fakten aus allgemeinen Trainingsdaten.\n\nDas herausragende Feature sind **Audio Overviews**: Podcast-artige Zusammenfassungen deiner Quellen, automatisch generiert. Der Free-Tarif ist großzügig -- 100 Notebooks mit jeweils 50 Quellen und 50 täglichen Chats.\n\n| Feature | Microsoft Copilot | NotebookLM |\n|---------|-------------------|------------|\n| **Free-Tarif** | Ja (grundlegend) | Ja (100 Notebooks) |\n| **Einstiegspreis** | 20 $/Monat (Pro) | Kostenlos / via Google AI Pro (19,99 $/Monat) |\n| **Ökosystem** | Microsoft 365 | Google Workspace |\n| **Kernstärke** | KI in der gesamten Office-Suite | Quellenbasierte Recherche + Audio |"
+    },
+    {
+      "id": "research-tools",
+      "title": "Recherche-Tools: Perplexity",
+      "body": "Perplexity löst ein Problem, das die anderen Tools teilen: Sie generieren Antworten, zeigen aber nicht, woher diese Antworten kommen.\n\n**Am besten für:** Alle, die verifizierte, quellenbelegte Antworten brauchen -- Journalisten, Analysten, Studenten, Forscher.\n\nJede Perplexity-Antwort enthält **Inline-Quellenangaben** mit Verlinkung zu den originalen Webseiten. Das ist kein Chatbot, der aus Trainingsdaten rät -- es durchsucht das Web in Echtzeit und baut Antworten aus dem auf, was es findet.\n\n**Pro Search** fügt mehrstufige Argumentation hinzu: Perplexity stellt Klärungsfragen und recherchiert dann in die Tiefe. **Spaces** lassen dich Recherche nach Projekt organisieren und Dateien und Web-Suchergebnisse an einem Ort zusammenfassen. Focus-Modi lassen dich Suchen auf akademische Papers, Video, Social Media oder das offene Web eingrenzen.\n\nDer Free-Tarif umfasst unbegrenzte Basissuchen, fünf Pro-Suchen alle vier Stunden und drei Deep-Research-Anfragen pro Tag. Pro für 20 $/Monat schaltet die vollen Fähigkeiten frei."
+    },
+    {
+      "id": "comparison-matrix",
+      "title": "Beste KI-Tools: Vergleichsmatrix",
+      "body": "Diese Tabelle stellt alle acht Tools nebeneinander bei den Faktoren, die für die Entscheidung am wichtigsten sind, wo du deine Lernzeit investierst. Nutze diesen KI-Tools-Vergleich zusammen mit den rollenbasierten Empfehlungen unten, um deinen besten Startpunkt zu finden.\n\n| Tool | Kategorie | Free-Tarif | Einstiegspreis | Am besten für | Kernstärke | Lernkurve |\n|------|----------|-----------|-------------|----------|-------------|----------------|\n| **ChatGPT** | Text | Ja | 8 $/Monat | Universalnutzer | Breitestes Feature-Set | Niedrig |\n| **Claude** | Text | Ja | 20 $/Monat | Entwickler, Forscher | Stärkstes Coding/Output | Mittel |\n| **Gemini** | Text | Ja | 7,99 $/Monat | Google-Ökosystem-Nutzer | Google-Integration, 1M Kontext | Niedrig |\n| **Midjourney** | Bild | Nein | 10 $/Monat | Designer, Kreative | Künstlerische Qualität, Stilkontrolle | Mittel |\n| **DALL-E** | Bild | Ja (via ChatGPT) | Inkl. in Plus (20 $/Monat) | Nicht-Designer, Marketer | Benutzerfreundlichkeit, Prompt-Genauigkeit | Niedrig |\n| **Copilot** | Produktivität | Ja | 20 $/Monat | Microsoft-365-Nutzer | KI in der gesamten Office-Suite | Niedrig |\n| **NotebookLM** | Produktivität | Ja | Kostenlos | Forscher, Studenten | Quellenbasiert, Audio-Ausgabe | Niedrig |\n| **Perplexity** | Recherche | Ja | 20 $/Monat | Journalisten, Analysten | Quellenzitierte Antworten | Niedrig |"
+    },
+    {
+      "id": "which-tool-first",
+      "title": "Welches KI-Tool solltest du zuerst lernen?",
+      "body": "Feature-Vergleiche sind nützlich, aber die echte Antwort hängt davon ab, was du jeden Tag machst. Hier ist ein Entscheidungsrahmen basierend auf deiner Rolle und deinem primären Bedarf:\n\n- **\"Ich schreibe Inhalte oder E-Mails.\"** Starte mit **ChatGPT** für Vielseitigkeit oder **Claude**, wenn dein Schreiben lange Dokumente oder Analyse umfasst.\n- **\"Ich programmiere.\"** Starte mit **Claude** (Claude Code ist ein speziell gebauter Coding-Agent) oder **Microsoft Copilot**, wenn du in Visual Studio Code arbeitest.\n- **\"Ich lebe in Google Workspace.\"** Starte mit **Gemini**. Es ist bereits in deinem Gmail, Docs und Drive.\n- **\"Ich erstelle Visuals.\"** Starte mit **Midjourney** für künstlerische Kontrolle oder **DALL-E** für schnelle Bilder ohne ein neues Tool lernen zu müssen.\n- **\"Ich recherchiere und brauche Quellen.\"** Starte mit **Perplexity**. Kein anderes Tool erreicht seinen Quellen-Zitationsworkflow.\n- **\"Ich verwalte Dokumente und Präsentationen.\"** Starte mit **Microsoft Copilot**. Es arbeitet in den Tools, die du bereits nutzt.\n- **\"Ich synthetisiere Quellen zum Lernen.\"** Starte mit **NotebookLM**. Lade deine Quellen hoch und lass es Fragen beantworten, die in deinem Material verankert sind.\n\nWelches Tool du auch wählst, **starte mit dem Free-Tarif und erledige eine echte Aufgabe** -- keinen Spielprompt wie \"Schreibe mir ein Gedicht\". Entwirf eine echte E-Mail. Analysiere eine echte Tabelle. Debugge echten Code. Diese eine Aufgabe lehrt dich mehr über die Eignung eines Tools als eine Woche gelegentliches Experimentieren."
+    },
+    {
+      "id": "start-building",
+      "title": "Fang an, echte KI-Fähigkeiten aufzubauen",
+      "body": "Das richtige Tool zu wählen ist Schritt eins. Der schwierigere Teil ist, über die oberflächliche Nutzung hinauszukommen -- und hier bleiben die meisten Leute stecken.\n\n**[77 % der Arbeitgeber sind entschlossen, Mitarbeiter für KI umzuschulen](https://hai.stanford.edu/ai-index/2025-ai-index-report)** (WEF 2025), aber selbstgesteuertes Lernen fehlt die Struktur. Du schaust ein Tutorial, probierst ein paar Prompts und erreichst ein Plateau. Die Lücke zwischen \"Ich habe ChatGPT benutzt\" und \"Ich erziele messbare Ergebnisse mit KI\" ist eine Kompetenzlücke, keine Zugangslücke.\n\nAITutoro überbrückt diese Lücke mit adaptivem Training, das sich deinem Wissenslevel anpasst -- wie Duolingo für KI-Tools. Jedes in diesem KI-Tools-Schulungsleitfaden behandelte Tool hat ein strukturiertes Trainingsmodul mit praxisnahen Übungen, nicht passivem Inhalt. Ob du nach KI-Training für Einzelpersonen oder teamweitem Upskilling suchst, der Ansatz ist derselbe: Übung mit echten Aufgaben, Feedback erhalten, messbare Kompetenz aufbauen.\n\n**Starte dein kostenloses KI-Training** -- zwei Module inklusive, keine Kreditkarte erforderlich. Wähle das Tool, das zu deiner Rolle passt, aus diesem Leitfaden und beginne, Fähigkeiten aufzubauen, die sich in deiner täglichen Arbeit zeigen."
+    }
+  ],
+  "cta": {
+    "midHeadline": "Bereit, das richtige KI-Tool zu meistern?",
+    "midDescription": "Das adaptive Training von AITutoro passt sich deinem Kenntnisstand an. Überspringe, was du weißt, und fokussiere auf das, was den Unterschied macht.",
+    "primaryLabel": "Kostenlose Testversion starten",
+    "secondaryLabel": "Preise ansehen",
+    "bottomHeadline": "Hör auf zu experimentieren. Fang an, echte KI-Fähigkeiten aufzubauen.",
+    "bottomDescription": "Zwei kostenlose Module, keine Kreditkarte erforderlich. Wähle dein Tool und leg los."
+  }
+}

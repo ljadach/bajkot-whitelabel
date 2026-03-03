@@ -1,0 +1,65 @@
+{
+  "stepComplete": "Dieser Schritt ist abgeschlossen",
+  "continueTo": "Weiter zu {{step}}",
+  "steps": {
+    "chat": "Chat",
+    "verification": "Kompetenzprüfung",
+    "summary": "Zusammenfassung",
+    "plan": "Trainingsplan",
+    "complete": "Abschluss"
+  },
+  "buttons": {
+    "continue": "Weiter",
+    "back": "Zurück",
+    "submit": "Absenden",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "refresh": "Aktualisieren",
+    "retry": "Erneut versuchen",
+    "generate": "Generieren",
+    "regenerate": "Neu generieren",
+    "close": "Schließen",
+    "confirm": "Bestätigen",
+    "gotIt": "Verstanden",
+    "learnMore": "Mehr erfahren",
+    "readMore": "Weiterlesen",
+    "showMore": "Mehr anzeigen",
+    "showLess": "Weniger anzeigen"
+  },
+  "status": {
+    "loading": "Wird geladen...",
+    "saving": "Wird gespeichert...",
+    "generating": "Wird generiert...",
+    "processing": "Wird verarbeitet...",
+    "submitting": "Wird gesendet...",
+    "connecting": "Verbindung wird hergestellt...",
+    "reconnecting": "Verbindung wird wiederhergestellt..."
+  },
+  "errors": {
+    "somethingWentWrong": "Etwas ist schiefgelaufen",
+    "tryAgain": "Bitte versuchen Sie es erneut",
+    "connectionLost": "Verbindung verloren",
+    "notFound": "Nicht gefunden",
+    "unauthorized": "Nicht autorisiert",
+    "serverError": "Serverfehler"
+  },
+  "time": {
+    "justNow": "Gerade eben",
+    "minutesAgo": "vor {{count}} Minuten",
+    "hoursAgo": "vor {{count}} Stunden",
+    "daysAgo": "vor {{count}} Tagen",
+    "today": "heute",
+    "yesterday": "gestern"
+  },
+  "regenerate": {
+    "confirmMessage": "Sind Sie sicher, dass Sie neu generieren möchten? Der aktuelle Inhalt wird ersetzt.",
+    "confirmButton": "Ja, neu generieren",
+    "generatedAt": "Generiert {{date}}",
+    "generating": "Wird generiert..."
+  },
+  "language": {
+    "switchLanguage": "Sprache wechseln",
+    "currentLanguage": "Aktuelle Sprache: {{language}}"
+  }
+}

@@ -1,0 +1,275 @@
+{
+  "_readme": {
+    "what": "Inventory of all image placeholders that were embedded in the static product-page locale files. Each entry represents one illustration or screenshot that content authors marked as needed but had not yet been produced.",
+    "why": "During content authoring, image requirements were written inline in the JSON body strings using the syntax {{IMAGE: description of the image}}. This kept the creative brief close to the copy it would support, but the raw placeholder text was visible to end users in the rendered page. On 2026-02-18 all 21 placeholders were extracted into this structured file and then removed from the source JSON so the pages are clean for users. The images still need to be produced; this file is the single source of truth for that work.",
+    "how_created": "A grep search was run across all EN product-page locale files (src/locales/en/product-*.json) to find every string matching the pattern {{IMAGE: ...}}. For each match, the surrounding JSON context (file, JSON key path, section title) was recorded. The instruction text (the content between {{ and }}) was copied verbatim. A context note, a suggested filename, and a suggested alt text were then written by hand to give whoever produces the image enough information to work without re-reading the full page. The 21 entries cover 9 product pages. Note: PL and DE locale files do not exist for product pages — only EN has product-page content, so only EN was scanned.",
+    "source_files_scanned": [
+      "src/locales/en/product-chatgpt.json",
+      "src/locales/en/product-claude.json",
+      "src/locales/en/product-copilot.json",
+      "src/locales/en/product-dalle.json",
+      "src/locales/en/product-gemini.json",
+      "src/locales/en/product-grok.json",
+      "src/locales/en/product-midjourney.json",
+      "src/locales/en/product-notebooklm.json",
+      "src/locales/en/product-perplexity.json"
+    ],
+    "original_syntax": "{{IMAGE: <brief description>}} — the double-brace delimiters and IMAGE: prefix were the authoring convention. The description between the delimiters is the value captured in the 'instruction' field of each entry below.",
+    "what_happened_to_placeholders": "Each {{IMAGE: ...}} occurrence was deleted from the source JSON. In most cases it was removed from the middle of a Markdown body string. In one case (product-midjourney.json quickAnswer.body) the placeholder was the entire value of the key, so the key was left with an empty string value (\"\") to preserve the JSON structure.",
+    "field_reference": {
+      "id": "Sequential integer, 1-based. Use this as a stable reference when tracking production status (e.g. in a spreadsheet or project tool).",
+      "file": "Repo-relative path to the EN locale JSON file from which this placeholder was extracted. The placeholder no longer exists there — this is just provenance.",
+      "line": "Approximate line number in the source file at the time of extraction (2026-02-18). Line numbers will drift as the file is edited; treat them as a rough guide, not a precise pointer.",
+      "jsonPath": "Dot/bracket notation path to the JSON key that contained the placeholder. Examples: 'quickAnswer.body' is the top-level quickAnswer object's body string; 'sections[0].body' is the body of the first item in the sections array.",
+      "sectionTitle": "Human-readable heading of the page section where the image lives. Useful for understanding the editorial context without opening the source file.",
+      "instruction": "The verbatim content of the {{IMAGE: ...}} placeholder as written by the content author. This is the original creative brief — use it as the primary prompt when generating or commissioning the image.",
+      "context": "Additional context added during extraction: where exactly on the page the image appears, what role it plays in the section, and what the reader should take away from it. Use this alongside 'instruction' when briefing a designer or an AI image generator.",
+      "suggestedFilename": "Recommended filename for the produced image, following the pattern product-{tool}-{descriptor}.png. Images should be placed in the public/images/ directory (or equivalent static assets path). PNG is the suggested format; use WebP if the build pipeline supports it.",
+      "suggestedAlt": "Ready-to-use alt text for the <img> tag or the JSON 'alt' field when the image is wired into the page. Written to be descriptive and accessible without being redundant with surrounding body copy."
+    },
+    "how_to_use": [
+      "1. Pick an image to produce (start from id=1 or by priority/page).",
+      "2. Read 'instruction' — that is the core brief. Read 'context' for placement and purpose.",
+      "3. Generate or commission the image. The 'instruction' field works well as a direct prompt for AI image generators (Midjourney, DALL-E, Gemini Imagen, etc.) or as a brief for a human designer.",
+      "4. Save the output as 'suggestedFilename' in public/images/ (PNG, 1200–1600 px wide recommended for hero images; 900–1200 px for section illustrations).",
+      "5. Wire the image into the page: open the file indicated in 'file', navigate to 'jsonPath', and insert an image Markdown reference — e.g. ![alt text](/images/product-chatgpt-hero.png) — at the appropriate point in the body string.",
+      "6. Use 'suggestedAlt' as the alt attribute value.",
+      "7. Once an image is produced and live, mark it done in whatever tracking system you use (issue tracker, spreadsheet, or simply delete the entry from this file)."
+    ],
+    "created": "2026-02-18",
+    "total_images": 21
+  },
+  "images": [
+    {
+      "id": 1,
+      "file": "src/locales/en/product-chatgpt.json",
+      "line": 12,
+      "jsonPath": "quickAnswer.body",
+      "sectionTitle": "Quick Answer (intro section)",
+      "instruction": "Hero illustration showing ChatGPT interface with multiple feature panels — voice, image generation, code, and data analysis — radiating from a central chat window",
+      "context": "Introductory hero image for the ChatGPT product page, positioned in the quickAnswer body to visually orient the reader before the main sections",
+      "suggestedFilename": "product-chatgpt-hero.png",
+      "suggestedAlt": "ChatGPT interface showing voice, image, code, and data analysis panels radiating from a central chat window"
+    },
+    {
+      "id": 2,
+      "file": "src/locales/en/product-chatgpt.json",
+      "line": 18,
+      "jsonPath": "sections[0].body",
+      "sectionTitle": "What is ChatGPT?",
+      "instruction": "Timeline graphic showing ChatGPT's evolution from GPT-3.5 (Nov 2022) through GPT-4, GPT-4o, GPT-5, to GPT-5.2 (late 2025)",
+      "context": "Visual timeline at the end of the 'What is ChatGPT?' section illustrating the model's version history from launch through GPT-5.2",
+      "suggestedFilename": "product-chatgpt-timeline.png",
+      "suggestedAlt": "Timeline showing ChatGPT's evolution from GPT-3.5 in November 2022 through GPT-4, GPT-4o, GPT-5, to GPT-5.2 in late 2025"
+    },
+    {
+      "id": 3,
+      "file": "src/locales/en/product-chatgpt.json",
+      "line": 23,
+      "jsonPath": "sections[1].body",
+      "sectionTitle": "ChatGPT pricing plans (February 2026)",
+      "instruction": "Visual decision tree showing user personas mapping to recommended ChatGPT plans",
+      "context": "Decision tree at the end of the pricing section helping readers identify which ChatGPT plan (Free, Go, Plus, Pro, Business, Enterprise) matches their persona",
+      "suggestedFilename": "product-chatgpt-pricing-decision-tree.png",
+      "suggestedAlt": "Decision tree showing user personas (casual, power user, team lead, enterprise buyer) mapped to recommended ChatGPT pricing plans"
+    },
+    {
+      "id": 4,
+      "file": "src/locales/en/product-chatgpt.json",
+      "line": 33,
+      "jsonPath": "sections[3].body",
+      "sectionTitle": "Advanced features for power users",
+      "instruction": "Feature comparison matrix showing which ChatGPT features are available on each pricing tier",
+      "context": "Matrix at the end of the advanced features section mapping features like Deep Research, Agent Mode, Codex, Sora 2, and MCP connectors to Free, Go, Plus, Pro, Business, and Enterprise tiers",
+      "suggestedFilename": "product-chatgpt-feature-matrix.png",
+      "suggestedAlt": "Feature comparison matrix showing ChatGPT features (Deep Research, Agent Mode, Codex, Sora 2) available on each pricing tier"
+    },
+    {
+      "id": 5,
+      "file": "src/locales/en/product-claude.json",
+      "line": 23,
+      "jsonPath": "sections[1].body",
+      "sectionTitle": "Claude AI features and models explained",
+      "instruction": "side-by-side visual showing the three Claude model tiers with icons representing intelligence, speed, and cost tradeoffs",
+      "context": "Visual comparison embedded in the model tier table within the 'Claude AI features and models explained' section, illustrating Opus 4.6, Sonnet 4.5, and Haiku 4.5 tradeoffs",
+      "suggestedFilename": "product-claude-model-tiers.png",
+      "suggestedAlt": "Side-by-side comparison of Claude model tiers: Opus 4.6 (intelligence), Sonnet 4.5 (balanced), and Haiku 4.5 (speed and cost)"
+    },
+    {
+      "id": 6,
+      "file": "src/locales/en/product-copilot.json",
+      "line": 18,
+      "jsonPath": "sections[0].body",
+      "sectionTitle": "What is Microsoft Copilot?",
+      "instruction": "Simplified architecture diagram showing four components — M365 apps, Microsoft Graph (user's data), LLM (Azure OpenAI), and Semantic Index — connected by arrows flowing from user prompt to AI response",
+      "context": "Architecture diagram in the 'What is Microsoft Copilot?' section illustrating how user prompts flow through Microsoft Graph, Azure OpenAI, and Semantic Index to produce responses inside M365 apps",
+      "suggestedFilename": "product-copilot-architecture.png",
+      "suggestedAlt": "Architecture diagram showing M365 apps, Microsoft Graph, Azure OpenAI LLM, and Semantic Index connected by arrows from user prompt to AI response"
+    },
+    {
+      "id": 7,
+      "file": "src/locales/en/product-dalle.json",
+      "line": 23,
+      "jsonPath": "sections[1].body",
+      "sectionTitle": "Where can you access DALL-E 3 for free?",
+      "instruction": "Decision tree showing access paths for DALL-E 3 (Bing, ChatGPT Free, ChatGPT Plus, Microsoft Designer)",
+      "context": "Decision tree at the end of the 'Where can you access DALL-E 3 for free?' section guiding readers to choose between Bing Image Creator, ChatGPT Free, ChatGPT Plus, and Microsoft Designer based on their usage needs",
+      "suggestedFilename": "product-dalle-access-decision-tree.png",
+      "suggestedAlt": "Decision tree showing DALL-E 3 access paths: Bing Image Creator for free DALL-E 3, ChatGPT Free for GPT Image 1.5, ChatGPT Plus for volume, and Microsoft Designer for Microsoft users"
+    },
+    {
+      "id": 8,
+      "file": "src/locales/en/product-dalle.json",
+      "line": 38,
+      "jsonPath": "sections[4].body",
+      "sectionTitle": "Strengths and limitations of DALL-E 3",
+      "instruction": "Side-by-side comparison of DALL-E 3 strength (photorealistic product) vs. limitation (hands, character consistency)",
+      "context": "Visual comparison at the end of the strengths and limitations section showing a photorealistic DALL-E 3 success case alongside a failure case illustrating hand rendering and character consistency issues",
+      "suggestedFilename": "product-dalle-strengths-limitations.png",
+      "suggestedAlt": "Side-by-side comparison showing DALL-E 3 strength (photorealistic product image) versus its limitations (distorted hands, inconsistent character)"
+    },
+    {
+      "id": 9,
+      "file": "src/locales/en/product-gemini.json",
+      "line": 18,
+      "jsonPath": "sections[0].body",
+      "sectionTitle": "What is Google Gemini?",
+      "instruction": "Google Gemini interface showing multimodal input options (text, image, audio, PDF) in a single conversation",
+      "context": "Screenshot or illustration at the end of the 'What is Google Gemini?' section demonstrating the multimodal input capabilities of the Gemini chat interface",
+      "suggestedFilename": "product-gemini-multimodal-interface.png",
+      "suggestedAlt": "Google Gemini interface showing multimodal input options including text, image, audio, and PDF uploads in a single conversation"
+    },
+    {
+      "id": 10,
+      "file": "src/locales/en/product-gemini.json",
+      "line": 28,
+      "jsonPath": "sections[2].body",
+      "sectionTitle": "Core Google Gemini features every user should know",
+      "instruction": "Split-screen showing Gemini side panel inside Google Docs drafting content alongside the user's document",
+      "context": "Visual at the end of the Gemini core features section illustrating the Google Workspace integration with Gemini's side panel appearing inside Google Docs",
+      "suggestedFilename": "product-gemini-workspace-integration.png",
+      "suggestedAlt": "Split-screen view of Gemini side panel inside Google Docs, with AI-drafted content appearing alongside the user's document"
+    },
+    {
+      "id": 11,
+      "file": "src/locales/en/product-grok.json",
+      "line": 12,
+      "jsonPath": "quickAnswer.body",
+      "sectionTitle": "Quick Answer (intro section)",
+      "instruction": "Grok interface showing the main chat window with DeepSearch and Think mode toggles visible",
+      "context": "Hero image for the Grok product page showing the primary chat interface with the DeepSearch and Think mode controls visible, oriented in the quickAnswer intro body",
+      "suggestedFilename": "product-grok-interface-hero.png",
+      "suggestedAlt": "Grok AI chat interface showing the main chat window with DeepSearch and Think mode toggle buttons"
+    },
+    {
+      "id": 12,
+      "file": "src/locales/en/product-grok.json",
+      "line": 23,
+      "jsonPath": "sections[1].body",
+      "sectionTitle": "Grok AI features",
+      "instruction": "DeepSearch in action showing reasoning trace, sub-queries, and progress bar",
+      "context": "Screenshot of Grok's DeepSearch feature in use, showing the visible reasoning trace, the list of sub-queries being executed, and the completion progress bar",
+      "suggestedFilename": "product-grok-deepsearch.png",
+      "suggestedAlt": "Grok DeepSearch interface showing reasoning trace, sub-queries running in parallel, and progress bar"
+    },
+    {
+      "id": 13,
+      "file": "src/locales/en/product-grok.json",
+      "line": 28,
+      "jsonPath": "sections[2].body",
+      "sectionTitle": "Grok AI pricing and access tiers",
+      "instruction": "Visual comparison chart of the five Grok pricing tiers showing key feature differences",
+      "context": "Comparison chart at the end of the pricing section visually differentiating Free, X Premium, X Premium+, SuperGrok, and SuperGrok Heavy tiers by features and price",
+      "suggestedFilename": "product-grok-pricing-tiers.png",
+      "suggestedAlt": "Visual comparison chart of five Grok pricing tiers: Free, X Premium, X Premium+, SuperGrok, and SuperGrok Heavy with key feature differences"
+    },
+    {
+      "id": 14,
+      "file": "src/locales/en/product-midjourney.json",
+      "line": 12,
+      "jsonPath": "quickAnswer.body",
+      "sectionTitle": "Quick Answer (intro section)",
+      "instruction": "Midjourney web app interface showing the Imagine bar with a prompt and a four-image grid result",
+      "context": "Hero screenshot for the Midjourney product page showing the primary web app UI with the Imagine prompt bar and a four-image grid output, used as the sole content of the quickAnswer body (which was left as an empty string after placeholder removal)",
+      "suggestedFilename": "product-midjourney-interface-hero.png",
+      "suggestedAlt": "Midjourney web app showing the Imagine prompt bar with a text prompt and a four-image grid result below"
+    },
+    {
+      "id": 15,
+      "file": "src/locales/en/product-midjourney.json",
+      "line": 33,
+      "jsonPath": "sections[3].body",
+      "sectionTitle": "Core capabilities beyond text-to-image",
+      "instruction": "Side-by-side comparison of Low Motion vs High Motion styles in Midjourney video generation",
+      "context": "Comparison image within the video generation subsection of core capabilities, illustrating the visual difference between Low Motion (slow, atmospheric) and High Motion (fast, dramatic) V1 Video Model output styles",
+      "suggestedFilename": "product-midjourney-video-motion-styles.png",
+      "suggestedAlt": "Side-by-side comparison of Midjourney V1 Video Model outputs: Low Motion atmospheric style versus High Motion dramatic style"
+    },
+    {
+      "id": 16,
+      "file": "src/locales/en/product-midjourney.json",
+      "line": 38,
+      "jsonPath": "sections[4].body",
+      "sectionTitle": "Midjourney tutorial: key parameters every user should know",
+      "instruction": "Example prompt with annotated parameters showing how each flag modifies the output",
+      "context": "Annotated example at the end of the key parameters section showing a real Midjourney prompt with labels pointing to each parameter flag (--ar, --chaos, --stylize, --no, --seed, --sref, --cref, --v) and the corresponding image output",
+      "suggestedFilename": "product-midjourney-annotated-parameters.png",
+      "suggestedAlt": "Midjourney prompt example with annotated parameter flags (--ar, --chaos, --stylize, --no, --seed) showing how each flag modifies the generated image"
+    },
+    {
+      "id": 17,
+      "file": "src/locales/en/product-notebooklm.json",
+      "line": 12,
+      "jsonPath": "quickAnswer.body",
+      "sectionTitle": "Quick Answer (intro section)",
+      "instruction": "NotebookLM interface showing the Studio Panel with uploaded documents and output options",
+      "context": "Hero screenshot for the NotebookLM product page showing the Studio Panel with uploaded source documents and available output format buttons (Audio Overview, Study Guide, Quiz, etc.)",
+      "suggestedFilename": "product-notebooklm-studio-panel.png",
+      "suggestedAlt": "NotebookLM interface showing the Studio Panel with uploaded documents and output options including Audio Overview, Study Guide, and Quiz"
+    },
+    {
+      "id": 18,
+      "file": "src/locales/en/product-notebooklm.json",
+      "line": 23,
+      "jsonPath": "sections[1].body",
+      "sectionTitle": "NotebookLM features: what you can make",
+      "instruction": "Audio Overview player interface showing the two-host AI podcast format with interactive controls",
+      "context": "Screenshot of the NotebookLM Audio Overview player showing the two AI hosts, podcast-style playback interface, and interactive controls (pause, jump, 30-second recap) within the features section",
+      "suggestedFilename": "product-notebooklm-audio-overview-player.png",
+      "suggestedAlt": "NotebookLM Audio Overview player showing two AI hosts in podcast format with interactive controls for pausing, jumping to sections, and getting recaps"
+    },
+    {
+      "id": 19,
+      "file": "src/locales/en/product-notebooklm.json",
+      "line": 43,
+      "jsonPath": "sections[5].body",
+      "sectionTitle": "How to use NotebookLM: a quick-start tutorial",
+      "instruction": "Step-by-step visual showing the NotebookLM onboarding flow: create notebook, upload source, generate output",
+      "context": "Step-by-step illustration at the end of the quick-start tutorial section showing the three onboarding steps: creating a notebook, uploading a source document, and generating an output from the Studio Panel",
+      "suggestedFilename": "product-notebooklm-onboarding-steps.png",
+      "suggestedAlt": "Three-step visual showing NotebookLM onboarding: step 1 create a notebook, step 2 upload a source, step 3 generate an output"
+    },
+    {
+      "id": 20,
+      "file": "src/locales/en/product-perplexity.json",
+      "line": 18,
+      "jsonPath": "sections[0].body",
+      "sectionTitle": "What Perplexity does (and how it differs from ChatGPT and Google)",
+      "instruction": "Side-by-side comparison showing Google search results (links), ChatGPT response (conversational answer), and Perplexity response (answer with inline citations)",
+      "context": "Three-panel comparison image at the end of the introductory section contrasting Google's link-list results, ChatGPT's conversational response, and Perplexity's cited answer format",
+      "suggestedFilename": "product-perplexity-vs-google-vs-chatgpt.png",
+      "suggestedAlt": "Three-panel comparison: Google search showing blue links, ChatGPT showing a conversational answer, and Perplexity showing an answer with numbered inline citations"
+    },
+    {
+      "id": 21,
+      "file": "src/locales/en/product-perplexity.json",
+      "line": 23,
+      "jsonPath": "sections[1].body",
+      "sectionTitle": "How to use Perplexity AI: the four search modes",
+      "instruction": "Flowchart showing which search mode to pick based on query type: simple fact → Quick Search, multi-factor question → Pro Search, deep report → Deep Research, deliverable/artifact → Labs",
+      "context": "Decision flowchart at the end of the search modes section guiding readers to choose Quick Search, Pro Search, Deep Research, or Labs/Create based on the nature of their query",
+      "suggestedFilename": "product-perplexity-search-mode-flowchart.png",
+      "suggestedAlt": "Flowchart showing Perplexity search mode selection: simple fact leads to Quick Search, multi-factor question to Pro Search, deep report to Deep Research, and deliverable to Labs"
+    }
+  ]
+}

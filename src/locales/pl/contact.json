@@ -1,0 +1,52 @@
+{
+  "breadcrumb": "Kontakt",
+  "aboutBreadcrumb": "O nas",
+  "meta": {
+    "title": "Kontakt — AITutoro",
+    "description": "Skontaktuj się z zespołem AITutoro. Sprzedaż, pomoc techniczna, współpraca i zapytania prasowe."
+  },
+  "header": {
+    "heading": "Skontaktuj się z nami",
+    "body": "Potrzebujesz pomocy z silnikiem <strong>AITutoro</strong>? Sprawdź nasze <faqLink>FAQ</faqLink>, aby uzyskać natychmiastowe wskazówki techniczne."
+  },
+  "form": {
+    "name": "Imię i nazwisko",
+    "namePlaceholder": "Jan Kowalski",
+    "email": "Adres e-mail",
+    "emailPlaceholder": "jan@firma.pl",
+    "inquiryType": "Rodzaj zapytania",
+    "inquiryOptions": {
+      "enterprise_sales": "Sprzedaż dla firm",
+      "technical_support": "Pomoc techniczna",
+      "partnerships": "Współpraca i partnerstwa",
+      "press_media": "Prasa i media",
+      "general": "Zapytania ogólne"
+    },
+    "question": "Twoje pytanie",
+    "questionPlaceholder": "Opisz swoje zapytanie...",
+    "submit": "Wyślij wiadomość",
+    "submitting": "Wysyłanie...",
+    "error": "Wystąpił błąd. Spróbuj ponownie."
+  },
+  "success": {
+    "title": "Wiadomość wysłana",
+    "body": "Dziękujemy za kontakt. Nasz zespół przejrzy Twoje zapytanie i odpowie najszybciej, jak to możliwe."
+  },
+  "channels": {
+    "heading": "Kanały bezpośrednie",
+    "sales": "Sprzedaż",
+    "support": "Obsługa klienta",
+    "press": "Prasa i media",
+    "general": "Zapytania ogólne"
+  },
+  "social": {
+    "heading": "Znajdź nas",
+    "linkedin": "LinkedIn",
+    "instagram": "Instagram"
+  },
+  "hq": {
+    "heading": "Siedziba główna",
+    "line1": "Plac Inwalidów 10",
+    "line2": "01-552 Warszawa, Polska"
+  }
+}

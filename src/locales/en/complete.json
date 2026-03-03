@@ -1,0 +1,40 @@
+{
+  "title": "Thank You!",
+  "subtitle": "Your order has been received successfully.",
+  "whatsNext": {
+    "title": "What happens next?",
+    "timeline": "We'll get back to you within **3 business days** to schedule your training and assign a mentor.",
+    "emailConfirmation": "You'll receive an email at **{{email}}** with all the details."
+  },
+  "orderSummary": {
+    "title": "Order Summary",
+    "product": "AITutoro Pro (Monthly)",
+    "price": "$20/month",
+    "description": "Personalized AI training program + updates"
+  },
+  "inTheMeantime": {
+    "title": "In the Meantime",
+    "step1": {
+      "title": "Check Your Email",
+      "description": "Look for a confirmation message with your order details and next steps."
+    },
+    "step2": {
+      "title": "Watch for Our Contact",
+      "description": "We'll reach out within 3 business days to schedule your first session."
+    },
+    "step3": {
+      "title": "Prepare to Learn",
+      "description": "Get ready to level up your AI skills with personalized guidance!"
+    }
+  },
+  "support": {
+    "title": "Need Help?",
+    "description": "Questions or concerns? Our support team is here for you.",
+    "contactLink": "Contact Support"
+  },
+  "legal": {
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "refund": "Refund Policy"
+  }
+}

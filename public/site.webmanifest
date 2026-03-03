@@ -1,0 +1,14 @@
+{
+  "name": "AITutoro",
+  "short_name": "AITutoro",
+  "icons": [
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#ff6b35",
+  "background_color": "#ffffff",
+  "display": "standalone"
+}

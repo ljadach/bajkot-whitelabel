@@ -1,0 +1,42 @@
+{
+  "breadcrumbs": {
+    "aiTools": "Narzędzia AI",
+    "comparisons": "Porównania"
+  },
+  "table": {
+    "columnFeature": "Funkcja",
+    "winner": "Zwycięzca",
+    "legendA": "ChatGPT wygrywa",
+    "legendB": "Claude wygrywa",
+    "legendTie": "Remis"
+  },
+  "verdict": {
+    "label": "Werdykt",
+    "wins": "wygrywa",
+    "tie": "Remis"
+  },
+  "useCases": {
+    "title": "Które narzędzie pasuje do roli?",
+    "useBothTitle": "Strategia \"użyj obu\" jest prawdziwa."
+  },
+  "faq": {
+    "title": "Często zadawane pytania"
+  },
+  "related": {
+    "title": "Powiązane porównania"
+  },
+  "toc": {
+    "title": "Treść"
+  },
+  "dateBadge": {
+    "prefix": "Zaktualizowano"
+  },
+  "cta": {
+    "midHeadline": "Rozwijaj umiejętności w AI",
+    "midDescription": "AITutoro zapewnia adaptacyjny trening zarówno dla ChatGPT, jak i Claude. Platforma dostosowuje się do tego, co już wiesz, więc pomijasz podstawy i skupiasz się na technikach, które posuwają pracę do przodu.",
+    "bottomHeadline": "Gotowy, by opanować AI?",
+    "bottomDescription": "Niezależnie od tego, czy wybrałeś ChatGPT, Claude, czy oba, ukierunkowane budowanie umiejętności zamienia dobre narzędzie w przewagę konkurencyjną.",
+    "primaryLabel": "Rozpocznij naukę",
+    "secondaryLabel": "Kontakt"
+  }
+}

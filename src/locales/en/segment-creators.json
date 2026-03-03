@@ -1,0 +1,43 @@
+{
+  "breadcrumb": "For creators",
+  "meta": {
+    "title": "AI training for creators | AITutoro",
+    "description": "AI training for content creators, YouTubers, writers, and digital artists. Learn to scale output, preserve your creative voice, and build a full AI-assisted production pipeline."
+  },
+  "hero": {
+    "headline": "AI for creators: training that builds real creative skill",
+    "subheadline": "You have access to the same AI tools as every other creator. Training is what separates those who scale from those who stall."
+  },
+  "cta": {
+    "trial": "Start free trial",
+    "pilot": "See how it works",
+    "headline": "Start free — no commitment",
+    "description": "Two full modules, no credit card. Training designed for the full creator pipeline."
+  },
+  "value1": {
+    "title": "Scale without burning out",
+    "description": "73% of creators experience burnout. AI removes production friction — research, repurposing, scheduling, caption writing — so creative energy goes where it matters."
+  },
+  "value2": {
+    "title": "Preserve your creative voice",
+    "description": "85% of creators want AI that learns their style. AITutoro's prompt engineering modules train you to get consistent, on-brand output — not generic content."
+  },
+  "value3": {
+    "title": "Full pipeline, not fragments",
+    "description": "Ideation through distribution. Training covers the complete creator workflow — not isolated tool tricks that don't connect."
+  },
+  "pitch2": {
+    "tag": "The real problem",
+    "headline": "The creator's real problem isn't inspiration — it's capacity",
+    "body": "73% of creators report burnout. The bottleneck isn't ideas — it's the production work around every piece of content.\n\n**AI removes the friction that eats creative time:** research synthesis, format repurposing, caption variants, scheduling copy, thumbnail concepts.\n\nCreators who trained deliberately reclaim that time. Those who experiment randomly add a new tool to their pile of half-used apps."
+  },
+  "testimonial": {
+    "quote": "76% of creators say AI accelerated their business or follower growth.",
+    "author": "Adobe Creators' Toolkit Report 2025 · 16,000 creators across 8 countries"
+  },
+  "pitch": {
+    "tag": "Why training matters",
+    "headline": "Why most creators get generic results from AI",
+    "body": "Generic prompting produces generic output. Every creator using the same \"write me a caption\" prompt gets the same caption.\n\n**Voice preservation is a trainable skill.** AITutoro teaches you to calibrate AI output to your specific style, audience, and format — through prompt engineering, not guesswork.\n\n81% of creators say AI enables them to produce content types they couldn't before. That's not access — that's training."
+  }
+}

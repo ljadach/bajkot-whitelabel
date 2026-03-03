@@ -1,0 +1,39 @@
+{
+  "badge": "Ihre Lern-Roadmap",
+  "title": "Ihr personalisierter Trainingsplan",
+  "subtitle": "Ein modulbasiertes Playbook, das auf Ihr Profil, Ihre Bewertung und Ihre Ziele zugeschnitten ist.",
+  "showInsight": "Personalisierten Tipp anzeigen",
+  "progress": {
+    "modules": "Generierte Module: {{completed}} / {{total}}",
+    "generating": "Module werden generiert..."
+  },
+  "status": {
+    "generating": "Ihr personalisiertes Playbook wird generiert...",
+    "starting": "Handbuch-Generierung wird gestartet..."
+  },
+  "empty": {
+    "message": "Noch kein Trainingsplan. Generieren Sie Ihr personalisiertes Playbook.",
+    "button": "Plan generieren"
+  },
+  "card": {
+    "moduleNumber": "Modul {{number}}",
+    "generatingHandbook": "Handbuch wird generiert...",
+    "clickToRead": "Klicken Sie für mehr",
+    "failedRetry": "Generierung fehlgeschlagen. Klicken Sie zum Wiederholen.",
+    "waiting": "Warten auf Start..."
+  },
+  "quickTip": {
+    "loading": {
+      "title": "Personalisierten Tipp suchen...",
+      "subtitle": "Suche nach den neuesten KI-Techniken"
+    },
+    "badge": "Tipp",
+    "subBadge": "Personalisiert für Sie",
+    "readMore": "Weiterlesen",
+    "sources": "Basierend auf {{count}} aktuellen Quellen",
+    "modalTitle": "Ihr personalisierter Tipp",
+    "gotIt": "Verstanden"
+  },
+  "continueLabel": "Kauf",
+  "regenerateLabel": "Plan neu generieren"
+}

@@ -1,0 +1,43 @@
+{
+  "breadcrumb": "Für Freiberufler",
+  "meta": {
+    "title": "KI-Training für Freiberufler | AITutoro",
+    "description": "KI-Training speziell für Freiberufler. Lerne, wie du ChatGPT, Claude, Copilot und Gemini bei deiner eigentlichen Arbeit für Kunden einsetzt – Angebote, Briefings, Recherchen, Code-Reviews."
+  },
+  "hero": {
+    "headline": "KI für Freiberufler: Schulung, die Tools in Einkommen verwandelt",
+    "subheadline": "73 % der Freiberufler nutzen bereits KI. Diejenigen, die 50 % mehr verdienen, verwenden keine anderen Tools – sie setzen sie nur besser ein. Strukturiertes Training macht den Unterschied."
+  },
+  "cta": {
+    "trial": "Kostenlos starten",
+    "pilot": "Schau dir an, wie es funktioniert.",
+    "headline": "Kostenlos starten – keine Verpflichtung",
+    "description": "Zwei komplette Module, keine Kreditkarte. Probier es mit deiner tatsächlichen Kundenarbeit aus."
+  },
+  "value1": {
+    "title": "Jede Woche vier Stunden zurück",
+    "description": "33 % der täglichen KI-Nutzer sparen vier oder mehr Stunden pro Woche. Freiberufler, die gezielt trainieren, profitieren davon – diejenigen, die nur zufällig experimentieren, nicht."
+  },
+  "value2": {
+    "title": "Schulung für deine tatsächlichen Tools",
+    "description": "Du trainierst auf ChatGPT, Claude, Gemini oder Copilot in realistischen Kundenszenarien – Angebote, Briefings, Code-Reviews, Recherchen. AITutoro verwendet keine generischen Eingabeaufforderungen."
+  },
+  "value3": {
+    "title": "Kein Unternehmensbudget nötig.",
+    "description": "Zwei kostenlose Module, keine Kreditkarte erforderlich. Persönlicher Tarif für 9 $ pro Monat, wenn du vollen Zugriff haben möchtest. Entwickelt für selbstfinanzierte Lernende."
+  },
+  "pitch2": {
+    "tag": "Der Markt",
+    "headline": "Der Markt für Freiberufler spaltet sich",
+    "body": "Die Zahl der Schreibaufträge ist um 33 % zurückgegangen. Übersetzungen sind um 19 % zurückgegangen. Freiberufliche Tätigkeiten im Bereich KI sind um 60 % gestiegen.\n\n**Es gibt jetzt zwei Arten von Freiberuflern.** Generalisten, die KI als Abkürzung sehen, werden zur Massenware. Spezialisten, die sich gezielt weitergebildet haben, verlangen höhere Preise – und kriegen mehr von den verbleibenden Aufträgen. 49 % der Personalverantwortlichen wollen in den nächsten zwei Jahren mehr Freiberufler einstellen. Die Frage ist nur, welche Freiberufler."
+  },
+  "testimonial": {
+    "quote": "50 % der Freiberufler, die sich in der Einführung von KI geschult haben, haben dadurch mehr verdient.",
+    "author": "Skywork.ai Freelancer-Bericht 2025"
+  },
+  "pitch": {
+    "tag": "Warum Training wichtig ist",
+    "headline": "Warum die meisten Freiberufler mit KI auf der Stelle treten",
+    "body": "Zu wissen, dass es ein Tool gibt, ist nicht dasselbe wie zu wissen, wie man es für seine Arbeit einsetzt. Vier Kompetenzen unterscheiden hochverdienende KI-Nutzer von gelegentlichen Nutzern: Prompt Engineering für Kundenleistungen, kritische Bewertung der KI-Ergebnisse, Workflow-Integration und Domänenkalibrierung. AITutoro bewertet zuerst dein tatsächliches Niveau und baut dann diese vier Kompetenzen in deinem spezifischen Arbeitskontext auf."
+  }
+}

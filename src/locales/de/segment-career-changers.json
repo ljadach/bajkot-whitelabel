@@ -1,0 +1,43 @@
+{
+  "breadcrumb": "Für Quereinsteiger",
+  "meta": {
+    "title": "KI-Training für Quereinsteiger | AITutoro",
+    "description": "Entwickle KI-Kenntnisse, die Personalverantwortliche erkennen können. Adaptives Training für Fachleute, die in KI-nahe Positionen wechseln oder ihre aktuelle Karriere mit KI-Kenntnissen verbessern möchten."
+  },
+  "hero": {
+    "headline": "KI für Quereinsteiger: Deine Erfahrung ist jetzt wichtiger denn je.",
+    "subheadline": "Mitarbeiter mit mehr als 5 Stunden KI-Schulung werden zu 79 % zu regelmäßigen Nutzern. KI-versierte Mitarbeiter verdienen 56 % mehr. Deine Erfahrung ist dein Vorteil – Schulungen machen ihn sichtbar."
+  },
+  "cta": {
+    "trial": "Kostenlos starten",
+    "pilot": "Schau dir an, wie es funktioniert.",
+    "headline": "Kostenlos starten – keine Verpflichtung",
+    "description": "Zwei komplette Module, keine Kreditkarte. Passt sich deinem Hintergrund an – keine Programmierkenntnisse nötig."
+  },
+  "value1": {
+    "title": "56 % Lohnaufschlag",
+    "description": "Mitarbeiter mit AI-Kenntnissen verdienen 56 % mehr als Kollegen in vergleichbaren Positionen. PwC 2025. Der Aufschlag ist bereits auf dem Arbeitsmarkt zu beobachten – es handelt sich nicht um eine Zukunftsprognose."
+  },
+  "value2": {
+    "title": "Keine Programmierkenntnisse nötig.",
+    "description": "Die am schnellsten wachsenden KI-Positionen erfordern keine Programmierkenntnisse. Bei 82 % der neuen KI-Stellen werden Kommunikation, kritisches Denken und Fachwissen gegenüber technischen Fähigkeiten bevorzugt."
+  },
+  "value3": {
+    "title": "Fünf Stunden bis zur Sprachgewandtheit",
+    "description": "Mitarbeiter mit mehr als 5 Stunden strukturiertem KI-Training werden zu regelmäßigen, selbstbewussten Nutzern mit einer Akzeptanzrate von 79 %. BCG 2025. Diese Schwelle ist das gesamte Ziel."
+  },
+  "pitch2": {
+    "tag": "Der Einstellungsfilter",
+    "headline": "KI-Kompetenz ist der neue Filter bei der Einstellung",
+    "body": "66 % der Führungskräfte sagen, dass sie keine Kandidaten einstellen, die keine KI-Kenntnisse nachweisen können. DataCamp 2025. **Der Filter bezieht sich nicht auf das Programmieren.** Es geht darum, ob du flüssig mit KI-Tools arbeiten kannst – beim Schreiben, Recherchieren, Analysieren und Kommunizieren. Deine vorhandenen Fachkenntnisse sind wirklich wertvoll. Die Schulung fügt eine Ebene hinzu, die sie für moderne Arbeitgeber verständlich macht."
+  },
+  "testimonial": {
+    "quote": "Arbeitnehmer mit mehr als 5 Stunden KI-Schulung werden zu 79 % zu regelmäßigen Nutzern. Der Lohn: ein Lohnaufschlag von 56 %.",
+    "author": "BCG 2025 · PwC 2025"
+  },
+  "pitch": {
+    "tag": "Wie AITutoro anders trainiert",
+    "headline": "Wie AITutoro Quereinsteiger anders ausbildet",
+    "body": "Generische KI-Kurse vermitteln Tools isoliert. AITutoro geht von deinem vorhandenen Hintergrund aus und baut die spezifischen Kenntnisse auf, die Personalverantwortliche prüfen.\n\n**Das Ziel ist eine Dauer von fünf Stunden.** AITutoro strukturiert das Training so, dass du es mit nachweisbaren Fähigkeiten abschließt – nicht nur mit dem Abhaken von Checkboxen. Dank adaptiver Bewertung verschwendest du keine Zeit mit Inhalten, die du aufgrund deiner Berufserfahrung bereits beherrschst."
+  }
+}

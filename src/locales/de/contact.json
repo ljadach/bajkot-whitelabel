@@ -1,0 +1,52 @@
+{
+  "breadcrumb": "Kontakt",
+  "aboutBreadcrumb": "Über uns",
+  "meta": {
+    "title": "Kontakt — AITutoro",
+    "description": "Nimm Kontakt mit dem AITutoro-Team auf. Vertrieb, technischer Support, Partnerschaften und Presseanfragen."
+  },
+  "header": {
+    "heading": "Kontaktiere uns",
+    "body": "Brauchst du Hilfe mit der <strong>AITutoro</strong>-Engine? Schau in unsere <faqLink>FAQ</faqLink> für sofortige technische Hinweise."
+  },
+  "form": {
+    "name": "Vollständiger Name",
+    "namePlaceholder": "Max Mustermann",
+    "email": "E-Mail-Adresse",
+    "emailPlaceholder": "max@unternehmen.de",
+    "inquiryType": "Art der Anfrage",
+    "inquiryOptions": {
+      "enterprise_sales": "Vertrieb für Unternehmen",
+      "technical_support": "Technischer Support",
+      "partnerships": "Partnerschaften und Kooperation",
+      "press_media": "Presse und Medien",
+      "general": "Allgemeine Anfragen"
+    },
+    "question": "Deine Frage",
+    "questionPlaceholder": "Beschreib deine Anfrage...",
+    "submit": "Nachricht senden",
+    "submitting": "Wird gesendet...",
+    "error": "Etwas ist schiefgelaufen. Bitte versuch es erneut."
+  },
+  "success": {
+    "title": "Nachricht gesendet",
+    "body": "Vielen Dank für deine Nachricht. Unser Team prüft deine Anfrage und gibt dir so schnell wie möglich Feedback."
+  },
+  "channels": {
+    "heading": "Direktkanäle",
+    "sales": "Vertrieb",
+    "support": "Kundensupport",
+    "press": "Presse und Medien",
+    "general": "Allgemeine Anfragen"
+  },
+  "social": {
+    "heading": "Folge uns",
+    "linkedin": "LinkedIn",
+    "instagram": "Instagram"
+  },
+  "hq": {
+    "heading": "Hauptsitz",
+    "line1": "Plac Inwalidów 10",
+    "line2": "01-552 Warszawa, Polen"
+  }
+}

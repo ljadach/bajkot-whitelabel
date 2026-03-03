@@ -1,0 +1,22 @@
+{
+  "title": "Cookie-Einstellungen",
+  "description": "Wir verwenden essentielle Cookies und datenschutzfreundliche Analysen (PostHog). Keine Werbetracker.",
+  "settingsTitle": "Cookie-Einstellungen",
+  "settingsDescription": "Wählen Sie aus, welche Cookies Sie zulassen möchten. Essentielle Cookies sind immer aktiviert.",
+  "buttons": {
+    "settings": "Einstellungen",
+    "rejectAll": "Alle ablehnen",
+    "accept": "Akzeptieren",
+    "cancel": "Abbrechen",
+    "savePreferences": "Einstellungen speichern"
+  },
+  "essential": {
+    "title": "Essentielle Cookies",
+    "description": "Erforderlich für die Funktion der Website. Können nicht deaktiviert werden.",
+    "badge": "Immer aktiv"
+  },
+  "analytics": {
+    "title": "Analyse-Cookies",
+    "description": "Helfen uns zu verstehen, wie Besucher mit unserer Website interagieren (PostHog). Datenschutzfreundlich, keine Verkauf personenbezogener Daten."
+  }
+}

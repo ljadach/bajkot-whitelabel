@@ -1,0 +1,29 @@
+{
+  "error": {
+    "title": "Coś poszło nie tak",
+    "description": "Napotkaliśmy problem podczas ładowania czatu. Spróbuj odświeżyć stronę.",
+    "refreshButton": "Odśwież stronę"
+  },
+  "thinking": "AI Tutor myśli...",
+  "connectionLost": "Utracono połączenie. Może się tak zdarzyć po dłuższej nieobecności.",
+  "reconnect": "Połącz ponownie",
+  "reconnecting": "Łączenie...",
+  "continueLabel": "Sprawdzenie umiejętności",
+  "widget": {
+    "suggestions": "Szybkie sugestie",
+    "showMore": "Pokaż więcej",
+    "selectedCount": "{{count}}/10 wybranych",
+    "likert": {
+      "notConfident": "Niepewny",
+      "veryConfident": "Bardzo pewny"
+    },
+    "input": {
+      "label": "Twoja odpowiedź",
+      "placeholder": "Wpisz odpowiedź lub wybierz z sugestii powyżej...",
+      "waitingPlaceholder": "Oczekiwanie na następne pytanie...",
+      "charCount": "{{count}}/{{max}}",
+      "shortcut": "Enter",
+      "submitLabel": "Wyślij wiadomość"
+    }
+  }
+}

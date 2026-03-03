@@ -1,0 +1,247 @@
+{
+  "meta": {
+    "title": "ChatGPT vs Gemini in 2026: features, pricing, and verdict",
+    "description": "Compare ChatGPT and Gemini across coding, writing, research, pricing, and integrations. Use our decision framework to pick the right AI for your workflow."
+  },
+  "hero": {
+    "title": "ChatGPT vs Gemini: which AI fits your workflow in 2026?",
+    "intro": "GPT-5.2 became the default ChatGPT model on 13 February 2026 — the same day OpenAI retired GPT-4o and every older model in one sweep. Meanwhile, Gemini 3 Pro holds the top spot on the [Arena leaderboard](https://arena.ai/leaderboard) with a 1501 Elo rating. The ChatGPT vs Gemini debate has never been closer: for the first time, both platforms sit within striking distance of each other on nearly every benchmark. The question has shifted from \"which is smarter?\" to \"which fits the way you work?\""
+  },
+  "lastUpdated": "February 2026",
+  "quickAnswer": {
+    "body": "**The ChatGPT vs Gemini gap has nearly closed.** Both platforms now offer agentic tasks, deep research, voice, images, and video. ChatGPT leads in creative writing and coding benchmarks. Gemini leads in research depth, [context window](/ai-tools/glossary#context-window) size, and Google Workspace integration. Your workflow determines the winner."
+  },
+  "context": {
+    "title": "The 2026 landscape — what changed",
+    "body": "The model roster looks nothing like it did six months ago. OpenAI made GPT-5.2 the default across every tier, including Free, and simultaneously retired GPT-4o, GPT-4.1, GPT-4.1 mini, and o4-mini from the ChatGPT interface (see [OpenAI model deprecations](https://platform.openai.com/docs/deprecations)). If you built workflows around those models, they are gone.\n\nOn Google's side, Gemini 3 Pro landed in November 2025 and Gemini 3 Flash followed in December as the default model in the Gemini app (details in the [Google Gemini model documentation](https://ai.google.dev/gemini-api/docs/models)). Both remain in public preview, meaning specs could still shift before general availability.\n\nThe feature gap between the two platforms has collapsed. Both now ship agentic capabilities (ChatGPT Agent with Operator versus Chrome Auto Browse with Project Mariner), deep research modes that browse the web autonomously, advanced voice interactions, and their own video generation engines (Sora 2 and Veo 3.1). What once separated them — \"ChatGPT is creative, Gemini knows the web\" — is now a matter of degree, not kind.\n\nThat convergence makes a ChatGPT vs Gemini comparison more useful than ever. Small differences in execution now drive the real decision. If you are also evaluating other assistants, see our [ChatGPT vs Claude](/ai-tools/compare/chatgpt-vs-claude) and [Claude vs Gemini](/ai-tools/compare/claude-vs-gemini) breakdowns."
+  },
+  "table": {
+    "title": "Feature-by-feature comparison",
+    "summary": "The table below distills the full research into the dimensions that affect your daily choice.",
+    "caption": "Gemini leads on context window, research depth, and value extras (free API tier, student offer, family sharing). ChatGPT leads on coding benchmarks and third-party connectors. Pricing is close enough that features, not cost, should drive your decision.",
+    "rows": [
+      {
+        "feature": "Flagship model",
+        "toolA": "GPT-5.2 (13 February 2026)",
+        "toolB": "Gemini 3 Pro (November 2025)",
+        "winner": "tie"
+      },
+      {
+        "feature": "Free tier highlight",
+        "toolA": "GPT-5.2 access + 5 Deep Research/mo",
+        "toolB": "Gemini Live with camera + screen sharing",
+        "winner": "tie"
+      },
+      {
+        "feature": "Mid-tier price",
+        "toolA": "Plus $20/mo",
+        "toolB": "AI Pro $19.99/mo",
+        "winner": "tie"
+      },
+      {
+        "feature": "Premium price",
+        "toolA": "Pro $200/mo",
+        "toolB": "AI Ultra $249.99/mo",
+        "winner": "tie"
+      },
+      {
+        "feature": "Budget tier",
+        "toolA": "Go $8/mo",
+        "toolB": "AI Plus $7.99/mo",
+        "winner": "tie"
+      },
+      {
+        "feature": "Context window (consumer)",
+        "toolA": "128K tokens (Pro tier; lower tiers vary)",
+        "toolB": "1M tokens",
+        "winner": "b"
+      },
+      {
+        "feature": "Context window (API)",
+        "toolA": "400K tokens",
+        "toolB": "1M tokens",
+        "winner": "b"
+      },
+      {
+        "feature": "Coding (SWE-bench)",
+        "toolA": "80.0% (GPT-5.2 Thinking)",
+        "toolB": "78% (Flash) / 76.2% (Pro)",
+        "winner": "a"
+      },
+      {
+        "feature": "Math (AIME 2025)",
+        "toolA": "Not reported",
+        "toolB": "95%",
+        "winner": "b"
+      },
+      {
+        "feature": "Factual accuracy (SimpleQA)",
+        "toolA": "Not reported",
+        "toolB": "72.1%",
+        "winner": "b"
+      },
+      {
+        "feature": "Web research",
+        "toolA": "ChatGPT Search (Bing)",
+        "toolB": "Google Search grounding (native)",
+        "winner": "b"
+      },
+      {
+        "feature": "Deep Research",
+        "toolA": "Multi-step visual browser; 5–250 queries/mo",
+        "toolB": "Browses hundreds of sites + private data",
+        "winner": "b"
+      },
+      {
+        "feature": "Image generation",
+        "toolA": "GPT Image 1.5",
+        "toolB": "Imagen 4 + Gemini 3 Pro Image (4K)",
+        "winner": "tie"
+      },
+      {
+        "feature": "Video generation",
+        "toolA": "Sora 2 (1080p, 20 sec)",
+        "toolB": "Veo 3.1 (up to 4K)",
+        "winner": "tie"
+      },
+      {
+        "feature": "Voice",
+        "toolA": "Advanced Voice (232ms latency)",
+        "toolB": "Gemini Live (free, camera + screen)",
+        "winner": "tie"
+      },
+      {
+        "feature": "Productivity integrations",
+        "toolA": "Slack, Drive, SharePoint, Notion, Asana, GitHub, HubSpot",
+        "toolB": "Native: Gmail, Docs, Sheets, Slides, Calendar, Chrome",
+        "winner": "b"
+      },
+      {
+        "feature": "Third-party connectors",
+        "toolA": "Broader ecosystem (Linear, Intercom, MCP SDK)",
+        "toolB": "Workspace Studio (no-code agents)",
+        "winner": "a"
+      },
+      {
+        "feature": "API free tier",
+        "toolA": "None",
+        "toolB": "Gemini 3 Flash free tier",
+        "winner": "b"
+      },
+      {
+        "feature": "API flagship cost (per 1M tokens)",
+        "toolA": "$1.75 in / $14.00 out",
+        "toolB": "$2.00 in / $12.00 out",
+        "winner": "tie"
+      },
+      {
+        "feature": "Family sharing",
+        "toolA": "Not available",
+        "toolB": "Up to 5 people",
+        "winner": "b"
+      },
+      {
+        "feature": "Student offer",
+        "toolA": "None",
+        "toolB": "AI Pro free for 1 year",
+        "winner": "b"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "writing",
+      "title": "Writing and creative work",
+      "body": "ChatGPT has long held the edge in creative writing, and that reputation holds with GPT-5.2. Independent reviews consistently note its strength in storytelling structure, emotional depth, and brainstorming range. When you need a first draft of a blog post, marketing copy, or fiction, ChatGPT tends to produce richer, more varied output that requires less structural editing.\n\nGemini takes a different approach. Its responses lean concise and technically formatted — useful when you need clean summaries, structured outlines, or documentation that sticks to the facts without embellishment. Editorial tests also show Gemini offering more guidance-oriented feedback (suggesting structural changes and preserving the writer's voice) rather than rewriting the text outright.\n\n**Practical guidance:** Use ChatGPT for long-form drafts, brainstorming sessions, and any task where creative range matters. Switch to Gemini for editing, summarization, and structured output where brevity and precision count. For prompts tailored to both tools, see our collection of [best prompts for coding with AI](/ai-resources/ai-prompts/ai-for-coding) — many of the structural techniques transfer to writing tasks.",
+      "verdict": {
+        "text": "ChatGPT for long-form drafts, brainstorming, and creative range. Gemini for editing, summarization, and structured output where brevity counts.",
+        "winner": "a"
+      }
+    },
+    {
+      "id": "coding",
+      "title": "Coding — benchmarks and real-world performance",
+      "body": "Benchmarks give ChatGPT the lead here, but the margin is narrow enough that context matters. GPT-5.2 Thinking scores 80.0% on [SWE-bench](/ai-tools/glossary#swe-bench) Verified, compared with 78% for Gemini 3 Flash and 76.2% for Gemini 3 Pro. Developer reviews back up the numbers: ChatGPT tends to produce cleaner multi-file debugging output, and its Codex CLI offers a dedicated agentic coding experience.\n\nGemini's advantages show up in different scenarios. Its 1M-token context window (versus ChatGPT's 128K in the consumer product) means you can feed entire codebases into a single conversation — a significant edge for large-scale refactoring or legacy code analysis. Google Search grounding lets Gemini pull framework and API documentation in real time during a coding session, surfacing references that neither model has in its training data. The free API tier for Gemini Flash makes it the default choice for developers building cost-sensitive prototypes.\n\nWhichever tool you pick, sharpen your technique with [best prompts for coding with AI](/ai-resources/ai-prompts/ai-for-coding).",
+      "verdict": {
+        "text": "ChatGPT for day-to-day coding, debugging, and multi-file tasks. Gemini for large-context analysis, research-heavy development, and budget API workflows.",
+        "winner": "a"
+      }
+    },
+    {
+      "id": "research",
+      "title": "Research and fact-finding",
+      "body": "This is where the gap is widest and most structural. Gemini's Google Search grounding operates inside the inference pipeline — the model decides autonomously when to search and returns structured citation metadata with every grounded response. ChatGPT Search works through Bing and requires either automatic or manual triggering, making it more of an add-on than a native capability.\n\nThe difference compounds in Deep Research mode. In a LivePlan head-to-head test, Gemini's Deep Research found 47 sources compared with ChatGPT's 18 on the same market research task, and Gemini flagged conflicting sources — a more rigorous research practice. Gemini's Deep Research can also access private data in Gmail and Drive, which means it can cross-reference your existing documents with web findings.\n\nOn raw factual accuracy, Gemini 3 Pro leads with a 72.1% score on SimpleQA Verified — the current state of the art for factual grounding. ChatGPT's citation UI is easier to scan at a glance (inline clickable numbers versus Gemini's expandable widgets), but Gemini's depth of sourcing often outweighs that convenience. For structured research workflows, explore our [best prompts for AI-powered research](/ai-resources/ai-prompts/ai-for-research).",
+      "verdict": {
+        "text": "Gemini for research-heavy tasks, especially when current data and citation depth matter. ChatGPT when you need a quick synthesis with easily scannable source links.",
+        "winner": "b"
+      }
+    },
+    {
+      "id": "productivity",
+      "title": "Productivity and workplace integration",
+      "body": "Your existing tool stack determines the winner here more than any benchmark.\n\n**Google Workspace users** get native Gemini integration across Gmail, Docs, Sheets, Slides, Calendar, and Chrome. Gemini works inline — summarizing email threads, drafting documents, generating spreadsheet formulas — without leaving the app. Workspace Studio lets teams build no-code AI agents that have handled over 20 million tasks in the past 30 days. Gems (custom AI personas) can be shared across teams with file references and permissions baked in.\n\n**Microsoft and mixed-tool users** lean ChatGPT. Its connector ecosystem spans Slack, Google Drive, SharePoint, Notion, Asana, Linear, GitHub, and HubSpot, with an open-source Apps SDK built on the MCP protocol that makes new integrations straightforward. ChatGPT Agent mode combines Operator (a web-interaction agent) with Deep Research and core intelligence for multi-step automated workflows.\n\nBoth platforms push agentic features hard. ChatGPT has Agent plus Operator for autonomous web tasks. Gemini counters with Chrome Auto Browse and Project Mariner, which handles up to ten simultaneous browser tasks for AI Ultra subscribers.\n\n**The rule of thumb:** If your team lives in Google Workspace, Gemini wins by default. If you run Microsoft 365, a mixed toolset, or rely on third-party apps, ChatGPT's broader connector ecosystem has the edge.",
+      "verdict": {
+        "text": "Depends on your ecosystem. Google Workspace teams get more from Gemini. Microsoft 365 and mixed-tool teams get more from ChatGPT.",
+        "winner": "tie"
+      }
+    },
+    {
+      "id": "pricing",
+      "title": "Pricing compared",
+      "body": "| Tier | ChatGPT | Gemini |\n|------|---------|--------|\n| **Free** | GPT-5.2 (limited messages), 5 Deep Research/mo | Basic Gemini, Gemini Live with camera |\n| **Budget** | Go — $8/mo | AI Plus — $7.99/mo |\n| **Mid** | Plus — $20/mo | AI Pro — $19.99/mo |\n| **Premium** | Pro — $200/mo | AI Ultra — $249.99/mo |\n| **Business** | $25/seat/mo (annual) | Custom (Gemini Enterprise) |\n\nThe headline numbers are close enough that the differences matter more than the prices themselves (see full details on [OpenAI pricing](https://openai.com/pricing) and [Google AI plans](https://one.google.com/about/google-ai-plans/)):\n\n- **Free tier:** ChatGPT gives you access to its best model (GPT-5.2) with message caps. Gemini gives you Gemini Live with camera and screen sharing — a feature locked behind paid tiers elsewhere. Both include limited Deep Research.\n- **Budget tier:** ChatGPT Go at $8/mo and Gemini's AI Plus at $7.99/mo are nearly identical in price, but feature sets differ. Compare what each unlocks before choosing on price alone.\n- **Premium tier:** ChatGPT Pro ($200/mo) versus AI Ultra ($249.99/mo). Ultra includes Deep Think reasoning (IMO gold-medal level) and Project Mariner's multi-task browsing. Pro includes maximum memory capacity and unlimited Deep Research.\n- **Students:** Gemini offers AI Pro free for one year. ChatGPT has no equivalent student program.\n- **Families:** Gemini supports family sharing across all tiers for up to five people. ChatGPT does not offer family plans.\n\n**For API users:** Flagship pricing is comparable (GPT-5.2 at $1.75/$14.00 versus Gemini 3 Pro at $2.00/$12.00 per million tokens). The deciding factor is Gemini's free Flash API tier — if Flash-level intelligence meets your needs, the cost is zero. ChatGPT's 90% cached input discount can offset its lack of a free tier for high-volume workloads.",
+      "verdict": {
+        "text": "Pricing is close at every tier. Gemini wins on extras: free API tier, student program, and family sharing. ChatGPT wins on cached input discounts for high-volume API usage.",
+        "winner": "tie"
+      }
+    }
+  ],
+  "useCases": {
+    "intro": "Feature lists and benchmarks matter less than how a tool fits your daily work. Here is a decision grid mapped to professional roles — the clearest way to settle the ChatGPT or Gemini question.",
+    "items": [
+      {
+        "role": "Writers and creative professionals",
+        "recommendation": "ChatGPT. Richer creative output, stronger brainstorming, better long-form first drafts that require less structural editing.",
+        "tool": "a"
+      },
+      {
+        "role": "Developers",
+        "recommendation": "ChatGPT. Higher SWE-bench scores, cleaner multi-file debugging, and Codex CLI for dedicated agentic coding.",
+        "tool": "a"
+      },
+      {
+        "role": "Researchers and analysts",
+        "recommendation": "Gemini. Native Google Search grounding, deeper sourcing (47 vs 18 sources in head-to-head tests), and private data integration via Gmail and Drive.",
+        "tool": "b"
+      },
+      {
+        "role": "Google Workspace teams",
+        "recommendation": "Gemini. Native integration across Gmail, Docs, Sheets, Slides, Calendar, and Chrome gives it an unbeatable home-field advantage.",
+        "tool": "b"
+      },
+      {
+        "role": "Microsoft 365 and mixed-tool teams",
+        "recommendation": "ChatGPT. Broader third-party connector ecosystem, SharePoint integration, and open-source Apps SDK built on MCP.",
+        "tool": "a"
+      },
+      {
+        "role": "Students and budget-conscious users",
+        "recommendation": "Gemini. AI Pro free for one year for students, family sharing for up to five people, and a generous free tier with Gemini Live.",
+        "tool": "b"
+      },
+      {
+        "role": "API developers (budget-sensitive)",
+        "recommendation": "Gemini. The free Flash API tier eliminates cost for lightweight use cases. The 1M-token context window favors large-payload tasks.",
+        "tool": "b"
+      }
+    ],
+    "useBothBody": "Most professionals benefit from trying both free tiers for a week with their actual tasks. The free offerings are generous enough to form a real opinion. Start with the tool that matches your primary use case, then test the other for your secondary workflow. Many power users treat ChatGPT as their creative and coding engine and Gemini as their research and Google Workspace partner — a dual-tool workflow that covers the widest range of tasks.",
+    "outro": "Choosing the right tool is step one. Using it effectively is step two — and the gap between a casual user and a skilled one is measured in hours saved per week. AITutoro's adaptive learning platform adjusts to what you already know. Specific training paths cover [ChatGPT](/ai-tools/chatgpt) and [Gemini](/ai-tools/gemini) individually, so you can master the tool you chose — or learn both side by side. **[Start your free trial — master ChatGPT, Gemini, or both](/try)**"
+  },
+  "related": [
+    { "slug": "chatgpt", "label": "ChatGPT training guide", "type": "product" },
+    { "slug": "gemini", "label": "Gemini training guide", "type": "product" },
+    { "slug": "chatgpt-vs-claude", "label": "ChatGPT vs Claude", "type": "comparison" },
+    { "slug": "chatgpt-vs-copilot", "label": "ChatGPT vs Copilot", "type": "comparison" },
+    { "slug": "claude-vs-gemini", "label": "Claude vs Gemini", "type": "comparison" }
+  ]
+}

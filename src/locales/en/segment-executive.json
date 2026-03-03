@@ -1,0 +1,42 @@
+{
+  "breadcrumb": "For executives",
+  "meta": {
+    "title": "Practical AI knowledge for leaders: from strategy to everyday use | AITutoro",
+    "description": "AI courses for management. Competency assessment, training tailored to roles and needs — not generic, boring AI courses."
+  },
+  "hero": {
+    "headline": "Precise AI knowledge: individual pathways instead of mass training.",
+    "subheadline": "Forget about courses \"for everyone.\" AITutoro starts with a 5-minute competency assessment. The system creates a learning program tailored to the individual role, level, and tools of the organization."
+  },
+  "cta": {
+    "trial": "Try it for free",
+    "pilot": "Discuss rollout",
+    "headline": "Ready to lead the AI transformation?",
+    "description": "Join the leaders closing the gap between AI potential and organizational reality."
+  },
+  "value1": {
+    "title": "No more learning what they already know",
+    "description": "Thanks to the initial diagnosis, teams do not waste time on basics they have already mastered. Each employee receives only the content they really need."
+  },
+  "value2": {
+    "title": "Learning on your terms and tools",
+    "description": "If the organization only allows Gemini, we teach Gemini, not ChatGPT. Configurable program: tools, data, and procedures compliant with company standards."
+  },
+  "value3": {
+    "title": "Competency map: facts instead of statistics",
+    "description": "Forget about \"course completion\" reports. AITutoro maps the real proficiency of teams. You can immediately see who needs support in data analysis and who is proficient in using Gemini. Skill improvement measured in hours recovered."
+  },
+  "pitch": {
+    "tag": "Management: board and directors",
+    "headline": "Practical AI, not another course",
+    "body": "AITutoro teaches how to use AI in the daily work of management: analyzing market trends, summarizing reports, preparing presentations for the supervisory board. Short sessions and practical knowledge that will enable you to lead change — instead of just listening to it."
+  },
+  "pitch2": {
+    "headline": "5 minutes that change your perspective",
+    "body": "Instead of hours-long lectures — a quick skills audit.\n\n- For employees: A test that identifies what employees already know and where they are wasting time.\n- For organizations: Immediate insight into what your team actually knows. You optimize working time — people only learn what fills their skills gaps."
+  },
+  "testimonial": {
+    "quote": "We do not publish fictitious recommendations. The pilot program is ongoing — we will share the results when they are ready.",
+    "author": "AITutoro Team · Discuss the pilot"
+  }
+}

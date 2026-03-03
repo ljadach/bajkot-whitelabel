@@ -1,0 +1,110 @@
+{
+  "breadcrumb": "Preise",
+  "meta": {
+    "title": "AITutoro — Pläne & Preise",
+    "description": "Starte mit zwei kostenlosen Modulen und wechsle dann zu skalierbaren Lernpfaden. Individuell-, Business- und Enterprise-Pläne."
+  },
+  "banner": {
+    "prefix": "Neu bei AITutoro?",
+    "highlight": "Teste die ersten zwei Module kostenlos.",
+    "noCc": "Keine Kreditkarte erforderlich.",
+    "cta": "Testversion starten"
+  },
+  "hero": {
+    "headline": "AITutoro Pläne & Preise",
+    "subheadline": "Starte mit <strong>zwei kostenlosen Modulen</strong> und wechsle dann zu skalierbaren Lernpfaden."
+  },
+  "billing": {
+    "monthly": "Monatlich",
+    "yearly": "Jährlich",
+    "discount": "-20%",
+    "billedYearly": "${{amount}} jährlich abgerechnet"
+  },
+  "tiers": {
+    "individual": {
+      "name": "Individuell",
+      "description": "Für Fachleute, die persönliche KI-Kompetenz aufbauen.",
+      "cta": "Abonnement starten",
+      "perMonth": "/Monat",
+      "features": [
+        "Unbegrenzte Lernmodule",
+        "Adaptive Lehrplanerstellung",
+        "Persönliches Fortschritts-Dashboard",
+        "Verfügbarkeit rund um die Uhr"
+      ]
+    },
+    "business": {
+      "name": "Business",
+      "description": "Für Teams, die KI-Compliance und Schulungstransparenz benötigen.",
+      "recommended": "Empfohlen",
+      "cta": "Auf Business upgraden",
+      "perUserMonth": "/Nutzer/Mo.",
+      "features": [
+        "Alles aus dem Individuell-Plan",
+        "Team-Management-Dashboard",
+        "Kompetenzlückenanalyse",
+        "Admin-Rollen & Abrechnung"
+      ],
+      "complianceSuite": {
+        "label": "EU AI Act Compliance-Paket",
+        "items": [
+          "Audit-fähige Log-Exporte",
+          "Schulungsabdeckungsberichte",
+          "Dokumentierte Kompetenzvalidierung"
+        ]
+      }
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "description": "Für Organisationen, die KI mit internen Daten steuern.",
+      "cta": "Auf Enterprise upgraden",
+      "perUserMonth": "/Nutzer/Mo.",
+      "features": [
+        "Alles aus dem Business-Plan"
+      ],
+      "ragEngine": {
+        "label": "Private Daten-Engine (RAG)",
+        "items": [
+          "Interne Wikis & PDFs einbinden",
+          "Sichere Datenisolierung",
+          "Vektordatenbank-Verwaltung"
+        ]
+      },
+      "curriculum": {
+        "label": "Proprietärer Lehrplan",
+        "items": [
+          "Module auf Basis Ihres geistigen Eigentums",
+          "Interne Tool-Workflows",
+          "Richtlinienbewusste Quizze"
+        ]
+      },
+      "governance": {
+        "label": "Governance & Steuerung",
+        "items": [
+          "Globale KI-Leitplanken definieren",
+          "Prompt-Strategien durchsetzen"
+        ]
+      },
+      "extras": [
+        "SSO (Single Sign-On)",
+        "Priorisierter Support"
+      ]
+    }
+  },
+  "betaStamp": {
+    "main": "Gratis in der Beta",
+    "sub": "Alle Funktionen \u00b7 Keine Kreditkarte \u00b7 Keine Limits",
+    "ribbon": "Gratis in Beta"
+  },
+  "enterprisePlus": {
+    "name": "Enterprise +",
+    "description": "Volle Autonomie mit On-Premise-Installation und individuellem Lehrplan-Design.",
+    "cta": "Vertrieb kontaktieren",
+    "features": [
+      "On-Premise-Bereitstellung",
+      "Erstellung eigener Module",
+      "White-Label-Optionen",
+      "Dedizierter Success Manager"
+    ]
+  }
+}

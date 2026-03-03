@@ -1,0 +1,92 @@
+{
+  "meta": {
+    "title": "AITutoro — Master AI in 5 Minutes a Day",
+    "description": "Master AI in 5 minutes a day. Personalized courses based on your role, tools, and skill level — learn what actually speeds up your work."
+  },
+  "branding": {
+    "appName": "AITutoro",
+    "preBeta": "Beta"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "team": "Team"
+  },
+  "hero": {
+    "betaBadge": "Free Early Beta",
+    "headline": "Master AI. One lesson, 5 minutes. Knowledge you absorb on the go.",
+    "description": "Master AI in 5 minutes a day. AITutoro builds a course based on your role, tools, and skill level — learn what actually speeds up your work.",
+    "getStarted": "Start AI training"
+  },
+  "emailNote": {
+    "text": "We encrypt data. We never sell it."
+  },
+  "learningExperience": {
+    "title": "A course faster than AI changes.",
+    "subtitlePrefix": "No exams or quizzes. We build your profile",
+    "subtitleBold": "in two steps:",
+    "step1": {
+      "title": "Introductory chat",
+      "description": "Enter your role, AI tools (ChatGPT, Gemini, Claude) and task types (code, reports). Train what you actually create."
+    },
+    "step2": {
+      "title": "Prompt analysis",
+      "description": "Paste a sample prompt. We show you how to optimise it so the AI returns exactly what you expect."
+    }
+  },
+  "features": {
+    "title": "Master the AI craft. Filter the hype.",
+    "subtitle": "We distil AI knowledge. Instead of YouTube chaos — the essence in short modules:",
+    "promptFrameworks": {
+      "title": "Prompt precision",
+      "description": "Ready-made prompt structures that turn \"ok\" responses into \"perfect\" ones. Optimisation for specific AI."
+    },
+    "featureDiscovery": {
+      "title": "More than chat",
+      "description": "File integration, data analysis, audio. Harness the full potential of your tools."
+    },
+    "toolMatching": {
+      "title": "AI tool selection",
+      "description": "Match AI tools to your specific work. Zero generic advice that ignores context."
+    },
+    "roleShortcuts": {
+      "title": "Practical AI tricks",
+      "description": "Practical tricks to automate routine with AI. From code to management — based on your actual tasks."
+    }
+  },
+  "curriculum": {
+    "title": "Live updates",
+    "subtitle": "LLMs are changing",
+    "description": "AITutoro updates courses in real time. You learn what works today.",
+    "evolving": {
+      "title": "Always Current",
+      "description": "When LLMs get new features, we update our materials. You learn what works today, not what worked last year."
+    },
+    "adaptive": {
+      "title": "Adapts to Your Progress",
+      "description": "Master the basics? The system unlocks advanced modules. Struggle with something? It reinforces. Your training matches your actual skill level."
+    },
+    "feedback": {
+      "title": "Your Pace, Your Focus",
+      "description": "Progress dictates the path. We focus on what you need today—not a rigid curriculum that ignores where you are."
+    }
+  },
+  "testimonials": {
+    "title": "What users say",
+    "subtitle": "Real feedback from professionals",
+    "quote1": {
+      "text": "We don't publish made-up testimonials. AITutoro is in pilot — we'll share real results when they're ready.",
+      "author": "AITutoro Team"
+    },
+    "quote2": {
+      "text": "Instead of fictional quotes — an invitation. Try it for free and judge for yourself.",
+      "author": "Join the pilot"
+    }
+  },
+  "cta": {
+    "title": "Build an AI learning plan.",
+    "subtitle": "Not a generic course. A tailored path to mastery—built around your role, your tools, and your actual work.",
+    "button": "Start (5 min)",
+    "privacy": "Your data is encrypted and used only to personalize your learning."
+  }
+}

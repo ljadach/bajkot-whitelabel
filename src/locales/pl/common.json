@@ -1,0 +1,65 @@
+{
+  "stepComplete": "Ten krok został ukończony",
+  "continueTo": "Przejdź do: {{step}}",
+  "steps": {
+    "chat": "Czat",
+    "verification": "Sprawdzenie umiejętności",
+    "summary": "Podsumowanie",
+    "plan": "Plan szkolenia",
+    "complete": "Zakończenie"
+  },
+  "buttons": {
+    "continue": "Kontynuuj",
+    "back": "Wstecz",
+    "submit": "Wyślij",
+    "cancel": "Anuluj",
+    "save": "Zapisz",
+    "delete": "Usuń",
+    "refresh": "Odśwież",
+    "retry": "Ponów",
+    "generate": "Generuj",
+    "regenerate": "Wygeneruj ponownie",
+    "close": "Zamknij",
+    "confirm": "Potwierdź",
+    "gotIt": "Rozumiem",
+    "learnMore": "Dowiedz się więcej",
+    "readMore": "Czytaj więcej",
+    "showMore": "Pokaż więcej",
+    "showLess": "Pokaż mniej"
+  },
+  "status": {
+    "loading": "Ładowanie...",
+    "saving": "Zapisywanie...",
+    "generating": "Generowanie...",
+    "processing": "Przetwarzanie...",
+    "submitting": "Wysyłanie...",
+    "connecting": "Łączenie...",
+    "reconnecting": "Ponowne łączenie..."
+  },
+  "errors": {
+    "somethingWentWrong": "Coś poszło nie tak",
+    "tryAgain": "Spróbuj ponownie",
+    "connectionLost": "Utracono połączenie",
+    "notFound": "Nie znaleziono",
+    "unauthorized": "Brak autoryzacji",
+    "serverError": "Błąd serwera"
+  },
+  "time": {
+    "justNow": "Przed chwilą",
+    "minutesAgo": "{{count}} minut temu",
+    "hoursAgo": "{{count}} godzin temu",
+    "daysAgo": "{{count}} dni temu",
+    "today": "dzisiaj",
+    "yesterday": "wczoraj"
+  },
+  "regenerate": {
+    "confirmMessage": "Czy na pewno chcesz wygenerować ponownie? Obecna treść zostanie zastąpiona.",
+    "confirmButton": "Tak, wygeneruj ponownie",
+    "generatedAt": "Wygenerowano {{date}}",
+    "generating": "Generowanie..."
+  },
+  "language": {
+    "switchLanguage": "Zmień język",
+    "currentLanguage": "Aktualny język: {{language}}"
+  }
+}

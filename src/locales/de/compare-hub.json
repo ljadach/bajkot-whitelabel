@@ -1,0 +1,158 @@
+{
+  "meta": {
+    "title": "Vergleiche KI-Tools nebeneinander - AITutoro",
+    "description": "Vergleiche ChatGPT, Claude, Gemini, Copilot, Midjourney und DALL-E Seite an Seite. Aufschlüsselung der Funktionen, Preise und Empfehlungen aus der Praxis mit Daten vom Februar 2026."
+  },
+  "hero": {
+    "title": "Wähle das richtige KI-Tool für deine Arbeit",
+    "subtitle": "Das richtige KI-Tool ist nicht das leistungsstärkste - es ist das, das zu deinen Tools, deinem Budget und deiner Arbeit passt. Dieser Leitfaden zeigt dir, welches Tool am besten zu dir passt, und verlinkt dich dann zu detaillierten Vergleichen, damit du dich sicher entscheiden kannst.",
+    "dateBadge": "Aktualisiert Februar 2026"
+  },
+  "grid": {
+    "title": "KI-Tools im Vergleich: Kopf-an-Kopf-Matchups",
+    "intro": "Jeder der folgenden **KI-Tool-Vergleiche** befasst sich mit Leistungsunterschieden, realen Kompromissen und Preisnuancen, die du in allgemeinen Rezensionen nicht finden wirst. Egal, ob du ChatGPT gegen Claude für die Schreibqualität oder Copilot gegen Gemini für dein Büro-Setup abwägst, diese Aufschlüsselungen verwenden Benchmark-Daten vom Februar 2026, um dir bei deiner Entscheidung zu helfen.",
+    "readComparison": "Vergleich lesen"
+  },
+  "comparisons": [
+    {
+      "slug": "chatgpt-vs-claude",
+      "toolA": "ChatGPT",
+      "toolB": "Claude",
+      "verdict": "Kontextfenster, Argumentationsfähigkeit, Schreibqualität. Die beiden Top-LLMs im direkten Vergleich."
+    },
+    {
+      "slug": "chatgpt-vs-gemini",
+      "toolA": "ChatGPT",
+      "toolB": "Gemini",
+      "verdict": "Integration, multimodale Fähigkeiten, Echtzeitsuche. OpenAI vs. Google."
+    },
+    {
+      "slug": "chatgpt-vs-copilot",
+      "toolA": "ChatGPT",
+      "toolB": "Copilot",
+      "verdict": "Produktivitätsintegration, Funktionsparität, Microsoft-Lock-in. Eigenständig vs. eingebettet."
+    },
+    {
+      "slug": "claude-vs-gemini",
+      "toolA": "Claude",
+      "toolB": "Gemini",
+      "verdict": "Reasoning vs. Integration, Bearbeitung von Langform-Dokumenten. Anthropic vs. Google."
+    },
+    {
+      "slug": "copilot-vs-gemini",
+      "toolA": "Copilot",
+      "toolB": "Gemini",
+      "verdict": "Microsoft vs. Google Tool-Entscheidungen. Welche Office-KI passt zu deinem Stack?"
+    },
+    {
+      "slug": "midjourney-vs-dalle",
+      "toolA": "Midjourney",
+      "toolB": "DALL-E",
+      "verdict": "Bildqualität, Preise, kommerzielle Nutzungsrechte. Der visuelle KI-Showdown."
+    }
+  ],
+  "categories": {
+    "title": "Was sind die wichtigsten Arten von KI-Tools?",
+    "intro": "KI-Tools werden in drei Kategorien unterteilt, die jeweils ein bestimmtes Problem lösen.",
+    "items": [
+      {
+        "name": "Große Sprachmodelle",
+        "body": "**ChatGPT, Claude, Gemini, Perplexity** zeichnen sich durch Schreiben, Recherche, Argumentation und Synthese aus. Wenn du einen 100-seitigen Bericht redigierst, Marketingtexte entwirfst oder ein komplexes politisches Dokument analysierst, fang hier an."
+      },
+      {
+        "name": "Produktivitätsintegrationen",
+        "body": "**Copilot** (Microsoft 365) und **Gemini** (Google Workspace) bringen KI direkt in deine E-Mails, Dokumente und Tabellenkalkulationen. Optimiert für nahtlose Teamarbeit und nicht für rohe Modellleistung."
+      },
+      {
+        "name": "Spezialisierte Werkzeuge",
+        "body": "**GitHub Copilot** vervollständigt Code automatisch in deiner IDE. **DALL-E** und **Midjourney** erzeugen Bilder. Diese Tools tauschen Breite gegen Tiefe: Sie sind eng fokussiert, aber unübertroffen in ihren Bereichen."
+      }
+    ]
+  },
+  "decisionFramework": {
+    "title": "Finde dein Werkzeug in 5 Fragen",
+    "intro": "Vergiss allgemeine Tool-Bewertungen. Beantworte diese fünf Fragen und du wirst wissen, welches Tool - oder welche Tools - du brauchst.",
+    "questions": [
+      {
+        "question": "Wie ist deine Organisation aufgebaut?",
+        "body": "Wenn dein Team auf **Google Workspace** arbeitet, ist Gemini in deinem Drive integriert und durchsuchbar. Wenn du mit **Microsoft 365** arbeitest, ist Copilot in alle deine Apps integriert. Weder noch? ChatGPT oder Claude funktionieren überall - entscheide dich anhand der anderen Faktoren unten."
+      },
+      {
+        "question": "Was ist deine größte Herausforderung bei der Arbeit?",
+        "body": "Lange Dokumente? *mit *Claude's 200K-Token-Kontextfenster** kannst du ein ganzes Buchmanuskript einfügen. Du brauchst aktuelle Informationen? Perplexity und Gemini haben eine Echtzeit-Web-Suche. Du schreibst Code? *die IDE-Integration von *GitHub Copilot** ist unübertroffen, wenn es um Echtzeitvorschläge geht."
+      },
+      {
+        "question": "Musst du langwierige Dokumente bearbeiten?",
+        "body": "Das ist **Claude's entscheidende Stärke**. Wenn du regelmäßig lange Texte liest und zusammenfasst - Forschungsarbeiten, Verträge, Abschriften - rechtfertigt allein Claudes Vorteil des Kontextfensters den Preis von $20/Monat. Andere Modelle eignen sich für kürzere Aufgaben, stoßen aber bei umfangreicheren Aufgaben an ihre Grenzen."
+      },
+      {
+        "question": "Ist die Preisgestaltung eine Hauptbeschränkung?",
+        "body": "Die meisten Pro-Tiers kosten $19,99-$20/Monat. GitHub Copilot Pro ist mit $10/Monat günstiger, wenn du dich auf Coding konzentrierst. DeepSeek bietet konkurrenzfähige Qualität zu niedrigeren Kosten. Für Teams variieren die Preise für Unternehmen - erkundige dich bei den einzelnen Anbietern nach individuellen Angeboten."
+      },
+      {
+        "question": "Brauchst du eine Bilderstellung?",
+        "body": "**DALL-E** ist in ChatGPT Plus integriert - inklusive Bilderzeugung. **Midjourney** erzeugt eine höhere ästhetische Qualität für kreative Arbeiten, ist aber nur gegen Bezahlung erhältlich. **Gemini** bietet multimodale Funktionen für Text und Bild, integriert mit Google Workspace."
+      }
+    ]
+  },
+  "pricingSnapshot": {
+    "title": "Schneller Überblick über die Preise",
+    "intro": "Alle großen KI-Tools bieten eine kostenlose Stufe mit Nutzungsobergrenzen an. Hier siehst du, was du für den Zugang zu einer höheren Stufe zahlst.",
+    "columns": {
+      "tool": "Tool",
+      "free": "Freie Stufe",
+      "pro": "Pro Monat"
+    },
+    "rows": [
+      {
+        "tool": "ChatGPT",
+        "free": "Ja, begrenzt",
+        "pro": "$20"
+      },
+      {
+        "tool": "Claude",
+        "free": "Ja, begrenzt",
+        "pro": "$20"
+      },
+      {
+        "tool": "Gemini (Google AI Pro)",
+        "free": "Ja, begrenzt",
+        "pro": "$19.99"
+      },
+      {
+        "tool": "Copilot (Microsoft 365)",
+        "free": "Ja, begrenzt",
+        "pro": "$19.99"
+      },
+      {
+        "tool": "GitHub Copilot",
+        "free": "Begrenzt",
+        "pro": "$10"
+      }
+    ],
+    "note": "Die Preise für Unternehmen sind bei allen Anbietern individuell. Die meisten kostenlosen Tiers werden monatlich zurückgesetzt und können langsamere Reaktionszeiten haben. **Preisangaben verifiziert am 15. Februar 2026.**"
+  },
+  "training": {
+    "title": "Wie AITutoro dir hilft, dein gewähltes Werkzeug zu beherrschen",
+    "intro1": "Das Erlernen eines KI-Tools ist nicht wie das Erlernen einer Software - es ist das Erlernen einer neuen Art zu denken. Wie du eine Aufforderung formulierst, welchen Kontext du anbietest, wie du die Ergebnisse wiederholst: Diese Fähigkeiten unterscheiden Experten von Anfängern. Kostenlose Kurse behandeln alle gleich. **AITutoro tut das nicht.**",
+    "intro2": "AITutoro lehrt dein gewähltes Werkzeug auf deinem Niveau. Wähle Claude für juristische Recherchen? Die Lektionen passen sich deinem Fachwissen an - egal, ob du ein Anwalt bist, der fortgeschrittene Techniken braucht, oder eine Rechtsanwaltsgehilfin, die neu anfängt. Wähle ChatGPT für Marketing? Ein rollenspezifisches Training zeigt dir, wie du es für Kampagnenideen, das Schreiben von Texten und die Zielgruppenforschung nutzen kannst.",
+    "cards": [
+      {
+        "title": "Anpassungsfähig für Einzelpersonen",
+        "body": "Die Plattform passt sich dem an, was du bereits weißt, sodass du die Grundlagen überspringst und dich auf die Techniken konzentrierst, die deine Arbeit voranbringen."
+      },
+      {
+        "title": "Gebaut für Teams",
+        "body": "Dashboards und Adoptionsverfolgung. Trainiere deine gesamte Abteilung und messe dann, wer es wie gut nutzt und welche Ergebnisse sich verbessern."
+      }
+    ]
+  },
+  "cta": {
+    "midHeadline": "Beherrsche dein gewähltes Werkzeug",
+    "midDescription": "Du hast dein Werkzeug gewählt. Jetzt kommt der Teil, den die meisten KI-Leitfäden auslassen: gut darin zu werden. AITutoro lehrt dein gewähltes Werkzeug auf deinem Niveau - egal ob du neu anfängst oder fortgeschrittene Techniken brauchst. Rollenspezifisches Training, das sich an dein Wissen anpasst.",
+    "bottomHeadline": "Beginne noch heute, dein KI-Tool zu lernen",
+    "bottomDescription": "Zwei Module frei, keine Karte erforderlich. AITutoro passt sich an das an, was du bereits weißt, sodass du die Grundlagen überspringst und dich auf das konzentrierst, was deine Arbeit voranbringt.",
+    "primaryLabel": "Kostenlose Testversion starten",
+    "secondaryLabel": "Preise anzeigen"
+  }
+}

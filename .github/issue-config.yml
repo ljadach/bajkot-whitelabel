@@ -1,0 +1,65 @@
+# AITutorC — GitHub Issue Conventions
+# Used by the github-issues Claude skill
+
+# Issues are written in Polish (like our devlog)
+language: pl
+
+# Title prefix conventions → label mapping
+prefixes:
+  bug:
+    label: bug
+    template: |
+      ## Problem
+      [Opis problemu]
+
+      ## Reprodukcja
+      1. Krok 1
+      2. Krok 2
+
+      ## Oczekiwane zachowanie
+      [Co powinno się stać]
+
+      ## Środowisko
+      - Node/Bun version:
+      - Convex dashboard link (jeśli dotyczy):
+  feat:
+    label: enhancement
+    template: |
+      ## Kontekst
+      [Dlaczego to potrzebne]
+
+      ## Propozycja
+      [Co chcemy zrobić]
+
+      ## Kryteria akceptacji
+      - [ ] Kryterium 1
+      - [ ] Kryterium 2
+  task:
+    label: ""
+    template: |
+      ## Opis
+      [Co trzeba zrobić]
+
+      ## Checklist
+      - [ ] Krok 1
+      - [ ] Krok 2
+  refactor:
+    label: ""
+    template: |
+      ## Obecny stan
+      [Co jest nie tak z obecnym kodem]
+
+      ## Cel refaktoru
+      [Jak powinno wyglądać po zmianach]
+
+      ## Plan
+      - [ ] Krok 1
+      - [ ] Krok 2
+
+# Team members — display name → GitHub username
+team:
+  Cezary: c3z
+  Łukasz: ljadach
+
+# No default assignee — assign explicitly
+default_assignee: ""

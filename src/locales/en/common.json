@@ -1,0 +1,65 @@
+{
+  "stepComplete": "This step is complete",
+  "continueTo": "Continue to {{step}}",
+  "steps": {
+    "chat": "Chat",
+    "verification": "Skill Check",
+    "summary": "Summary",
+    "plan": "Training Plan",
+    "complete": "Complete"
+  },
+  "buttons": {
+    "continue": "Continue",
+    "back": "Back",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "refresh": "Refresh",
+    "retry": "Retry",
+    "generate": "Generate",
+    "regenerate": "Regenerate",
+    "close": "Close",
+    "confirm": "Confirm",
+    "gotIt": "Got it",
+    "learnMore": "Learn more",
+    "readMore": "Read more",
+    "showMore": "Show more",
+    "showLess": "Show less"
+  },
+  "status": {
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "generating": "Generating...",
+    "processing": "Processing...",
+    "submitting": "Submitting...",
+    "connecting": "Connecting...",
+    "reconnecting": "Reconnecting..."
+  },
+  "errors": {
+    "somethingWentWrong": "Something went wrong",
+    "tryAgain": "Please try again",
+    "connectionLost": "Connection lost",
+    "notFound": "Not found",
+    "unauthorized": "Unauthorized",
+    "serverError": "Server error"
+  },
+  "time": {
+    "justNow": "Just now",
+    "minutesAgo": "{{count}} minutes ago",
+    "hoursAgo": "{{count}} hours ago",
+    "daysAgo": "{{count}} days ago",
+    "today": "today",
+    "yesterday": "yesterday"
+  },
+  "regenerate": {
+    "confirmMessage": "Are you sure you want to regenerate? Current content will be replaced.",
+    "confirmButton": "Yes, regenerate",
+    "generatedAt": "Generated {{date}}",
+    "generating": "Generating..."
+  },
+  "language": {
+    "switchLanguage": "Switch language",
+    "currentLanguage": "Current language: {{language}}"
+  }
+}

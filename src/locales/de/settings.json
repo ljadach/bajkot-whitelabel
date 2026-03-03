@@ -1,0 +1,74 @@
+{
+  "title": "Einstellungen",
+  "appearance": {
+    "title": "Darstellung",
+    "description": "Passen Sie das Erscheinungsbild an",
+    "snowEffect": {
+      "title": "Schnee-Effekt",
+      "description": "Aktivieren Sie die Animation fallender Schneeflocken"
+    }
+  },
+  "learningTools": {
+    "title": "Lernwerkzeuge",
+    "description": "Werkzeuge beim Lesen von Modulen ein- oder ausschalten",
+    "glossatorMargin": {
+      "title": "Randnotizen",
+      "description": "Seitliches Notizbuch für Gedanken zu jedem Kapitel"
+    },
+    "workbenchTabs": {
+      "title": "Werkbank",
+      "description": "Konzeptradar, Skelettschlüssel, Kontrapositeur und mehr"
+    },
+    "feynmanOracle": {
+      "title": "Feynman-Orakel",
+      "description": "Schwebender Denkbegleiter, der dein Verständnis hinterfragt"
+    },
+    "chapterProbes": {
+      "title": "Kapitelsonden",
+      "description": "Reflexionsfragen nach jedem Kapitel"
+    }
+  },
+  "account": {
+    "title": "Konto",
+    "description": "Verwalten Sie Ihre Kontoeinstellungen",
+    "startOver": {
+      "title": "Neu starten",
+      "warning": "Setze dein Lernprofil, deinen Trainingsplan und deinen Kursfortschritt zurück. Du durchläufst das Aufnahmegespräch erneut, um alles neu aufzubauen.",
+      "button": "Neu starten",
+      "confirmation": {
+        "title": "Dies wird zurückgesetzt:",
+        "description": "Du musst das Aufnahmegespräch erneut durchlaufen, um dein Profil neu aufzubauen.",
+        "items": {
+          "profile": "Dein Lernprofil und Chat-Verlauf",
+          "plan": "Deinen Trainingsplan und alle Module",
+          "progress": "Kursfortschritt und eingereichte Übungen",
+          "tools": "Einstellungen der Lernwerkzeuge"
+        },
+        "preserved": "Dein Konto, Zahlungsstatus und Aktivitätsprotokoll bleiben erhalten.",
+        "cancelButton": "Abbrechen",
+        "confirmButton": "Ja, neu starten",
+        "resetting": "Wird zurückgesetzt..."
+      }
+    },
+    "delete": {
+      "title": "Konto löschen",
+      "warning": "Löschen Sie Ihr Konto und alle zugehörigen Daten dauerhaft. Diese Aktion kann nicht rückgängig gemacht werden.",
+      "button": "Mein Konto löschen",
+      "confirmation": {
+        "title": "Sind Sie absolut sicher?",
+        "description": "Dies wird dauerhaft löschen:",
+        "items": {
+          "profile": "Ihr Profil und Chat-Verlauf",
+          "plan": "Ihren Trainingsplan und Module",
+          "data": "Alle zugehörigen Daten"
+        },
+        "typeConfirm": "Geben Sie **LÖSCHEN** ein, um zu bestätigen",
+        "placeholder": "LÖSCHEN",
+        "cancelButton": "Abbrechen",
+        "confirmButton": "Mein Konto löschen",
+        "deleting": "Wird gelöscht..."
+      }
+    }
+  },
+  "gdpr": "Gemäß DSGVO haben Sie das Recht, die Löschung Ihrer personenbezogenen Daten zu verlangen. Wenn Sie Ihr Konto löschen, werden alle Ihre Daten dauerhaft von unseren Servern entfernt."
+}

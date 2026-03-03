@@ -1,0 +1,42 @@
+{
+  "title": "Weryfikacja umiejętności",
+  "tabs": {
+    "prompt": "Prompt",
+    "skill": "Skill"
+  },
+  "prompt": {
+    "label": "Wklej <strong>prompt, którego ostatnio użyłeś</strong> w swojej pracy.",
+    "helper": "Każdy prompt jest odpowiedni – chcemy tylko zobaczyć, jak obecnie podchodzisz do AI.",
+    "whyWeAsk": {
+      "title": "Dlaczego pytamy?",
+      "description": "Pytamy, aby określić Twój punkt wyjścia i pominąć to, co już wiesz."
+    },
+    "placeholder": "Wklej prompt, którego użyłeś...",
+    "charCount": "{{count}}/15000 znaków",
+    "uploadFile": "Wgraj plik .md",
+    "shortcut": "⌘/Ctrl + Enter"
+  },
+  "skill": {
+    "label": "Wklej <strong>skilla, którego zbudowałeś</strong> (np. Skill.md, system prompt lub konfigurację agenta).",
+    "helper": "Pokaż nam, jak strukturyzujesz instrukcje AI do wielokrotnego użytku.",
+    "whyWeAsk": {
+      "title": "Dlaczego skill?",
+      "description": "Skille pokazują głębszą biegłość w AI — jak strukturyzujesz, parametryzujesz i reużywasz instrukcje."
+    },
+    "placeholder": "Wklej definicję skilla, Skill.md lub konfigurację agenta...",
+    "charCount": "{{count}}/15000 znaków",
+    "uploadFile": "Wgraj plik .md",
+    "shortcut": "⌘/Ctrl + Enter"
+  },
+  "submit": {
+    "button": "Wyślij i kontynuuj",
+    "analyzing": "Analizowanie Twojego prompta..."
+  },
+  "result": {
+    "title": "Ocena zakończona!",
+    "levelLabel": "Twój poziom:",
+    "context": "Wykorzystamy tę ocenę do personalizacji Twojego planu szkoleniowego i skupienia się na obszarach, w których możesz się najbardziej poprawić."
+  },
+  "continueLabel": "Podsumowanie profilu",
+  "regenerateLabel": "Wygeneruj ponownie weryfikację"
+}

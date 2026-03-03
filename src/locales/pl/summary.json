@@ -1,0 +1,35 @@
+{
+  "badge": "Ocena zakończona",
+  "title": "Podsumowanie Twojego profilu",
+  "subtitle": "Oto co o Tobie dowiedzieliśmy się. Wykorzystamy to do stworzenia spersonalizowanego planu szkoleniowego.",
+  "sections": {
+    "skillAssessment": "Ocena umiejętności",
+    "promptScore": "Wynik prompta",
+    "aiFluency": "Biegłość w AI",
+    "yourRole": "Twoja rola",
+    "aiTools": "Narzędzia AI",
+    "whatYouCreate": "Co tworzysz",
+    "learningGoals": "Cele nauki",
+    "preferences": "Twoje preferencje",
+    "experience": "doświadczenia"
+  },
+  "preferences": {
+    "timeAvailable": "Dostępny czas",
+    "language": "Język",
+    "learningStyle": "Styl nauki"
+  },
+  "report": {
+    "title": "Twoja spersonalizowana ocena",
+    "subtitle": "Szczegółowe podsumowanie, które poprowadzi Twoją ścieżkę nauki",
+    "generating": "Generowanie Twojej spersonalizowanej oceny...",
+    "empty": "Ocena zostanie wygenerowana automatycznie.",
+    "generateButton": "Wygeneruj teraz",
+    "retry": "Ponów"
+  },
+  "fallback": {
+    "noGoals": "Na podstawie Twojej oceny zaproponujemy moduły, które wzmocnią Twoje umiejętności."
+  },
+  "continueLabel": "Plan szkoleniowy",
+  "regenerateLabel": "Wygeneruj ponownie podsumowanie",
+  "proBadge": "PRO"
+}

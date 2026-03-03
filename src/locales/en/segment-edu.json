@@ -1,0 +1,42 @@
+{
+  "breadcrumb": "For education",
+  "meta": {
+    "title": "AI training for educators | AITutoro",
+    "description": "AI training for teachers. Writing prompts and commands for AI, lesson plans, assessment — in 5-minute sessions individually tailored to your level."
+  },
+  "hero": {
+    "headline": "Help staff save 10 hours a week - with AI.",
+    "subheadline": "From AI awareness to proficiency. AITutoro teaches teachers how to automate paperwork and reclaim time for what matters — teaching."
+  },
+  "cta": {
+    "trial": "Try it for free",
+    "pilot": "Discuss pilot",
+    "headline": "Ready to implement AI in your school?",
+    "description": "Help staff master AI and reclaim time for what matters most in education."
+  },
+  "value1": {
+    "title": "Prompting AI for teachers",
+    "description": "Create lessons and teaching programs without hours of preparation. AITutoro will teach you how to write AI commands designed for school — not business templates. The results are visible from the very first lesson."
+  },
+  "value2": {
+    "title": "AI saves time",
+    "description": "Quickly create lesson plans, assessment criteria, and objective student evaluations. Reclaim time for what is most valuable in your work: mentoring and genuine human interaction."
+  },
+  "value3": {
+    "title": "AI with the knowledge of your school",
+    "description": "Create an AI assistant that knows the school's programs and working methods. The entire staff uses a shared knowledge base and maintains a single teaching standard."
+  },
+  "pitch": {
+    "tag": "Education: staff development",
+    "headline": "Pedagogy first. AI training for teachers",
+    "body": "Most AI training is too technical or outdated. AITutoro teaches by doing: designing lessons, creating assessment criteria, explaining difficult topics. Five-minute sessions and skills you can use in the classroom tomorrow. AI takes over the routine — more time for students.\n\nIn a nutshell:\n- 5 minutes a day instead of long videos\n- Practice instead of theory\n- AI tailored to school, not the office"
+  },
+  "pitch2": {
+    "headline": "From AI awareness to proficiency",
+    "body": "Long seminars don't work — teachers are overloaded. AITutoro offers 5-minute sessions that fit between lessons. Each module has a specific outcome: ready-made assessment criteria, a simple explanation of a difficult topic, or quick feedback for a student. We adjust the pace to you and how comfortable you feel in the digital world.\n\nThe result: staff will see AI as a real help and time saver, not an additional burden. A concrete change in everyday work, not just theory."
+  },
+  "testimonial": {
+    "quote": "We do not have any teacher reviews yet. We prefer to admit this rather than generate fictitious quotes. We are looking for a pilot school.",
+    "author": "Maybe yours? Write to us."
+  }
+}

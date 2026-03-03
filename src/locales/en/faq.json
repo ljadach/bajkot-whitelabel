@@ -1,0 +1,795 @@
+{
+  "meta": {
+    "title": "FAQ — AITutoro",
+    "description": "Find answers to common questions about AITutoro's AI training platform, pricing, privacy, and technical features."
+  },
+  "hero": {
+    "title": "Frequently asked questions",
+    "subtitle": "Everything you need to know about AITutoro. Can't find your answer? Contact our support team."
+  },
+  "breadcrumb": "FAQ",
+  "supportBreadcrumb": "Support",
+  "sectionTitle": "Frequently asked questions",
+  "filterAll": "All",
+  "cta": {
+    "headline": "Still have questions?",
+    "description": "Our team is here to help. Reach out and we'll get back to you within 48 hours.",
+    "contact": "Contact Us",
+    "trial": "Start Free Trial"
+  },
+  "categoryLabels": {
+    "gettingStarted": "Getting Started",
+    "enterprise": "Enterprise & Security",
+    "toolComparisons": "AI Tool Comparisons",
+    "toolGuides": "AI Tool Guides",
+    "choosingTools": "Choosing AI Tools"
+  },
+  "categoryOrder": [
+    "gettingStarted",
+    "enterprise",
+    "toolComparisons",
+    "toolGuides",
+    "choosingTools"
+  ],
+  "items": {
+    "time": {
+      "question": "How much time does AITutoro training take?",
+      "answer": "Calibration: under 5 minutes. Daily modules: 5-10 minutes. Short enough to fit between meetings, effective enough to make a real difference.",
+      "category": "gettingStarted",
+      "faqVisible": true,
+      "pages": [
+        "home",
+        "individuals",
+        "freelancers",
+        "creators",
+        "personal-productivity"
+      ]
+    },
+    "tools": {
+      "question": "Which AI tools can I learn about in AITutoro?",
+      "answer": "All major AI tools: ChatGPT, Claude, Gemini, Microsoft Copilot, Perplexity, NotebookLM, Grok, Midjourney, and DALL-E. Training is tailored to the specific tools you use—not generic advice for tools you don't have.",
+      "category": "gettingStarted",
+      "faqVisible": true,
+      "pages": [
+        "home",
+        "individuals"
+      ]
+    },
+    "levels": {
+      "question": "Is this a course for beginners or advanced users?",
+      "answer": "Both. The prompt analysis identifies exactly where you are. Beginners get fundamentals. Advanced users skip basics and dive into complex techniques. No wasted time on stuff you already know.",
+      "category": "gettingStarted",
+      "faqVisible": true,
+      "pages": [
+        "home",
+        "individuals",
+        "career-changers"
+      ]
+    },
+    "trial": {
+      "question": "How does the Free Trial work?",
+      "answer": "You get immediate access to the first two learning modules without entering any credit card information. Once completed, you can choose a subscription plan to continue.",
+      "category": "gettingStarted",
+      "faqVisible": true,
+      "pages": [
+        "pricing"
+      ]
+    },
+    "login": {
+      "question": "Why do I need to log in?",
+      "answer": "To save your progress and personalize your path. The system adapts as you improve—it needs to remember where you are.",
+      "category": "gettingStarted",
+      "faqVisible": true,
+      "pages": [
+        "home"
+      ]
+    },
+    "promptData": {
+      "question": "How is my prompt data handled?",
+      "answer": "Used only to assess your skill level. We don't train models on your data. Never shared with third parties. Your prompts stay yours.",
+      "category": "gettingStarted",
+      "faqVisible": true,
+      "pages": [
+        "home"
+      ]
+    },
+    "lms": {
+      "question": "Can this be integrated into our LMS?",
+      "answer": "Yes. We provide API and export capabilities for Cornerstone, SAP SuccessFactors and other major platforms. AITutoro complements what you have.",
+      "category": "enterprise",
+      "faqVisible": true,
+      "pages": [
+        "business"
+      ]
+    },
+    "staffReadiness": {
+      "question": "How do you measure staff readiness for AI?",
+      "answer": "We ask teachers to identify the AI tools they use and describe their experience. We then assess their skills in a practical prompting task. This allows you to see exactly what level each member of staff is at and where support is needed.",
+      "category": "enterprise",
+      "faqVisible": true,
+      "pages": [
+        "edu"
+      ]
+    },
+    "targets": {
+      "question": "Can we set specific knowledge targets?",
+      "answer": "Yes. Administrators can configure AITutoro using their own materials — training tailored to the needs, terminology, and processes of the organization.",
+      "category": "enterprise",
+      "faqVisible": true,
+      "pages": [
+        "business",
+        "edu",
+        "executive"
+      ]
+    },
+    "executiveDifference": {
+      "question": "How does this differ from standard AI training?",
+      "answer": "Executive training is tailored to their needs – focusing on strategic decisions, risk assessment and organizational transformation if needed – not just tool tutorials. We help you understand what AI means for your business, not just how to write better prompts.",
+      "category": "enterprise",
+      "faqVisible": false,
+      "pages": [
+        "executive"
+      ]
+    },
+    "executiveTime": {
+      "question": "What is the time requirement for executives?",
+      "answer": "Short briefings with distilled conclusions. Optional in-depth sessions for specific strategic initiatives. Designed for leaders who have 30 minutes, not 30 hours.",
+      "category": "enterprise",
+      "faqVisible": true,
+      "pages": [
+        "executive"
+      ]
+    },
+    "euAiAct": {
+      "question": "How does the EU AI Act compliance work?",
+      "answer": "We automatically generate audit-ready logs of your team's training progress and specific AI competencies covered. You can export these reports at any time for your compliance officer.",
+      "category": "enterprise",
+      "faqVisible": true,
+      "pages": [
+        "pricing"
+      ]
+    },
+    "documents": {
+      "question": "Can I upload my own company documents?",
+      "answer": "Yes, on the Enterprise plan you can upload internal policies, tools documentation, and guidelines. Our AI will use these to steer the training modules, ensuring your team learns to use AI according to your specific rules.",
+      "category": "enterprise",
+      "faqVisible": true,
+      "pages": [
+        "pricing"
+      ]
+    },
+    "onPremise": {
+      "question": "Do you offer on-premise installation?",
+      "answer": "Yes, our Enterprise+ tier supports full on-premise deployment (Docker/Kubernetes) for organizations with strict data residency requirements.",
+      "category": "enterprise",
+      "faqVisible": true,
+      "pages": [
+        "pricing"
+      ]
+    },
+    "boardPresentations": {
+      "question": "Can this support our presentations to the board?",
+      "answer": "Yes. We provide board-ready metrics and visualizations that demonstrate AI readiness and adoption progress. We speak to the board in its language.",
+      "category": "enterprise",
+      "faqVisible": true,
+      "pages": [
+        "executive"
+      ]
+    },
+    "dataProtection": {
+      "question": "How is our data protected?",
+      "answer": "AITutoro stores data in isolated databases with encryption. Company documentation never ends up in public models. We use end-to-end encryption and data isolation.",
+      "category": "enterprise",
+      "faqVisible": true,
+      "pages": [
+        "business",
+        "edu",
+        "executive"
+      ]
+    },
+    "contentIntegrity": {
+      "question": "What about the integrity of the content generated by AI?",
+      "answer": "We train teams in identifying AI-generated content and maintaining professional standards. Part of using AI well is knowing its limitations.",
+      "category": "enterprise",
+      "faqVisible": true,
+      "pages": [
+        "business"
+      ]
+    },
+    "roi": {
+      "question": "How do you measure the return on investment in training?",
+      "answer": "We track actual skill improvement, not just completion rates. You will see exactly which competencies have improved, by how much and in which teams. Go from 'we trained everyone' to 'everyone improved'.",
+      "category": "enterprise",
+      "faqVisible": true,
+      "pages": [
+        "business"
+      ]
+    },
+    "academicIntegrity": {
+      "question": "How does this relate to the issue of academic integrity?",
+      "answer": "We train staff in identifying AI-generated content, designing assessments that require real thinking and creating authentic learning experiences. Part of AI proficiency is understanding its limitations.",
+      "category": "enterprise",
+      "faqVisible": false,
+      "pages": [
+        "edu"
+      ]
+    },
+    "chatgptVsClaudeCoding": {
+      "question": "Is Claude better for coding than ChatGPT?",
+      "answer": "For standard code generation, they're nearly tied — SWE-bench Verified scores are 80.8% (Claude) versus 80.0% (GPT-5.2). Claude pulls ahead on autonomous, multi-step coding tasks where Claude Code's terminal agent and checkpoint saving matter. ChatGPT is better for research-assisted coding and cloud-delegated tasks via Codex.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "chatgpt-vs-claude",
+        "chatgpt"
+      ]
+    },
+    "chatgptVsClaudeFree": {
+      "question": "Is Claude's free version better than ChatGPT's free version?",
+      "answer": "As of February 2026, Claude's free tier offers Sonnet 4.5 with no ads, file creation, and third-party connectors. ChatGPT's free tier provides limited GPT-5.2 access (10 messages per 5 hours) but now includes ads and fewer built-in features. For most users, Claude's free tier provides more value.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "chatgpt-vs-claude",
+        "chatgpt"
+      ]
+    },
+    "chatgptVsClaudeData": {
+      "question": "Which AI is better for data analysis?",
+      "answer": "Claude leads on knowledge work benchmarks (GDPval-AA Elo: 1,606 versus 1,462) and document analysis workflows. ChatGPT's mature web search integration gives it an edge when analysis requires live data retrieval or multilingual sources.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "chatgpt-vs-claude",
+        "claude"
+      ]
+    },
+    "chatgptVsClaudePricing": {
+      "question": "What are the pricing differences between Claude Pro and ChatGPT Plus?",
+      "answer": "Both cost $20/month. The difference is in higher tiers: Claude offers Max at $100/month (5x usage) and $200/month (20x usage). ChatGPT offers Pro at $200/month with o3-pro access. API-level pricing favors ChatGPT — GPT-5.2 costs $1.75/1M input tokens versus Claude Opus 4.6 at $5/1M.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "chatgpt-vs-claude"
+      ]
+    },
+    "chatgptVsCopilotDifference": {
+      "question": "What is the difference between ChatGPT and Microsoft Copilot?",
+      "answer": "ChatGPT is OpenAI's standalone AI assistant for research, creative work, coding, and general-purpose tasks across any platform. Microsoft Copilot is an AI layer embedded into Microsoft 365 apps (Word, Excel, Outlook, Teams) and Windows. They share GPT model roots but run on separate infrastructure with different data handling and privacy models.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "chatgpt-vs-copilot",
+        "copilot",
+        "chatgpt"
+      ]
+    },
+    "chatgptVsCopilotFree": {
+      "question": "Is Copilot free like ChatGPT?",
+      "answer": "Both offer free tiers with limitations. ChatGPT Free provides GPT-5.2 Instant with rate limits. Copilot Free provides GPT-5 Smart Mode with 15 image boosts per day. For businesses, Copilot Chat is free for all Entra ID users with a Microsoft 365 subscription — a significant advantage over ChatGPT, which has no free business tier.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "chatgpt-vs-copilot",
+        "copilot"
+      ]
+    },
+    "chatgptVsCopilotCoding": {
+      "question": "Is ChatGPT better than Copilot for coding?",
+      "answer": "It depends on the task. GitHub Copilot (separate from M365 Copilot) excels at inline code completions and IDE integration with a free tier offering 2,000 completions per month. ChatGPT Codex handles autonomous, task-based coding — running agents in cloud sandboxes and creating pull requests from issues. Many developers use both together.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "chatgpt-vs-copilot"
+      ]
+    },
+    "chatgptVsCopilotRebrand": {
+      "question": "Is Copilot a rebrand of ChatGPT?",
+      "answer": "No. Microsoft Copilot is a distinct product built on Azure OpenAI infrastructure (not OpenAI's public services), with its own data pipeline, privacy guarantees, and multi-model architecture that now includes providers beyond OpenAI (Anthropic, Google, xAI). They share model technology but are separate products from separate companies.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "chatgpt-vs-copilot",
+        "copilot"
+      ]
+    },
+    "chatgptVsGeminiBetter": {
+      "question": "Which is better: ChatGPT or Gemini?",
+      "answer": "Neither is universally better. ChatGPT leads in creative writing, coding benchmarks (80.0% SWE-bench), and third-party integrations. Gemini leads in research depth, factual accuracy (72.1% SimpleQA), context window size (1M tokens), and Google Workspace integration. The decision depends on your specific use case and tool ecosystem.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "chatgpt-vs-gemini",
+        "gemini",
+        "chatgpt"
+      ]
+    },
+    "chatgptVsGeminiPower": {
+      "question": "Is Gemini more powerful than ChatGPT?",
+      "answer": "On certain benchmarks, yes. Gemini 3 Pro tops the [Arena leaderboard](https://arena.ai/leaderboard) (1501 Elo) and leads in math (95% AIME 2025) and factual accuracy. ChatGPT holds the edge in coding and creative output. 'More powerful' depends entirely on the task.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "chatgpt-vs-gemini"
+      ]
+    },
+    "chatgptVsGeminiDifferences": {
+      "question": "What are the main differences between ChatGPT and Gemini?",
+      "answer": "The biggest structural differences are context window (Gemini's 1M tokens versus ChatGPT's 128K consumer), web research approach (native Google Search grounding versus Bing-based search), and ecosystem integration (Google Workspace versus broader third-party connectors). Pricing tiers are comparable at around $20/month.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "chatgpt-vs-gemini",
+        "gemini"
+      ]
+    },
+    "chatgptVsGeminiBoth": {
+      "question": "Can I use both ChatGPT and Gemini together?",
+      "answer": "Many professionals use ChatGPT for drafting and coding, then switch to Gemini for research and Google Workspace tasks. The free tiers of both platforms are generous enough for a dual-tool workflow. AITutoro's training covers cross-platform strategies so you can build skills in both simultaneously.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "chatgpt-vs-gemini"
+      ]
+    },
+    "claudeVsGeminiBetter": {
+      "question": "Which is better, Claude or Gemini?",
+      "answer": "There is no universal winner. Claude leads on coding (80.8% SWE-bench), agentic workflows, enterprise writing (GDPval-AA Elo: 1606 vs 1195), and document analysis. Gemini leads on multimodal understanding (81.0% MMMU Pro), Google Workspace integration, and API pricing. Your workflow determines the right choice.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "claude-vs-gemini",
+        "claude",
+        "gemini"
+      ]
+    },
+    "claudeVsGeminiCoding": {
+      "question": "Is Claude or Gemini better for coding?",
+      "answer": "Claude leads on coding benchmarks: 80.8% on SWE-bench Verified versus Gemini's 76.2%, and 65.4% on Terminal-Bench versus 56.2%. Claude Code provides a dedicated terminal-based coding assistant. Gemini's advantage is its 1M-token context window for analyzing large codebases.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "claude-vs-gemini",
+        "claude"
+      ]
+    },
+    "claudeVsGeminiPricing": {
+      "question": "How does Claude pricing compare to Gemini?",
+      "answer": "At the entry level, Gemini is cheaper ($7.99/mo vs $20/mo). At the mid-tier, pricing converges ($19.99 vs $20). API pricing heavily favors Gemini: Opus 4.6 costs $5/$25 per million tokens versus Gemini 3 Pro at $2/$12. Gemini also offers a free API tier for Flash models.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "claude-vs-gemini"
+      ]
+    },
+    "claudeVsGeminiMultimodal": {
+      "question": "Can Claude process video and audio like Gemini?",
+      "answer": "No. Gemini processes video and audio natively — no transcription step or file conversion needed. Claude accepts text, images, and PDFs but cannot directly process video or audio files. If your work involves analyzing meeting recordings or multimedia content, Gemini has a clear advantage.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "claude-vs-gemini"
+      ]
+    },
+    "copilotVsGeminiSuperior": {
+      "question": "Is Copilot or Gemini clearly superior?",
+      "answer": "Neither. Copilot excels in deep Microsoft 365 integration — Excel formulas, Teams meeting summaries, SharePoint automation. Gemini excels in research workflows, large-context analysis (1M tokens), and multimodal creative work (4K video with Veo 3.1). Performance depends on your existing ecosystem and primary workflows.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "copilot-vs-gemini",
+        "copilot",
+        "gemini"
+      ]
+    },
+    "copilotVsGeminiAddons": {
+      "question": "Do you need expensive add-ons to access AI features?",
+      "answer": "Google bundled Gemini into all Workspace Business and Enterprise plans in January 2025, eliminating the separate add-on. Microsoft still requires a separate Copilot license ($18-$30/user/month) on top of your Microsoft 365 subscription. This makes Gemini's total cost of ownership significantly lower for Google Workspace teams.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "copilot-vs-gemini"
+      ]
+    },
+    "copilotVsGeminiContext": {
+      "question": "Are context windows roughly equivalent between Copilot and Gemini?",
+      "answer": "No. Gemini models support 1,048,576 input tokens — approximately three times GPT-5.2-Codex's 400,000-token developer context and eight times GPT-4o's 128,000-token limit. For workflows involving entire codebases or multi-chapter documents, this difference is material.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "copilot-vs-gemini"
+      ]
+    },
+    "copilotVsGeminiModels": {
+      "question": "Does Copilot only use GPT models from OpenAI?",
+      "answer": "No. Since January 2026, Microsoft Copilot employs multi-model routing between GPT-4o, GPT-5, GPT-5.2 (via Azure OpenAI Service) and Claude Opus 4.5 and Sonnet 4.5 (via Anthropic). This lets Copilot match specific tasks to the model best suited for speed, creativity, or extended reasoning.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "copilot-vs-gemini"
+      ]
+    },
+    "midjourneyVsDalleBetter": {
+      "question": "Is Midjourney better than DALL-E?",
+      "answer": "DALL-E 3 no longer exists in ChatGPT — it was replaced by GPT-4o native image generation in March 2025. Midjourney excels at artistic control, aesthetic quality, and high-volume creation with video generation. ChatGPT (GPT-4o) excels at text rendering, photorealism, and conversational workflow integration. Neither is universally better.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "midjourney-vs-dalle",
+        "midjourney",
+        "dalle"
+      ]
+    },
+    "midjourneyVsDalleText": {
+      "question": "Which AI generates better text in images?",
+      "answer": "ChatGPT (GPT-4o) wins decisively on text rendering. It accurately renders signs, labels, diagrams, and multi-line text passages. Midjourney V7 improved text over V6, but text remains unreliable for anything requiring readable output.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "midjourney-vs-dalle",
+        "dalle"
+      ]
+    },
+    "midjourneyVsDalleFree": {
+      "question": "Can I use Midjourney or ChatGPT image generation for free?",
+      "answer": "ChatGPT offers free image generation (2-3 images per day). Midjourney has no free tier — the entry plan is $10/month (Basic). For occasional users, ChatGPT's free tier is sufficient. For high-volume creators, Midjourney Standard ($30/month) with unlimited Relax Mode provides better value.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "midjourney-vs-dalle",
+        "midjourney",
+        "dalle"
+      ]
+    },
+    "midjourneyVsDalleCommercial": {
+      "question": "Can I use AI-generated images commercially?",
+      "answer": "Yes, on both platforms. Midjourney paid subscribers own generated assets, but companies with over $1M annual revenue must use Pro ($60/month) or Mega plans. OpenAI assigns users full rights on all plans including free. Note: purely AI-generated images may not be copyrightable under U.S. law. OpenAI offers Copyright Shield for Enterprise customers; Midjourney does not offer IP indemnity.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "midjourney-vs-dalle",
+        "midjourney"
+      ]
+    },
+    "claudeVsChatgpt": {
+      "question": "Is Claude better than ChatGPT?",
+      "answer": "Neither is universally better. Claude leads in coding benchmarks, long-form writing, and careful instruction following. ChatGPT has broader features including image generation, voice conversations, and a larger third-party ecosystem. The right choice depends on your specific workflow.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "claude"
+      ]
+    },
+    "grokVsChatgpt": {
+      "question": "How does Grok compare to ChatGPT?",
+      "answer": "Grok is xAI's assistant integrated with X (Twitter), giving it real-time access to posts and trends. ChatGPT is a general-purpose tool with a broader feature set. Choose Grok for real-time social media analysis and X integration; choose ChatGPT for versatility across all workflows.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "grok"
+      ]
+    },
+    "perplexityVsChatgpt": {
+      "question": "Is Perplexity better than ChatGPT for research?",
+      "answer": "For research that requires source citations, yes. Every Perplexity answer includes inline source citations linking to original web pages. ChatGPT can search the web, but Perplexity's entire design is built around source-verified answers. For general-purpose tasks beyond research, ChatGPT is more versatile.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "perplexity"
+      ]
+    },
+    "notebooklmVsPerplexity": {
+      "question": "How is NotebookLM different from Perplexity?",
+      "answer": "NotebookLM works with YOUR sources — upload documents and it answers questions based exclusively on your materials. Perplexity searches the live web for answers with citations. Use NotebookLM for synthesizing specific documents; use Perplexity for broad research with source verification.",
+      "category": "toolComparisons",
+      "faqVisible": false,
+      "pages": [
+        "notebooklm"
+      ]
+    },
+    "chatgptStart": {
+      "question": "How do I start learning ChatGPT?",
+      "answer": "Create a free account at chatgpt.com, set up Custom Instructions with your role and preferences, and run a few starter prompts across writing, analysis, and creative tasks. For structured training that adapts to your level, AITutoro offers guided learning paths.",
+      "category": "toolGuides",
+      "faqVisible": false,
+      "pages": [
+        "chatgpt"
+      ]
+    },
+    "chatgptBasics": {
+      "question": "What are the basics of ChatGPT?",
+      "answer": "ChatGPT is a conversational AI by OpenAI that generates text, images, code, and voice responses. The basics include writing clear prompts, understanding which model tier fits your needs, configuring memory and custom instructions, and knowing when to verify its output against primary sources.",
+      "category": "toolGuides",
+      "faqVisible": false,
+      "pages": [
+        "chatgpt"
+      ]
+    },
+    "claudeStart": {
+      "question": "How do I get started with Claude?",
+      "answer": "Sign up at claude.ai with your email, Google, or Apple ID. Start a conversation, try Artifacts for generating documents and code, and upgrade to Pro when you hit usage limits. Claude excels at long documents, coding, and careful analysis.",
+      "category": "toolGuides",
+      "faqVisible": false,
+      "pages": [
+        "claude"
+      ]
+    },
+    "geminiPricing": {
+      "question": "How much does Google Gemini cost?",
+      "answer": "Gemini offers four tiers: Free (50 credits/day), AI Plus ($7.99/month), AI Pro ($19.99/month with full Workspace integration), and AI Ultra ($249.99/month for researchers and power users). AI Plus launched January 2026 as the most affordable entry point.",
+      "category": "toolGuides",
+      "faqVisible": false,
+      "pages": [
+        "gemini"
+      ]
+    },
+    "geminiWorkspace": {
+      "question": "Does Gemini work with Google Workspace?",
+      "answer": "Yes — this is Gemini's biggest advantage. On AI Pro and above, Gemini appears as a side panel inside Gmail, Docs, Sheets, Slides, and Meet. It drafts emails, summarizes documents, generates formulas, and creates presentations without leaving your apps.",
+      "category": "toolGuides",
+      "faqVisible": false,
+      "pages": [
+        "gemini"
+      ]
+    },
+    "grokFree": {
+      "question": "Is Grok free?",
+      "answer": "Grok is accessible through X (Twitter). Basic access comes with an X account. Enhanced features are available through X Premium subscriptions. The exact features available on each tier depend on your X subscription level.",
+      "category": "toolGuides",
+      "faqVisible": false,
+      "pages": [
+        "grok"
+      ]
+    },
+    "grokBest": {
+      "question": "What is Grok best for?",
+      "answer": "Grok excels at real-time information retrieval from X/Twitter, making it ideal for monitoring trends, news, and social media sentiment. It's also strong at analysis and coding tasks thanks to its Grok-3 model architecture.",
+      "category": "toolGuides",
+      "faqVisible": false,
+      "pages": [
+        "grok"
+      ]
+    },
+    "notebooklmFree": {
+      "question": "Is NotebookLM free?",
+      "answer": "Yes. NotebookLM's free tier includes 100 notebooks with 50 sources each and 50 daily chats. This is generous enough for most research and study workflows. Additional features like 500 notebooks and 300 sources per notebook are available through Google AI Pro ($19.99/month).",
+      "category": "toolGuides",
+      "faqVisible": false,
+      "pages": [
+        "notebooklm"
+      ]
+    },
+    "notebooklmAudio": {
+      "question": "What are NotebookLM Audio Overviews?",
+      "answer": "Audio Overviews transform your uploaded sources into podcast-style audio discussions, generated automatically. This standout feature lets you listen to summaries of your research materials on the go — useful for reviewing before meetings or during commutes.",
+      "category": "toolGuides",
+      "faqVisible": false,
+      "pages": [
+        "notebooklm"
+      ]
+    },
+    "perplexityFree": {
+      "question": "Is Perplexity free?",
+      "answer": "Yes. The free tier includes unlimited basic searches, five Pro searches every four hours, and three deep research queries per day. Pro at $20/month unlocks the full capabilities including unlimited Pro searches and extended research.",
+      "category": "toolGuides",
+      "faqVisible": false,
+      "pages": [
+        "perplexity"
+      ]
+    },
+    "perplexitySources": {
+      "question": "How does Perplexity cite sources?",
+      "answer": "Perplexity includes inline numbered citations in every answer, linking directly to the original web pages it found. This is not a chatbot guessing from training data — it searches the web in real time and builds answers from verifiable sources.",
+      "category": "toolGuides",
+      "faqVisible": false,
+      "pages": [
+        "perplexity"
+      ]
+    },
+    "compareWhichBest": {
+      "question": "Which AI tool is the best overall?",
+      "answer": "There is no single \"best\" tool. ChatGPT excels at research and multimedia. Claude leads on writing quality and long documents. Gemini integrates with Google Workspace. Copilot lives inside Microsoft 365. The best tool is the one that fits your existing workflow and priorities.",
+      "category": "choosingTools",
+      "faqVisible": true,
+      "pages": [
+        "compare-hub",
+        "tools-hub"
+      ]
+    },
+    "compareFreeTiers": {
+      "question": "Are AI tools free to use?",
+      "answer": "All major tools offer free tiers with usage limits. ChatGPT, Claude, Gemini, DALL-E (via ChatGPT), Microsoft Copilot, NotebookLM, and Perplexity all provide free access — Midjourney is the only major tool with no free tier (plans start at $10/month). For professional use, paid plans ($10–$20/month) remove caps and unlock advanced features like longer context windows, file creation, and priority access.",
+      "category": "choosingTools",
+      "faqVisible": true,
+      "pages": [
+        "compare-hub",
+        "tools-hub"
+      ]
+    },
+    "compareTeams": {
+      "question": "Which AI tool is best for teams?",
+      "answer": "For Microsoft-based organizations, Copilot integrates directly into Teams, Outlook, and SharePoint. For Google Workspace teams, Gemini is the natural fit. For teams that need the best standalone model regardless of ecosystem, Claude Team ($25–30/seat) and ChatGPT Team ($25–30/seat) both offer admin controls, project workspaces, and usage dashboards.",
+      "category": "choosingTools",
+      "faqVisible": true,
+      "pages": [
+        "compare-hub"
+      ]
+    },
+    "toolsLearnFirst": {
+      "question": "Which AI tool should I learn first?",
+      "answer": "Start with ChatGPT if you want a general-purpose tool that does everything. If you work in Google Workspace, start with Gemini. If you code, start with Claude. The best starting point depends on your daily workflow — pick the tool embedded in the ecosystem you already use.",
+      "category": "choosingTools",
+      "faqVisible": true,
+      "pages": [
+        "tools-hub",
+        "compare-hub",
+        "individuals",
+        "creators"
+      ]
+    },
+    "toolsFast": {
+      "question": "How can I learn AI tools fast?",
+      "answer": "Skip tutorials and start with one real task from your actual work. Draft a real email, analyze a real spreadsheet, or debug real code. Structured training platforms like AITutoro accelerate the process by matching exercises to your skill level and providing feedback.",
+      "category": "choosingTools",
+      "faqVisible": true,
+      "pages": [
+        "tools-hub",
+        "individuals",
+        "personal-productivity"
+      ]
+    },
+    "glossaryAiVsGenAi": {
+      "question": "What is the difference between AI and generative AI?",
+      "answer": "AI is any system that performs tasks normally requiring human intelligence. Generative AI is a subset that creates new content — text, images, code — by learning patterns from training data. When people say 'AI' in 2026, they almost always mean generative AI.",
+      "category": "choosingTools",
+      "faqVisible": true,
+      "pages": [
+        "glossary"
+      ]
+    },
+    "glossaryLlmVsNlp": {
+      "question": "What is the difference between LLMs and NLP?",
+      "answer": "NLP (Natural Language Processing) is the broader field of making computers understand human language. LLMs (Large Language Models) are the most powerful NLP tools ever built — transformer-based models trained on vast text data. All LLMs are NLP, but NLP includes many other techniques beyond LLMs.",
+      "category": "choosingTools",
+      "faqVisible": true,
+      "pages": [
+        "glossary"
+      ]
+    },
+    "glossaryTokens": {
+      "question": "What are tokens in AI?",
+      "answer": "Tokens are the smallest units of text that language models process — roughly four characters or 0.75 words each. Every AI interaction is measured in tokens, and API pricing is per million tokens. Understanding tokens helps you manage costs and know why some responses get cut off.",
+      "category": "choosingTools",
+      "faqVisible": true,
+      "pages": [
+        "glossary"
+      ]
+    },
+    "freelancerHowUseAi": {
+      "question": "How can a freelancer use AI?",
+      "answer": "Freelancers use AI across three areas: client work (proposals, research, drafts, code reviews), admin (emails, contracts, invoices), and business development (prospecting, pricing research, follow-ups). The biggest gains come from integrating AI into your specific deliverables — not generic prompting. AITutoro trains you on the tools you already use, in scenarios that match your actual client work.",
+      "category": "gettingStarted",
+      "faqVisible": false,
+      "pages": [
+        "freelancers"
+      ]
+    },
+    "freelancerWillAiReplace": {
+      "question": "Will AI replace freelancers?",
+      "answer": "Generalist freelancers doing commodity work face real pressure — writing jobs are down 33%, translation down 19%. But specialists who use AI to deliver higher-quality work faster are winning more projects and charging more. 49% of hiring managers plan to increase freelancer hiring. The split is between those who trained deliberately and those who didn't.",
+      "category": "gettingStarted",
+      "faqVisible": false,
+      "pages": [
+        "freelancers"
+      ]
+    },
+    "freelancerWhatTools": {
+      "question": "What AI tools do freelancers use?",
+      "answer": "The most widely used are ChatGPT, Claude, Gemini, and Copilot for writing and research; Midjourney and DALL-E for visual work; and specialised tools for code, audio, and video. Which tool matters less than how you use it — 73% of freelancers already have access to AI. The gap is in structured training, not access.",
+      "category": "gettingStarted",
+      "faqVisible": false,
+      "pages": [
+        "freelancers"
+      ]
+    },
+    "freelancerHowImprove": {
+      "question": "How can AI help me become a better freelancer?",
+      "answer": "By compressing the time you spend on non-billable work. 25-40% of freelance hours go to admin, prospecting, and overhead. AI handles drafts, research summaries, email templates, and contract boilerplate — so your billable hours stay billable. 50% of freelancers who trained in AI adoption earned more as a result.",
+      "category": "gettingStarted",
+      "faqVisible": false,
+      "pages": [
+        "freelancers"
+      ]
+    },
+    "careerChangerNoCoding": {
+      "question": "Do I need a coding background for AI roles?",
+      "answer": "No. The fastest-growing AI roles require no programming. 82% of new AI positions prioritise communication, critical thinking, and domain knowledge over technical skills. What hiring managers test for is AI fluency — the ability to work alongside AI tools effectively. That's trainable without a coding background.",
+      "category": "gettingStarted",
+      "faqVisible": false,
+      "pages": [
+        "career-changers"
+      ]
+    },
+    "careerChangerHowLong": {
+      "question": "How long does it take to become AI-fluent?",
+      "answer": "Five hours of structured training is the critical threshold. Workers who cross it become regular, confident AI users at a 79% adoption rate (BCG 2025). AITutoro's adaptive training focuses specifically on reaching and exceeding that threshold — not a 40-hour course that covers everything in theory.",
+      "category": "gettingStarted",
+      "faqVisible": false,
+      "pages": [
+        "career-changers"
+      ]
+    },
+    "careerChangerWhatJobs": {
+      "question": "What AI jobs don't require coding?",
+      "answer": "AI prompt engineer, AI trainer, AI content strategist, AI project manager, AI ethics reviewer, and AI-augmented roles in marketing, HR, legal, and operations. Most high-growth AI-adjacent positions are about applying AI to existing domain expertise — your current background is the asset.",
+      "category": "gettingStarted",
+      "faqVisible": false,
+      "pages": [
+        "career-changers"
+      ]
+    },
+    "careerChangerCv": {
+      "question": "How do I show AI skills on a CV?",
+      "answer": "Specificity beats credentials. Name the tools you use (ChatGPT, Claude, Gemini), describe the work context (proposals, analysis, research), and quantify outcomes where possible (time saved, output volume). A completion certificate from structured training is stronger than a vague 'proficient in AI' line — it signals deliberate practice.",
+      "category": "gettingStarted",
+      "faqVisible": false,
+      "pages": [
+        "career-changers"
+      ]
+    },
+    "creatorWillAiBeGeneric": {
+      "question": "Will AI make my content look generic?",
+      "answer": "Only if you prompt it generically. Every creator using the same 'write me a caption' prompt gets the same caption. Voice preservation is a trainable skill — it requires learning to calibrate AI output to your specific style, audience, and format. AITutoro's prompt engineering modules address this directly.",
+      "category": "gettingStarted",
+      "faqVisible": false,
+      "pages": [
+        "creators"
+      ]
+    },
+    "creatorWhichToolsFirst": {
+      "question": "Which AI tools should creators learn first?",
+      "answer": "Start with a text AI (ChatGPT or Claude) for ideation, scripting, and repurposing. Add a visual AI (Midjourney or DALL-E) if your work is image-heavy. The tool matters less than learning to integrate it into your specific production workflow — ideation, scripting, formatting, distribution. AITutoro trains you on the full pipeline, not isolated tools.",
+      "category": "gettingStarted",
+      "faqVisible": false,
+      "pages": [
+        "creators"
+      ]
+    },
+    "creatorVoicePreservation": {
+      "question": "How does AI training preserve my creative voice?",
+      "answer": "Through prompt engineering — not filters. You learn to give AI enough context about your tone, style, references, and audience that it produces on-brand output consistently. 85% of creators say AI that learns their style is their biggest need. AITutoro's modules focus on the prompting techniques that achieve this.",
+      "category": "gettingStarted",
+      "faqVisible": false,
+      "pages": [
+        "creators"
+      ]
+    },
+    "productivityWhyNotSaving": {
+      "question": "Why am I not saving time with AI?",
+      "answer": "Usually one of three reasons: over-reliance on one or two prompts that work but don't scale; underestimating which tasks AI handles well vs. poorly (the jagged frontier problem); or not integrating AI into your actual workflow — using it occasionally rather than habitually. All three are training gaps, not tool gaps.",
+      "category": "gettingStarted",
+      "faqVisible": false,
+      "pages": [
+        "personal-productivity"
+      ]
+    },
+    "productivityHowLong": {
+      "question": "How long until I see real productivity gains?",
+      "answer": "Most people see measurable time savings within the first week of structured practice — if they apply training to their actual daily tasks, not toy examples. The Federal Reserve data on daily AI users saving 4+ hours weekly reflects consistent, habitual use built through deliberate training. AITutoro's modules are designed to build that habit in 15–20 minute sessions.",
+      "category": "gettingStarted",
+      "faqVisible": false,
+      "pages": [
+        "personal-productivity"
+      ]
+    },
+    "productivityMostImpactful": {
+      "question": "What's the most impactful AI skill to learn first?",
+      "answer": "Prompt clarity — being specific about context, format, and outcome in every request. It's the foundation of every other AI skill and the single biggest separator between users who save time and those who don't. Once you have it, every other module builds on top of it.",
+      "category": "gettingStarted",
+      "faqVisible": false,
+      "pages": [
+        "personal-productivity"
+      ]
+    }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "title": "Ustawienia",
+  "appearance": {
+    "title": "Wygląd",
+    "description": "Dostosuj wygląd i styl",
+    "snowEffect": {
+      "title": "Efekt śniegu",
+      "description": "Włącz animację spadających płatków śniegu"
+    }
+  },
+  "learningTools": {
+    "title": "Narzędzia nauki",
+    "description": "Włącz lub wyłącz narzędzia dostępne podczas czytania modułów",
+    "glossatorMargin": {
+      "title": "Notatki na marginesie",
+      "description": "Boczny notatnik do zapisywania myśli przy każdym rozdziale"
+    },
+    "workbenchTabs": {
+      "title": "Warsztat",
+      "description": "Radar pojęć, klucz szkieletowy, kontrapozitor i więcej"
+    },
+    "feynmanOracle": {
+      "title": "Wyrocznia Feynmana",
+      "description": "Pływający towarzysz myślenia, który kwestionuje Twoje rozumienie"
+    },
+    "chapterProbes": {
+      "title": "Sondy rozdziałów",
+      "description": "Pytania refleksyjne wyświetlane po każdym rozdziale"
+    }
+  },
+  "account": {
+    "title": "Konto",
+    "description": "Zarządzaj ustawieniami konta",
+    "startOver": {
+      "title": "Zacznij od nowa",
+      "warning": "Zresetuj profil ucznia, plan szkoleniowy i postęp w kursie. Przejdziesz przez rozmowę wstępną ponownie, aby odbudować wszystko.",
+      "button": "Zacznij od nowa",
+      "confirmation": {
+        "title": "To zresetuje:",
+        "description": "Będziesz musiał ponownie przejść rozmowę wstępną, aby odbudować profil.",
+        "items": {
+          "profile": "Twój profil ucznia i historię czatu",
+          "plan": "Twój plan szkoleniowy i wszystkie moduły",
+          "progress": "Postęp w kursie i przesłane ćwiczenia",
+          "tools": "Preferencje narzędzi nauki"
+        },
+        "preserved": "Twoje konto, status płatności i dziennik aktywności zostają zachowane.",
+        "cancelButton": "Anuluj",
+        "confirmButton": "Tak, zacznij od nowa",
+        "resetting": "Resetowanie..."
+      }
+    },
+    "delete": {
+      "title": "Usuń konto",
+      "warning": "Trwale usuń swoje konto i wszystkie powiązane dane. Ta akcja jest nieodwracalna.",
+      "button": "Usuń moje konto",
+      "confirmation": {
+        "title": "Czy jesteś absolutnie pewien?",
+        "description": "To trwale usunie:",
+        "items": {
+          "profile": "Twój profil i historię czatu",
+          "plan": "Twój plan szkoleniowy i moduły",
+          "data": "Wszystkie powiązane dane"
+        },
+        "typeConfirm": "Wpisz **USUŃ**, aby potwierdzić",
+        "placeholder": "USUŃ",
+        "cancelButton": "Anuluj",
+        "confirmButton": "Usuń moje konto",
+        "deleting": "Usuwanie..."
+      }
+    }
+  },
+  "gdpr": "Zgodnie z RODO masz prawo zażądać usunięcia swoich danych osobowych. Po usunięciu konta wszystkie Twoje dane są trwale usuwane z naszych serwerów."
+}

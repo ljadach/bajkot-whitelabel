@@ -1,0 +1,150 @@
+{
+  "meta": {
+    "title": "ChatGPT vs Copilot: features, pricing, and best use cases",
+    "description": "ChatGPT vs Copilot compared across features, pricing tiers, and real workflows. Find which AI assistant fits your role and budget in 2026."
+  },
+  "hero": {
+    "title": "ChatGPT vs Copilot: which AI assistant fits your workflow?",
+    "intro": "The ChatGPT vs Copilot question comes up constantly in AI tool selection — and the answer is rarely one or the other. ChatGPT and Microsoft Copilot share the same AI engine but solve different problems. One is a standalone power tool for research, creative work, and coding. The other is embedded muscle for the Microsoft 365 apps you already use — and the smartest move might be using both."
+  },
+  "lastUpdated": "February 2026",
+  "quickAnswer": {
+    "body": "**ChatGPT and Copilot share GPT roots but solve different problems.** ChatGPT is a standalone power tool for research, creative work, and coding. Copilot is embedded muscle for Microsoft 365. The smartest move might be using both — this guide maps workflows to specific tiers so you can decide."
+  },
+  "context": {
+    "title": "ChatGPT and Copilot at a glance",
+    "body": "**[ChatGPT](https://openai.com/chatgpt/pricing)** is OpenAI's standalone AI assistant. It excels at advanced reasoning, creative generation (images, video, code), deep multi-step research, and agentic tasks that run autonomously. It connects to 30+ third-party apps and works across any platform. For a deeper look at its capabilities, see our [ChatGPT overview](/ai-tools/chatgpt).\n\n**[Microsoft Copilot](https://www.microsoft.com/en-us/microsoft-copilot)** is an AI layer embedded across Microsoft 365, Windows, and GitHub. It works inside Word, Excel, PowerPoint, Outlook, and Teams — meeting you where you already spend your day. Since January 2026, Copilot also draws on models from Anthropic, Google, and xAI alongside OpenAI, making it a multi-model system. For details on its ecosystem, see our [Microsoft Copilot overview](/ai-tools/copilot).\n\n**The biggest misconception:** Copilot is not rebranded ChatGPT. They use GPT models through entirely separate infrastructure — OpenAI's systems versus Azure OpenAI — with different data handling, different privacy guarantees, and now different model providers."
+  },
+  "table": {
+    "title": "Overview comparison at a glance",
+    "summary": "The table below captures the core differences between ChatGPT and Microsoft Copilot across use case, pricing, models, ecosystem, and standout features.",
+    "caption": "ChatGPT is a cross-platform power tool with deep research and agentic coding. Copilot is a native productivity layer for the Microsoft 365 ecosystem.",
+    "rows": [
+      {
+        "feature": "Primary use case",
+        "toolA": "Standalone AI assistant",
+        "toolB": "Embedded productivity layer in M365",
+        "winner": "tie"
+      },
+      {
+        "feature": "Pricing range",
+        "toolA": "Free -- $200/mo (consumer); $25/seat (business)",
+        "toolB": "Free -- $19.99/mo (consumer); $21/user (business)",
+        "winner": "tie"
+      },
+      {
+        "feature": "AI models",
+        "toolA": "GPT-5.2 family (OpenAI only)",
+        "toolB": "GPT-5, GPT-5.2, Claude (multi-provider; Gemini in GitHub Copilot)",
+        "winner": "b"
+      },
+      {
+        "feature": "Ecosystem",
+        "toolA": "Cross-platform, 30+ app connectors",
+        "toolB": "Microsoft 365, Windows, Edge, GitHub",
+        "winner": "a"
+      },
+      {
+        "feature": "Standout feature",
+        "toolA": "Deep Research and Codex (agentic coding)",
+        "toolB": "Native integration across Word, Excel, Outlook, Teams",
+        "winner": "tie"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "productivity",
+      "title": "Productivity and office work",
+      "body": "Copilot's edge here is depth of integration. Agent Mode is now generally available in Word and Excel, with PowerPoint rolling out in February 2026. In Excel, teams can choose between Anthropic and OpenAI reasoning engines for different types of analysis. Outlook gets voice input and auto-reply, and Teams generates meeting summaries through its Facilitator Agent.\n\nChatGPT takes a different approach. Canvas provides a side-by-side collaborative editing space. File uploads pull directly from Google Drive and OneDrive, and the data analysis tool handles up to 10 files at 512 MB each — roughly ten times the consumer Copilot's 50 MB file limit.\n\nBoth tools offer persistent collaborative workspaces, but they work differently. **Copilot Pages** is a real-time multiplayer canvas integrated into the M365 ecosystem — think shared whiteboard that stays alive. **ChatGPT Canvas** is a side-by-side drafting environment focused on iteration between you and the AI.",
+      "verdict": {
+        "text": "Copilot wins for teams living inside Microsoft 365. ChatGPT wins for cross-platform workflows, especially when you pull data from Google Drive, Notion, or Slack alongside Microsoft tools.",
+        "winner": "b"
+      }
+    },
+    {
+      "id": "research",
+      "title": "Research and reasoning",
+      "body": "ChatGPT's Deep Research is the standout. It deploys the o3 reasoning model on multi-step internet research tasks that take 5 to 30 minutes, producing detailed reports with citations. It can connect to external apps and MCP servers, pulling in data from tools your team already uses. Agent Mode goes further — it completes complex online tasks like filling forms and editing spreadsheets autonomously.\n\nFor Pro subscribers ($200/mo), Pulse delivers daily asynchronous research briefs, turning ChatGPT into an always-on analyst.\n\nCopilot offers its own multi-page research reports, but they stay within the Microsoft ecosystem. The strength here is that Copilot's research draws on your M365 data — emails, documents, Teams conversations — through Microsoft Graph and the Semantic Index.",
+      "verdict": {
+        "text": "ChatGPT has the edge in depth, autonomy, and breadth of sources. Copilot has the edge when your most important data already lives in Microsoft 365.",
+        "winner": "a"
+      }
+    },
+    {
+      "id": "creative",
+      "title": "Creative and multimodal capabilities",
+      "body": "ChatGPT leads in creative output. Plus and Pro subscribers get Sora 2 video generation — Plus with 1,000 monthly credits (720p, up to 20 seconds), Pro with 10,000 credits at higher fidelity (up to 4K, 90 seconds) plus unlimited relaxed-mode generation. The GPT image models handle generation and editing. Advanced Voice works across mobile, desktop, and web. ChatGPT Atlas provides a dedicated AI-powered browser (macOS only). Shopping Research with Instant Checkout — currently supporting Etsy, with Shopify integration coming — is a feature no competitor offers.\n\nCopilot counters with accessibility. Designer and Copilot Imagine provide 15 free image generation boosts per day — a more generous free tier than ChatGPT's. Copilot Voice supports 50+ languages with an animated interface. On Copilot+ PCs, the camera, Edge browser, and Windows screen analysis provide vision capabilities tightly woven into the operating system.",
+      "verdict": {
+        "text": "ChatGPT leads in creative output — video generation, advanced image editing, and shopping research have no Copilot equivalent. Copilot's free image generation is more generous, and its OS-level vision features integrate more deeply for Windows users.",
+        "winner": "a"
+      }
+    },
+    {
+      "id": "coding",
+      "title": "Coding and development",
+      "body": "This is where the \"Copilot\" brand gets confusing. **GitHub Copilot** and **M365 Copilot** are entirely separate products with separate pricing and target audiences. If you are weighing [GitHub Copilot vs ChatGPT](https://github.com/features/copilot) for development work, here is what matters.\n\n**ChatGPT Codex** is an agentic coding tool. Each task runs in its own cloud sandbox with access to your repository. The GPT-5.3-Codex model (launched 5 February 2026) runs roughly 25% faster than its predecessor. Codex creates pull requests from issues and can run multiple agents in parallel. Plus ($20/mo) and Business ($25/seat/mo) plans include it.\n\n**GitHub Copilot** is a real-time IDE companion. It provides inline code completions, next-edit predictions, and agent mode within VS Code, JetBrains, and other IDEs. The free tier offers 2,000 completions per month. A key differentiator: GitHub Copilot supports 25+ models from five providers (OpenAI, Anthropic, Google, xAI, and Raptor mini), giving developers model choice that ChatGPT Codex does not offer. For more on [AI for developers](/ai-for-business/training/ai-in-development), see our dedicated training paths.\n\nThe distinction is functional: ChatGPT Codex handles task-based agentic work (build this feature, fix this bug). GitHub Copilot handles real-time inline assistance as you type.",
+      "verdict": {
+        "text": "Neither wins outright. For inline code completions and IDE integration, GitHub Copilot is the tool. For autonomous, task-based coding that produces PRs from issues, ChatGPT Codex is the tool. Many developers use both.",
+        "winner": "tie"
+      }
+    },
+    {
+      "id": "pricing",
+      "title": "Pricing breakdown — every tier compared",
+      "body": "Pricing is where this comparison gets tangled. Both tools offer multiple tiers aimed at different users, and Copilot's add-on model means the sticker price does not tell the full story.\n\n### Consumer tiers\n\n| Tier | ChatGPT | Microsoft Copilot |\n|---|---|---|\n| **Free** | $0. GPT-5.2 Instant, rate-limited. Ads testing in US. | $0. GPT-5 Smart Mode. 15 image boosts/day. No ads. |\n| **Low-cost** | Go: $8/mo. 10x free limits, GPT-5.2 Instant. | M365 Personal: $9.99/mo. Copilot in Word/Excel/PPT/Outlook + 1 TB OneDrive. |\n| **Mid** | Plus: $20/mo. Deep Research, Agent Mode, Codex, Sora 2, Canvas. | M365 Premium: $19.99/mo. Highest AI limits, Copilot Actions, Researcher agent, Defender. |\n| **Top** | Pro: $200/mo. GPT-5.2 Pro, o3-pro, Pulse daily research. | No equivalent consumer tier. |\n\n### Business tiers\n\n| Tier | ChatGPT | Microsoft Copilot |\n|---|---|---|\n| **SMB** | Business: $25/seat/mo (annual). Min 2 users. | M365 Copilot Business: $21/user/mo ($18 promo through March 2026). Max 300 users. |\n| **Enterprise** | Enterprise: custom pricing. | M365 Copilot Enterprise: $30/user/mo. Requires E3/E5 license. |\n| **Free for orgs** | None. | Copilot Chat: free for all Entra ID users with M365. Enterprise data protection included. |\n\n### Developer tiers\n\n| Tier | ChatGPT Codex | GitHub Copilot |\n|---|---|---|\n| **Free** | Not available separately. | Free: 2,000 completions/mo, 50 premium requests/mo. |\n| **Individual** | Included in Plus ($20/mo) and Pro ($200/mo). | Pro: $10/mo. Pro+: $39/mo. |\n| **Business** | Included in Business ($25/seat/mo). | Business: $19/user/mo. Enterprise: $39/user/mo. |\n\n**The hidden cost:** Copilot's business tiers are add-ons. [M365 Copilot Business](https://learn.microsoft.com/en-us/copilot/microsoft-365/) at $21/user/mo requires a separate Microsoft 365 subscription. [ChatGPT Business](https://openai.com/chatgpt/pricing) at $25/seat/mo is standalone — no additional license needed. When you factor in the base M365 license, Copilot's total cost of ownership can exceed ChatGPT's, depending on your existing subscriptions.\n\n**Freshness note:** M365 commercial subscription prices increase on 1 July 2026 (for example, M365 E3 rises from $36 to $39/user/mo). The Copilot Business promotional rate of $18/user/mo runs through 31 March 2026. *Prices verified 13 February 2026.*",
+      "verdict": {
+        "text": "Both tools offer competitive pricing across consumer, business, and developer tiers. Copilot's add-on model can raise total cost, while ChatGPT's standalone pricing is more transparent. The best value depends on your existing subscriptions.",
+        "winner": "tie"
+      }
+    },
+    {
+      "id": "security",
+      "title": "Data privacy and security",
+      "body": "Here is the rule that applies to both tools: **consumer tiers use your data for model training by default. Business and enterprise tiers do not.**\n\nOn both platforms, you can opt out of consumer data training. But the default matters — most individual users never change it. If data privacy is a priority, paid business tiers on either platform are the baseline.\n\n### ChatGPT enterprise security\n\nChatGPT Enterprise provides SAML SSO, SCIM provisioning, and customer-controlled encryption keys (EKM). Data residency spans 10 regions, including the US, Europe, UK, Japan, and Canada. The Compliance API supports eDiscovery and DLP. Certifications include SOC 2 Type 2, ISO 27001/27017/27018/27701, and CSA STAR. A Business Associate Agreement covers HIPAA compliance. See [OpenAI's enterprise privacy page](https://openai.com/enterprise-privacy) for the latest details.\n\n### M365 Copilot enterprise security\n\nM365 Copilot inherits Microsoft's enterprise infrastructure. Authentication runs through Entra ID natively — no separate SSO configuration. Data residency covers the EU Data Boundary plus in-country processing for 15 locations, with expansion planned through 2026. Microsoft Purview provides DLP, Insider Risk Management, and eDiscovery. Certifications include SOC 2 Type 1, ISO 27001/27701/22301/27018/42001 (42001 covers AI management systems specifically). M365 compliance covers HIPAA. Microsoft's Copyright Commitment means the company defends and pays for adverse judgments when customers use built-in content guardrails.\n\n**The Anthropic wrinkle:** Since January 2026, Anthropic serves as an official subprocessor for M365 Copilot. Anthropic currently processes data outside the EU Data Boundary, and admins must activate Anthropic models through admin controls. EU-based organizations should verify this fits their compliance requirements.\n\n| Certification | ChatGPT Enterprise | M365 Copilot Enterprise |\n|---|---|---|\n| **SOC 2** | Type 2 | Type 1 |\n| **ISO 27001** | Yes | Yes |\n| **ISO 42001 (AI)** | No | Yes |\n| **HIPAA** | BAA available | Supported |\n| **Data residency** | 10 regions | EU Data Boundary + 15 locations |\n| **Copyright protection** | Not offered | Copyright Commitment |\n| **Training data use** | No (Business/Enterprise) | No (all commercial tiers) |",
+      "verdict": {
+        "text": "Both platforms provide strong enterprise security. ChatGPT Enterprise leads with SOC 2 Type 2 and customer-controlled encryption. M365 Copilot Enterprise leads with ISO 42001 (AI-specific), broader data residency, and Copyright Commitment. The best choice depends on which certifications your organization requires.",
+        "winner": "tie"
+      }
+    }
+  ],
+  "useCases": {
+    "intro": "Generic feature comparisons only go so far. Here are five real-world scenarios mapped to specific tier recommendations with current pricing.",
+    "items": [
+      {
+        "role": "Marketing managers",
+        "recommendation": "ChatGPT Plus ($20/mo) for creative writing, image generation with Sora 2, and Deep Research to study market trends. Add M365 Copilot in Word and PowerPoint for final document polish. If budget allows one tool, ChatGPT Plus gives you more creative range.",
+        "tool": "a"
+      },
+      {
+        "role": "Software developers",
+        "recommendation": "GitHub Copilot Pro ($10/mo) for inline completions and IDE agent mode. ChatGPT Plus ($20/mo) for Codex — the agentic coding tool that produces PRs from issues. The two complement each other: GitHub Copilot for real-time typing assistance, ChatGPT Codex for task-based autonomous work.",
+        "tool": "a"
+      },
+      {
+        "role": "HR team leads",
+        "recommendation": "M365 Copilot Business ($21/user/mo, currently $18 promo) for native Teams meeting summaries, Outlook triage, and Word document drafting. The Copilot ecosystem keeps everything within the tools your HR team already knows. Pair with [structured AI training](/ai-for-business/training) so everyone progresses at their own pace.",
+        "tool": "b"
+      },
+      {
+        "role": "Small business owners (budget-conscious)",
+        "recommendation": "Copilot Chat (free for Entra ID users with M365) gives your team enterprise-grade AI chat at zero additional cost. Add ChatGPT Go ($8/mo) for the owner who needs deeper research and creative work. Total cost for a five-person team: $8/mo.",
+        "tool": "b"
+      },
+      {
+        "role": "Enterprise IT administrators",
+        "recommendation": "ChatGPT Enterprise offers SOC 2 Type 2 and customer-controlled encryption. M365 Copilot Enterprise offers native Entra ID integration, Microsoft Purview for DLP, and Copyright Commitment. Copilot's advantage is seamless M365 integration with no behavior change from users. Most large organizations will pilot both.",
+        "tool": "b"
+      }
+    ],
+    "useBothBody": "**Most power users benefit from both.** ChatGPT and Copilot complement rather than compete. One handles deep thinking, creative generation, and cross-platform research. The other handles the daily grind inside the apps where your documents, emails, and meetings live. Start with one question: **where does your team spend its day?** If you live in Microsoft 365, start with Copilot. If you work across platforms, start with ChatGPT. If your budget allows, use both. Wondering how a different matchup shakes out? See our [ChatGPT vs Claude](/ai-tools/compare/chatgpt-vs-claude) comparison.",
+    "outro": "Whichever tool you choose, structured training accelerates adoption. AITutoro adapts to your team's skill level so everyone progresses at their own pace — whether they are exploring ChatGPT for the first time or fine-tuning Copilot workflows. [Explore AITutoro's guided training paths](/ai-for-business/training) for ChatGPT, Copilot, and other AI tools."
+  },
+  "related": [
+    { "slug": "chatgpt", "label": "ChatGPT training guide", "type": "product" },
+    { "slug": "copilot", "label": "Microsoft Copilot training guide", "type": "product" },
+    { "slug": "chatgpt-vs-claude", "label": "ChatGPT vs Claude", "type": "comparison" },
+    { "slug": "chatgpt-vs-gemini", "label": "ChatGPT vs Gemini", "type": "comparison" },
+    { "slug": "copilot-vs-gemini", "label": "Copilot vs Gemini", "type": "comparison" }
+  ]
+}

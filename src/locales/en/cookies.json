@@ -1,0 +1,22 @@
+{
+  "title": "Cookie Preferences",
+  "description": "We use essential cookies and privacy-friendly analytics (PostHog). No ad trackers.",
+  "settingsTitle": "Cookie Settings",
+  "settingsDescription": "Choose which cookies you want to allow. Essential cookies are always enabled.",
+  "buttons": {
+    "settings": "Settings",
+    "rejectAll": "Reject All",
+    "accept": "Accept",
+    "cancel": "Cancel",
+    "savePreferences": "Save Preferences"
+  },
+  "essential": {
+    "title": "Essential Cookies",
+    "description": "Required for the website to function. Cannot be disabled.",
+    "badge": "Always Active"
+  },
+  "analytics": {
+    "title": "Analytics Cookies",
+    "description": "Help us understand how visitors interact with our website (PostHog). Privacy-friendly, no personal data sold."
+  }
+}

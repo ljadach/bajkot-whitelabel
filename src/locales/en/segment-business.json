@@ -1,0 +1,42 @@
+{
+  "breadcrumb": "For business",
+  "meta": {
+    "title": "AI training for business | AITutoro",
+    "description": "AI training tailored to your company. AITutoro measures team competencies, trains on your company docs, and tracks real progress — not completion stats."
+  },
+  "hero": {
+    "headline": "See where the team is having problems with AI. Fix it!",
+    "subheadline": "No more generic AI courses. AITutoro teaches using company documents. It maps team competencies and closes gaps — one person at a time."
+  },
+  "cta": {
+    "trial": "Try it for free",
+    "pilot": "Order a pilot",
+    "headline": "Ready to close the AI skills gap?",
+    "description": "Join organizations that are already closing the gap between AI's potential and actual use."
+  },
+  "value1": {
+    "title": "Live AI competence panel",
+    "description": "See which teams are coping with AI and which need support. Identify skills gaps before they become bottlenecks. Track real growth in AI skills, not just course completion."
+  },
+  "value2": {
+    "title": "Training on your documents",
+    "description": "Upload your procedures, manuals and wikis. Employees learn AI through examples from their actual work - not generic content from the internet. Your processes, your context, your terminology."
+  },
+  "value3": {
+    "title": "AI tools tailored to your business",
+    "description": "Personalized learning paths for the specific tools your teams use every day: ChatGPT, Gemini, Claude, Midjourney. Close the gap between having the tools and actually using them."
+  },
+  "pitch": {
+    "tag": "Business: HR & L&D",
+    "headline": "Traditional, static courses do not work",
+    "body": "Traditional courses don't work. The team finishes them, forgets everything, and reverts to old habits. AITutoro provides 5-minute sessions tailored to a busy workday. Each employee receives a path based on their role, level, and the work they do. The result: people who actually use AI — not just \"finished the course.\""
+  },
+  "pitch2": {
+    "headline": "5 minutes. Skills that last.",
+    "body": "Closing the AI skills gap does not require marathon training sessions or taking people off work.\n\nWith AITutoro, employees learn through short modules that fit into each working day. Each lesson relates directly to their role - tailored to the organization's goals and personalized for each person's skill level.\n\nYou will see exactly who is making progress and where the organization needs more support. Not just training — measurable growth in skills."
+  },
+  "testimonial": {
+    "quote": "We do not publish fictitious quotes. The pilot program is ongoing — we will publish real results from real organizations.",
+    "author": "AITutoro Team · Join the pilot program"
+  }
+}

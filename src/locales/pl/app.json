@@ -1,0 +1,92 @@
+{
+  "meta": {
+    "title": "AITutoro — Opanuj AI w 5 minut dziennie",
+    "description": "Opanuj AI w 5 minut dziennie. AITutoro buduje kurs na podstawie roli, narzędzi i poziomu — uczysz się tego, co faktycznie przyspieszy pracę."
+  },
+  "branding": {
+    "appName": "AITutoro",
+    "preBeta": "Beta"
+  },
+  "nav": {
+    "dashboard": "Panel",
+    "settings": "Ustawienia",
+    "team": "Zespół"
+  },
+  "hero": {
+    "betaBadge": "Darmowa Wczesna Beta",
+    "headline": "Opanuj AI. Jedna lekcja, 5 minut. Wiedza do wchłonięcia w biegu.",
+    "description": "Opanuj AI w 5 minut dziennie. AITutoro buduje kurs na podstawie roli, narzędzi i poziomu — uczysz się tego, co faktycznie przyspieszy pracę.",
+    "getStarted": "Zacznij szkolenie AI"
+  },
+  "emailNote": {
+    "text": "Szyfrujemy dane. Nigdy ich nie sprzedajemy."
+  },
+  "learningExperience": {
+    "title": "Kurs szybszy niż zmiany w AI.",
+    "subtitlePrefix": "Bez egzaminów i quizów. Budujemy Twój profil",
+    "subtitleBold": "w dwóch krokach:",
+    "step1": {
+      "title": "Rozmowa wstępna",
+      "description": "Podaj rolę, narzędzia AI (ChatGPT, Gemini, Claude) i typy zadań (kod, raporty). Trenuj to, co faktycznie tworzysz."
+    },
+    "step2": {
+      "title": "Analiza promptu",
+      "description": "Wklej przykładowy prompt. Pokażemy, jak go zoptymalizować, by AI zwróciło dokładnie to, czego oczekujesz."
+    }
+  },
+  "features": {
+    "title": "Opanuj warsztat AI. Filtruj hype.",
+    "subtitle": "Destylujemy wiedzę AI. Zamiast chaosu z YouTube – esencja w krótkich modułach:",
+    "promptFrameworks": {
+      "title": "Precyzja promptów",
+      "description": "Gotowe struktury promptów, które zamieniają odpowiedzi \"ok\" w \"idealne\". Optymalizacja pod konkretne AI."
+    },
+    "featureDiscovery": {
+      "title": "Więcej niż czat",
+      "description": "Integracja z plikami, analiza danych, audio. Wykorzystaj pełny potencjał narzędzi."
+    },
+    "toolMatching": {
+      "title": "Dobór narzędzi AI",
+      "description": "Dobierz narzędzia AI do Twojej konkretnej pracy. Zero generycznych rad ignorujących kontekst."
+    },
+    "roleShortcuts": {
+      "title": "Praktyczne triki AI",
+      "description": "Praktyczne triki na automatyzację rutyny z AI. Od kodu po zarządzanie – oparte na Twoich faktycznych zadaniach."
+    }
+  },
+  "curriculum": {
+    "title": "Aktualizacje na bieżąco",
+    "subtitle": "LLM-y się zmieniają",
+    "description": "AITutoro aktualizuje kursy w czasie rzeczywistym. Uczysz się tego, co działa dziś.",
+    "evolving": {
+      "title": "Zawsze aktualne",
+      "description": "Gdy LLM-y dostają nowe funkcje, aktualizujemy materiały. Uczysz się tego, co działa dziś, nie tego, co działało rok temu."
+    },
+    "adaptive": {
+      "title": "Dostosowuje się do Twojego postępu",
+      "description": "Opanowałeś podstawy? System odblokuje zaawansowane moduły. Masz z czymś problem? Wzmocni. Trening dopasowany do Twojego faktycznego poziomu."
+    },
+    "feedback": {
+      "title": "Twoje tempo, Twój fokus",
+      "description": "Postęp dyktuje ścieżkę. Skupiamy się na tym, czego potrzebujesz dziś — nie na sztywnym programie, który ignoruje, gdzie jesteś."
+    }
+  },
+  "testimonials": {
+    "title": "Co mówią użytkownicy",
+    "subtitle": "Opinie profesjonalistów",
+    "quote1": {
+      "text": "Nie publikujemy wymyślonych opinii. AITutoro jest w fazie pilotażu — prawdziwe wyniki pokażemy, gdy będą gotowe.",
+      "author": "Zespół AITutoro"
+    },
+    "quote2": {
+      "text": "Zamiast fikcyjnych cytatów — zaproszenie. Przetestuj za darmo i oceń sam.",
+      "author": "Dołącz do pilotażu"
+    }
+  },
+  "cta": {
+    "title": "Zbuduj plan nauki AI.",
+    "subtitle": "Nie generyczny kurs. Spersonalizowana ścieżka do mistrzostwa — zbudowana wokół Twojej roli, Twoich narzędzi i Twojej faktycznej pracy.",
+    "button": "Start (5 min)",
+    "privacy": "Twoje dane są szyfrowane i wykorzystywane wyłącznie do personalizacji nauki."
+  }
+}

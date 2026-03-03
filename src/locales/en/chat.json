@@ -1,0 +1,29 @@
+{
+  "error": {
+    "title": "Something went wrong",
+    "description": "We encountered an issue loading the chat. Please try refreshing the page.",
+    "refreshButton": "Refresh Page"
+  },
+  "thinking": "AI Tutor is thinking...",
+  "connectionLost": "Connection lost. This can happen after being away for a while.",
+  "reconnect": "Reconnect",
+  "reconnecting": "Reconnecting...",
+  "continueLabel": "Skill Check",
+  "widget": {
+    "suggestions": "Quick suggestions",
+    "showMore": "Show more",
+    "selectedCount": "{{count}}/10 selected",
+    "likert": {
+      "notConfident": "Not confident",
+      "veryConfident": "Very confident"
+    },
+    "input": {
+      "label": "Your answer",
+      "placeholder": "Type your answer or select from suggestions above...",
+      "waitingPlaceholder": "Waiting for the next question...",
+      "charCount": "{{count}}/{{max}}",
+      "shortcut": "Enter",
+      "submitLabel": "Send message"
+    }
+  }
+}

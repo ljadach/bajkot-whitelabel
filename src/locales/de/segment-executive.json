@@ -1,0 +1,42 @@
+{
+  "breadcrumb": "Für Führungskräfte",
+  "meta": {
+    "title": "Praktisches KI-Wissen für Führungskräfte: von der Strategie zur täglichen Anwendung | AITutoro",
+    "description": "KI-Kurse für Führungskräfte. Kompetenzdiagnose, auf Rollen und Bedürfnisse zugeschnittene Schulungen – keine generischen, langweiligen KI-Kurse."
+  },
+  "hero": {
+    "headline": "Präzisionswissen KI: Individuelle Pfade statt Massentraining.",
+    "subheadline": "Vergiss Kurse \"für alle\". AITutoro beginnt mit einer 5-minütigen Kompetenzdiagnose. Das System erstellt ein Lernprogramm, das auf die individuelle Rolle, das Niveau und die Instrumente der Organisation zugeschnitten ist."
+  },
+  "cta": {
+    "trial": "Kostenlos testen",
+    "pilot": "Umsetzung besprechen",
+    "headline": "Bereit, die KI-Transformation anzuführen?",
+    "description": "Schließ dich den Führungskräften an, die die Lücke zwischen KI-Potenzial und organisatorischer Realität schließen."
+  },
+  "value1": {
+    "title": "Nicht mehr lernen, was sie schon wissen",
+    "description": "Dank der Anfangsdiagnose verschwenden die Teams keine Zeit mit Grundlagen, die sie bereits beherrschen. Jeder Mitarbeiter erhält nur die Inhalte, die er tatsächlich benötigt."
+  },
+  "value2": {
+    "title": "Lernen zu deinen Bedingungen und mit deinen Tools",
+    "description": "Wenn die Organisation nur Gemini zulässt, unterrichten wir Gemini, nicht ChatGPT. Konfigurierbares Programm: Tools, Daten und Verfahren gemäß den Unternehmensstandards."
+  },
+  "value3": {
+    "title": "Kompetenzlandkarte: Fakten statt Statistiken",
+    "description": "Vergiss \"Kursabschlussberichte\". AITutoro bildet die tatsächliche Kompetenz deiner Teams ab. Du siehst sofort, wer Unterstützung bei der Datenanalyse benötigt und wer Gemini effizient nutzt. Die Steigerung der Fähigkeiten wird in eingesparten Stunden gemessen."
+  },
+  "pitch": {
+    "tag": "Führungskräfte: Vorstand und Direktoren",
+    "headline": "Praktische KI, kein weiterer Kurs",
+    "body": "AITutoro lehrt, wie man KI in der täglichen Arbeit der Geschäftsführung einsetzt: Marktentwicklungen analysieren, Berichte zusammenfassen, Präsentationen für den Aufsichtsrat vorbereiten. Kurze Sitzungen und praktisches Wissen, mit dem du Veränderungen vorantreiben kannst – statt nur davon zu hören."
+  },
+  "pitch2": {
+    "headline": "5 Minuten, die die Perspektive verändern",
+    "body": "Anstelle von stundenlangen Vorträgen – eine schnelle Kompetenzprüfung.\n\n- Für den Mitarbeiter: Ein Test, der erkennt, was der Mitarbeiter bereits kann und wo er Zeit verliert.\n- Für das Unternehmen: Sofortiges Wissen darüber, was dein Team tatsächlich kann. Du optimierst die Arbeitszeit – die Mitarbeiter lernen nur das, was ihre Kompetenzlücken füllt."
+  },
+  "testimonial": {
+    "quote": "Wir veröffentlichen keine erfundenen Empfehlungen. Das Pilotprogramm läuft noch – die Ergebnisse werden wir veröffentlichen, sobald sie vorliegen.",
+    "author": "AITutoro-Team · Pilotprojekt besprechen"
+  }
+}

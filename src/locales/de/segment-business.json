@@ -1,0 +1,42 @@
+{
+  "breadcrumb": "Für Unternehmen",
+  "meta": {
+    "title": "KI-Training für Unternehmen | AITutoro",
+    "description": "KI-Training zugeschnitten auf dein Unternehmen. AITutoro misst Team-Kompetenzen, schult anhand interner Dokumente und verfolgt echten Fortschritt — nicht Abschlussstatistiken."
+  },
+  "hero": {
+    "headline": "Sieh, wo das Team Probleme mit KI hat. Beheb das!",
+    "subheadline": "Schluss mit generischen KI-Kursen. AITutoro schult anhand von Unternehmensdokumenten. Es bildet die Kompetenzen des Teams ab und schließt Lücken – Person für Person."
+  },
+  "cta": {
+    "trial": "Kostenlos testen",
+    "pilot": "Pilotprojekt anfragen",
+    "headline": "Bereit, die KI-Kompetenzlücke zu schließen?",
+    "description": "Schließ dich Organisationen an, die bereits die Lücke zwischen dem Potenzial von KI und ihrer tatsächlichen Nutzung schließen."
+  },
+  "value1": {
+    "title": "Live-Panel zur KI-Kompetenz",
+    "description": "Sieh, welche Teams mit KI zurechtkommen und welche Unterstützung benötigen. Erkenne Kompetenzlücken, bevor sie zu Engpässen werden. Verfolge den tatsächlichen Zuwachs an KI-Fähigkeiten, nicht nur den Abschluss von Kursen."
+  },
+  "value2": {
+    "title": "Schulung zu deinen Dokumenten",
+    "description": "Lade deine Verfahren, Handbücher und Wikis hoch. Die Mitarbeiter lernen KI anhand von Beispielen aus ihrer tatsächlichen Arbeit – und nicht durch generische Inhalte aus dem Internet. Deine Prozesse, dein Kontext, deine Terminologie."
+  },
+  "value3": {
+    "title": "Auf dein Unternehmen zugeschnittene KI-Tools",
+    "description": "Personalisierte Lernpfade für die spezifischen Tools, die deine Teams tagtäglich nutzen: ChatGPT, Gemini, Claude, Midjourney. Schließe die Lücke zwischen dem Vorhandensein der Tools und ihrer tatsächlichen Nutzung."
+  },
+  "pitch": {
+    "tag": "Business: HR & L&D",
+    "headline": "Traditionelle, statische Kurse funktionieren nicht",
+    "body": "Herkömmliche Kurse funktionieren nicht. Das Team absolviert sie, vergisst alles wieder und kehrt zu seinen alten Gewohnheiten zurück. AITutoro bietet 5-minütige Sitzungen, die auf einen stressigen Arbeitstag zugeschnitten sind. Jeder Mitarbeiter erhält einen auf seine Rolle, sein Niveau und seine Arbeit abgestimmten Lehrplan. Das Ergebnis: Menschen, die KI tatsächlich nutzen – und nicht nur \"den Kurs absolviert\" haben."
+  },
+  "pitch2": {
+    "headline": "5 Minuten. Fähigkeiten, die bleiben.",
+    "body": "Um die KI-Kenntnislücke zu schließen, sind keine Marathonschulungen oder Freistellungen von der Arbeit erforderlich.\n\nMit AITutoro lernen die Mitarbeiter in kurzen Modulen, die in jeden Arbeitstag passen. Jede Lektion steht in direktem Zusammenhang mit ihrer Rolle – zugeschnitten auf die Ziele des Unternehmens und personalisiert auf das Qualifikationsniveau der einzelnen Mitarbeiter.\n\nDu wirst genau sehen, wer Fortschritte macht und wo das Unternehmen mehr Unterstützung braucht. Nicht nur Schulung – messbare Kompetenzsteigerung."
+  },
+  "testimonial": {
+    "quote": "Wir veröffentlichen keine erfundenen Zitate. Die Pilotphase läuft noch – wir werden echte Ergebnisse von echten Organisationen veröffentlichen.",
+    "author": "AITutoro-Team · Nimm an der Pilotphase teil"
+  }
+}

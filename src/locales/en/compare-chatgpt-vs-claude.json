@@ -1,0 +1,196 @@
+{
+  "meta": {
+    "title": "ChatGPT vs Claude: which AI assistant fits your work in 2026?",
+    "description": "ChatGPT vs Claude compared on writing, coding, reasoning, and pricing with February 2026 data. Find which AI fits your role and workflow."
+  },
+  "hero": {
+    "title": "ChatGPT vs Claude: which AI assistant fits your work?",
+    "intro": "The ChatGPT vs Claude debate shifted in February 2026. ChatGPT retired five models in a single day and went all-in on GPT-5.2. Claude fired back with Opus 4.6 and an ad-free expanded free tier. On paper, both tools now handle writing, coding, research, and analysis. The real differences surface when you put them to work — and those differences depend entirely on **what kind of work you do**."
+  },
+  "lastUpdated": "February 2026",
+  "quickAnswer": {
+    "body": "**Neither tool is universally better.** ChatGPT owns image/video generation, voice mode, and research-heavy drafts. Claude owns writing quality, autonomous coding, and the ad-free experience. At $20/month both deliver strong feature sets — your choice depends on which strengths match your workflow."
+  },
+  "context": {
+    "title": "The February 2026 shake-up (what changed)",
+    "body": "The comparison landscape shifted dramatically in February 2026. Here's what happened.\n\n**OpenAI consolidated hard.** On 13 February 2026, OpenAI retired GPT-4o, GPT-4.1, GPT-4.1 mini, o4-mini, and GPT-5 Instant/Thinking from ChatGPT's model picker. The platform now defaults to [GPT-5.2](https://llm-stats.com/blog/research/gpt-5-2-launch). No more choosing between half a dozen models — you get one engine, tuned for everything.\n\n**Anthropic went wide on access.** Claude released [Opus 4.6 on 5 February 2026](https://www.vellum.ai/blog/claude-opus-4-6-benchmarks) with adaptive thinking (four effort levels replacing extended thinking) and a 1M token context window in beta. The [free tier expanded](https://winbuzzer.com/2026/02/13/anthropic-expands-claude-free-tier-openai-chatgpt-ads-xcxwbn/) to include file creation (Excel, PowerPoint, Word, PDF), connectors for Slack, Notion, and Canva — all without ads.\n\n**The free tier gap widened.** ChatGPT's free tier now shows ads (rolled out February 2026) and provides limited GPT-5.2 access (10 messages per 5 hours). Claude's free tier provides Sonnet 4.5 and Haiku 4.5 with no ads and richer features. For users who don't want to pay, this shift matters."
+  },
+  "table": {
+    "title": "Feature comparison at a glance",
+    "summary": "The table below captures the decisive differences as of February 2026. Both tools share basics like web search, file upload, and project organization — the gaps are in what's exclusive to each.",
+    "caption": "ChatGPT owns image/video generation and voice mode. Claude owns computer use, richer file creation, and the MCP integration protocol. Everything else is close.",
+    "rows": [
+      {
+        "feature": "Context window",
+        "toolA": "400K tokens",
+        "toolB": "200K (1M beta)",
+        "winner": "a"
+      },
+      {
+        "feature": "Max output",
+        "toolA": "128K tokens",
+        "toolB": "128K tokens",
+        "winner": "tie"
+      },
+      {
+        "feature": "Free tier model",
+        "toolA": "GPT-5.2 (limited access)",
+        "toolB": "Sonnet 4.5 + Haiku 4.5",
+        "winner": "b"
+      },
+      {
+        "feature": "Ads in free tier",
+        "toolA": "Yes",
+        "toolB": "No",
+        "winner": "b"
+      },
+      {
+        "feature": "Image generation",
+        "toolA": "GPT Image (native) + DALL-E 3 (legacy)",
+        "toolB": "SVG/code output only",
+        "winner": "a"
+      },
+      {
+        "feature": "Video generation",
+        "toolA": "Sora 2 (Plus/Pro)",
+        "toolB": "No",
+        "winner": "a"
+      },
+      {
+        "feature": "Voice mode",
+        "toolA": "Advanced Voice Mode",
+        "toolB": "No",
+        "winner": "a"
+      },
+      {
+        "feature": "Code editing",
+        "toolA": "Canvas (inline editing)",
+        "toolB": "Artifacts (live preview)",
+        "winner": "tie"
+      },
+      {
+        "feature": "Agentic coding",
+        "toolA": "Codex (cloud agent)",
+        "toolB": "Claude Code (terminal agent)",
+        "winner": "tie"
+      },
+      {
+        "feature": "Computer use",
+        "toolA": "No",
+        "toolB": "Yes (72.7% OSWorld)",
+        "winner": "b"
+      },
+      {
+        "feature": "File creation",
+        "toolA": "Limited",
+        "toolB": "Excel, PPT, Word, PDF",
+        "winner": "b"
+      },
+      {
+        "feature": "Memory",
+        "toolA": "Two-layer (explicit + implicit)",
+        "toolB": "On-demand (paid users)",
+        "winner": "a"
+      },
+      {
+        "feature": "Integrations",
+        "toolA": "Google Workspace, plugins",
+        "toolB": "MCP protocol, connectors",
+        "winner": "tie"
+      },
+      {
+        "feature": "API cost (flagship, input)",
+        "toolA": "$1.75/1M tokens",
+        "toolB": "$5/1M tokens",
+        "winner": "a"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "writing",
+      "title": "Writing quality — who produces better text?",
+      "body": "If you write for a living — marketing copy, reports, documentation, long-form content — this section of the Claude vs ChatGPT comparison matters most.\n\n**Claude writes prose that reads like a human drafted it.** Multiple 2026 comparisons describe Claude's output as \"more expressive\" and \"more natural.\" It handles tone adjustment well, avoids repetitive jargon, and maintains creative callbacks across long documents. When you need polished, publication-ready text, Claude produces fewer rounds of editing. For prompting techniques that sharpen your results further, see our guide to [prompts for better AI writing](/ai-resources/ai-prompts/ai-for-writing).\n\n**ChatGPT packs more information into first drafts.** Its mature web search integration means research-heavy drafts arrive with citations and data baked in. For fact-forward content — analyst reports, literature reviews, briefing documents — ChatGPT's information density is an advantage. It also supports 100+ languages natively, compared to Claude's primarily English-optimized training.\n\n**ChatGPT's formatting habit is polarizing.** It defaults to aggressive bullet-point structures and a tone frequently described as \"dry and academic.\" If you need conversational copy or brand voice consistency, expect to reshape its output.",
+      "verdict": {
+        "text": "Claude for polished prose and long-form content. ChatGPT for research-heavy first drafts where breadth of information matters more than stylistic finesse.",
+        "winner": "tie"
+      }
+    },
+    {
+      "id": "coding",
+      "title": "Coding — benchmarks and real-world performance",
+      "body": "Both tools can write, debug, and refactor code. The question is how they do it and where each pulls ahead. For role-specific prompt templates, check our [best prompts for coding](/ai-resources/ai-prompts/ai-for-coding).\n\n**On standard benchmarks, they're nearly identical.** [SWE-bench](/ai-tools/glossary#swe-bench) Verified scores put Claude Opus 4.6 at 80.8% and GPT-5.2 at 80.0%. For everyday coding tasks — fixing bugs, writing functions, explaining code — you won't notice a meaningful difference.\n\n**Claude leads on [agentic](/ai-tools/glossary#agentic-ai) coding.** When the task requires autonomous, multi-step problem solving, Claude separates itself. On [Terminal-Bench](/ai-tools/glossary#terminal-bench) 2.0, Claude scores 65.4% versus GPT-5.2's 64.7%. The gap widens on real-world retail automation (tau-2 bench): Claude hits 91.9% compared to ChatGPT's 82.0%. Claude Code, a terminal-based agent, saves checkpoints and works through complex refactors without hand-holding.\n\n**ChatGPT Codex takes a different approach.** It operates as a cloud-based agent — you submit a task, it works in the background, and delivers results. Less hands-on, more delegated. For quick code edits and research-assisted coding, Canvas provides a smooth inline editing experience.\n\n**Frontend prototyping favors Claude.** Artifacts render code with a live preview pane, making it straightforward to prototype React components and interactive UIs. ChatGPT's Canvas offers inline editing but without the same real-time visual feedback loop.",
+      "verdict": {
+        "text": "Claude for autonomous coding workflows and frontend prototyping. ChatGPT for research-assisted code and cloud-delegated tasks. For standard code generation, flip a coin — the benchmarks are that close.",
+        "winner": "tie"
+      }
+    },
+    {
+      "id": "reasoning",
+      "title": "Reasoning and knowledge work",
+      "body": "For complex analysis, strategic thinking, and document-heavy workflows, benchmarks tell a clear story.\n\n**Claude Opus 4.6 leads on abstract reasoning.** On [ARC-AGI-2](/ai-tools/glossary#arc-agi-2), Claude scores 68.8% versus GPT-5.2 Pro's 54.2% — a substantial gap. On Humanity's Last Exam with tools enabled, Claude edges ahead at 53.1% versus 50.0%. In knowledge work simulations (GDPval-AA [Elo](/ai-tools/glossary#elo-rating)), Claude holds a 144-point lead: 1,606 versus 1,462.\n\n**GPT-5.2 excels at factual recall.** On GPQA Diamond, a graduate-level science and reasoning benchmark, GPT-5.2 scores 93.2% compared to Claude's 91.3%. When the task demands precise, encyclopedic knowledge retrieval, GPT-5.2 has a small but consistent edge.\n\n**Different thinking modes, same goal.** Claude's adaptive thinking offers four effort levels (low, medium, high, max), letting you dial reasoning depth to match the task. GPT-5.2's [extended thinking](/ai-tools/glossary#extended-thinking) applies full reasoning power uniformly. Claude's approach gives more control; ChatGPT's is simpler to use.",
+      "verdict": {
+        "text": "Claude for complex analysis and knowledge-heavy work. ChatGPT for tasks where factual precision matters more than reasoning depth.",
+        "winner": "tie"
+      }
+    },
+    {
+      "id": "pricing",
+      "title": "Pricing — free tiers and paid plans",
+      "body": "Both tools offer free access, $20/month individual plans, and team tiers. The differences are in what you get at each level. All pricing reflects February 2026 data — check [Claude AI pricing](https://screenapp.io/blog/claude-ai-pricing) and [OpenAI pricing details](https://llm-stats.com/blog/research/gpt-5-2-launch) for the latest.\n\n**Free tier: Claude wins on value.** Claude's free tier provides Sonnet 4.5 (a competitive mid-tier model), file creation, and connectors — with no ads. ChatGPT's free tier provides limited GPT-5.2 access (10 messages per 5 hours) but now includes ads and offers fewer built-in features.\n\n**Paid individual plans start at the same price.** Both charge $20/month for their entry-level paid tier (Claude Pro, ChatGPT Plus). Beyond that, the structures diverge. Claude offers Max tiers at $100/month (5x usage) and $200/month (20x usage). ChatGPT offers Pro at $200/month with o3-pro access and higher limits.\n\n**Team plans are comparable.** Claude Team runs $25–30 per seat per month. ChatGPT Team costs $25–30 per user per month (annual pricing). Both include project workspaces, admin controls, and higher usage limits.\n\n**API pricing: ChatGPT is cheaper at the flagship level.** GPT-5.2 costs $1.75/$14 per million tokens (input/output). Claude Opus 4.6 costs $5/$25. At the mid-tier (Sonnet 4.5 versus GPT-4o), the gap narrows: $3/$15 versus $2.50/$10.",
+      "verdict": {
+        "text": "ChatGPT wins on API cost. Claude wins on free tier value. At the $20/month individual level, both deliver strong feature sets — your choice depends on which tool's strengths match your workflow.",
+        "winner": "tie"
+      }
+    }
+  ],
+  "useCases": {
+    "intro": "Feature lists and benchmarks matter less than how a tool fits your daily work. Here's a decision grid mapped to professional roles — the clearest way to settle the ChatGPT or Claude question.",
+    "items": [
+      {
+        "role": "Content writers and marketers",
+        "recommendation": "Claude. Stronger prose quality, better tone control, fewer rounds of editing.",
+        "tool": "b"
+      },
+      {
+        "role": "Developers (autonomous workflows)",
+        "recommendation": "Claude. Agentic coding benchmarks and Claude Code's terminal workflow give it the edge for multi-step development tasks.",
+        "tool": "b"
+      },
+      {
+        "role": "Developers (quick edits and research)",
+        "recommendation": "ChatGPT. Canvas for inline code editing, web search for library documentation, Codex for delegated tasks.",
+        "tool": "a"
+      },
+      {
+        "role": "Researchers and analysts",
+        "recommendation": "ChatGPT. Mature web search, 100+ language support, higher information density in responses.",
+        "tool": "a"
+      },
+      {
+        "role": "Business analysts and knowledge workers",
+        "recommendation": "Claude. Leads on knowledge work benchmarks (GDPval-AA) and document analysis workflows.",
+        "tool": "b"
+      },
+      {
+        "role": "Visual creators",
+        "recommendation": "ChatGPT. GPT Image and DALL-E 3 for images, Sora 2 for video — Claude has no equivalent.",
+        "tool": "a"
+      },
+      {
+        "role": "Budget-conscious users",
+        "recommendation": "Claude. The free tier delivers a stronger model with no ads.",
+        "tool": "b"
+      }
+    ],
+    "useBothBody": "Many professionals treat ChatGPT as their research and multimedia engine and Claude as their writing and coding partner. If your budget allows two subscriptions, this combination covers the widest range of tasks. For a broader view across more tools, see the [full AI tools comparison](/ai-tools/compare/all).",
+    "outro": "Whichever tool fits your role, AITutoro's adaptive modules cover both [ChatGPT overview and training](/ai-tools/chatgpt) and [Claude overview and training](/ai-tools/claude) — so you build skill on the platform that matches your work."
+  },
+  "related": [
+    { "slug": "chatgpt", "label": "ChatGPT training guide", "type": "product" },
+    { "slug": "claude", "label": "Claude training guide", "type": "product" },
+    { "slug": "chatgpt-vs-copilot", "label": "ChatGPT vs Copilot", "type": "comparison" },
+    { "slug": "chatgpt-vs-gemini", "label": "ChatGPT vs Gemini", "type": "comparison" },
+    { "slug": "claude-vs-gemini", "label": "Claude vs Gemini", "type": "comparison" }
+  ]
+}

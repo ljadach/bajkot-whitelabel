@@ -1,0 +1,60 @@
+{
+  "empty": {
+    "title": "No progress yet",
+    "description": "Start learning to track your progress!",
+    "button": "Go to Course"
+  },
+  "title": "Your Progress",
+  "subtitle": "Track your AI learning journey",
+  "continueButton": "Continue Learning",
+  "stats": {
+    "totalPoints": "Total Points",
+    "exercisesDone": "Exercises Done",
+    "chaptersDone": "Chapters Done",
+    "dayStreak": "Day Streak",
+    "best": "Best: {{count}}"
+  },
+  "activity": {
+    "title": "Activity This Month",
+    "legend": {
+      "activities": "Activities",
+      "noActivity": "No activity"
+    },
+    "noData": "No activity data yet",
+    "types": {
+      "chapter_started": "Started reading",
+      "chapter_completed": "Completed",
+      "exercise_completed": "Exercise",
+      "session_started": "Session",
+      "tool_exercise": "Learning tool"
+    },
+    "popover": {
+      "more": "+{{count}} more",
+      "totalPoints": "pts",
+      "continue": "Continue Learning",
+      "loading": "Loading...",
+      "exploringOnly": "You were getting started — finish a chapter to see it here!"
+    }
+  },
+  "modules": {
+    "title": "Your Modules",
+    "empty": {
+      "title": "No modules yet",
+      "description": "Complete the intake to get your personalized learning modules."
+    },
+    "moduleNumber": "Module {{number}}",
+    "chapterNumber": "Chapter {{number}}",
+    "status": {
+      "notStarted": "Not Started",
+      "inProgress": "In Progress",
+      "completed": "Completed"
+    },
+    "timeSpent": "{{minutes}}m spent",
+    "noTimeLogged": "No time logged",
+    "exercisesCount": "{{completed}}/{{total}} exercises"
+  },
+  "footer": {
+    "totalTime": "Total learning time:",
+    "lastActive": "Last active:"
+  }
+}

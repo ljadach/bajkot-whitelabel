@@ -1,0 +1,74 @@
+{
+  "title": "Settings",
+  "appearance": {
+    "title": "Appearance",
+    "description": "Customize the look and feel",
+    "snowEffect": {
+      "title": "Snow Effect",
+      "description": "Enable falling snowflakes animation"
+    }
+  },
+  "learningTools": {
+    "title": "Learning Tools",
+    "description": "Toggle tools available while reading modules",
+    "glossatorMargin": {
+      "title": "Margin Notes",
+      "description": "Side notepad for jotting down thoughts per chapter"
+    },
+    "workbenchTabs": {
+      "title": "Workbench",
+      "description": "Concept radar, skeleton key, contrapositor and more"
+    },
+    "feynmanOracle": {
+      "title": "Feynman Oracle",
+      "description": "Floating thinking companion that challenges your understanding"
+    },
+    "chapterProbes": {
+      "title": "Chapter Probes",
+      "description": "Reflection prompts shown after each chapter"
+    }
+  },
+  "account": {
+    "title": "Account",
+    "description": "Manage your account settings",
+    "startOver": {
+      "title": "Start Over",
+      "warning": "Reset your learner profile, training plan, and course progress. You'll go through the intake again to rebuild everything.",
+      "button": "Start over",
+      "confirmation": {
+        "title": "This will reset:",
+        "description": "You'll need to redo the intake conversation to rebuild your profile.",
+        "items": {
+          "profile": "Your learner profile and chat history",
+          "plan": "Your training plan and all modules",
+          "progress": "Course progress and exercise submissions",
+          "tools": "Learning tool preferences"
+        },
+        "preserved": "Your account, payment status, and activity log are preserved.",
+        "cancelButton": "Cancel",
+        "confirmButton": "Yes, start over",
+        "resetting": "Resetting..."
+      }
+    },
+    "delete": {
+      "title": "Delete Account",
+      "warning": "Permanently delete your account and all associated data. This action cannot be undone.",
+      "button": "Delete my account",
+      "confirmation": {
+        "title": "Are you absolutely sure?",
+        "description": "This will permanently delete:",
+        "items": {
+          "profile": "Your profile and chat history",
+          "plan": "Your training plan and modules",
+          "data": "All associated data"
+        },
+        "typeConfirm": "Type **DELETE** to confirm",
+        "placeholder": "DELETE",
+        "cancelButton": "Cancel",
+        "confirmButton": "Delete my account",
+        "deleting": "Deleting..."
+      }
+    }
+  },
+  "gdpr": "In accordance with GDPR, you have the right to request deletion of your personal data. When you delete your account, all your data is permanently removed from our servers."
+}

@@ -1,0 +1,40 @@
+{
+  "title": "Kompetenzprüfung",
+  "tabs": {
+    "prompt": "Prompt",
+    "skill": "Skill"
+  },
+  "prompt": {
+    "label": "Fügen Sie einen <strong>Prompt ein, den Sie kürzlich</strong> für Ihre Arbeit verwendet haben.",
+    "helper": "Jeder Prompt ist geeignet – wir möchten nur sehen, wie Sie derzeit mit KI arbeiten.",
+    "whyWeAsk": {
+      "title": "Warum wir fragen?",
+      "description": "Wir fragen, um Ihren Ausgangspunkt zu bestimmen und das zu überspringen, was Sie bereits wissen."
+    },
+    "placeholder": "Fügen Sie einen verwendeten Prompt ein...",
+    "charCount": "{{count}}/3000 Zeichen",
+    "shortcut": "⌘/Ctrl + Enter"
+  },
+  "skill": {
+    "label": "Fügen Sie einen <strong>Skill ein, den Sie erstellt haben</strong> (z.B. Skill.md, System-Prompt oder Agent-Konfiguration).",
+    "helper": "Zeigen Sie uns, wie Sie wiederverwendbare KI-Anweisungen strukturieren.",
+    "whyWeAsk": {
+      "title": "Warum ein Skill?",
+      "description": "Skills zeigen tiefere KI-Kompetenz — wie Sie Anweisungen strukturieren, parametrisieren und wiederverwenden."
+    },
+    "placeholder": "Fügen Sie Ihre Skill-Definition, Skill.md oder Agent-Konfiguration ein...",
+    "charCount": "{{count}}/3000 Zeichen",
+    "shortcut": "⌘/Ctrl + Enter"
+  },
+  "submit": {
+    "button": "Absenden & Fortfahren",
+    "analyzing": "Ihr Prompt wird analysiert..."
+  },
+  "result": {
+    "title": "Bewertung abgeschlossen!",
+    "levelLabel": "Ihr Level:",
+    "context": "Wir nutzen diese Bewertung, um Ihren Trainingsplan zu personalisieren und uns auf Bereiche zu konzentrieren, in denen Sie sich am meisten verbessern können."
+  },
+  "continueLabel": "Profilzusammenfassung",
+  "regenerateLabel": "Kompetenzprüfung neu generieren"
+}

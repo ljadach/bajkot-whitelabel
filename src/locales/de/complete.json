@@ -1,0 +1,40 @@
+{
+  "title": "Vielen Dank!",
+  "subtitle": "Ihre Bestellung wurde erfolgreich empfangen.",
+  "whatsNext": {
+    "title": "Was passiert als Nächstes?",
+    "timeline": "Wir werden uns innerhalb von **3 Werktagen** bei Ihnen melden, um Ihr Training zu planen und einen Mentor zuzuweisen.",
+    "emailConfirmation": "Sie erhalten eine E-Mail an **{{email}}** mit allen Details."
+  },
+  "orderSummary": {
+    "title": "Bestellübersicht",
+    "product": "AITutoro Pro (Monatlich)",
+    "price": "20 €/Monat",
+    "description": "Personalisiertes KI-Trainingsprogramm + Updates"
+  },
+  "inTheMeantime": {
+    "title": "In der Zwischenzeit",
+    "step1": {
+      "title": "Prüfen Sie Ihre E-Mails",
+      "description": "Suchen Sie nach einer Bestätigungsnachricht mit Ihren Bestelldetails und nächsten Schritten."
+    },
+    "step2": {
+      "title": "Achten Sie auf unsere Kontaktaufnahme",
+      "description": "Wir werden uns innerhalb von 3 Werktagen melden, um Ihre erste Sitzung zu planen."
+    },
+    "step3": {
+      "title": "Bereiten Sie sich auf das Lernen vor",
+      "description": "Machen Sie sich bereit, Ihre KI-Fähigkeiten mit personalisierter Anleitung zu verbessern!"
+    }
+  },
+  "support": {
+    "title": "Brauchen Sie Hilfe?",
+    "description": "Fragen oder Bedenken? Unser Support-Team ist für Sie da.",
+    "contactLink": "Support kontaktieren"
+  },
+  "legal": {
+    "privacy": "Datenschutzrichtlinie",
+    "terms": "Nutzungsbedingungen",
+    "refund": "Rückerstattungsrichtlinie"
+  }
+}

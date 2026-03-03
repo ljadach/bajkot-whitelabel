@@ -1,0 +1,396 @@
+{
+  "meta": {
+    "title": "Słownik AI: 52 kluczowe terminy, od tokenów po benchmarki",
+    "description": "Poznaj 52 kluczowe terminy AI, od tokenów po benchmarki. Ten słownik AI łączy każde pojęcie z kolejnym, abyś zrozumiał, jak naprawdę działają systemy AI."
+  },
+  "hero": {
+    "title": "Słownik AI: 52 kluczowe terminy, od tokenów po benchmarki",
+    "intro": "AI rozwija się szybko. Słownictwo jeszcze szybciej — a większość słowników podaje definicję bez wyjaśniania, dlaczego termin jest ważny i jak łączy się z resztą. Ten słownik AI działa inaczej. Każdy termin opiera się na poprzednim, więc na końcu nie tylko dowiesz się, czym jest Transformer — zrozumiesz też, dlaczego zmienił wszystko."
+  },
+  "breadcrumb": "Słownik",
+  "sidebarTitle": "Kategorie",
+  "whyItMattersLabel": "Dlaczego to ważne",
+  "backToHub": "Powrót do narzędzi AI",
+  "howToUse": {
+    "body": "Słownik został uporządkowany według grup pojęć, a nie alfabetycznie. Każda sekcja opiera się na poprzedniej, więc czytanie od początku do końca pozwala uzyskać wielopoziomowe zrozumienie działania systemów AI. Każdy termin zawiera definicję w prostym języku, wyjaśnienie, dlaczego ma on znaczenie w praktyce, oraz wyraźne powiązania z pokrewnymi pojęciami. Możesz jednak przejść do dowolnej sekcji — każdy termin jest niezależny. Dodaj tę stronę do zakładek i wróć do niej, gdy natrafisz na termin, który sprawia Ci trudność."
+  },
+  "categories": [
+    {
+      "id": "core",
+      "label": "Podstawowe pojęcia",
+      "terms": ["artificial-intelligence", "generative-ai", "machine-learning", "deep-learning"]
+    },
+    {
+      "id": "how-models-are-built",
+      "label": "Jak budowane są modele AI",
+      "terms": ["neural-network", "transformer", "large-language-model", "parameters", "embeddings"]
+    },
+    {
+      "id": "how-ai-reads-and-responds",
+      "label": "Jak AI odczytuje i odpowiada",
+      "terms": ["token", "context-window", "knowledge-cutoff", "prompt-engineering", "chain-of-thought-prompting", "system-prompt", "temperature", "structured-outputs", "inference", "latency"]
+    },
+    {
+      "id": "training-fine-tuning",
+      "label": "Szkolenie, dostosowywanie i aktualizowanie modeli",
+      "terms": ["training-data", "training-ai-model-training", "fine-tuning", "rag-retrieval-augmented-generation"]
+    },
+    {
+      "id": "reliability-and-safety",
+      "label": "Niezawodność i bezpieczeństwo",
+      "terms": ["hallucination", "ai-bias", "guardrails"]
+    },
+    {
+      "id": "nlp",
+      "label": "Przetwarzanie języka naturalnego (NLP)",
+      "terms": ["nlp", "multimodal-ai"]
+    },
+    {
+      "id": "how-models-are-measured",
+      "label": "Jak mierzy się modele AI",
+      "terms": ["mmlu-massive-multitask-language-understanding", "humaneval", "swe-bench", "arc-agi-2", "terminal-bench", "gdpval-aa", "elo-rating"]
+    },
+    {
+      "id": "ai-architectures",
+      "label": "Architektury generowania AI",
+      "terms": ["autoregressive-generation", "diffusion-model"]
+    },
+    {
+      "id": "ai-capabilities",
+      "label": "Możliwości i przepływy pracy AI",
+      "terms": ["agentic-ai", "extended-thinking", "deep-research", "web-search-grounding", "source-grounding"]
+    },
+    {
+      "id": "enterprise-and-compliance",
+      "label": "Przedsiębiorstwa, integracja i zgodność z przepisami",
+      "terms": ["mcp-model-context-protocol", "data-residency", "copyright-indemnity"]
+    },
+    {
+      "id": "buzzwords-vs-reality",
+      "label": "Popularne hasła AI a rzeczywistość",
+      "terms": [
+        "more-parameters-always-means-a-better-model",
+        "ai-models-understand-what-they-generate",
+        "temperature-equals-creativity",
+        "fine-tuning-requires-massive-compute",
+        "rag-replaces-training",
+        "context-window-equals-memory",
+        "ai-agents-are-fully-autonomous"
+      ]
+    }
+  ],
+  "terms": {
+    "artificial-intelligence": {
+      "term": "Sztuczna inteligencja (AI)",
+      "definition": "AI to każdy system, który wykonuje zadania wymagające zazwyczaj ludzkiej inteligencji — rozpoznawanie obrazów, tłumaczenie języków, podejmowanie decyzji. Istnieje jednak zasadnicza różnica w sposobie działania systemów AI.\n\n**Tradycyjna AI** działa zgodnie z zaprogramowanymi regułami. Filtr antyspamowy sprawdzający zakazane słowa kluczowe to tradycyjna AI: reaktywna, deterministyczna, ograniczona do tego, co wyraźnie zakodowali inżynierowie. **Generatywna AI** uczy się wzorców na podstawie ogromnych zbiorów danych i tworzy na ich podstawie nowe treści — tekst, obrazy, kod, audio. Jest proaktywna, a nie reaktywna, generując wyniki, których jej twórcy nigdy wyraźnie nie zaprogramowali.\n\nKiedy ludzie mówią \"AI\" w 2026 roku, prawie zawsze mają na myśli generatywną AI. Pozostała część tego słownika podąża tym tropem.",
+      "whyItMatters": "Zrozumienie różnicy między tradycyjną AI a generatywną AI ma fundamentalne znaczenie. Kiedy ludzie mówią \"AI\" w 2026 roku, prawie zawsze mają na myśli generatywną AI — świadomość tej różnicy pozwala uniknąć nieporozumień w każdej rozmowie na temat tej technologii.",
+      "relatedTerms": ["generative-ai", "machine-learning", "deep-learning"]
+    },
+    "generative-ai": {
+      "term": "Generatywna AI",
+      "definition": "Generatywna AI tworzy nowe treści, ucząc się wzorców na podstawie danych szkoleniowych, a następnie stosując te wzorce do generowania oryginalnych wyników. Poproś ją o napisanie wiadomości e-mail, a wygeneruje ją słowo po słowie w oparciu o wzorce statystyczne, których nauczyła się podczas szkolenia.\n\nNarzędzia, z którymi prawdopodobnie się spotkałeś — [ChatGPT](/ai-tools/chatgpt), [Claude](/ai-tools/claude), [Gemini](/ai-tools/gemini), DALL-E — to generatywna AI. Każde wykorzystuje inną architekturę modelu, ale wszystkie mają to samo podstawowe podejście: uczą się wzorców, a następnie generują.",
+      "whyItMatters": "Generatywna AI to kategoria stojąca za każdym ważnym narzędziem AI w 2026 roku. Zrozumienie, że tworzy ona poprzez przewidywanie wzorców — a nie poprzez rozumienie — pozwala ustalić realistyczne oczekiwania co do tego, co te narzędzia mogą, a czego nie mogą zrobić.",
+      "relatedTerms": ["artificial-intelligence", "machine-learning", "large-language-model", "token"]
+    },
+    "machine-learning": {
+      "term": "Uczenie maszynowe (ML)",
+      "definition": "Uczenie maszynowe jest podzbiorem AI, w którym systemy uczą się na podstawie danych zamiast przestrzegać sztywnych reguł. Istnieją trzy rodzaje:\n\n- **Uczenie nadzorowane** opiera się na danych oznaczonych etykietami. Modelowi pokazuje się tysiące zdjęć oznaczonych \"kot\" i \"pies\", a on uczy się je rozróżniać.\n- **Uczenie nienadzorowane** odkrywa wzorce w danych nieoznaczonych etykietami. Przekaż modelowi historie zakupów klientów bez kategorii, a samodzielnie znajdzie naturalne grupy.\n- **Uczenie ze wzmocnieniem** opiera się na metodzie prób i błędów, gdzie za dobre wyniki przyznaje się nagrody, a za złe kary — to samo podejście stosuje się w AI wykorzystywanej w grach.\n\nWszystkie systemy generatywnej AI opierają się na uczeniu maszynowym. Kolejny termin jeszcze bardziej zawęża zakres.",
+      "whyItMatters": "Uczenie maszynowe jest motorem wszystkich generatywnych systemów AI. Znajomość trzech rodzajów — uczenia nadzorowanego, nienadzorowanego i ze wzmocnieniem — pomaga zrozumieć, dlaczego modele zachowują się w określony sposób i które podejście pasuje do danego problemu.",
+      "relatedTerms": ["artificial-intelligence", "deep-learning", "training-data", "fine-tuning"]
+    },
+    "deep-learning": {
+      "term": "Głębokie uczenie",
+      "definition": "Głębokie uczenie jest podzbiorem uczenia maszynowego, które wykorzystuje sieci neuronowe o wielu warstwach — co najmniej czterech, często setkach lub tysiącach. Warstwy te pozwalają modelowi uczyć się coraz bardziej abstrakcyjnych reprezentacji danych: wczesne warstwy mogą wykrywać krawędzie na obrazie, podczas gdy głębsze warstwy rozpoznają twarze.\n\nGłębokie uczenie umożliwiło powstanie nowoczesnej generatywnej AI.",
+      "whyItMatters": "Głębokie uczenie jest przełomem, który umożliwił powstanie nowoczesnej generatywnej AI. Bez głębokich wielowarstwowych sieci neuronowych nie mielibyśmy Transformerów, LLM ani żadnego z narzędzi, które definiują dzisiejszą AI.",
+      "relatedTerms": ["machine-learning", "neural-network", "transformer"]
+    },
+    "neural-network": {
+      "term": "Sieć neuronowa",
+      "definition": "Sieć neuronowa składa się z warstw prostych jednostek przetwarzających zwanych **neuronami**. Każdy neuron oblicza ważoną sumę swoich danych wejściowych, dodaje składnik odchylenia, a następnie przekazuje wynik przez nieliniową funkcję aktywacji. Sieć uczy się, dostosowując te wagi i odchylenia, aż jej wyniki będą zgodne z oczekiwanymi rezultatami. Bardziej szczegółowe wyjaśnienie techniczne znajdziesz w [przewodniku IBM po sieciach neuronowych](https://www.ibm.com/think/topics/neural-networks).\n\nMożesz to porównać do serii filtrów. Surowe dane trafiają do pierwszej warstwy. Każda kolejna warstwa udoskonala sygnał, wydobywając coraz bardziej użyteczne wzorce. Ostatnia warstwa generuje wynik — klasyfikację, prognozę lub wygenerowany token.",
+      "whyItMatters": "Sieci neuronowe są podstawową architekturą wszystkich nowoczesnych systemów AI. Zrozumienie, w jaki sposób warstwy neuronów przetwarzają i udoskonalają dane, wyjaśnia, dlaczego systemy AI mogą uczyć się wzorców zbyt złożonych dla tradycyjnego programowania.",
+      "relatedTerms": ["deep-learning", "transformer", "parameters", "embeddings"]
+    },
+    "transformer": {
+      "term": "Transformer",
+      "definition": "**Transformer** to architektura sieci neuronowej, która stanowi podstawę wszystkich współczesnych modeli AI. Wprowadzony w artykule z 2017 r. [Attention is All You Need (Vaswani et al., 2017)](https://arxiv.org/abs/1706.03762), rozwiązał fundamentalny problem: wcześniejsze architektury (RNN) przetwarzały sekwencje po jednym elemencie na raz, co było powolne i utrudniało uchwycenie relacji między odległymi słowami.\n\nTransformery wykorzystują mechanizm zwany **self-attention**, który ocenia wszystkie części danych wejściowych jednocześnie, określając, które elementy są najbardziej istotne dla siebie nawzajem. Dzięki temu równoległemu przetwarzaniu Transformery były szybsze w szkoleniu i lepiej wychwytywały odległe zależności w tekście.\n\nIstnieją dwa kluczowe podtypy. Modele **encoder-only** (takie jak BERT) doskonale radzą sobie z rozumieniem tekstu — klasyfikacją, wyszukiwaniem, analizą nastrojów. Modele **decoder-only** (takie jak GPT) doskonale radzą sobie z generowaniem tekstu — pisaniem, kodowaniem, konwersacją. Większość nowoczesnych chatbotów wykorzystuje Transformery decoder-only.",
+      "whyItMatters": "Architektura Transformer zmieniła wszystko. Mechanizm self-attention umożliwił równoległe przetwarzanie, które sprawiło, że szkolenie na ogromnych zbiorach danych stało się wykonalne — co bezpośrednio doprowadziło do powstania LLM i narzędzi AI, z których korzystamy dzisiaj.",
+      "relatedTerms": ["neural-network", "large-language-model", "parameters", "embeddings"]
+    },
+    "large-language-model": {
+      "term": "Duży model językowy (LLM)",
+      "definition": "LLM to model oparty na Transformerze, wstępnie przeszkolony na ogromnych ilościach danych tekstowych — ze źródeł takich jak Common Crawl (ponad 50 miliardów stron internetowych) i Wikipedia (ponad 60 milionów stron we wszystkich językach). LLM zawierają od setek miliardów do bilionów parametrów i mogą generować, podsumowywać, tłumaczyć i wnioskować na podstawie tekstu.\n\n\"Duży\" w LLM odnosi się zarówno do danych szkoleniowych, jak i liczby parametrów.",
+      "whyItMatters": "LLM to modele stojące za ChatGPT, Claude, Gemini i każdym większym chatbotem AI. Zrozumienie ich skali — szkolonych na miliardach stron internetowych z bilionami parametrów — wyjaśnia zarówno ich możliwości, jak i ograniczenia.",
+      "relatedTerms": ["transformer", "parameters", "generative-ai", "training-data", "token"]
+    },
+    "parameters": {
+      "term": "Parametry",
+      "definition": "Parametry to wewnętrzne zmienne — wagi, odchylenia i osadzenia — które model dostosowuje podczas szkolenia w celu poprawy swoich prognoz. **Wagi** kontrolują, jak silnie każde dane wejściowe wpływają na decyzje modelu. **Odchylenia** zmieniają progi decyzyjne.\n\nPorównania skali pozwalają umieścić liczby w kontekście: GPT-3 ma 175 miliardów parametrów. Szacuje się, że GPT-4 ma 1,76 biliona. DeepSeek R1 ma 671 miliardów.\n\nJednakże większa liczba parametrów nie oznacza automatycznie lepszego modelu. Architektura, jakość danych szkoleniowych i techniki szkolenia mają równie duże lub nawet większe znaczenie. DeepSeek R1 z 671 miliardami parametrów przewyższa niektóre modele o większej liczbie parametrów w określonych benchmarkach.",
+      "whyItMatters": "Liczba parametrów jest najczęściej podawaną specyfikacją modelu, ale też najczęściej błędnie rozumianą. Świadomość, że architektura i jakość szkolenia mają równie duże znaczenie jak sama liczba parametrów, pozwala uniknąć utożsamiania większego z lepszym.",
+      "relatedTerms": ["neural-network", "transformer", "large-language-model", "embeddings", "training-ai-model-training"]
+    },
+    "embeddings": {
+      "term": "Osadzenia",
+      "definition": "Osadzenia to numeryczne reprezentacje, które oddają znaczenie. Przekształcają słowa, zdania lub całe dokumenty w wielowymiarowe wektory — tablice liczb, w których elementy o podobnej semantyce skupiają się blisko siebie w przestrzeni wektorowej.\n\nSłowa \"król\" i \"królowa\" znajdowałyby się blisko siebie. Podobnie jak \"Paryż\" i \"Francja\". Ta relacja przestrzenna pozwala systemom AI rozumieć podobieństwa, analogie i kontekst bez wyraźnego uczenia ich tych powiązań.\n\nKluczowe algorytmy to Word2Vec (uchwycenie skojarzeń słownych) i BERT (uchwycenie kontekstowego znaczenia słów — \"bank\" w pobliżu \"rzeki\" vs. \"bank\" w pobliżu \"pieniędzy\"). Osadzenia napędzają wszystko, od wyszukiwania po systemy rekomendacji.\n\nArchitektura jest teraz jasna: **sieci neuronowe** zapewniają strukturę uczenia się, **Transformery** przetwarzają sekwencje równolegle, **LLM** skalują Transformery za pomocą ogromnych ilości danych, **parametry** definiują wiedzę przyswojoną przez model, a **osadzenia** reprezentują znaczenie jako wektory.",
+      "whyItMatters": "Osadzenia to sposób, w jaki AI przekształca język w matematykę. Stanowią one podstawę systemów wyszukiwania, rekomendacji i RAG — zrozumienie ich wyjaśnia, dlaczego AI może znaleźć powiązane pojęcia, nawet jeśli dokładne słowa kluczowe nie pasują.",
+      "relatedTerms": ["neural-network", "parameters", "rag-retrieval-augmented-generation", "large-language-model"]
+    },
+    "token": {
+      "term": "Token",
+      "definition": "Token to najmniejsza jednostka tekstu przetwarzana przez modele językowe. Jeden token odpowiada mniej więcej czterem znakom lub 0,75 słowa. Zdanie \"How are you doing today?\" składa się z około sześciu tokenów.\n\nKażda interakcja z modelem AI — wejście i wyjście — jest mierzona w tokenach. Ma to znaczenie, ponieważ **za tokeny się płaci.** Ceny API są ustalane za milion przetworzonych tokenów.\n\nTokeny nie ograniczają się do tekstu. Obrazy wykorzystują około 258 tokenów na kafelek, wideo 263 tokeny na sekundę, a audio 32 tokeny na sekundę. Zrozumienie tokenów jest niezbędne do zarządzania kosztami i zrozumienia, dlaczego niektóre odpowiedzi są ucinane.",
+      "whyItMatters": "Tokeny są tym, za co płacisz. Każde API AI jest wyceniane na podstawie przetworzonych tokenów, a każde okno kontekstowe jest mierzone w tokenach. Zrozumienie ekonomii tokenów jest niezbędne do zarządzania kosztami i jakością wyników.",
+      "relatedTerms": ["context-window", "inference", "large-language-model"]
+    },
+    "context-window": {
+      "term": "Okno kontekstowe",
+      "definition": "Okno kontekstowe to pamięć robocza modelu — całkowita liczba tokenów, które może on rozpatrzyć jednocześnie. Tokeny to jednostka; okno kontekstowe to pojemność.\n\nObecne rozmiary różnią się znacznie: Claude oferuje okno 200 tys. tokenów (z 1 milionem w wersji beta), Gemini 2.0 Flash obsługuje około 1 miliona tokenów, a GPT-5.2 zapewnia do 400 tys. tokenów. Większe okno kontekstowe oznacza, że model może przetwarzać dłuższe dokumenty i zachować spójność w długich rozmowach.\n\nKompromis: większe okna zwiększają dokładność i zmniejszają halucynacje, ale wymagają kwadratowo większej mocy obliczeniowej. Podwojenie okna nie podwaja kosztów — powoduje ich około czterokrotny wzrost.",
+      "whyItMatters": "Okno kontekstowe określa, z jaką ilością informacji model może pracować jednocześnie. Ma to bezpośredni wpływ na możliwość przetwarzania długich dokumentów, zachowanie spójności rozmowy i zmniejszenie halucynacji — a także ma duży wpływ na koszty.",
+      "relatedTerms": ["token", "hallucination", "inference"]
+    },
+    "knowledge-cutoff": {
+      "term": "Knowledge cutoff (granica wiedzy)",
+      "definition": "Knowledge cutoff to data, po której dane szkoleniowe modelu nie zawierają już żadnych informacji. Zdarzenia, publikacje i odkrycia po tej dacie są modelowi nieznane — chyba że dostarczysz je przez web search grounding, RAG lub bezpośrednie wstrzyknięcie kontekstu.\n\nAktualne daty odcięcia (luty 2026): GPT-5.2 ma granicę wiedzy na 31 sierpnia 2025. Claude Opus 4.6 — na początek 2025. Gemini 3 Pro — na wrzesień 2025.\n\nCo istotne, modele nie znają precyzyjnie własnej daty odcięcia i mogą odpowiadać na pytania o późniejsze wydarzenia, [halucynując](/ai-tools/glossary#hallucination) wiarygodnie brzmiące informacje. Rozwiązaniem jest [web search grounding](/ai-tools/glossary#web-search-grounding): ChatGPT Search (Bing), integracja Google w Gemini oraz dostęp do Bing w Copilot pobierają informacje w czasie rzeczywistym, uzupełniając pamięć ze szkolenia.",
+      "whyItMatters": "Knowledge cutoff wyjaśnia, dlaczego narzędzia AI pewnie podają błędne odpowiedzi na pytania o ostatnie wydarzenia — wypełniają luki statystycznym prawdopodobieństwem, a nie faktami. Przy pytaniach o bieżące wydarzenia zawsze korzystaj z web search grounding i weryfikuj informacje wrażliwe na czas.",
+      "relatedTerms": ["hallucination", "web-search-grounding", "training-data", "rag-retrieval-augmented-generation"]
+    },
+    "prompt-engineering": {
+      "term": "Inżynieria promptów",
+      "definition": "Inżynieria promptów to praktyka polegająca na strukturyzowaniu danych wejściowych, aby model generował lepsze wyniki. To samo pytanie, sformułowane w inny sposób, może dać diametralnie różne rezultaty.\n\nKluczowe techniki obejmują:\n\n- **Zero-shot prompting:** Zapytaj bezpośrednio, bez podawania przykładów. \"Przetłumacz to na francuski.\"\n- **Few-shot prompting:** Podaj przykłady pożądanego wzorca. Pokaż trzy tłumaczenia, a następnie poproś o czwarte.\n- **[Chain-of-thought prompting](/ai-tools/glossary#chain-of-thought-prompting):** Poproś model o rozumowanie krok po kroku, co poprawia dokładność w przypadku złożonych problemów.\n- **Role prompting:** Przypisz osobowość. \"Jesteś starszym analitykiem danych. Przejrzyj ten zestaw danych.\"\n- **Prompt chaining:** Połącz wiele poleceń dla złożonych zadań — najpierw podsumuj, następnie przeanalizuj, a na końcu zarekomenduj.\n\nOpanowanie tych technik to najszybszy sposób na uzyskanie większej wartości z dowolnego narzędzia AI. Zapoznaj się z naszą [kolekcją promptów AI](/ai-resources/ai-prompts), aby uzyskać gotowe do użycia przykłady.",
+      "whyItMatters": "Inżynieria promptów to najszybszy sposób na poprawę wyników AI. Ten sam model może generować przeciętne lub doskonałe wyniki w zależności od tego, jak skonstruujesz dane wejściowe.",
+      "relatedTerms": ["temperature", "token", "inference", "large-language-model"]
+    },
+    "chain-of-thought-prompting": {
+      "term": "Chain-of-thought (łańcuch myśli)",
+      "definition": "Chain-of-thought (CoT) prompting instruuje model, aby rozwiązywał problem krok po kroku, zanim poda ostateczną odpowiedź. Zamiast od razu przeskakiwać do wniosku, model pokazuje swoje rozumowanie.\n\nNajprostsza implementacja: dodaj \"Myśl krok po kroku\" lub \"Pokaż swoje rozumowanie\" do promptu. Few-shot CoT idzie dalej: pokaż dwa lub trzy rozwiązane przykłady rozumowania krok po kroku, a następnie przedstaw docelowy problem.\n\nDlaczego to działa mechanicznie: modele autoregresywne generują każdy token na podstawie wcześniejszych tokenów. Gdy model jest zmuszony wygenerować pośrednie kroki rozumowania, jego uwaga skupiona na tych widocznych krokach poprawia jakość końcowej odpowiedzi — spisane rozumowanie działa jak rusztowanie, z którym dalszy ciąg musi być spójny.\n\nCoT dodaje tokeny (a więc koszt i opóźnienie) do każdego zapytania. Tryby [Extended thinking](/ai-tools/glossary#extended-thinking) w Claude, ChatGPT i Gemini automatyzują CoT wewnętrznie, więc ręczne stosowanie CoT ma największe znaczenie przy korzystaniu z modeli bazowych lub API bez wbudowanych trybów myślenia.",
+      "whyItMatters": "Chain-of-thought prompting to technika promptowania o największym wpływie na złożone problemy. Widoczne rozumowanie poprawia dokładność — nie tylko przejrzystość — dlatego tryby Extended thinking zasadniczo automatyzują tę technikę na poziomie modelu.",
+      "relatedTerms": ["prompt-engineering", "extended-thinking", "system-prompt", "inference"]
+    },
+    "system-prompt": {
+      "term": "System prompt",
+      "definition": "System prompt to zestaw instrukcji przekazywanych modelowi AI przed rozpoczęciem interakcji z użytkownikiem. Definiuje osobowość modelu, ton, zakres zadań, ograniczenia i stały kontekst — bez konieczności powtarzania ich w każdej wiadomości.\n\nPrzykłady skutecznej zawartości system promptu:\n- **Persona:** \"Jesteś starszym analitykiem finansowym. Zawsze podawaj źródła danych.\"\n- **Ograniczenia:** \"Omawiaj wyłącznie tematy związane z naszym produktem. Grzecznie przekierowuj pytania nie na temat.\"\n- **Reguły formatu:** \"Zawsze odpowiadaj w punktach. Używaj języka formalnego.\"\n- **Kontekst:** \"Firma użytkownika to Acme Corp. Ich główny rynek to IT w ochronie zdrowia.\"\n\nSystem prompt to główny mechanizm dostosowywania zachowania AI w aplikacjach produkcyjnych. Użytkownicy API ustawiają je programowo per sesja. Produkty konsumenckie takie jak ChatGPT i Claude udostępniają je przez ustawienia Custom Instructions.",
+      "whyItMatters": "System prompt pozwala zakodować wymagania w zachowaniu AI raz, zamiast powtarzać je w każdej rozmowie. Dla deweloperów budujących produkty AI system prompt to główna powierzchnia sterowania. Dla zaawansowanych użytkowników opanowanie Custom Instructions odblokowuje spójne, spersonalizowane zachowanie.",
+      "relatedTerms": ["prompt-engineering", "chain-of-thought-prompting", "inference"]
+    },
+    "temperature": {
+      "term": "Temperatura",
+      "definition": "Temperatura kontroluje losowość wyników modelu podczas inferencji. Skaluje rozkład prawdopodobieństwa dla prognoz następnego tokenu za pomocą funkcji softmax.\n\n**Niska temperatura** (0,0–0,3) daje skupione, deterministyczne wyniki — idealne do zadań opartych na faktach, generowania kodu i ekstrakcji danych. Model prawie zawsze wybiera token o najwyższym prawdopodobieństwie.\n\n**Wysoka temperatura** (powyżej 1,0) spłaszcza krzywą prawdopodobieństwa, dając tokenom o niższym prawdopodobieństwie większą szansę na wybór. Zwiększa to różnorodność, ale może też dawać bezsensowne wyniki.\n\nPowszechne nieporozumienie: temperatura nie kontroluje \"kreatywności\". Model nie staje się bardziej inteligentny przy wyższych ustawieniach. Staje się bardziej losowy. Pułap jakości pozostaje taki sam, a podłoga opada.",
+      "whyItMatters": "Znajomość działania temperatury pozwala dostosować wyniki AI do konkretnego zadania. Niska do precyzji faktograficznej, umiarkowana do zrównoważonego pisania, a wysoka oznacza większą losowość — nie większą kreatywność.",
+      "relatedTerms": ["inference", "token", "hallucination"]
+    },
+    "structured-outputs": {
+      "term": "Structured outputs (ustrukturyzowane wyniki)",
+      "definition": "Structured outputs to funkcja AI wymuszająca na modelu zwracanie danych w określonym formacie — najczęściej JSON, XML lub niestandardowym schemacie — zamiast tekstu swobodnego. Definiujesz oczekiwaną strukturę; model gwarantuje, że wygeneruje dane zgodne z nią.\n\nPrzykład: zamiast pytać \"Jakie są kluczowe daty w tym kontrakcie?\" (odpowiedź tekstowa), podajesz schemat JSON z polami `{party_name, effective_date, termination_date, notice_period}` — a model niezawodnie wypełnia każde pole.\n\nStructured outputs to coś innego niż prośba do modelu o \"sformatowanie jako JSON\". Takie podejście daje poprawny JSON przez większość czasu. Prawdziwe structured outputs używają constrained decoding, aby zagwarantować zgodność z formatem — model fizycznie nie może wygenerować tokenów, które złamałyby schemat.\n\nObsługiwane przez: GPT-5.2 API (tryb strict), Gemini API (tryb JSON ze schematem), Claude API (tool use jako mechanizm structured output).",
+      "whyItMatters": "Structured outputs przekształcają AI z generatora tekstu w niezawodny procesor danych. Gdy dalszy kod zależy od parsowania wyników AI, potrzebujesz gwarancji formatu, nie prawdopodobieństwa — structured outputs to właśnie to, co sprawia, że integracje AI nadają się do produkcji.",
+      "relatedTerms": ["inference", "mcp-model-context-protocol", "large-language-model"]
+    },
+    "inference": {
+      "term": "Inferencja",
+      "definition": "Inferencja zachodzi za każdym razem, gdy wysyłasz prompt — model generuje wynik na podstawie Twoich danych wejściowych. Jeśli szkolenie to szkoła, inferencja to praca.\n\nPodczas inferencji zachodzą trzy fazy: **prefill** (jednoczesne przetwarzanie wszystkich tokenów wejściowych), **decode** (generowanie tokenów wyjściowych pojedynczo) i **konwersja wyjścia** (zamiana tokenów na czytelny tekst).\n\nInferencja musi być szybka, ponieważ odbywa się w czasie rzeczywistym. Każdy wygenerowany token kosztuje. Szkolenie odbywa się jednorazowo i trwa kilka dni lub tygodni. Inferencja zachodzi miliony razy dziennie i musi zakończyć się w ciągu sekund.",
+      "whyItMatters": "Inferencja to obszar, w którym kumulują się wszystkie koszty. Szkolenie odbywa się jednorazowo; inferencja zachodzi za każdym razem, gdy ktoś wysyła prompt. Zrozumienie tej różnicy wyjaśnia, dlaczego ceny API i szybkość odpowiedzi mają tak duże znaczenie.",
+      "relatedTerms": ["token", "temperature", "training-ai-model-training", "prompt-engineering"]
+    },
+    "latency": {
+      "term": "Latency (opóźnienie)",
+      "definition": "Latency w AI mierzy czas między wysłaniem zapytania a otrzymaniem odpowiedzi. W praktyce liczą się dwie wartości:\n\n**Time to first token (TTFT):** Ile czasu upłynie, zanim model zacznie strumieniować wynik. Kluczowe dla interaktywnych interfejsów — 500 ms TTFT daje wrażenie spowolnienia; poniżej 200 ms wydaje się natychmiastowe. Advanced Voice Mode w ChatGPT celuje w średnio 232 ms TTFT.\n\n**Opóźnienie end-to-end:** Całkowity czas potrzebny do ukończenia pełnej odpowiedzi. Skaluje się z długością, ponieważ generowanie autoregresywne produkuje tokeny sekwencyjnie — odpowiedź o 1000 tokenów zawsze zajmuje więcej czasu niż odpowiedź o 100 tokenach.\n\nTrzy dźwignie sterują opóźnieniem: rozmiar modelu (większe modele są wolniejsze na porównywalnym sprzęcie), sprzęt (wyspecjalizowane chipy inferencyjne znacząco redukują TTFT) i długość wyjścia (nieuchronnie liniowa). Tryby Extended thinking dodają od 2 do 30 sekund, zależnie od głębokości rozumowania.",
+      "whyItMatters": "Latency decyduje o tym, czy system AI wydaje się responsywny. Dla aplikacji czasu rzeczywistego, takich jak głos i kodowanie na żywo, TTFT jest kluczową metryką. Dla przetwarzania wsadowego liczy się czas end-to-end. Znajomość dźwigni kontrolujących opóźnienie pomaga balansować między szybkością a jakością.",
+      "relatedTerms": ["inference", "token", "extended-thinking", "autoregressive-generation"]
+    },
+    "training-data": {
+      "term": "Dane szkoleniowe",
+      "definition": "Dane szkoleniowe to informacje, na podstawie których model się uczy. Mogą być **oznaczone** (każdy punkt danych opatrzony prawidłową odpowiedzią, używane w uczeniu nadzorowanym) lub **nieoznaczone** (surowe dane, w których model samodzielnie wyszukuje wzorce).\n\nJakość jest ważniejsza niż ilość. Model przeszkolony na starannie wyselekcjonowanych, zróżnicowanych i dobrze zorganizowanych danych osiąga lepsze wyniki niż model przeszkolony na większym, ale zaszumionym zbiorze danych. Przygotowanie obejmuje gromadzenie, czyszczenie, transformację, inżynierię cech oraz podział na zestawy szkoleniowe, walidacyjne i testowe.",
+      "whyItMatters": "Jakość danych szkoleniowych jest najważniejszym czynnikiem wpływającym na wydajność modelu. Zasada \"garbage in, garbage out\" ma zastosowanie w AI bardziej niż gdziekolwiek indziej — stronnicze lub zaszumione dane produkują stronnicze lub niewiarygodne modele.",
+      "relatedTerms": ["machine-learning", "training-ai-model-training", "ai-bias", "fine-tuning"]
+    },
+    "training-ai-model-training": {
+      "term": "Szkolenie (szkolenie modelu AI)",
+      "definition": "Szkolenie to proces uczenia modelu poprzez eksponowanie go na dane i dostosowywanie jego parametrów. Cykl powtarza się miliony razy: dane wejściowe przepływają przez sieć (**forward pass**), prognozy modelu są porównywane z oczekiwanymi wynikami (**obliczanie błędu**), błędy propagują się wstecz przez warstwy (**backpropagation**), a wagi są aktualizowane metodą gradientowego spadku.\n\nTo praca wymagająca ogromnej mocy obliczeniowej. Szkolenie Llama 3.1 (405 miliardów parametrów) wymagało około 38 yottaflops — czyli 3,8 x 10^25 operacji matematycznych. Sesje szkoleniowe trwają kilka dni lub tygodni na klastrach specjalistycznego sprzętu.\n\nKluczowa różnica: **szkolenie odbywa się raz (lub rzadko). Inferencja zachodzi za każdym razem, gdy ktoś wysyła prompt.** Kolejne dwa terminy opisują sposoby dostosowania wyszkolonego modelu bez konieczności zaczynania od zera.",
+      "whyItMatters": "Szkolenie to najdroższa i najbardziej czasochłonna faza budowy modelu AI. Zrozumienie cyklu forward pass i backpropagation wyjaśnia, dlaczego unika się ponownego szkolenia od zera i dlaczego istnieją alternatywy, takie jak fine-tuning i RAG.",
+      "relatedTerms": ["training-data", "parameters", "fine-tuning", "inference", "rag-retrieval-augmented-generation"]
+    },
+    "fine-tuning": {
+      "term": "Fine-tuning",
+      "definition": "Fine-tuning dostosowuje wstępnie wytrenowany model do konkretnego zadania lub dziedziny. Zamiast trenować od zera, bierzesz istniejący model i udoskonalasz go za pomocą specjalistycznych danych.\n\nTrzy główne podejścia:\n\n- **Pełny fine-tuning** aktualizuje wszystkie parametry. Skuteczny, ale kosztowny.\n- **Fine-tuning efektywny parametrowo (PEFT)** aktualizuje tylko niewielki podzbiór. **LoRA** (Low-Rank Adaptation) jest najpopularniejszą techniką — wprowadza małe macierze, które można trenować, do warstw Transformera, zmniejszając liczbę parametrów wymagających aktualizacji o kilka rzędów wielkości. LoRA może działać na konsumenckich kartach graficznych z 24 GB pamięci.\n- **RLHF** (Reinforcement Learning from Human Feedback) trenuje model nagród na podstawie ludzkich rankingów, a następnie optymalizuje LLM, by maksymalizować te wyniki nagród. W ten sposób ChatGPT nauczył się być pomocny, a nie szkodliwy.\n\nMit, że fine-tuning wymaga ogromnej mocy obliczeniowej, jest przestarzały. LoRA zmieniło zasady gry.",
+      "whyItMatters": "Fine-tuning pozwala dostosować model ogólnego przeznaczenia do Twojej konkretnej dziedziny bez konieczności zaczynania od zera. Dzięki LoRA jest to teraz dostępne na sprzęcie konsumenckim — bariera dostępu do niestandardowej AI upadła.",
+      "relatedTerms": ["training-ai-model-training", "parameters", "rag-retrieval-augmented-generation", "machine-learning"]
+    },
+    "rag-retrieval-augmented-generation": {
+      "term": "RAG (retrieval-augmented generation)",
+      "definition": "RAG uzupełnia wiedzę modelu w momencie inferencji danymi zewnętrznymi. Zamiast polegać wyłącznie na tym, czego model nauczył się podczas szkolenia, RAG pobiera odpowiednie informacje z zewnętrznej bazy wiedzy i wstrzykuje je do promptu.\n\nProces składa się z czterech kroków: **osadź** dane zewnętrzne jako wektory, **pobierz** najbardziej istotne fragmenty na podstawie zapytania użytkownika, **wzbogać** prompt pobranym kontekstem i **wygeneruj** odpowiedź uwzględniającą ten kontekst.\n\nRAG jest opłacalny (nie wymaga ponownego szkolenia), zapewnia aktualność informacji i umożliwia wskazanie źródła. Nie zastępuje jednak szkolenia — stanowi jego uzupełnienie. Słabo wyszkolony model nie zapewni dobrych wyników nawet przy idealnym pobieraniu danych.\n\nProgresja: **fine-tuning zmienia sam model. RAG zmienia to, co model widzi w momencie inferencji.**",
+      "whyItMatters": "RAG to najbardziej praktyczny sposób na utrzymanie aktualności odpowiedzi AI i oparcie ich na Twoich własnych danych — bez kosztów i złożoności ponownego szkolenia. Stanowi podstawę większości wdrożeń AI w przedsiębiorstwach.",
+      "relatedTerms": ["embeddings", "inference", "fine-tuning", "training-ai-model-training"]
+    },
+    "hallucination": {
+      "term": "Halucynacja",
+      "definition": "Halucynacja zachodzi, gdy model generuje treść, która brzmi wiarygodnie, ale jest niezgodna z faktami. Model nie kłamie — przewiduje najbardziej prawdopodobny statystycznie następny token bez żadnego mechanizmu weryfikacji faktów.\n\nPrzyczyny obejmują nadmierne dopasowanie do danych szkoleniowych, stronnicze zbiory danych i fundamentalną naturę prognoz statystycznych. Wiodące modele zgłaszają wskaźniki halucynacji na poziomie 0,7%–0,9%, podczas gdy wiele powszechnie stosowanych modeli osiąga wyniki między 2% a 5%.\n\nDwa czynniki z wcześniejszych sekcji łączą się bezpośrednio: **wyższa temperatura** zwiększa losowość i może podwyższyć wskaźniki halucynacji. **Większe okna kontekstowe** pomagają zmniejszyć halucynacje, dostarczając modelowi więcej istotnych informacji. Zrozumienie obu koncepcji pomaga w praktyce zarządzać ryzykiem halucynacji.",
+      "whyItMatters": "Halucynacje są głównym zagrożeniem dla wiarygodności AI. Modele z pewnością generują fałszywe informacje bez wewnętrznej weryfikacji faktów. Znajomość przyczyn — oraz wpływu temperatury i okna kontekstowego na wskaźniki — jest niezbędna do odpowiedzialnego korzystania z AI.",
+      "relatedTerms": ["temperature", "context-window", "ai-bias", "guardrails"]
+    },
+    "ai-bias": {
+      "term": "Stronniczość AI",
+      "definition": "Stronniczość AI odnosi się do systematycznych błędów, które powodują niesprawiedliwe wyniki. Trzy główne źródła ją zasilają:\n\n- **Stronnicze dane szkoleniowe** — jeśli zbiór danych nie odzwierciedla niektórych grup, model dziedziczy te luki.\n- **Błąd algorytmiczny** — wybory projektowe w architekturze modelu, które wzmacniają istniejące wzorce.\n- **Błąd interpretacji ludzkiej** — ludzie stosujący wyniki modelu bez kwestionowania założeń.\n\nOgraniczenie tego zjawiska wymaga zróżnicowanych, reprezentatywnych danych szkoleniowych, regularnych audytów sprawiedliwości i nadzoru ludzkiego w punktach decyzyjnych. Żaden model nie jest wolny od stronniczości, ale świadomość tych źródeł jest pierwszym krokiem do odpowiedzialnego użytkowania.",
+      "whyItMatters": "Stronniczość AI powoduje rzeczywiste szkody, gdy modele podejmują decyzje mające wpływ na ludzi. Zrozumienie trzech źródeł — danych, algorytmu i ludzkiej interpretacji — jest pierwszym krokiem do odpowiedzialnego tworzenia i wykorzystywania AI.",
+      "relatedTerms": ["training-data", "hallucination", "guardrails"]
+    },
+    "guardrails": {
+      "term": "Zabezpieczenia",
+      "definition": "Zabezpieczenia to techniczne i proceduralne środki kontroli, które utrzymują systemy AI w bezpiecznych granicach. Działają na trzech poziomach:\n\n- **Filtrowanie danych wejściowych** sprawdza, co model otrzymuje — blokując próby wstrzyknięcia promptów, ujawnienie danych osobowych i szkodliwe żądania.\n- **Ograniczenia przetwarzania** limitują zachowanie modelu podczas generowania — egzekwując granice tematyczne i zasady zgodności.\n- **Egzekwowanie wyników** weryfikuje odpowiedzi, zanim dotrą do użytkownika — sprawdzając, czy nie zawierają szkodliwych treści, czy są spójne faktograficznie i zgodne z polityką.\n\nZabezpieczenia nie sprawiają, że modele są nieomylne. Sprawiają, że ryzyko jest możliwe do opanowania. Każde produkcyjne wdrożenie AI ich potrzebuje.",
+      "whyItMatters": "Każde produkcyjne wdrożenie AI wymaga zabezpieczeń. Stanowią różnicę między użytecznym narzędziem a nieprzewidywalnym obciążeniem — zarządzają filtrowaniem danych wejściowych, ograniczeniami przetwarzania i walidacją danych wyjściowych w trzech warstwach ochronnych.",
+      "relatedTerms": ["hallucination", "ai-bias"]
+    },
+    "nlp": {
+      "term": "NLP",
+      "definition": "Przetwarzanie języka naturalnego to szeroka dziedzina, która umożliwia interakcję językową między człowiekiem a komputerem. Łączy lingwistykę komputerową, modelowanie statystyczne i głębokie uczenie w jeden proces: **wstępne przetwarzanie tekstu** (oczyszczanie i strukturyzowanie surowego tekstu), **ekstrakcja cech** (identyfikacja znaczących wzorców), **analiza tekstu** (stosowanie modeli w celu zrozumienia znaczenia) oraz **szkolenie modeli** (poprawa dokładności dzięki informacjom zwrotnym). [Słownik terminów uczenia maszynowego Google](https://developers.google.com/machine-learning/glossary) zawiera dodatkowe definicje NLP, które warto zapisać.\n\nKluczowe zadania w ramach NLP obejmują rozpoznawanie nazwanych encji (identyfikowanie osób, miejsc i organizacji w tekście), analizę nastrojów (określanie tonu emocjonalnego) oraz tagowanie części mowy (klasyfikowanie słów według roli gramatycznej). LLM działają w ramach NLP — są najpotężniejszymi narzędziami NLP, jakie kiedykolwiek stworzono, ale NLP jako dyscyplina istnieje od dziesięcioleci.",
+      "whyItMatters": "NLP to szersza dyscyplina, do której należą LLM. Zrozumienie procesu — przetwarzania wstępnego, ekstrakcji cech, analizy, szkolenia — daje kontekst dla tego, dlaczego LLM działają w taki sposób i co było przed nimi.",
+      "relatedTerms": ["large-language-model", "deep-learning", "multimodal-ai"]
+    },
+    "multimodal-ai": {
+      "term": "Wielomodalna AI",
+      "definition": "Wielomodalna AI przetwarza i generuje jednocześnie wiele rodzajów danych — tekst, obrazy, dźwięk, wideo i coraz częściej dane przestrzenne 3D. W przeciwieństwie do modeli jednomodalnych, które obsługują tylko tekst, systemy wielomodalne interpretują kombinacje danych wejściowych.\n\nAktualne przykłady: GPT-4o przetwarza tekst, obrazy i dźwięk. Claude obsługuje tekst i obrazy. Gemini działa w zakresie tekstu, obrazów, dźwięku i wideo. Kierunek jest jasny — przyszłe systemy AI będą natywnie wielomodalne i będą przetwarzać informacje tak jak ludzie: za pomocą wielu zmysłów jednocześnie.",
+      "whyItMatters": "Kierunek rozwoju AI zmierza w stronę natywnej wielomodalności. Zrozumienie, że modele coraz częściej przetwarzają jednocześnie tekst, obrazy, dźwięk i wideo, przygotowuje Cię na narzędzia i przepływy pracy AI nowej generacji.",
+      "relatedTerms": ["nlp", "large-language-model", "generative-ai"]
+    },
+    "mmlu-massive-multitask-language-understanding": {
+      "term": "MMLU (massive multitask language understanding)",
+      "definition": "MMLU testuje ogólną wiedzę z 57 przedmiotów — od STEM i prawa po żywienie i religię — za pomocą 15 908 pytań wielokrotnego wyboru. Opublikowany we wrześniu 2020 r. przez Dana Hendrycksa i in., szybko stał się standardową miarą tego, jak dobrze model radzi sobie z różnorodną wiedzą faktograficzną. Oryginalny [artykuł dotyczący benchmarku MMLU (Hendrycks et al., 2020)](https://arxiv.org/abs/2009.03300) szczegółowo opisuje metodologię.\n\nDo połowy 2024 r. najlepsze modele niemal osiągnęły nasycenie oryginalnego benchmarku, uzyskując tak wysokie wyniki, że różnice między nimi stały się statystycznie nieistotne. Nasycenie to spowodowało powstanie kilku pochodnych: **MMLU-Pro** (trudniejsze pytania), **MMMLU** (wersja wielojęzyczna) i **MMLU-Redux** (poprawione błędy w oryginale).\n\nWysoki wynik MMLU oznacza, że model dobrze radzi sobie z przywoływaniem faktów z różnych dziedzin. Nie mierzy on głębokości rozumowania, zdolności twórczych ani wykonywania zadań w świecie rzeczywistym. Traktuj go jako jeden punkt danych, a nie werdykt.",
+      "whyItMatters": "MMLU jest najczęściej cytowanym benchmarkiem do porównywania modeli AI. Znajomość jego zakresu — przywoływanie faktów z 57 przedmiotów — i ograniczeń pomaga krytycznie interpretować twierdzenia dotyczące porównania modeli, a nie przyjmować je za dobrą monetę.",
+      "relatedTerms": ["humaneval", "large-language-model"]
+    },
+    "humaneval": {
+      "term": "HumanEval",
+      "definition": "HumanEval mierzy zdolność kodowania za pomocą 164 ręcznie przygotowanych zadań programistycznych w Pythonie, z których każde zawiera sygnaturę funkcji, docstring i testy jednostkowe (średnio 7,7 testów na zadanie). OpenAI opracowało i udostępniło go w 2021 roku wraz z modelem Codex. Zestaw testów jest dostępny w [repozytorium HumanEval firmy OpenAI](https://github.com/openai/human-eval).\n\nWykorzystuje metrykę **pass@k**: prawdopodobieństwo, że co najmniej jedna z k wygenerowanych próbek kodu przejdzie wszystkie testy jednostkowe. Podejście to uwzględnia zmienność kodu generowanego przez AI — model może uzyskać prawidłowy wynik przy trzeciej próbie, nawet jeśli dwie pierwsze zakończyły się niepowodzeniem.\n\nHumanEval pozostaje najczęściej cytowanym benchmarkiem kodowania, chociaż pojawiają się kolejne benchmarki, takie jak **BigCodeBench**, służące do testowania bardziej złożonych scenariuszy programowania.\n\nAby uzyskać bardziej szczegółowe porównanie wyników benchmarków dla różnych modeli, zobacz [stronę porównującą narzędzia AI](/ai-tools/compare).",
+      "whyItMatters": "HumanEval jest standardowym benchmarkiem zdolności kodowania AI. Zrozumienie metryki pass@k i zakresu 164 problemów pomaga ocenić twierdzenia dotyczące narzędzi do kodowania AI i zrozumieć, dlaczego jakość generowanego kodu się różni.",
+      "relatedTerms": ["mmlu-massive-multitask-language-understanding", "large-language-model"]
+    },
+    "swe-bench": {
+      "term": "SWE-bench",
+      "definition": "SWE-bench mierzy zdolność kodowania AI na podstawie 2294 prawdziwych zgłoszeń i pull requestów z GitHuba, pobranych z popularnych projektów open-source w Pythonie. Model musi przeczytać zgłoszenie, zrozumieć bazę kodu, napisać poprawkę i przejść istniejący zestaw testów projektu — bez ludzkiej pomocy na żadnym etapie.\n\n**SWE-bench Verified** (500 problemów zwalidowanych przez ludzi) to wersja standardowa cytowana w ogłoszeniach modeli. Metryką jest **resolve rate**: procent zgłoszeń, które model poprawnie łata przy pierwszej próbie.\n\nStan na luty 2026: Claude Opus 4.6 prowadzi z 80,8%, GPT-5.2 z 80,0%, Gemini 3 Pro z 74,2%. W przeciwieństwie do 164 ręcznie tworzonych zadań Pythona w HumanEval, SWE-bench testuje inżynierię oprogramowania klasy produkcyjnej — różnica między 75% a 80% przekłada się na realne różnice w autonomicznej zdolności kodowania.",
+      "whyItMatters": "SWE-bench jest najbardziej wiarygodną miarą umiejętności kodowania w realnych warunkach. Jego problemy pochodzą z prawdziwych zgłoszeń na GitHubie, co czyni go benchmarkiem najbardziej przydatnym do oceny, czy narzędzie AI poradzi sobie z produkcyjnymi bazami kodu.",
+      "relatedTerms": ["humaneval", "terminal-bench", "agentic-ai", "elo-rating"]
+    },
+    "arc-agi-2": {
+      "term": "ARC-AGI-2",
+      "definition": "ARC-AGI-2 (Abstraction and Reasoning Corpus) testuje AI na nowatorskich wizualnych łamigłówkach gridowych, które ludzie rozwiązują w kilka minut, ale które wymagają prawdziwego abstrakcyjnego rozumowania — nie odtwarzania wzorców z danych szkoleniowych. Każda łamigłówka pokazuje serię kolorowych transformacji siatki i prosi model o zidentyfikowanie reguły leżącej u ich podstaw.\n\nBenchmark jest celowo odporny na zapamiętywanie: problemy są generowane z nowych reguł przy każdej ewaluacji, więc model nie może poprawić wyniku, studiując wcześniejsze przykłady. Wyniki są weryfikowane przez ARC Prize Foundation.\n\nStan na luty 2026: tryb Deep Think Gemini prowadzi z 84,6%, Claude Opus 4.6 uzyskuje 68,8%, GPT-5.2 Pro 54,2%. Różnica między 54% a 84% reprezentuje fundamentalnie różne zdolności abstrakcyjnego rozumowania.",
+      "whyItMatters": "ARC-AGI-2 jest najbliższym obecnym benchmarkiem testującym prawdziwe rozwiązywanie problemów, a nie wyrafinowane odtwarzanie wzorców. Wysoki wynik sugeruje, że model radzi sobie z naprawdę nowymi sytuacjami, a nie tylko interpoluje z danych szkoleniowych.",
+      "relatedTerms": ["swe-bench", "terminal-bench", "elo-rating", "mmlu-massive-multitask-language-understanding"]
+    },
+    "terminal-bench": {
+      "term": "Terminal-Bench",
+      "definition": "Terminal-Bench 2.0 mierzy zdolność AI w zadaniach wiersza poleceń i DevOps: manipulacja plikami, skrypty powłoki, diagnostyka sieci, zarządzanie procesami i konfiguracja systemu. Problemy uruchamiane są w żywych środowiskach Linux i oceniane na podstawie tego, czy polecenia AI przynoszą prawidłowy stan systemu — nie tylko prawidłowy tekst wyjściowy.\n\nTa ewaluacja oparta na wykonaniu sprawia, że jest trudniejsza niż benchmarki sprawdzające wyłącznie wygenerowany tekst. Model musi uruchamiać polecenia, obserwować wyniki i samodzielnie się korygować.\n\nStan na luty 2026: Claude prowadzi z 65,4%, GPT-5.2 z 56,2%. 9-punktowa różnica odzwierciedla siłę Claude w wieloetapowych zadaniach agentowych w ograniczonych środowiskach.",
+      "whyItMatters": "Wyniki Terminal-Bench są najlepszym predyktorem wydajności AI w automatyzacji infrastruktury, DevOps i administracji systemami. Jeśli Twoje przepływy pracy obejmują wiersz poleceń, ten benchmark jest bardziej predyktywny niż wyniki ogólnego przeznaczenia.",
+      "relatedTerms": ["swe-bench", "agentic-ai", "large-language-model"]
+    },
+    "gdpval-aa": {
+      "term": "GDPval-AA",
+      "definition": "GDPval-AA (General Document Processing and Valuation — Advanced Analysis) mierzy wydajność AI w zadaniach związanych z dokumentami biznesowymi: analiza sprawozdań finansowych, przegląd umów, interpretacja rozmów o wynikach i synteza dokumentów strategicznych. Ocenianie wykorzystuje system porównań Elo head-to-head — ewaluatorzy porównują wyniki dwóch modeli dla tego samego dokumentu i wskazują, który jest lepszy.\n\nStan na luty 2026: Claude Opus 4.6 uzyskuje 1606 Elo wobec 1195 Gemini 3 Pro — 411-punktowa różnica, która reprezentuje istotną praktyczną różnicę w jakości analizy biznesowej.",
+      "whyItMatters": "GDPval-AA to benchmark najbardziej istotny dla pracowników wiedzy w biznesie, finansach i prawie. Wykorzystanie prawdziwych dokumentów biznesowych i ocenianie Elo czyni go bardziej predyktywnym dla wydajności AI w przedsiębiorstwach niż ogólne benchmarki wiedzy.",
+      "relatedTerms": ["swe-bench", "elo-rating", "arc-agi-2"]
+    },
+    "elo-rating": {
+      "term": "Ranking Elo",
+      "definition": "Elo to system rankingu parami, pierwotnie opracowany dla szachów. W ewaluacji AI platformy takie jak LMArena prezentują wyniki dwóch anonimowych modeli na ten sam prompt ludzkim oceniającym, którzy wybierają preferowaną odpowiedź. Algorytm Elo aktualizuje wyniki obu modeli na podstawie rezultatu — niespodzianka (słabszy model wygrywa z silniejszym) przesuwa wyniki bardziej niż oczekiwany rezultat.\n\nStan na luty 2026: Gemini 3 Pro prowadzi na LMArena z 1501, Grok 4.1 prowadzi w trybie myślenia z 1483, GPT-5.2 i Claude Opus 4.6 skupiają się w okolicy 1440–1460.\n\nRankingi Elo oddają ogólne preferencje użytkowników w zadaniach otwartych. Korelują niedoskonale z benchmarkami specyficznymi dla zadań — model może prowadzić w Elo, ale ustępować w [SWE-bench](/ai-tools/glossary#swe-bench) lub ARC-AGI-2.",
+      "whyItMatters": "Rankingi Elo to najbardziej bezpośrednia miara tego, który model AI użytkownicy preferują w zadaniach otwartych. Uzupełniają benchmarki specyficzne dla zadań — model, który prowadzi w Elo, ale ustępuje w SWE-bench, wyróżnia się w konwersacji, ale mniej w autonomicznym kodowaniu.",
+      "relatedTerms": ["swe-bench", "arc-agi-2", "gdpval-aa", "mmlu-massive-multitask-language-understanding"]
+    },
+    "autoregressive-generation": {
+      "term": "Generowanie autoregresywne",
+      "definition": "Generowanie autoregresywne to sposób, w jaki LLM produkują tekst: przewidywanie jednego tokenu na raz, z wykorzystaniem wszystkich wcześniej wygenerowanych tokenów jako kontekstu dla kolejnej predykcji. Każdy token wyjściowy zależy od wszystkich poprzednich — stąd \"autoregresywne\".\n\nPętla dekodowania: (prompt wejściowy + wszystkie dotychczas wygenerowane tokeny) -> rozkład prawdopodobieństwa nad słownikiem -> próbkowanie jednego tokenu -> dołączenie do kontekstu -> powtórzenie do zakończenia.\n\nTo ograniczenie wyjaśnia dwa kluczowe zachowania LLM. Po pierwsze, **generowanie jest sekwencyjne** — nie można wyprodukować tokenu 100 bez uprzedniego wygenerowania tokenów 1–99, dlatego dłuższe odpowiedzi trwają dłużej. Po drugie, **każdy token jest statystycznie prawdopodobny przy danym kontekście** — model nie ma ogólnej kontroli, czy całe zdanie będzie faktycznie poprawne, co jest źródłową przyczyną [halucynacji](/ai-tools/glossary#hallucination).\n\nOpenAI zastosowało generowanie autoregresywne do pikseli obrazu zamiast tokenów tekstu w GPT Image — w kontraście do modeli dyfuzyjnych, które zaczynają od szumu i iteracyjnie go udoskonalają.",
+      "whyItMatters": "Generowanie autoregresywne wyjaśnia, dlaczego LLM produkują tekst sekwencyjnie, dlaczego czas odpowiedzi skaluje się z długością i dlaczego halucynacje pojawiają się w środku zdania. To fakt architektoniczny stojący za zachowaniami, które w innym wypadku wydawałyby się przypadkowe.",
+      "relatedTerms": ["token", "inference", "diffusion-model", "hallucination"]
+    },
+    "diffusion-model": {
+      "term": "Model dyfuzyjny",
+      "definition": "Model dyfuzyjny generuje obrazy (a coraz częściej także dźwięk i wideo) poprzez odwrócenie procesu dodawania szumu. Podczas szkolenia model uczy się przewidywać, jak \"odszumić\" częściowo zaszumioną wersję prawdziwego obrazu, krok po kroku. Podczas generowania zaczyna od czystego losowego szumu i wielokrotnie stosuje wyuczony proces odszumiania, aż powstanie spójny obraz.\n\nKluczowe przykłady: DALL-E 3 (API wycofane w listopadzie 2025), Midjourney V6 i V7, Stable Diffusion, Adobe Firefly.\n\nGłówny kontrast z generowaniem autoregresywnym: modele dyfuzyjne udoskonalają wszystkie części obrazu jednocześnie w wielu krokach, podczas gdy autoregresywne modele obrazów generują piksele sekwencyjnie. Modele dyfuzyjne świetnie radzą sobie ze spójnymi kompozycjami pełnoobrazowymi; historycznie mają problemy z renderowaniem tekstu i precyzyjnym wykonywaniem instrukcji — dwa obszary, w których OpenAI wskazywało przewagi przy przejściu na architekturę autoregresywną (GPT Image) w marcu 2025.",
+      "whyItMatters": "Modele dyfuzyjne to dominująca architektura artystycznego generowania obrazów. Znajomość różnic między nimi a generowaniem autoregresywnym wyjaśnia mocne i słabe strony Midjourney w porównaniu z ChatGPT Image — i dlaczego produkują tak wyraźnie różne rezultaty estetyczne.",
+      "relatedTerms": ["autoregressive-generation", "multimodal-ai", "neural-network"]
+    },
+    "agentic-ai": {
+      "term": "Agentic AI",
+      "definition": "Agentic AI oznacza systemy, które autonomicznie wykonują wieloetapowe zadania — planują, podejmują działania, obserwują wyniki i korygują kurs — bez ludzkiej akceptacji na każdym pojedynczym etapie. Kontrast stanowią chatboty jednozapytaniowe, które odpowiadają na jedno pytanie i czekają na kolejne.\n\nAgent kodujący, na przykład, otrzymuje żądanie funkcji, czyta bazę kodu, pisze kod, uruchamia testy, interpretuje niepowodzenia i poprawia się, aż testy przejdą. Obecne przykłady: Claude Code, ChatGPT Codex, Jules od Gemini, DeepSearch od Grok.\n\nCztery właściwości odróżniają agentów od chatbotów: **trwałość** (utrzymywanie stanu przez wiele kroków), **użycie narzędzi** (czytanie plików, uruchamianie kodu, przeglądanie internetu), **samokorekta** (dostosowywanie się na podstawie pośrednich wyników) i **ukierunkowanie na cel** (dążenie do rezultatu, a nie odpowiadanie na pojedynczy prompt).\n\nWpis słownikowy \"[Agenci AI są w pełni autonomiczni](/ai-tools/glossary#ai-agents-are-fully-autonomous)\" ujmuje kluczowe ograniczenie: obecni agenci wymagają jasno zdefiniowanego zakresu, zabezpieczeń i nadzoru ludzkiego do użytku produkcyjnego. To zdolni stażyści, nie niezależni współpracownicy.",
+      "whyItMatters": "Agentic AI reprezentuje przejście od AI jako narzędzia Q&A do AI jako wykonawcy zadań. Zrozumienie różnicy między agentem a chatbotem jest kluczowe dla oceny, które narzędzia mogą faktycznie automatyzować przepływy pracy, a które jedynie wspomagają.",
+      "relatedTerms": ["ai-agents-are-fully-autonomous", "extended-thinking", "guardrails", "mcp-model-context-protocol"]
+    },
+    "extended-thinking": {
+      "term": "Extended thinking",
+      "definition": "Extended thinking to tryb rozumowania, w którym model przepracowuje pośrednie kroki wewnętrznie przed wygenerowaniem ostatecznej odpowiedzi. Zamiast od razu przewidywać najbardziej prawdopodobny statystycznie kolejny token, model generuje łańcuch rozumowania — sprawdza założenia, bada alternatywy, wychwytuje błędy — a następnie tworzy wynik oparty na tym procesie myślowym.\n\nImplementacje różnią się w zależności od produktu: Claude Opus 4.6 używa **adaptive thinking** (cztery poziomy wysiłku, które model sam wybiera w zależności od złożoności problemu). Tryb **Deep Think** w Gemini Ultra stosuje rozszerzone rozumowanie z wewnętrznym budżetem 192 tys. tokenów. **Thinking mode** w ChatGPT oferuje warianty Standard, Light i Extended.\n\nExtended thinking zwiększa opóźnienie (od sekund do dziesiątek sekund) i zużycie tokenów. Dla prostych zapytań narzut nie jest wart zachodu. Dla złożonego rozumowania, matematyki, planowania i kodowania poprawa dokładności jest znacząca.",
+      "whyItMatters": "Extended thinking to praktyczny mechanizm stojący za modelami AI, które sprawiają wrażenie bardziej przemyślanych. Wiedza, kiedy go aktywować — tylko przy złożonych problemach — pozwala balansować między szybkością a jakością. Jest to też wewnętrzna automatyzacja chain-of-thought prompting.",
+      "relatedTerms": ["chain-of-thought-prompting", "inference", "latency", "agentic-ai"]
+    },
+    "deep-research": {
+      "term": "Deep Research",
+      "definition": "Deep Research to agentowy przepływ pracy, w którym model AI autonomicznie prowadzi wieloźródłowe badania i syntetyzuje ustrukturyzowany raport — bez konieczności ręcznego przeglądania i czytania każdego źródła przez użytkownika.\n\nPrzepływ pracy: otrzymanie złożonego pytania badawczego -> rozbicie na podzapytania -> przeszukanie wielu źródeł -> przeczytanie i ocena pobranych stron -> synteza wyników -> wygenerowanie cytowanego raportu. Pełne wykonanie zajmuje od 2 do 15 minut w zależności od zakresu.\n\nObecne implementacje: **ChatGPT Deep Research** (zasilany rozumowaniem o3; Free 5/mies., Plus 25/mies., Pro 250/mies.), **Gemini Deep Research** (poziomy AI Pro i Ultra), **Grok DeepSearch** (wyróżnia się wyszukiwaniem także postów na X/Twitter obok źródeł internetowych).\n\nRóżnica jakościowa w porównaniu z prostym web search grounding: Deep Research czyta i analizuje dziesiątki źródeł sekwencyjnie, nie tylko kilka najlepszych wyników. Wynik to zsyntetyzowany raport ze strukturą i cytowaniami — nie lista pobranych fragmentów.",
+      "whyItMatters": "Deep Research kompresuje godziny pracy badawczej do minut. Zrozumienie, jak różni się od zwykłego wyszukiwania — agentowa wieloźródłowa synteza vs. jednozapytaniowe pobieranie — pozwala ustalić realistyczne oczekiwania co do tego, co produkuje i gdzie zawodzi.",
+      "relatedTerms": ["agentic-ai", "web-search-grounding", "source-grounding", "extended-thinking"]
+    },
+    "web-search-grounding": {
+      "term": "Web search grounding (uziemienie wyszukiwaniem)",
+      "definition": "Web search grounding uzupełnia odpowiedzi AI o wyniki wyszukiwania na żywo, zmniejszając zależność od potencjalnie nieaktualnych danych szkoleniowych. Po aktywacji model przeszukuje internet, pobiera odpowiednie strony i włącza ich treść do swojej odpowiedzi — zwykle z cytowaniem źródeł.\n\nObecne implementacje: **ChatGPT Search** (zasilany przez Bing, dostępny na wszystkich poziomach, w tym Free, od lutego 2025), **Gemini Search** (zasilany przez Google, domyślny w aplikacji Gemini), **Copilot** (zasilany przez Bing, zawsze włączony), **Perplexity** (AI stawiający wyszukiwanie na pierwszym miejscu).\n\nRóżnica w porównaniu z RAG: web search grounding pobiera z publicznego internetu na żywo. RAG pobiera z Twoich własnych prywatnych dokumentów. Oba zmniejszają halucynacje, dając modelowi konkretny tekst do pracy zamiast polegania na pamięci ze szkolenia. Żadne z nich nie eliminuje halucynacji — model nadal syntetyzuje pobraną treść i może błędnie zinterpretować źródła.",
+      "whyItMatters": "Web search grounding to praktyczne rozwiązanie problemu knowledge cutoff. Jest też częściową ochroną przed halucynacjami: odpowiedzi oparte na pobranym tekście są bardziej wiarygodne niż odpowiedzi z samej pamięci szkoleniowej — ale nie perfekcyjnie wiarygodne.",
+      "relatedTerms": ["knowledge-cutoff", "hallucination", "rag-retrieval-augmented-generation", "source-grounding"]
+    },
+    "source-grounding": {
+      "term": "Source grounding (oparcie na źródłach)",
+      "definition": "Source grounding ogranicza model AI do odpowiadania wyłącznie na podstawie konkretnych dokumentów, które dostarczysz, zamiast jego danych szkoleniowych lub internetu. Każda odpowiedź zawiera cytowania wskazujące dokładne fragmenty w tych dokumentach.\n\nNotebookLM jest najczystszym przykładem: prześlij pliki PDF, artykuły naukowe lub notatki ze spotkań, a każda odpowiedź AI linkuje do akapitu źródłowego, który ją wspiera. Jeśli odpowiedzi nie ma w Twoich źródłach, model informuje o tym zamiast halucynować na podstawie danych szkoleniowych.\n\nSource grounding sprawia, że halucynacja jest strukturalnie trudniejsza: model nie może wymyślać informacji, których nie otrzymał. Błędy wciąż się zdarzają — model może źle zinterpretować tekst źródłowy — ale są wykrywalne, bo każde twierdzenie ma identyfikowalne cytowanie. To kluczowa przewaga nad web search grounding, które pobiera szeroko, a nie precyzyjnie.",
+      "whyItMatters": "Source grounding to podejście o najwyższej wiarygodności do analizy dokumentów. Gdy odpowiedzi muszą być audytowalne i weryfikowalne — przegląd prawny, badania naukowe, zgodność z przepisami — AI oparte na źródłach redukuje ryzyko halucynacji bardziej niż jakakolwiek inna dostępna dziś technika.",
+      "relatedTerms": ["web-search-grounding", "rag-retrieval-augmented-generation", "hallucination", "guardrails"]
+    },
+    "mcp-model-context-protocol": {
+      "term": "MCP (Model Context Protocol)",
+      "definition": "MCP to otwarty standard definiujący, jak modele AI łączą się z zewnętrznymi narzędziami i źródłami danych. Anthropic opisuje go jako \"USB-C dla AI\": jedna specyfikacja konektora, która działa we wszystkich kompatybilnych systemach, zamiast wymagać osobnej integracji dla każdej kombinacji model-narzędzie.\n\nOpublikowany przez Anthropic w 2024 roku, MCP pozwala deweloperom zbudować jedną integrację działającą z każdym systemem AI kompatybilnym z MCP. Obecne konektory obejmują Slack, GitHub, Figma, Asana, Notion, bazy danych i systemy plików. Claude obsługuje ponad 50 konektorów; Copilot Studio ma ogólnie dostępne wsparcie MCP.\n\nPrzed MCP podłączenie AI do zewnętrznych narzędzi wymagało indywidualnej pracy integracyjnej dla każdego dostawcy AI. MCP standaryzuje interfejs, dzięki czemu jedna integracja obsługuje wszystkie kompatybilne modele — redukując narzut deweloperski i zapobiegając uzależnieniu od dostawcy.",
+      "whyItMatters": "Kompatybilność z MCP staje się coraz ważniejszym kryterium przy wyborze platformy AI. To otwarto-standardowa alternatywa dla własnościowych ekosystemów wtyczek — integracje zbudowane zgodnie ze specyfikacją MCP są przenośne między systemami AI, a nie zamknięte u jednego dostawcy.",
+      "relatedTerms": ["agentic-ai", "structured-outputs", "large-language-model"]
+    },
+    "data-residency": {
+      "term": "Data residency (rezydencja danych)",
+      "definition": "Data residency odnosi się do wymagań — prawnych, umownych lub organizacyjnych — określających, w jakim kraju lub regionie dane AI (prompty, wyniki, dane użytkowników) muszą być przechowywane i przetwarzane.\n\nIstotne regulacje: RODO wymaga ochrony danych mieszkańców UE, ale nie wymaga automatycznie przechowywania geograficznego. Niektóre państwa członkowskie UE oraz przepisy sektorowe w ochronie zdrowia i finansach nakładają surowsze ograniczenia geograficzne. Japońska APPI i podobne przepisy krajowe dodają warstwy regionalne.\n\nObecne opcje dostawców AI: ChatGPT Enterprise oferuje EU Data Boundary, US i Japonię. Microsoft Copilot obsługuje rezydencję danych w UE, UK, US, Kanadzie, Japonii, Korei Południowej, Singapurze, Indiach, Australii i ZEA. Google Workspace AI obsługuje konfiguracje UE, US i multi-region.\n\nDla większości osób prywatnych i MŚP rezydencja danych nie jest problemem. Dla branż regulowanych (ochrona zdrowia, finanse, sektor rządowy) i przedsiębiorstw z siedzibą w UE jest często twardym wymogiem zakupowym.",
+      "whyItMatters": "Data residency decyduje o tym, czy narzędzie AI może legalnie operować na danych Twojej organizacji w regulowanych branżach lub jurysdykcjach. To nie tylko specyfikacja techniczna — brak regionalnych opcji przechowywania może całkowicie zablokować adopcję.",
+      "relatedTerms": ["guardrails", "copyright-indemnity"]
+    },
+    "copyright-indemnity": {
+      "term": "Copyright indemnity (ochrona praw autorskich)",
+      "definition": "Copyright indemnity (zwane też IP indemnity lub Copyright Shield) to prawna gwarancja od dostawcy AI, że będzie Cię bronił i pokryje odszkodowanie, jeśli strona trzecia pozwie Cię za naruszenie praw autorskich na podstawie treści wygenerowanych przez AI.\n\nKto oferuje: **OpenAI** zapewnia Copyright Shield dla klientów API i Enterprise. **Microsoft** oferuje Copilot Copyright Commitment dla komercyjnych użytkowników Copilot. **Anthropic** obejmuje komercyjnych użytkowników API w ramach standardowych warunków.\n\nKto nie oferuje: **Midjourney** wyraźnie nie zapewnia ochrony IP. Większość usług generowania obrazów nie oferuje żadnej.\n\nKluczowe wyłączenia u wszystkich dostawców: celowe próby odtworzenia konkretnych chronionych dzieł, zignorowane ostrzeżenia o naruszeniu i użytkowanie poza autoryzowanymi warunkami. Dla użytkowników indywidualnych copyright indemnity rzadko ma praktyczne znaczenie. Dla przedsiębiorstw publikujących lub monetyzujących treści generowane przez AI na dużą skalę to uzasadnione kryterium wyboru dostawcy.",
+      "whyItMatters": "Copyright indemnity to różnica między odpowiedzialnością prawną a ochroną umowną dla komercyjnego użytkowania AI na dużą skalę. Wiedza, którzy dostawcy oferują pokrycie — i jakie są wyłączenia — to realne pytanie o ryzyko biznesowe dla każdej organizacji używającej komercyjnie treści generowanych przez AI.",
+      "relatedTerms": ["guardrails", "data-residency"]
+    },
+    "more-parameters-always-means-a-better-model": {
+      "term": "\"Więcej parametrów zawsze oznacza lepszy model\"",
+      "definition": "Parametry mają znaczenie, ale architektura, jakość danych szkoleniowych i technika szkolenia mają większe znaczenie. DeepSeek R1 (671 miliardów parametrów) przewyższa niektóre modele o większej liczbie parametrów w określonych benchmarkach.",
+      "whyItMatters": "Ten mit sprawia, że ludzie zakładają, iż największy model jest najlepszym modelem. W rzeczywistości dobrze zaprojektowany, dobrze wyszkolony mniejszy model może przewyższać rozbudowany model — sama liczba parametrów nie jest wiarygodnym wskaźnikiem jakości.",
+      "relatedTerms": ["parameters", "training-data", "training-ai-model-training"]
+    },
+    "ai-models-understand-what-they-generate": {
+      "term": "\"Modele AI rozumieją to, co generują\"",
+      "definition": "LLM przewidują statystycznie prawdopodobne kolejne tokeny na podstawie wyuczonych wzorców. Nie posiadają zrozumienia semantycznego. Dlatego dochodzi do halucynacji — model generuje wiarygodny tekst bez weryfikacji faktów.",
+      "whyItMatters": "Wiara w to, że AI \"rozumie\", prowadzi do nadmiernego zaufania. Modele przewidują prawdopodobne kolejne tokeny — nie weryfikują faktów ani nie rozumieją znaczenia. Uświadomienie sobie tego pozwala uniknąć kosztownych błędów przy wykorzystywaniu AI do krytycznych decyzji.",
+      "relatedTerms": ["large-language-model", "hallucination", "token"]
+    },
+    "temperature-equals-creativity": {
+      "term": "\"Temperatura równa się kreatywność\"",
+      "definition": "Temperatura kontroluje losowość, nie inteligencję. Wysoka temperatura nie sprawia, że model jest bardziej kreatywny — sprawia, że jest bardziej losowy. Pułap jakości pozostaje niezmienny, a podłoga opada.",
+      "whyItMatters": "To błędne przekonanie powoduje, że ludzie podnoszą temperaturę, oczekując lepszych wyników kreatywnych. W rzeczywistości wyższa temperatura zwiększa tylko losowość — najlepszy możliwy wynik modelu pozostaje taki sam, a najgorszy wynik pogarsza się.",
+      "relatedTerms": ["temperature", "inference"]
+    },
+    "fine-tuning-requires-massive-compute": {
+      "term": "\"Fine-tuning wymaga ogromnej mocy obliczeniowej\"",
+      "definition": "LoRA i inne techniki efektywne parametrowo mogą dostrajać modele na konsumenckich kartach graficznych z 24 GB pamięci. Bariera wejścia została zniesiona.",
+      "whyItMatters": "To przestarzałe założenie powstrzymuje ludzi przed dostosowywaniem modeli do swoich potrzeb. LoRA i podobne techniki sprawiły, że fine-tuning stał się dostępny na sprzęcie konsumenckim — bariera obliczeniowa jest znacznie niższa, niż większość osób zakłada.",
+      "relatedTerms": ["fine-tuning", "parameters"]
+    },
+    "rag-replaces-training": {
+      "term": "\"RAG zastępuje szkolenie\"",
+      "definition": "RAG uzupełnia wiedzę modelu w momencie inferencji. Nie może naprawić fundamentalnie słabego modelu — baza nadal wymaga odpowiedniego szkolenia.",
+      "whyItMatters": "RAG jest potężnym narzędziem, ale nie zastępuje dobrze wyszkolonego modelu bazowego. Traktowanie RAG jako zamiennika szkolenia prowadzi do słabych wyników, gdy model bazowy nie potrafi dobrze rozumować na podstawie pobranych informacji.",
+      "relatedTerms": ["rag-retrieval-augmented-generation", "training-ai-model-training"]
+    },
+    "context-window-equals-memory": {
+      "term": "\"Okno kontekstowe równa się pamięć\"",
+      "definition": "Okno kontekstowe to tymczasowa pamięć robocza dla pojedynczej rozmowy. Po zakończeniu sesji lub zapełnieniu okna model nie zachowuje żadnych danych. To tablica, nie dysk twardy.",
+      "whyItMatters": "Mylenie okna kontekstowego z pamięcią trwałą prowadzi do frustracji, gdy model \"zapomina\" poprzednie rozmowy. Okno kontekstowe jest tymczasowe i związane z sesją — po jego zamknięciu nic nie pozostaje.",
+      "relatedTerms": ["context-window", "token"]
+    },
+    "ai-agents-are-fully-autonomous": {
+      "term": "\"Agenci AI są w pełni autonomiczni\"",
+      "definition": "Obecni agenci AI działają z pewnym stopniem autonomii, ale wymagają nadzoru człowieka, zabezpieczeń i jasno określonych granic. Są bardziej jak zdolni stażyści niż niezależni współpracownicy.",
+      "whyItMatters": "Szum wokół \"autonomicznych agentów\" budzi niebezpieczne oczekiwania. Obecni agenci AI potrzebują nadzoru człowieka, zabezpieczeń i jasnych granic — wdrożenie ich bez tych zabezpieczeń stwarza realne ryzyko.",
+      "relatedTerms": ["guardrails", "artificial-intelligence"]
+    }
+  }
+}

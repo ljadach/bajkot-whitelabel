@@ -1,0 +1,29 @@
+{
+  "title": "Kauf abschließen",
+  "subtitle": "Sie sind nur einen Schritt davon entfernt, Ihre personalisierte Lernreise zu beginnen!",
+  "orderSummary": "Bestellübersicht",
+  "product": {
+    "name": "AITutoro Pro",
+    "description": "Monatliches Abonnement",
+    "modulesIncluded": "{{count}} Module enthalten",
+    "price": "20 €",
+    "priceUnit": "pro Monat"
+  },
+  "included": {
+    "title": "Was enthalten ist",
+    "items": {
+      "program": "Personalisiertes Trainingsprogramm + Updates für einen Monat",
+      "quickWins": "Schnelle Erfolge und maßgeschneiderte Module",
+      "privacy": "Datenschutzfreundliche Analytik (kein Weiterverkauf Ihrer Daten)"
+    }
+  },
+  "demo": {
+    "title": "Demo-Zahlung",
+    "description": "Dies ist eine Demonstration. Es wird keine tatsächliche Zahlung verarbeitet."
+  },
+  "submit": {
+    "button": "Kauf abschließen - 20 €/Monat",
+    "processing": "Zahlung wird verarbeitet..."
+  },
+  "legal": "Mit dem Abschluss dieses Kaufs stimmen Sie unseren Nutzungsbedingungen und Datenschutzrichtlinien zu."
+}

@@ -1,0 +1,205 @@
+{
+  "exercise": {
+    "loading": "Übung wird geladen...",
+    "empty": {
+      "title": "Noch keine Übung",
+      "description": "Generieren Sie eine interaktive Übung, um das Gelernte in diesem Kapitel zu üben."
+    },
+    "generateButton": "Übung generieren",
+    "generating": "Wird generiert...",
+    "completed": {
+      "title": "Übung abgeschlossen!",
+      "score": "Punktzahl: {{score}}/100 | Verdiente Punkte: {{points}}"
+    },
+    "yourAnswer": "Ihre Antwort:",
+    "feedback": "Feedback:",
+    "tryAgain": "Versuchen Sie es erneut für eine bessere Punktzahl",
+    "chapterTitle": "Kapitel {{number}} Übung",
+    "types": {
+      "prompt_improvement": "Prompt-Verbesserung",
+      "problem_solving": "Problemlösung",
+      "reflection": "Reflexion"
+    },
+    "hints": {
+      "label": "Brauchen Sie Hilfe?",
+      "button": "Hinweis {{number}}",
+      "prefix": "Hinweis {{number}}:"
+    },
+    "input": {
+      "label": "Ihre Antwort",
+      "placeholder": "Geben Sie Ihre Antwort hier ein...",
+      "charCount": "{{count}} Zeichen"
+    },
+    "submit": {
+      "button": "Antwort absenden",
+      "evaluating": "Wird ausgewertet...",
+      "submitting": "Wird gesendet...",
+      "shortcut": "Strg+Enter"
+    }
+  },
+  "continueBar": {
+    "complete": "Dieser Schritt ist abgeschlossen",
+    "continueButton": "Weiter zu {{label}}"
+  },
+  "regenerateBar": {
+    "confirm": "Sind Sie sicher, dass Sie neu generieren möchten? Der aktuelle Inhalt wird ersetzt.",
+    "cancelButton": "Abbrechen",
+    "confirmButton": "Ja, neu generieren",
+    "generating": "Wird generiert..."
+  },
+  "stepBlocked": {
+    "title": "{{step}} noch nicht verfügbar",
+    "description": "Um auf diesen Schritt zuzugreifen, schließen Sie zuerst ab: **{{required}}**",
+    "goTo": "Gehe zu {{step}}"
+  },
+  "scrollReader": {
+    "chapter": "Kapitel {{number}}",
+    "backToPlan": "Zurück zum Plan",
+    "module": "Modul {{number}}",
+    "markComplete": "Kapitel als abgeschlossen markieren",
+    "markingComplete": "Wird markiert...",
+    "completed": "Abgeschlossen",
+    "whatNextTitle": "Was möchten Sie als Nächstes erkunden?",
+    "whatNextSubtitle": "Wählen Sie einen Vorschlag oder stellen Sie Ihre eigene Frage",
+    "suggestedTopics": {
+      "realWorld": "Zeig mir ein Praxisbeispiel",
+      "simpler": "Erkläre es einfacher",
+      "challenge": "Gib mir eine Herausforderung",
+      "tryFirst": "Womit sollte ich anfangen?",
+      "connectWork": "Wie hängt das mit meiner Arbeit zusammen?"
+    },
+    "inputPlaceholder": "Was möchten Sie erkunden?",
+    "workbenchTitle": "Lernwerkzeuge"
+  },
+  "lemParchment": {
+    "kicker": "Lernwerkzeuge",
+    "contextBrief": "Navigation durch {{moduleTitle}}. Fokus: {{chapterContext}}.",
+    "chapterContextFallback": "gesamtes Modulterritorium",
+    "signal": "Aus deinem Profil: {{summary}}",
+    "probe1": "Zeig mir einen Schritt-für-Schritt-Workflow",
+    "probe2": "Wie sieht das in einem echten Projekt aus?",
+    "probe3": "Welche Fehler machen Anfänger?",
+    "probe4": "Ansätze vergleichen: Wann was nutzen?",
+    "probe5": "Gib mir eine praktische Übung",
+    "probesLabel": "Nachdenken",
+    "feynmanHint": "Klicke für die nächste Frage",
+    "feynmanQuestions": {
+      "q1": "Wenn du das einem Barkeeper erklären müsstest, was würdest du sagen?",
+      "q2": "Was ist das einfachste Experiment, das beweisen könnte, dass du dich irrst?",
+      "q3": "Stell dir vor, du wüsstest nichts. Wo würdest du anfangen?",
+      "q4": "Was ist die eine Sache hier, über die niemand spricht?",
+      "q5": "Wenn das eine Maschine wäre, welches Teil würde zuerst kaputtgehen?"
+    }
+  },
+  "reflectionGate": {
+    "label": "Bevor du weitergehst",
+    "placeholder": "Schreibe deinen Gedanken hier...",
+    "submit": "Absenden",
+    "gate1": "Welchen einen Mechanismus aus diesem Kapitel könntest du morgen anwenden?",
+    "gate2": "Wenn du jemandem beibringen müsstest, was du gerade gelesen hast, womit würdest du anfangen?"
+  },
+  "toolkit": {
+    "label": "Lernwerkzeuge",
+    "glossator": {
+      "addNote": "Notiz hinzufügen",
+      "placeholder": "Deine Annotation...",
+      "emptyState": "Klicke + um beim Lesen zu annotieren",
+      "chapterLabel": "Kapitel {{number}}"
+    },
+    "workbench": {
+      "probes": "Impulse",
+      "contrapositor": "Herausforderung",
+      "conceptRadar": "Konzepte",
+      "skeletonKey": "Komprimieren",
+      "tomorrow": "Nächste Schritte"
+    },
+    "contrapositor": {
+      "prompt": "Was stimmt nicht mit dem, was du gerade gelesen hast? Wo bricht es?",
+      "placeholder": "Schreibe dein Gegenargument...",
+      "submit": "Absenden",
+      "scoring": "Dein Argument wird bewertet...",
+      "score": "Punktzahl: {{score}}/100",
+      "noContent": "Lies zuerst das Kapitel",
+      "emptyHint": "Hinterfrage dein Verständnis nach dem Lesen",
+      "resubmit": "Bearbeiten & erneut senden"
+    },
+    "conceptRadar": {
+      "generate": "Kapitelkonzepte scannen",
+      "generating": "Scanne...",
+      "clear": "Verstanden",
+      "fuzzy": "Unsicher",
+      "dark": "Verloren",
+      "noContent": "Lies zuerst das Kapitel",
+      "emptyHint": "Scanne Schlüsselkonzepte nach dem Lesen eines Kapitels"
+    },
+    "skeletonKey": {
+      "generate": "Kapitel komprimieren",
+      "generating": "Komprimiere...",
+      "level1": "50 Wörter",
+      "level2": "25 Wörter",
+      "level3": "10 Wörter",
+      "noContent": "Lies zuerst das Kapitel",
+      "emptyHint": "Komprimiere Kapitelideen auf das Wesentliche",
+      "autoMode": "Auto",
+      "manualMode": "Manuell",
+      "level1Label": "50 Wörter",
+      "level2Label": "25 Wörter",
+      "level3Label": "10 Wörter",
+      "wordCount": "{{count}} / {{max}}",
+      "lockIn": "Absenden",
+      "allDone": "Alle Stufen fertig!"
+    },
+    "tomorrow": {
+      "generate": "Aufgaben für morgen generieren",
+      "generating": "Plane...",
+      "quick": "Schneller Gewinn",
+      "medium": "Mittlerer Aufwand",
+      "deep": "Tiefenarbeit",
+      "noContent": "Schließe zuerst das Modul ab",
+      "emptyHint": "Erhalte umsetzbare nächste Schritte nach Abschluss"
+    }
+  },
+  "exploration": {
+    "label": "Erkundung",
+    "chapterCount": "{{current}} / {{max}} Kapitel",
+    "generateChapter": "Erkundungskapitel generieren",
+    "generating": "Kapitel {{number}} wird generiert...",
+    "maxReached": "Maximum von 10 Kapiteln erreicht",
+    "triggeredBy": "Angestoßen durch: {{probe}}",
+    "phase": {
+      "sketch": "Skizze",
+      "expanded": "Wird erweitert...",
+      "complete": "Fertig"
+    },
+    "progressLabel": {
+      "sketch": "Skizze geladen, wird erweitert...",
+      "expanded": "Erweiterte Version bereit, wird finalisiert..."
+    },
+    "customPlaceholder": "Eigenes Thema für ein neues Kapitel..."
+  },
+  "moduleComplete": {
+    "done": "\"{{title}}\" — geschafft!",
+    "ready": "Du bist im Flow. Das nächste Modul wartet.",
+    "allDone": "Alle Module erledigt. Der ganze Kurs — stark gemacht.",
+    "next": "Nächstes Modul starten",
+    "back": "Zurück zum Plan"
+  },
+  "preview": {
+    "loading": "Kursvorschau wird geladen...",
+    "title": "Kursvorschau",
+    "subtitle": "Ihre personalisierten Schulungsmaterialien. Klicken Sie auf eine Seite, um das Handbuch zu lesen.",
+    "regenerateAll": "Alle neu generieren",
+    "starting": "Wird gestartet...",
+    "generatedCount": "Generiert: {{completed}} / {{total}}",
+    "generatingStatus": "Wird generiert...",
+    "startingGeneration": "Kursgenerierung wird gestartet...",
+    "noMaterials": "Noch keine Kursmaterialien. Die Generierung startet automatisch.",
+    "backToOverview": "Zurück zur Übersicht",
+    "pageNumber": "Seite {{number}}",
+    "regenerate": "Neu generieren",
+    "chapterDefault": "Kapitel {{number}}",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "pageOf": "Seite {{current}} von {{total}}"
+  }
+}

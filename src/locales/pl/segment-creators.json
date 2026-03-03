@@ -1,0 +1,43 @@
+{
+  "breadcrumb": "Dla twórców",
+  "meta": {
+    "title": "Szkolenie AI dla twórców | AITutoro",
+    "description": "Szkolenie z zakresu sztucznej inteligencji dla twórców treści, youtuberów, pisarzy i artystów cyfrowych. Naucz się skalować produkcję, zachować swój kreatywny głos i zbudować pełny proces produkcji wspomagany sztuczną inteligencją."
+  },
+  "hero": {
+    "headline": "Sztuczna inteligencja dla twórców: szkolenie, które buduje prawdziwe umiejętności twórcze.",
+    "subheadline": "Masz dostęp do tych samych narzędzi AI, co wszyscy inni twórcy. To szkolenia odróżniają tych, którzy się rozwijają, od tych, którzy stoją w miejscu."
+  },
+  "cta": {
+    "trial": "Zacznij za darmo",
+    "pilot": "Zobacz, jak to działa",
+    "headline": "Zacznij bezpłatnie — bez zobowiązań",
+    "description": "Dwa pełne moduły, bez karty kredytowej. Szkolenie przeznaczone dla całego procesu tworzenia treści."
+  },
+  "value1": {
+    "title": "Rozwijaj się bez wypalenia",
+    "description": "73% twórców doświadcza wypalenia zawodowego. Sztuczna inteligencja eliminuje utrudnienia związane z produkcją — badania, zmianę przeznaczenia, planowanie, pisanie podpisów — dzięki czemu energia twórcza może zostać wykorzystana tam, gdzie jest to najważniejsze."
+  },
+  "value2": {
+    "title": "Zachowaj swój kreatywny styl wypowiedzi.",
+    "description": "85% twórców chce sztucznej inteligencji, która uczy się ich stylu. Moduły inżynierii podpowiedzi AITutoro uczą Cię, jak uzyskać spójne, zgodne z marką wyniki — a nie ogólne treści."
+  },
+  "value3": {
+    "title": "Pełna rura, a nie fragmenty.",
+    "description": "Pomysły poprzez dystrybucję. Szkolenie obejmuje cały proces twórczy — nie są to odizolowane sztuczki związane z narzędziami, które nie mają ze sobą związku."
+  },
+  "pitch2": {
+    "tag": "Prawdziwy problem",
+    "headline": "Prawdziwym problemem twórcy nie jest inspiracja — jest nim zdolność.",
+    "body": "73% twórców zgłasza wypalenie zawodowe. Problemem nie są pomysły, ale praca związana z produkcją każdej treści. **Sztuczna inteligencja eliminuje czynniki, które pochłaniają czas twórców:** syntezę badań, zmianę formatu, warianty podpisów, planowanie kopii, koncepcje miniatur. Twórcy, którzy przeszli szkolenie, odzyskują ten czas. Ci, którzy eksperymentują, dodają nowe narzędzie do swojej kolekcji na wpół wykorzystanych aplikacji."
+  },
+  "testimonial": {
+    "quote": "76% twórców twierdzi, że sztuczna inteligencja przyspieszyła rozwój ich działalności lub wzrost liczby obserwujących.",
+    "author": "Raport Adobe Creators' Toolkit 2025 · 16 000 twórców w 8 krajach"
+  },
+  "pitch": {
+    "tag": "Dlaczego szkolenia są ważne",
+    "headline": "Dlaczego większość twórców uzyskuje ogólne wyniki z AI",
+    "body": "Ogólne polecenia generują ogólne wyniki. Każdy twórca używający tego samego polecenia „napisz mi podpis” otrzymuje ten sam podpis. **Zachowanie stylu jest umiejętnością, której można się nauczyć.** AITutoro uczy, jak dostosować wyniki AI do konkretnego stylu, odbiorców i formatu — poprzez inżynierię poleceń, a nie zgadywanie.\n\n81% twórców twierdzi, że sztuczna inteligencja umożliwia im tworzenie treści, których wcześniej nie byli w stanie stworzyć. Nie jest to kwestia dostępu — to kwestia szkolenia."
+  }
+}

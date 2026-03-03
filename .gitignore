@@ -1,0 +1,56 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+dist-ssr
+build
+
+# React Router 7 generated types
+.react-router
+
+# Generated at build time
+public/sitemap.xml
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.staging
+.env.test
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Package manager lock files
+# package-lock.json is now committed for reproducible builds
+
+# Deployment
+.vercel
+
+# Configuration
+settings.local.json
+
+# E2E tests (Playwright)
+e2e/.auth/
+playwright-report/
+test-results/
+e2e/auth-failure.png
+e2e/*.png

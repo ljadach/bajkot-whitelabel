@@ -1,0 +1,35 @@
+{
+  "badge": "Assessment Complete",
+  "title": "Your Profile Summary",
+  "subtitle": "Here's what we learned about you. We'll use this to create your personalized training plan.",
+  "sections": {
+    "skillAssessment": "Skill Assessment",
+    "promptScore": "Prompt Score",
+    "aiFluency": "AI Fluency",
+    "yourRole": "Your Role",
+    "aiTools": "AI Tools",
+    "whatYouCreate": "What You Create",
+    "learningGoals": "Learning Goals",
+    "preferences": "Your Preferences",
+    "experience": "experience"
+  },
+  "preferences": {
+    "timeAvailable": "Time Available",
+    "language": "Language",
+    "learningStyle": "Learning Style"
+  },
+  "report": {
+    "title": "Your Personalized Assessment",
+    "subtitle": "A detailed summary to guide your learning journey",
+    "generating": "Generating your personalized assessment...",
+    "empty": "Assessment will be generated automatically.",
+    "generateButton": "Generate Now",
+    "retry": "Retry"
+  },
+  "fallback": {
+    "noGoals": "Based on your assessment, we'll recommend modules to strengthen your skills."
+  },
+  "continueLabel": "Training Plan",
+  "regenerateLabel": "Regenerate Summary",
+  "proBadge": "PRO"
+}

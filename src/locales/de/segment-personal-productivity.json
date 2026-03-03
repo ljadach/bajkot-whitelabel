@@ -1,0 +1,43 @@
+{
+  "breadcrumb": "Für persönliche Produktivität",
+  "meta": {
+    "title": "KI-Training für persönliche Produktivität | AITutoro",
+    "description": "Lerne, KI als tägliches Produktivitätswerkzeug zu nutzen. Kurze adaptive Module für das Schreiben, Recherchieren, Aufgabenmanagement und Lernen – aufgebaut um eine reale Woche herum, nicht um einen Kurslehrplan."
+  },
+  "hero": {
+    "headline": "KI für persönliche Produktivität: vom Einsteiger bis zum täglichen Zeitsparer",
+    "subheadline": "Tägliche KI-Nutzer sparen jede Woche mehr als vier Stunden Zeit. Die meisten Leute kriegen fast nichts zurück – nicht, weil sie das falsche Tool gewählt haben, sondern weil sie nie gelernt haben, es zu benutzen."
+  },
+  "cta": {
+    "trial": "Kostenlos starten",
+    "pilot": "Schau dir an, wie es funktioniert.",
+    "headline": "Kostenlos starten – ohne Verpflichtung",
+    "description": "Zwei komplette Module, keine Kreditkarte. Deine erste Woche mit echten Produktivitätssteigerungen beginnt hier."
+  },
+  "value1": {
+    "title": "Vor vier Stunden, jede Woche",
+    "description": "33 % der täglichen KI-Nutzer sparen vier oder mehr Stunden pro Woche. Daten der Federal Reserve. Der Unterschied zwischen ihnen und gelegentlichen Nutzern liegt nicht im Tool, sondern in der strukturierten Gewohnheit."
+  },
+  "value2": {
+    "title": "Kurze Module, echte Gewohnheiten",
+    "description": "15- bis 20-minütige Einheiten, die auf eine echte Woche zugeschnitten sind. 60 % der Berufstätigen bevorzugen selbstgesteuertes Lernen in kurzen Einheiten. AITutoro basiert auf dieser Tatsache."
+  },
+  "value3": {
+    "title": "Verkürzte Lernkurve",
+    "description": "Neue Mitarbeiter mit ausreichender KI-Schulung erreichten eine dreimal so hohe Output-Qualität wie ihre erfahrenen Kollegen. NBER 2025. Die Schulung verkürzt die Lernkurve erheblich."
+  },
+  "pitch2": {
+    "tag": "Das Plateau",
+    "headline": "Warum 88 % der KI-Nutzer stagnieren",
+    "body": "Die meisten Leute lernen ein oder zwei Befehle, die funktionieren, und hören dann auf, sich weiterzubilden. Das Ergebnis: KI fühlt sich manchmal nützlich an, aber nie wirklich transformativ. **Das Problem der ungleichmäßigen Leistungsfähigkeit:** KI ist in manchen Bereichen übermenschlich und in anderen überraschend schwach. Ohne Training weiß man nicht, wo die Grenzen liegen – also verlässt man sich entweder zu sehr darauf oder nutzt sie zu wenig. Bewusstes Üben mit gezieltem Feedback ist das, was tägliche Zeit sparende Nutzer von gelegentlichen Nutzern unterscheidet."
+  },
+  "testimonial": {
+    "quote": "Mitarbeiter mit ausreichender KI-Schulung gewinnen 14 Stunden pro Woche an Produktivität – fast doppelt so viel wie der Medianwert für weniger geschulte Nutzer.",
+    "author": "EY Work Reimagined 2025"
+  },
+  "pitch": {
+    "tag": "Was passiert eigentlich?",
+    "headline": "Du nutzt KI. Warum sparst du dann keine Zeit?",
+    "body": "Die Antwort ist fast nie das Tool. Es ist das Fehlen strukturierter Übung.\n\n**Übermäßiges Selbstvertrauen ist die häufigste Falle.** 80 % der Menschen bewerten ihre KI-Kenntnisse als überdurchschnittlich – aber nur jeder Fünfte nutzt KI täglich. Die Kluft zwischen selbst eingeschätzten Fähigkeiten und tatsächlichem Verhalten ist eine Trainingslücke. AITutoro schließt diese Lücke in kurzen, adaptiven Sitzungen, die sich in die tatsächliche Arbeit einfügen – kein Kurs, den man plant und dann verschiebt."
+  }
+}

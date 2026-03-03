@@ -1,0 +1,62 @@
+{
+  "breadcrumb": "Dla osób fizycznych",
+  "meta": {
+    "title": "Szkolenia AI dla osób prywatnych | AITutoro",
+    "description": "Spersonalizowane szkolenie z zakresu sztucznej inteligencji dla freelancerów, osób zmieniających karierę, twórców i wszystkich, którzy chcą, aby sztuczna inteligencja zmieniła sposób ich pracy. Dostosowane do Twojego poziomu i narzędzi, których używasz."
+  },
+  "hero": {
+    "headline": "Znajdź ścieżkę szkolenia AI, która pasuje do Twojej pracy.",
+    "subheadline": "66% liderów filtruje obecnie kandydatów pod kątem znajomości sztucznej inteligencji. Codzienni użytkownicy sztucznej inteligencji odzyskują cztery lub więcej godzin tygodniowo — korzystając z tych samych bezpłatnych narzędzi, co wszyscy inni. Różnica polega na ustrukturyzowanym szkoleniu."
+  },
+  "cta": {
+    "trial": "Zacznij za darmo",
+    "pilot": "Zobacz, jak to działa",
+    "headline": "Zacznij bezpłatnie — bez zobowiązań",
+    "description": "Dwa pełne moduły, bez karty kredytowej. Adaptacyjne oznacza, że dostosowuje się dokładnie do Twojego poziomu."
+  },
+  "subpages": {
+    "title": "Którą ścieżkę wybierasz?",
+    "freelancers": {
+      "title": "Sztuczna inteligencja dla freelancerów",
+      "description": "Zwiększ produktywność, zdobądź więcej klientów, zautomatyzuj administrację. Szkolenia dotyczące narzędzi, których używasz, i wyników, które osiągasz."
+    },
+    "career": {
+      "title": "Sztuczna inteligencja dla osób zmieniających karierę",
+      "description": "66% menedżerów ds. rekrutacji filtruje obecnie kandydatów pod kątem znajomości sztucznej inteligencji. Pięciogodzinna droga do biegłości jest krótsza, niż ktokolwiek Ci mówił."
+    },
+    "creators": {
+      "title": "Sztuczna inteligencja dla twórców",
+      "description": "Skalowanie wyników bez skalowania wypalenia. Zachowanie głosu, procesy produkcyjne, dystrybucja na wielu platformach."
+    },
+    "productivity": {
+      "title": "Sztuczna inteligencja dla osobistej produktywności",
+      "description": "Codzienni użytkownicy AI oszczędzają ponad 4 godziny tygodniowo. Dowiedz się, co robią inaczej przeszkoleni użytkownicy — w krótkich modułach dostosowanych do rzeczywistego tygodnia."
+    }
+  },
+  "value1": {
+    "title": "Dostosowanie do poziomu użytkownika",
+    "description": "AITutoro najpierw ocenia aktualną wiedzę użytkownika, a następnie na tej podstawie buduje program nauczania. Nie ma potrzeby przerabiania materiału, który użytkownik już zna."
+  },
+  "value2": {
+    "title": "Szkolenie dotyczące konkretnych narzędzi",
+    "description": "Szkolisz się na narzędziu AI, którego używasz — ChatGPT, Claude, Copilot, Gemini — w realistycznych scenariuszach, które odpowiadają kontekstowi Twojej pracy."
+  },
+  "value3": {
+    "title": "Stworzone dla samodzielnych uczniów",
+    "description": "Nie jest wymagany budżet firmowy. Dwa bezpłatne moduły. Plan osobisty: 9 USD miesięcznie za pełny dostęp."
+  },
+  "pitch2": {
+    "tag": "Luka w umiejętnościach",
+    "headline": "To jest luka w umiejętnościach. Nie luka w narzędziach.",
+    "body": "48% osób niekorzystających z produktu jako główną przeszkodę podaje „nieumiejętność efektywnego korzystania z niego” — nie koszt ani nieufność.\n\n**Wzrost produktywności dotyczy prawie wyłącznie osób, które celowo przeszły szkolenie.** Osoby korzystające z AI codziennie mają trzy razy większe szanse na zaoszczędzenie czterech lub więcej godzin tygodniowo niż osoby korzystające z niej raz w tygodniu. Różnica między nimi nie wynika z narzędzia. Wynika ze strukturalnego nawyku. AITutoro istnieje po to, aby tę różnicę zniwelować."
+  },
+  "testimonial": {
+    "quote": "AI nie zastąpi ludzi — ale ludzie używający AI zastąpią tych, którzy jej nie używają.",
+    "author": "Karim R. Lakhani · Profesor, Harvard Business School"
+  },
+  "pitch": {
+    "tag": "Okno",
+    "headline": "Okno dla pionierów jest nadal otwarte.",
+    "body": "35% globalnej siły roboczej będzie potrzebowało ponownego szkolenia związanego ze sztuczną inteligencją w ciągu trzech lat. **Okno jest otwarte.** W ciągu jednego roku wykorzystanie sztucznej inteligencji poza pracą wzrosło z 36% do 48,7% wśród dorosłych Amerykanów — wyprzedzając wykorzystanie w miejscu pracy. Biegłość w zakresie sztucznej inteligencji nadal stanowi czynnik wyróżniający. Sytuacja ta szybko się zmienia."
+  }
+}

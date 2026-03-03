@@ -1,0 +1,19 @@
+# CODEOWNERS for aitutorc
+
+# Design system
+tailwind.config.js          @ljadach
+src/index.css               @ljadach
+
+# SEO infrastructure
+src/components/PageHead.tsx  @ljadach
+scripts/generate-sitemap.mjs @ljadach
+scripts/generate-meta-shells.mjs @ljadach
+vercel.json                  @ljadach
+
+# Architecture
+ARCHITECTURE.md              @ljadach
+docs/decisions/              @ljadach
+
+# Shared components
+src/components/ui/           @ljadach
+src/components/layout/       @ljadach

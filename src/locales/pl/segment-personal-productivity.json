@@ -1,0 +1,43 @@
+{
+  "breadcrumb": "Dla osobistej produktywności",
+  "meta": {
+    "title": "Szkolenie AI w zakresie osobistej produktywności | AITutoro",
+    "description": "Naucz się korzystać ze sztucznej inteligencji jako narzędzia zwiększającego codzienną produktywność. Krótkie, adaptacyjne moduły dotyczące pisania, badań, zarządzania zadaniami i nauki — oparte na prawdziwym tygodniu, a nie programie kursu."
+  },
+  "hero": {
+    "headline": "Sztuczna inteligencja dla osobistej produktywności: od podstawowego użytkownika do codziennego oszczędzania czasu.",
+    "subheadline": "Codzienni użytkownicy sztucznej inteligencji oszczędzają ponad cztery godziny tygodniowo. Większość ludzi nie odnosi prawie żadnych korzyści — nie dlatego, że wybrali niewłaściwe narzędzie, ale dlatego, że nigdy nie nauczyli się go używać."
+  },
+  "cta": {
+    "trial": "Zacznij za darmo",
+    "pilot": "Zobacz, jak to działa",
+    "headline": "Zacznij bezpłatnie — bez zobowiązań",
+    "description": "Dwa pełne moduły, bez karty kredytowej. Twój pierwszy tydzień prawdziwego wzrostu produktywności zaczyna się tutaj."
+  },
+  "value1": {
+    "title": "Cztery godziny wstecz, co tydzień",
+    "description": "33% codziennych użytkowników AI oszczędza cztery lub więcej godzin tygodniowo. Dane Rezerwy Federalnej. Różnica między nimi a zwykłymi użytkownikami nie polega na narzędziu — chodzi o ustrukturyzowany nawyk."
+  },
+  "value2": {
+    "title": "Krótkie moduły, prawdziwe nawyki",
+    "description": "Sesje trwające 15–20 minut, dostosowane do rzeczywistego tygodnia. 60% profesjonalistów preferuje samodzielną naukę w krótkich odcinkach. AITutoro został stworzony w oparciu o tę rzeczywistość."
+  },
+  "value3": {
+    "title": "Skrócona krzywa uczenia się",
+    "description": "Początkujący pracownicy z odpowiednim szkoleniem w zakresie sztucznej inteligencji osiągnęli trzykrotnie wyższą jakość wyników niż ich starsi koledzy. NBER 2025. Szkolenie znacznie skraca krzywą."
+  },
+  "pitch2": {
+    "tag": "Płaskowyż",
+    "headline": "Dlaczego 88% użytkowników sztucznej inteligencji osiąga plateau",
+    "body": "Większość ludzi uczy się jednego lub dwóch skutecznych poleceń, a potem przestaje się doskonalić. W rezultacie sztuczna inteligencja wydaje się przydatna od czasu do czasu, ale nigdy nie zmienia życia. **Problem nierównej granicy:** sztuczna inteligencja jest nadludzka w niektórych obszarach, a zaskakująco słaba w innych. Bez szkolenia nie wiadomo, które są które — więc albo nadmiernie się na niej polega, albo nie wykorzystuje się jej w pełni. Celowe ćwiczenia z ukierunkowaną informacją zwrotną odróżniają osoby, które codziennie oszczędzają czas, od użytkowników okazjonalnych."
+  },
+  "testimonial": {
+    "quote": "Pracownicy z odpowiednim przeszkoleniem w zakresie sztucznej inteligencji zyskują 14 godzin tygodniowo na wydajności — prawie dwukrotnie więcej niż średnia dla użytkowników o niższym poziomie przeszkolenia.",
+    "author": "EY Work Reimagined 2025"
+  },
+  "pitch": {
+    "tag": "Co się faktycznie dzieje",
+    "headline": "Korzystasz z AI. Dlaczego więc nie oszczędzasz czasu?",
+    "body": "Odpowiedź prawie nigdy nie leży w narzędziu. Chodzi o brak ustrukturyzowanej praktyki.\n\n**Najczęstszą pułapką jest zbytnia pewność siebie.** 80% osób ocenia swoje umiejętności w zakresie sztucznej inteligencji jako powyżej średniej, ale tylko 1 na 5 korzysta z AI na co dzień. Różnica między samooceną umiejętności a rzeczywistym zachowaniem to luka szkoleniowa. AITutoro wypełnia ją krótkimi, adaptacyjnymi sesjami, które pasują do rzeczywistej pracy — nie jest to kurs, który planujesz, a potem odkładasz na później."
+  }
+}

@@ -1,0 +1,499 @@
+= AITutor Intake Flow - Dokumentacja Techniczna
+:toc: left
+:toclevels: 3
+:sectnums:
+:source-highlighter: highlight.js
+
+== Przegląd
+
+Intake flow to konwersacyjny proces zbierania informacji o użytkowniku poprzez chat z agentem AI.
+Użytkownik odpowiada na pytania, a system buduje profil XML który jest źródłem prawdy.
+
+=== Kluczowe komponenty
+
+[cols="1,2,3"]
+|===
+|Warstwa |Komponent |Odpowiedzialność
+
+|Frontend
+|`ChatStep.tsx`
+|Orchestracja UI, zarządzanie lokalnym stanem
+
+|Frontend
+|`useChatStream.ts`
+|Hook do streamingu HTTP, parsowanie odpowiedzi
+
+|Backend
+|`streaming.ts`
+|HTTP Action, wywołanie LLM, streaming do przeglądarki
+
+|Backend
+|`profiles.ts`
+|Mutacje do zapisu profilu i historii czatu
+
+|Database
+|`userProfiles`
+|Tabela z profilem, historią czatu, profileXml
+|===
+
+== Diagram sekwencji - pełny flow
+
+[source]
+----
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Browser   │     │  ChatStep   │     │useChatStream│     │  Convex     │     │  OpenRouter │
+│             │     │  Component  │     │    Hook     │     │  Backend    │     │    (LLM)    │
+└──────┬──────┘     └──────┬──────┘     └──────┬──────┘     └──────┬──────┘     └──────┬──────┘
+       │                   │                   │                   │                   │
+       │  mount/init       │                   │                   │                   │
+       │──────────────────>│                   │                   │                   │
+       │                   │                   │                   │                   │
+       │                   │ loadNextQuestion()│                   │                   │
+       │                   │──────────────────>│                   │                   │
+       │                   │                   │                   │                   │
+       │                   │                   │ POST /stream-question                 │
+       │                   │                   │ + Bearer Token    │                   │
+       │                   │                   │──────────────────>│                   │
+       │                   │                   │                   │                   │
+       │                   │                   │                   │ getCurrentProfile │
+       │                   │                   │                   │◄──────────────────│
+       │                   │                   │                   │ {chatHistory,     │
+       │                   │                   │                   │  profileXml}      │
+       │                   │                   │                   │──────────────────>│
+       │                   │                   │                   │                   │
+       │                   │                   │                   │ streamText()      │
+       │                   │                   │                   │──────────────────>│
+       │                   │                   │                   │                   │
+       │                   │                   │   Response(stream)│                   │
+       │                   │                   │<──────────────────│                   │
+       │                   │                   │                   │                   │
+       │                   │                   │◄═══════════════════════chunk═════════>│
+       │                   │                   │◄═══════════════════════chunk═════════>│
+       │                   │                   │◄═══════════════════════chunk═════════>│
+       │                   │                   │                   │                   │
+       │                   │ setStreamingMsg() │                   │                   │
+       │                   │<──────────────────│                   │                   │
+       │                   │                   │                   │                   │
+       │  render streaming │                   │                   │                   │
+       │<──────────────────│                   │                   │                   │
+       │                   │                   │                   │                   │
+       │                   │                   │◄════════final═════│                   │
+       │                   │                   │                   │                   │
+       │                   │                   │                   │ storeLlmLog()     │
+       │                   │                   │                   │───────────────────│
+       │                   │                   │                   │                   │
+       │                   │                   │   stream ends     │                   │
+       │                   │                   │<──────────────────│                   │
+       │                   │                   │                   │                   │
+       │                   │ parseResponse()   │                   │                   │
+       │                   │ {message, widget, │                   │                   │
+       │                   │  profileXml}      │                   │                   │
+       │                   │<──────────────────│                   │                   │
+       │                   │                   │                   │                   │
+       │                   │ updateProfile()   │                   │                   │
+       │                   │ (save profileXml) │                   │                   │
+       │                   │──────────────────────────────────────>│                   │
+       │                   │                   │                   │                   │
+       │  render question  │                   │                   │                   │
+       │  + widget         │                   │                   │                   │
+       │<──────────────────│                   │                   │                   │
+       │                   │                   │                   │                   │
+----
+
+== Diagram sekwencji - odpowiedź użytkownika
+
+[source]
+----
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   User      │     │  ChatStep   │     │   Convex    │     │  Database   │
+│             │     │  Component  │     │  Mutations  │     │             │
+└──────┬──────┘     └──────┬──────┘     └──────┬──────┘     └──────┬──────┘
+       │                   │                   │                   │
+       │ select option /   │                   │                   │
+       │ type answer       │                   │                   │
+       │──────────────────>│                   │                   │
+       │                   │                   │                   │
+       │                   │ setComposerValue()│                   │
+       │                   │ setStructuredAns()│                   │
+       │                   │                   │                   │
+       │ click "Continue"  │                   │                   │
+       │──────────────────>│                   │                   │
+       │                   │                   │                   │
+       │                   │ handleSubmitAnswer()                  │
+       │                   │                   │                   │
+       │                   │ build newHistory: │                   │
+       │                   │ [...history,      │                   │
+       │                   │  question,        │                   │
+       │                   │  answer]          │                   │
+       │                   │                   │                   │
+       │                   │ updateProfile()   │                   │
+       │                   │──────────────────>│                   │
+       │                   │                   │                   │
+       │                   │                   │ patch userProfiles│
+       │                   │                   │ {chatHistory,     │
+       │                   │                   │  profileXml}      │
+       │                   │                   │──────────────────>│
+       │                   │                   │                   │
+       │                   │                   │      OK           │
+       │                   │                   │<──────────────────│
+       │                   │                   │                   │
+       │                   │      OK           │                   │
+       │                   │<──────────────────│                   │
+       │                   │                   │                   │
+       │                   │ loadNextQuestion()│                   │
+       │                   │ (triggers stream) │                   │
+       │                   │─ ─ ─ ─ ─ ─ ─ ─ ─>│                   │
+       │                   │                   │                   │
+       │                   │ (patrz diagram    │                   │
+       │                   │  streamingu)      │                   │
+       │                   │                   │                   │
+----
+
+== Format odpowiedzi LLM
+
+LLM zwraca tekst w formacie z delimiterem `---JSON---`:
+
+[source]
+----
+Great! **What tools do you use?** ✨
+---JSON---
+{"widget":{"type":"multi-select","options":["ChatGPT","Claude"]},"profileXml":"<profile>...</profile>","complete":false}
+----
+
+=== Struktura JSON
+
+[source,json]
+----
+{
+  "widget": {
+    "type": "multi-select",       // lub "single-select", "likert", "free-text"
+    "options": ["Option 1", ...]  // tylko dla select/likert
+  },
+  "profileXml": "<profile>...</profile>",  // zaktualizowany profil
+  "complete": false               // true gdy intake zakończony
+}
+----
+
+=== Typy widgetów
+
+[cols="1,2,2"]
+|===
+|Typ |Opis |Rendering
+
+|`multi-select`
+|Wielokrotny wybór
+|Checkboxy lub pill buttons
+
+|`single-select`
+|Pojedynczy wybór
+|Radio buttons
+
+|`likert`
+|Skala 1-5
+|5 przycisków numerycznych
+
+|`free-text`
+|Wolny tekst
+|Textarea
+|===
+
+== Architektura HTTP Streaming
+
+[source]
+----
+                    ┌─────────────────────────────────────────────────────────┐
+                    │                    Convex Backend                       │
+                    │                                                         │
+┌──────────┐        │  ┌──────────────┐     ┌──────────────┐     ┌─────────┐ │
+│ Browser  │        │  │ HTTP Action  │     │ TransformStr │     │OpenRouter│ │
+│          │        │  │ streamQuest. │     │    Stream    │     │   API   │ │
+└────┬─────┘        │  └──────┬───────┘     └──────┬───────┘     └────┬────┘ │
+     │              │         │                    │                  │      │
+     │ POST         │         │                    │                  │      │
+     │ /stream-quest│         │                    │                  │      │
+     │─────────────────────>│ │                    │                  │      │
+     │              │         │                    │                  │      │
+     │              │         │ streamText()       │                  │      │
+     │              │         │────────────────────────────────────>│ │      │
+     │              │         │                    │                  │      │
+     │              │         │ void (async () => {│                  │      │
+     │              │         │   for await chunk  │                  │      │
+     │              │         │     writer.write() │                  │      │
+     │              │         │ })()               │                  │      │
+     │              │         │                    │                  │      │
+     │              │         │ return Response(readable)             │      │
+     │<─────────────────────│ │                    │                  │      │
+     │              │         │                    │                  │      │
+     │              │         │◄═══════════════════════════chunk═════>│      │
+     │◄════chunk═══════════════════════════════════│                  │      │
+     │              │         │                    │                  │      │
+     │◄════chunk═══════════════════════════════════│◄═════chunk══════>│      │
+     │              │         │                    │                  │      │
+     │              │         │ storeLlmLog()      │                  │      │
+     │              │         │────────────────────│                  │      │
+     │              │         │                    │                  │      │
+     │              │         │ writer.close()     │                  │      │
+     │◄═══stream ends══════════════════════════════│                  │      │
+     │              │         │                    │                  │      │
+                    └─────────────────────────────────────────────────────────┘
+----
+
+=== Kluczowe aspekty
+
+1. **Non-blocking streaming**: `void (async () => {...})()` - nie czekamy na streaming, zwracamy Response od razu
+2. **Lifecycle Convex**: HTTP Action kończy się gdy `writer.close()` zostanie wywołane
+3. **Logowanie przed close**: `storeLlmLog()` MUSI być wywołane PRZED `writer.close()`
+
+== Model danych
+
+=== Tabela userProfiles
+
+[source]
+----
+┌─────────────────────────────────────────────────────────────────┐
+│                        userProfiles                              │
+├─────────────────┬───────────────┬────────────────────────────────┤
+│ Field           │ Type          │ Description                    │
+├─────────────────┼───────────────┼────────────────────────────────┤
+│ _id             │ Id            │ Convex document ID             │
+│ clerkUserId     │ string        │ Clerk user identifier          │
+│ currentStep     │ string        │ "welcome"|"chat"|"verification"│
+│ chatHistory     │ ChatMessage[] │ Array of Q&A messages          │
+│ profileXml      │ string?       │ Canonical XML profile (SoT)    │
+│ profileState    │ string?       │ JSON derived from XML          │
+│ ...             │               │                                │
+└─────────────────┴───────────────┴────────────────────────────────┘
+
+Index: by_clerk_user (clerkUserId)
+----
+
+=== Struktura ChatMessage
+
+[source,typescript]
+----
+interface ChatMessage {
+  id: string;           // "q-1234567890" lub "a-1234567890"
+  type: "question" | "answer";
+  content: string;      // Tekst do wyświetlenia
+  widgetType?: string;  // Typ widgetu (tylko dla question)
+  options?: string[];   // Opcje (tylko dla select/likert)
+  answer?: any;         // Strukturalna odpowiedź
+  timestamp: number;
+}
+----
+
+== Flow stanów komponentu ChatStep
+
+[source]
+----
+                    ┌─────────────────┐
+                    │     mount       │
+                    └────────┬────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │  Initialize     │
+                    │  - load profile │
+                    │  - set history  │
+                    │  - reset stream │
+                    └────────┬────────┘
+                             │
+                             ▼
+              ┌──────────────────────────────┐
+              │      loadNextQuestion()      │
+              │  - calls streamNextQuestion  │
+              └──────────────┬───────────────┘
+                             │
+            ┌────────────────┴────────────────┐
+            │                                 │
+            ▼                                 ▼
+   ┌─────────────────┐              ┌─────────────────┐
+   │   isLoading     │              │  showStreaming  │
+   │   (spinner)     │──────────────│   Message       │
+   └─────────────────┘              └────────┬────────┘
+                                             │
+                                             ▼
+                              ┌─────────────────────────┐
+                              │   Stream complete       │
+                              │   - parse response      │
+                              │   - update profileXml   │
+                              │   - set currentQuestion │
+                              └────────────┬────────────┘
+                                           │
+              ┌────────────────────────────┴───────────┐
+              │                                        │
+              ▼                                        ▼
+     ┌─────────────────┐                    ┌─────────────────┐
+     │ complete: false │                    │ complete: true  │
+     │ Show question   │                    │ Navigate to     │
+     │ + widget        │                    │ verification    │
+     └────────┬────────┘                    └─────────────────┘
+              │
+              ▼
+     ┌─────────────────┐
+     │ User answers    │
+     │ handleSubmit()  │
+     └────────┬────────┘
+              │
+              ▼
+     ┌─────────────────┐
+     │ Save to DB:     │
+     │ - chatHistory   │
+     │ - profileXml    │
+     └────────┬────────┘
+              │
+              └──────────────────────────────┐
+                                             │
+                                             ▼
+                              ┌──────────────────────────────┐
+                              │      loadNextQuestion()      │
+                              │         (loop)               │
+                              └──────────────────────────────┘
+----
+
+== Obsługa błędów
+
+=== Fallback przy błędzie LLM
+
+[source]
+----
+┌───────────────┐     ┌───────────────┐     ┌───────────────┐
+│   streaming.ts│     │   LLM API     │     │   Response    │
+└───────┬───────┘     └───────┬───────┘     └───────┬───────┘
+        │                     │                     │
+        │ streamText()        │                     │
+        │────────────────────>│                     │
+        │                     │                     │
+        │     ERROR           │                     │
+        │<────────────────────│                     │
+        │                     │                     │
+        │ catch (error)       │                     │
+        │                     │                     │
+        │ storeLlmLog(error)  │                     │
+        │                     │                     │
+        │ fallbackMessage =   │                     │
+        │   isFirstMessage    │                     │
+        │   ? "Which AI tools │                     │
+        │      do you use?"   │                     │
+        │   : "Tell me more   │                     │
+        │      about goals"   │                     │
+        │                     │                     │
+        │ Response(fallback)  │                     │
+        │─────────────────────────────────────────>│
+        │                     │                     │
+----
+
+=== Walidacja i parsowanie
+
+[source,typescript]
+----
+// streamParser.ts
+
+extractStreamingMessage(partialText)
+    │
+    ├── indexOf("---JSON---") === -1
+    │       └── return partialText.trim()  // still streaming
+    │
+    └── indexOf("---JSON---") >= 0
+            └── return text before delimiter
+
+parseStreamedIntakeResponse(fullText)
+    │
+    ├── no delimiter → return null
+    │
+    ├── no JSON after delimiter → return null
+    │
+    ├── JSON.parse fails → return null
+    │
+    └── success → return {message, widget, profileXml, complete}
+----
+
+== Observability
+
+=== Logowanie LLM
+
+[source]
+----
+┌────────────────────────────────────────────────────────────────┐
+│                        llmLogs table                           │
+├──────────────┬──────────┬──────────────────────────────────────┤
+│ Field        │ Type     │ Example                              │
+├──────────────┼──────────┼──────────────────────────────────────┤
+│ clerkUserId  │ string?  │ "user_2abc123..."                    │
+│ action       │ string   │ "streamIntakeQuestion"               │
+│ model        │ string   │ "anthropic/claude-3.5-sonnet"        │
+│ systemPrompt │ string   │ "You are an AI tutor..."             │
+│ userPrompt   │ string   │ "Chat history: [...], Profile: ..."  │
+│ response     │ string?  │ "Great! **What tools...---JSON---..."│
+│ error        │ string?  │ null | "Rate limit exceeded"         │
+│ durationMs   │ number?  │ 2345                                 │
+│ timestamp    │ number   │ 1704067200000                        │
+└──────────────┴──────────┴──────────────────────────────────────┘
+----
+
+=== Langfuse Integration
+
+[source]
+----
+startActiveObservation('http.streamIntakeQuestion', async (span) => {
+    span.update({
+        action: 'streamIntakeQuestion',
+        model: llmModel,
+        questionNumber,
+        isFirstMessage,
+        historyLength,
+        system_length,
+        user_length,
+    });
+
+    // ... streaming ...
+
+    span.update({
+        output_length,
+        output_preview,
+    });
+});
+----
+
+== Pliki źródłowe
+
+[cols="1,3"]
+|===
+|Plik |Opis
+
+|`src/components/steps/ChatStep.tsx`
+|Główny komponent UI, orchestracja flow
+
+|`src/hooks/useChatStream.ts`
+|Hook do streamingu HTTP z AbortController
+
+|`convex/streaming.ts`
+|HTTP Action, wywołanie LLM, TransformStream
+
+|`convex/lib/streamParser.ts`
+|Parsowanie formatu message---JSON---data
+
+|`convex/profiles.ts`
+|Mutacje do zapisu profilu
+
+|`convex/router.ts`
+|Routing HTTP (/stream-question)
+
+|`convex/schema.ts`
+|Definicja tabel (userProfiles, llmLogs)
+
+|`convex/lib/prompts.ts`
+|Szablony promptów dla LLM
+|===
+
+== Podsumowanie
+
+Intake flow to streaming-first architektura gdzie:
+
+1. **Źródło prawdy** = `userProfiles.profileXml` w bazie
+2. **Streaming** = HTTP Action → TransformStream → Browser
+3. **Aktualizacje** = Po każdej odpowiedzi użytkownika cała historia + nowy profileXml są zapisywane
+4. **LLM widzi** = Całą historię czatu + aktualny profil przy każdym pytaniu
+5. **Fallback** = Hardcoded odpowiedź gdy LLM zawiedzie
+
+Architektura optymalizuje UX (streaming) przy zachowaniu prostoty (brak persistence layer dla streamu, bezpośredni LLM→Browser).

@@ -1,0 +1,60 @@
+{
+  "empty": {
+    "title": "Brak postępów",
+    "description": "Rozpocznij naukę, aby śledzić swoje postępy!",
+    "button": "Przejdź do kursu"
+  },
+  "title": "Twoje postępy",
+  "subtitle": "Śledź swoją ścieżkę nauki AI",
+  "continueButton": "Kontynuuj naukę",
+  "stats": {
+    "totalPoints": "Suma punktów",
+    "exercisesDone": "Wykonane ćwiczenia",
+    "chaptersDone": "Ukończone rozdziały",
+    "dayStreak": "Seria dni",
+    "best": "Najlepszy: {{count}}"
+  },
+  "activity": {
+    "title": "Aktywność w tym miesiącu",
+    "legend": {
+      "activities": "Aktywności",
+      "noActivity": "Brak aktywności"
+    },
+    "noData": "Brak danych o aktywności",
+    "types": {
+      "chapter_started": "Rozpoczęto czytanie",
+      "chapter_completed": "Ukończono",
+      "exercise_completed": "Ćwiczenie",
+      "session_started": "Sesja",
+      "tool_exercise": "Narzędzie nauki"
+    },
+    "popover": {
+      "more": "+{{count}} więcej",
+      "totalPoints": "pkt",
+      "continue": "Kontynuuj naukę",
+      "loading": "Ładowanie...",
+      "exploringOnly": "Rozgrzewka zaliczona — dokończ rozdział, a pojawi się tutaj!"
+    }
+  },
+  "modules": {
+    "title": "Twoje moduły",
+    "empty": {
+      "title": "Brak modułów",
+      "description": "Ukończ rozmowę wstępną, aby otrzymać spersonalizowane moduły nauki."
+    },
+    "moduleNumber": "Moduł {{number}}",
+    "chapterNumber": "Rozdział {{number}}",
+    "status": {
+      "notStarted": "Nie rozpoczęty",
+      "inProgress": "W trakcie",
+      "completed": "Ukończony"
+    },
+    "timeSpent": "{{minutes}}m spędzone",
+    "noTimeLogged": "Brak zarejestrowanego czasu",
+    "exercisesCount": "{{completed}}/{{total}} ćwiczeń"
+  },
+  "footer": {
+    "totalTime": "Całkowity czas nauki:",
+    "lastActive": "Ostatnia aktywność:"
+  }
+}

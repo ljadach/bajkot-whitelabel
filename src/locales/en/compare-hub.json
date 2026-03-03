@@ -1,0 +1,134 @@
+{
+  "meta": {
+    "title": "Compare AI tools side by side — AITutoro",
+    "description": "Compare ChatGPT, Claude, Gemini, Copilot, Midjourney and DALL-E side by side. Feature breakdowns, pricing, and real-world recommendations using February 2026 data."
+  },
+  "hero": {
+    "title": "Choose the right AI tool for your workflow",
+    "subtitle": "The right AI tool isn't the most powerful — it's the one that fits your ecosystem, budget, and job. This guide maps your workflow to the best match, then links you to detailed comparisons so you can decide with confidence.",
+    "dateBadge": "Updated February 2026"
+  },
+  "grid": {
+    "title": "AI tools comparison: head-to-head matchups",
+    "intro": "Each **AI tool comparison** below dives into performance differences, real-world trade-offs, and pricing nuances you won't find in generic reviews. Whether you're weighing ChatGPT vs Claude for writing quality or Copilot vs Gemini for your office ecosystem, these breakdowns use February 2026 benchmark data to help you decide.",
+    "readComparison": "Read comparison"
+  },
+  "comparisons": [
+    {
+      "slug": "chatgpt-vs-claude",
+      "toolA": "ChatGPT",
+      "toolB": "Claude",
+      "verdict": "Context window, reasoning capability, writing quality. The two flagship LLMs compared head-to-head."
+    },
+    {
+      "slug": "chatgpt-vs-gemini",
+      "toolA": "ChatGPT",
+      "toolB": "Gemini",
+      "verdict": "Ecosystem integration, multimodal capabilities, real-time search. OpenAI vs Google."
+    },
+    {
+      "slug": "chatgpt-vs-copilot",
+      "toolA": "ChatGPT",
+      "toolB": "Copilot",
+      "verdict": "Productivity integration, feature parity, Microsoft lock-in. Standalone vs embedded."
+    },
+    {
+      "slug": "claude-vs-gemini",
+      "toolA": "Claude",
+      "toolB": "Gemini",
+      "verdict": "Reasoning vs integration, long-form document handling. Anthropic vs Google."
+    },
+    {
+      "slug": "copilot-vs-gemini",
+      "toolA": "Copilot",
+      "toolB": "Gemini",
+      "verdict": "Microsoft vs Google ecosystem choices. Which office suite AI fits your stack?"
+    },
+    {
+      "slug": "midjourney-vs-dalle",
+      "toolA": "Midjourney",
+      "toolB": "DALL-E",
+      "verdict": "Image quality, pricing, commercial usage rights. The visual AI showdown."
+    }
+  ],
+  "categories": {
+    "title": "What are the main types of AI tools?",
+    "intro": "AI tools split into three categories, each solving a distinct problem.",
+    "items": [
+      {
+        "name": "Large language models",
+        "body": "**ChatGPT, Claude, Gemini, Perplexity** excel at writing, research, reasoning, and synthesis. If you're editing a 100-page report, drafting marketing copy, or analyzing a complex policy document, start here."
+      },
+      {
+        "name": "Productivity integrations",
+        "body": "**Copilot** (Microsoft 365) and **Gemini** (Google Workspace) bring AI directly into your email, docs, and spreadsheets. Optimized for seamless organizational workflows rather than raw model power."
+      },
+      {
+        "name": "Specialized tools",
+        "body": "**GitHub Copilot** autocompletes code in your IDE. **DALL-E** and **Midjourney** generate images. These tools trade breadth for depth: narrowly focused but unmatched in their domains."
+      }
+    ]
+  },
+  "decisionFramework": {
+    "title": "Find your tool in 5 questions",
+    "intro": "Forget generic tool reviews. Answer these five questions and you'll know which tool — or tools — you need.",
+    "questions": [
+      {
+        "question": "How is your organization structured?",
+        "body": "If your team runs on **Google Workspace**, Gemini is built in and searchable across your Drive. If you're on **Microsoft 365**, Copilot integrates across your apps. Neither? ChatGPT or Claude work anywhere — choose based on other factors below."
+      },
+      {
+        "question": "What's your biggest workflow challenge?",
+        "body": "Long documents? **Claude's 200K-token context window** lets you paste an entire book manuscript. Need current info? Perplexity and Gemini have real-time web search. Writing code? **GitHub Copilot's** IDE integration is unmatched for real-time suggestions."
+      },
+      {
+        "question": "Do you need to process lengthy documents?",
+        "body": "This is **Claude's defining strength**. If your workflow involves long-form reading and synthesis — research papers, contracts, transcripts — Claude's context window advantage alone justifies the $20/month price. Other models work for shorter workflows but hit ceilings on anything substantial."
+      },
+      {
+        "question": "Is pricing a primary constraint?",
+        "body": "Most pro tiers cost $19.99–$20/month. GitHub Copilot Pro is cheaper at $10/month if you're coding-focused. DeepSeek offers competitive quality at lower cost. For teams, enterprise pricing varies — get custom quotes from each vendor."
+      },
+      {
+        "question": "Do you need image generation?",
+        "body": "**DALL-E** is built into ChatGPT Plus — image generation included. **Midjourney** produces higher aesthetic quality for creative work but is paid-only. **Gemini** offers multimodal capabilities across text and image, integrated with Google Workspace."
+      }
+    ]
+  },
+  "pricingSnapshot": {
+    "title": "Quick pricing snapshot",
+    "intro": "All major AI tools offer a free tier with usage caps. Here's what you pay for higher-tier access.",
+    "columns": { "tool": "Tool", "free": "Free tier", "pro": "Pro monthly" },
+    "rows": [
+      { "tool": "ChatGPT", "free": "Yes, limited", "pro": "$20" },
+      { "tool": "Claude", "free": "Yes, limited", "pro": "$20" },
+      { "tool": "Gemini (Google AI Pro)", "free": "Yes, limited", "pro": "$19.99" },
+      { "tool": "Copilot (Microsoft 365)", "free": "Yes, limited", "pro": "$19.99" },
+      { "tool": "GitHub Copilot", "free": "Limited", "pro": "$10" }
+    ],
+    "note": "Enterprise pricing is custom for all vendors. Most free tiers reset monthly and may have slower response times. **Pricing verified 15 February 2026.**"
+  },
+  "training": {
+    "title": "How AITutoro helps you master your chosen tool",
+    "intro1": "Learning an AI tool isn't like learning software — it's learning a new way of thinking. How you phrase a prompt, what context you provide, how you iterate on outputs: these skills separate experts from novices. Free tutorials treat all learners the same. **AITutoro doesn't.**",
+    "intro2": "AITutoro teaches your chosen tool at your level. Pick Claude for legal research? Lessons adjust to your expertise — whether you're a lawyer needing advanced techniques or a paralegal starting fresh. Pick ChatGPT for marketing? Role-specific training shows you how to use it for campaign ideation, copywriting, and audience research.",
+    "cards": [
+      {
+        "title": "Adaptive for individuals",
+        "body": "The platform adjusts to what you already know, so you skip the basics and focus on the techniques that move your work forward."
+      },
+      {
+        "title": "Built for teams",
+        "body": "Dashboards and adoption tracking. Train your whole department, then measure who's using it, how well, and which workflows improve."
+      }
+    ]
+  },
+  "cta": {
+    "midHeadline": "Master your chosen tool",
+    "midDescription": "You've chosen your tool. Now comes the part most AI guides skip: getting good at it. AITutoro teaches your chosen tool at your level — whether you're starting fresh or need advanced techniques. Role-specific training that adapts to your knowledge.",
+    "bottomHeadline": "Start learning your AI tool today",
+    "bottomDescription": "Two modules free, no card required. AITutoro adapts to what you already know, so you skip the basics and focus on what moves your work forward.",
+    "primaryLabel": "Start free trial",
+    "secondaryLabel": "View pricing"
+  }
+}

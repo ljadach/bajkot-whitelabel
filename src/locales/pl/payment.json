@@ -1,0 +1,29 @@
+{
+  "title": "Dokończ zakup",
+  "subtitle": "Jesteś o krok od rozpoczęcia swojej spersonalizowanej ścieżki nauki!",
+  "orderSummary": "Podsumowanie zamówienia",
+  "product": {
+    "name": "AITutoro Pro",
+    "description": "Subskrypcja miesięczna",
+    "modulesIncluded": "{{count}} modułów w zestawie",
+    "price": "80 zł",
+    "priceUnit": "miesięcznie"
+  },
+  "included": {
+    "title": "Co zawiera",
+    "items": {
+      "program": "Spersonalizowany program szkoleniowy + aktualizacje przez miesiąc",
+      "quickWins": "Szybkie zwycięstwa i dopasowane moduły",
+      "privacy": "Analityka przyjazna prywatności (bez odsprzedaży danych)"
+    }
+  },
+  "demo": {
+    "title": "Płatność demo",
+    "description": "To jest demonstracja. Żadna rzeczywista płatność nie zostanie przetworzona."
+  },
+  "submit": {
+    "button": "Dokończ zakup - 80 zł/mies.",
+    "processing": "Przetwarzanie płatności..."
+  },
+  "legal": "Dokonując zakupu, akceptujesz Regulamin i Politykę Prywatności."
+}

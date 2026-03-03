@@ -1,0 +1,22 @@
+{
+  "title": "Preferencje plików cookie",
+  "description": "Używamy niezbędnych plików cookie i przyjaznej prywatności analityki (PostHog). Brak śledzenia reklamowego.",
+  "settingsTitle": "Ustawienia plików cookie",
+  "settingsDescription": "Wybierz, które pliki cookie chcesz zezwolić. Niezbędne pliki cookie są zawsze włączone.",
+  "buttons": {
+    "settings": "Ustawienia",
+    "rejectAll": "Odrzuć wszystkie",
+    "accept": "Akceptuj",
+    "cancel": "Anuluj",
+    "savePreferences": "Zapisz preferencje"
+  },
+  "essential": {
+    "title": "Niezbędne pliki cookie",
+    "description": "Wymagane do działania strony. Nie można ich wyłączyć.",
+    "badge": "Zawsze aktywne"
+  },
+  "analytics": {
+    "title": "Pliki cookie analityczne",
+    "description": "Pomagają nam zrozumieć, jak odwiedzający korzystają z naszej strony (PostHog). Przyjazne prywatności, dane osobowe nie są sprzedawane."
+  }
+}

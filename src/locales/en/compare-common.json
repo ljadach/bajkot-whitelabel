@@ -1,0 +1,42 @@
+{
+  "breadcrumbs": {
+    "aiTools": "AI Tools",
+    "comparisons": "Comparisons"
+  },
+  "table": {
+    "columnFeature": "Feature",
+    "winner": "Winner",
+    "legendA": "ChatGPT wins",
+    "legendB": "Claude wins",
+    "legendTie": "Tie"
+  },
+  "verdict": {
+    "label": "Verdict",
+    "wins": "wins",
+    "tie": "Tie"
+  },
+  "useCases": {
+    "title": "Which tool wins for your use case?",
+    "useBothTitle": "The \"use both\" strategy is real."
+  },
+  "faq": {
+    "title": "Frequently asked questions"
+  },
+  "related": {
+    "title": "Related Comparisons"
+  },
+  "toc": {
+    "title": "Contents"
+  },
+  "dateBadge": {
+    "prefix": "Updated"
+  },
+  "cta": {
+    "midHeadline": "Build real skill with AI tools",
+    "midDescription": "AITutoro provides adaptive training for both ChatGPT and Claude. The platform adjusts to what you already know, so you skip the basics and focus on the techniques that move your work forward.",
+    "bottomHeadline": "Ready to master your AI workflow?",
+    "bottomDescription": "Whether you chose ChatGPT, Claude, or both, targeted skill-building turns a good tool into a competitive advantage.",
+    "primaryLabel": "Start Learning",
+    "secondaryLabel": "Contact Us"
+  }
+}

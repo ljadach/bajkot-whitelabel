@@ -1,0 +1,220 @@
+{
+  "exercise": {
+    "loading": "Loading exercise...",
+    "empty": {
+      "title": "No exercise yet",
+      "description": "Generate an interactive exercise to practice what you learned in this chapter."
+    },
+    "generateButton": "Generate Exercise",
+    "generating": "Generating...",
+    "completed": {
+      "title": "Exercise Completed!",
+      "score": "Score: {{score}}/100 | Points earned: {{points}}"
+    },
+    "yourAnswer": "Your Answer:",
+    "feedback": "Feedback:",
+    "tryAgain": "Try again for a better score",
+    "chapterTitle": "Chapter {{number}} Exercise",
+    "types": {
+      "prompt_improvement": "Prompt Improvement",
+      "problem_solving": "Problem Solving",
+      "reflection": "Reflection"
+    },
+    "hints": {
+      "label": "Need help?",
+      "button": "Hint {{number}}",
+      "prefix": "Hint {{number}}:"
+    },
+    "input": {
+      "label": "Your Answer",
+      "placeholder": "Type your answer here...",
+      "charCount": "{{count}} characters"
+    },
+    "submit": {
+      "button": "Submit Answer",
+      "evaluating": "Evaluating...",
+      "submitting": "Submitting...",
+      "shortcut": "Ctrl+Enter"
+    }
+  },
+  "continueBar": {
+    "complete": "This step is complete",
+    "continueButton": "Continue to {{label}}"
+  },
+  "regenerateBar": {
+    "confirm": "Are you sure you want to regenerate? Current content will be replaced.",
+    "cancelButton": "Cancel",
+    "confirmButton": "Yes, regenerate",
+    "generating": "Generating..."
+  },
+  "stepBlocked": {
+    "title": "{{step}} not available yet",
+    "description": "To access this step, first complete: **{{required}}**",
+    "goTo": "Go to {{step}}"
+  },
+  "scrollReader": {
+    "chapter": "Chapter {{number}}",
+    "backToPlan": "Back to Plan",
+    "module": "Module {{number}}",
+    "markComplete": "Mark chapter as complete",
+    "markingComplete": "Marking complete...",
+    "completed": "Completed",
+    "whatNextTitle": "What would you like to explore next?",
+    "whatNextSubtitle": "Pick a suggestion or type your own question",
+    "suggestedTopics": {
+      "realWorld": "Show me a real-world example",
+      "simpler": "Explain this simpler",
+      "challenge": "Give me a challenge",
+      "tryFirst": "What should I try first?",
+      "connectWork": "How does this connect to my work?"
+    },
+    "inputPlaceholder": "What would you like to explore?",
+    "workbenchTitle": "Learning Tools"
+  },
+  "lemParchment": {
+    "kicker": "Learning Tools",
+    "contextBrief": "Navigating {{moduleTitle}}. Focus: {{chapterContext}}.",
+    "chapterContextFallback": "full module territory",
+    "signal": "From your profile: {{summary}}",
+    "probe1": "Show me a step-by-step workflow",
+    "probe2": "How does this look in a real project?",
+    "probe3": "What mistakes do beginners make?",
+    "probe4": "Compare approaches: when to use what?",
+    "probe5": "Give me a hands-on exercise",
+    "probesLabel": "Think About",
+    "feynmanHint": "Click for next question",
+    "feynmanGenerating": "Generating questions...",
+    "feynmanQuestions": {
+      "q1": "If you had to explain this to a bartender, what would you say?",
+      "q2": "What is the simplest experiment that could prove you wrong?",
+      "q3": "Imagine you knew nothing. Where would you start?",
+      "q4": "What is the one thing here that nobody talks about?",
+      "q5": "If this were a machine, which part would break first?"
+    }
+  },
+  "reflectionGate": {
+    "label": "Before you continue",
+    "placeholder": "Write your thought here...",
+    "submit": "Submit",
+    "gate1": "What one mechanism from this chapter could you apply tomorrow?",
+    "gate2": "If you had to teach someone what you just read, what would you say first?"
+  },
+  "toolkit": {
+    "label": "Learning Tools",
+    "glossator": {
+      "addNote": "Add note",
+      "placeholder": "Your annotation...",
+      "emptyState": "Click + to annotate as you read",
+      "chapterLabel": "Chapter {{number}}"
+    },
+    "workbench": {
+      "probes": "Prompts",
+      "contrapositor": "Challenge",
+      "conceptRadar": "Concepts",
+      "skeletonKey": "Compress",
+      "tomorrow": "Next Steps"
+    },
+    "contrapositor": {
+      "prompt": "What's wrong with what you just read? Where does it break?",
+      "placeholder": "Write your counter-argument...",
+      "submit": "Submit",
+      "scoring": "Evaluating your argument...",
+      "score": "Score: {{score}}/100",
+      "noContent": "Read the chapter first",
+      "emptyHint": "Challenge your understanding after reading",
+      "resubmit": "Edit & Resubmit"
+    },
+    "conceptRadar": {
+      "generate": "Scan chapter concepts",
+      "generating": "Scanning...",
+      "clear": "Got it",
+      "fuzzy": "Unsure",
+      "dark": "Lost",
+      "noContent": "Read the chapter first",
+      "emptyHint": "Scan key concepts after reading a chapter"
+    },
+    "skeletonKey": {
+      "generate": "Compress chapter",
+      "generating": "Compressing...",
+      "level1": "50 words",
+      "level2": "25 words",
+      "level3": "10 words",
+      "noContent": "Read the chapter first",
+      "emptyHint": "Compress chapter ideas to their essence",
+      "autoMode": "Auto",
+      "manualMode": "Manual",
+      "level1Label": "50 words",
+      "level2Label": "25 words",
+      "level3Label": "10 words",
+      "wordCount": "{{count}} / {{max}}",
+      "lockIn": "Submit",
+      "allDone": "All levels complete!"
+    },
+    "tomorrow": {
+      "generate": "Generate tomorrow's tasks",
+      "generating": "Planning...",
+      "quick": "Quick win",
+      "medium": "Medium effort",
+      "deep": "Deep work",
+      "noContent": "Complete the module first",
+      "emptyHint": "Get actionable next steps after finishing"
+    },
+    "tooltips": {
+      "conceptRadar": "Scan key concepts from the chapter and rate your understanding of each one.",
+      "probes": "Get AI-generated thinking questions personalized to this chapter and your profile.",
+      "contrapositor": "Challenge what you just read — argue against it to deepen understanding.",
+      "skeletonKey": "Compress the chapter to its essence: 50, 25, then 10 words.",
+      "tomorrow": "Get concrete tasks you can do tomorrow to apply what you learned.",
+      "dontShowAgain": "Don't show again"
+    },
+    "probes": {
+      "generate": "Generate questions",
+      "generating": "Generating questions...",
+      "noContent": "Read the chapter first",
+      "emptyHint": "Get personalized thinking questions after reading"
+    }
+  },
+  "exploration": {
+    "label": "Exploration",
+    "chapterCount": "{{current}} / {{max}} chapters",
+    "generateChapter": "Generate exploration chapter",
+    "generating": "Generating chapter {{number}}...",
+    "maxReached": "Maximum 10 chapters reached",
+    "triggeredBy": "Sparked by: {{probe}}",
+    "phase": {
+      "sketch": "Sketch",
+      "expanded": "Expanding...",
+      "complete": "Complete"
+    },
+    "progressLabel": {
+      "sketch": "Quick sketch loaded, expanding next...",
+      "expanded": "Expanded version ready, finalizing..."
+    },
+    "customPlaceholder": "Your own topic for a new chapter..."
+  },
+  "moduleComplete": {
+    "done": "\"{{title}}\" — nailed it!",
+    "ready": "You're on a roll. The next module is waiting.",
+    "allDone": "Every module done. That's the whole course — well played.",
+    "next": "Start next module",
+    "back": "Back to plan"
+  },
+  "preview": {
+    "loading": "Loading course preview...",
+    "title": "Course Preview",
+    "subtitle": "Your personalized training materials. Click on a page to read its handbook.",
+    "regenerateAll": "Regenerate All",
+    "starting": "Starting...",
+    "generatedCount": "Generated: {{completed}} / {{total}}",
+    "generatingStatus": "Generating...",
+    "startingGeneration": "Starting course generation...",
+    "noMaterials": "No course materials yet. Generation will start automatically.",
+    "backToOverview": "Back to Overview",
+    "pageNumber": "Page {{number}}",
+    "regenerate": "Regenerate",
+    "chapterDefault": "Chapter {{number}}",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {{current}} of {{total}}"
+  }
+}
