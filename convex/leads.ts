@@ -19,7 +19,8 @@ const MAX_GLOBAL_SUBMISSIONS_PER_WINDOW = 30;
 const MIN_FORM_FILL_TIME_MS = 1500;
 const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY;
-const CAPTCHA_REQUIRED = process.env.LEADS_CAPTCHA_REQUIRED === 'true' || Boolean(TURNSTILE_SECRET_KEY);
+const CAPTCHA_REQUIRED =
+  process.env.LEADS_CAPTCHA_REQUIRED === 'true' || Boolean(TURNSTILE_SECRET_KEY);
 
 // Segment type for validation
 const segmentValidator = v.union(v.literal('business'), v.literal('edu'), v.literal('executive'));
@@ -43,7 +44,9 @@ export const checkEmailRateLimit = internalQuery({
     const recentLeads = await ctx.db
       .query('leads')
       .withIndex('by_created')
-      .filter((q) => q.and(q.gte(q.field('createdAt'), windowStart), q.eq(q.field('email'), normalizedEmail)))
+      .filter((q) =>
+        q.and(q.gte(q.field('createdAt'), windowStart), q.eq(q.field('email'), normalizedEmail)),
+      )
       .collect();
 
     const recentCount = recentLeads.length;
@@ -110,7 +113,16 @@ export const storeLead = internalMutation({
 /**
  * Generate HTML email template for lead notification
  */
-function generateEmailHtml(lead: { name: string; email: string; phone?: string; organization: string; role: string; message?: string; segment: string; language: string }): string {
+function generateEmailHtml(lead: {
+  name: string;
+  email: string;
+  phone?: string;
+  organization: string;
+  role: string;
+  message?: string;
+  segment: string;
+  language: string;
+}): string {
   const segmentLabels: Record<string, string> = {
     business: 'Business (HR/L&D)',
     edu: 'Education',
@@ -141,7 +153,7 @@ function generateEmailHtml(lead: { name: string; email: string; phone?: string; 
   <div class="container">
     <div class="header">
       <h1 style="margin: 0; font-size: 20px;">New Lead Submission</h1>
-      <p style="margin: 8px 0 0; opacity: 0.9;">AITutoro - ${segmentLabel} Segment</p>
+      <p style="margin: 8px 0 0; opacity: 0.9;">Bajkot - ${segmentLabel} Segment</p>
     </div>
     <div class="content">
       <div class="field">
@@ -196,7 +208,12 @@ function generateEmailHtml(lead: { name: string; email: string; phone?: string; 
 }
 
 function escapeHtml(text: string): string {
-  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 /**
@@ -240,7 +257,16 @@ async function verifyTurnstileToken(token: string): Promise<boolean> {
 /**
  * Send email notification via Resend API
  */
-async function sendEmailNotification(lead: { name: string; email: string; phone?: string; organization: string; role: string; message?: string; segment: string; language: string }): Promise<{ success: boolean; error?: string }> {
+async function sendEmailNotification(lead: {
+  name: string;
+  email: string;
+  phone?: string;
+  organization: string;
+  role: string;
+  message?: string;
+  segment: string;
+  language: string;
+}): Promise<{ success: boolean; error?: string }> {
   const apiKey = process.env.RESEND_API_KEY;
 
   if (!apiKey) {
@@ -264,7 +290,7 @@ async function sendEmailNotification(lead: { name: string; email: string; phone?
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'AITutoro <leads@aitutoro.com>',
+        from: 'Bajkot <info@bajkot.pl>',
         to: ['ljadach@gmail.com', 'cezdmo@gmail.com'],
         subject: `New Lead: ${segmentLabel} - ${lead.organization}`,
         html: generateEmailHtml(lead),

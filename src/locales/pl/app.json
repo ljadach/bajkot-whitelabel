@@ -1,10 +1,10 @@
 {
   "meta": {
-    "title": "AITutoro — Opanuj AI w 5 minut dziennie",
-    "description": "Opanuj AI w 5 minut dziennie. AITutoro buduje kurs na podstawie roli, narzędzi i poziomu — uczysz się tego, co faktycznie przyspieszy pracę."
+    "title": "Bajkot — Spersonalizowana bajka terapeutyczna dla Twojego dziecka",
+    "description": "Opowiedz nam o swoim dziecku, a stworzymy spersonalizowaną bajkę terapeutyczną z ilustracjami — gotową jako piękny PDF do czytania razem."
   },
   "branding": {
-    "appName": "AITutoro",
+    "appName": "Bajkot",
     "preBeta": "Beta"
   },
   "nav": {
@@ -13,80 +13,80 @@
     "team": "Zespół"
   },
   "hero": {
-    "betaBadge": "Darmowa Wczesna Beta",
-    "headline": "Opanuj AI. Jedna lekcja, 5 minut. Wiedza do wchłonięcia w biegu.",
-    "description": "Opanuj AI w 5 minut dziennie. AITutoro buduje kurs na podstawie roli, narzędzi i poziomu — uczysz się tego, co faktycznie przyspieszy pracę.",
-    "getStarted": "Zacznij szkolenie AI"
+    "betaBadge": "Wczesna Beta",
+    "headline": "Bajka napisana specjalnie dla Twojego dziecka.",
+    "description": "Opisz sytuację dziecka — lęki, wyzwania, trudne emocje. Stworzymy spersonalizowaną bajkę terapeutyczną z ilustracjami, gotową do czytania razem.",
+    "getStarted": "Stwórz bajkę"
   },
   "emailNote": {
-    "text": "Szyfrujemy dane. Nigdy ich nie sprzedajemy."
+    "text": "Twoje dane są szyfrowane. Nigdy ich nie udostępniamy."
   },
   "learningExperience": {
-    "title": "Kurs szybszy niż zmiany w AI.",
-    "subtitlePrefix": "Bez egzaminów i quizów. Budujemy Twój profil",
-    "subtitleBold": "w dwóch krokach:",
+    "title": "Jak to działa?",
+    "subtitlePrefix": "Trzy proste kroki",
+    "subtitleBold": "do bajki Twojego dziecka:",
     "step1": {
-      "title": "Rozmowa wstępna",
-      "description": "Podaj rolę, narzędzia AI (ChatGPT, Gemini, Claude) i typy zadań (kod, raporty). Trenuj to, co faktycznie tworzysz."
+      "title": "Opowiedz o dziecku",
+      "description": "Podaj imię, wiek i opisz sytuację — strach przed ciemnością, problemy z rówieśnikami, trudne emocje. Im więcej szczegółów, tym lepsza bajka."
     },
     "step2": {
-      "title": "Analiza promptu",
-      "description": "Wklej przykładowy prompt. Pokażemy, jak go zoptymalizować, by AI zwróciło dokładnie to, czego oczekujesz."
+      "title": "Wybierz styl ilustracji",
+      "description": "Nasz AI wygeneruje dwa style ilustracji postaci Twojego dziecka. Wybierz ten, który bardziej Ci się podoba."
     }
   },
   "features": {
-    "title": "Opanuj warsztat AI. Filtruj hype.",
-    "subtitle": "Destylujemy wiedzę AI. Zamiast chaosu z YouTube – esencja w krótkich modułach:",
+    "title": "Dlaczego bajki terapeutyczne?",
+    "subtitle": "Bajka to bezpieczna przestrzeń, w której dziecko może zmierzyć się z trudnymi emocjami przez postać, z którą się identyfikuje.",
     "promptFrameworks": {
-      "title": "Precyzja promptów",
-      "description": "Gotowe struktury promptów, które zamieniają odpowiedzi \"ok\" w \"idealne\". Optymalizacja pod konkretne AI."
+      "title": "Spersonalizowana historia",
+      "description": "Bohater wygląda jak Twoje dziecko i przeżywa podobne wyzwania. Dziecko widzi siebie w historii i uczy się nowych strategii radzenia sobie."
     },
     "featureDiscovery": {
-      "title": "Więcej niż czat",
-      "description": "Integracja z plikami, analiza danych, audio. Wykorzystaj pełny potencjał narzędzi."
+      "title": "Elementy terapeutyczne",
+      "description": "Każda bajka zawiera techniki z terapii poznawczo-behawioralnej, dostosowane do wieku dziecka. Sprawdzone przez nasz system recenzji psychologicznej."
     },
     "toolMatching": {
-      "title": "Dobór narzędzi AI",
-      "description": "Dobierz narzędzia AI do Twojej konkretnej pracy. Zero generycznych rad ignorujących kontekst."
+      "title": "Piękne ilustracje",
+      "description": "7 unikalnych ilustracji w wybranym stylu artystycznym. Bohater wygląda konsekwentnie w każdej scenie — dziecko go rozpoznaje."
     },
     "roleShortcuts": {
-      "title": "Praktyczne triki AI",
-      "description": "Praktyczne triki na automatyzację rutyny z AI. Od kodu po zarządzanie – oparte na Twoich faktycznych zadaniach."
+      "title": "Karta dla rodzica",
+      "description": "Na końcu bajki znajdziesz pytania do rozmowy z dzieckiem i aktywność do wspólnego wykonania. Bajka to początek ważnej rozmowy."
     }
   },
   "curriculum": {
-    "title": "Aktualizacje na bieżąco",
-    "subtitle": "LLM-y się zmieniają",
-    "description": "AITutoro aktualizuje kursy w czasie rzeczywistym. Uczysz się tego, co działa dziś.",
+    "title": "Co otrzymujesz?",
+    "subtitle": "16-stronicowa bajka w PDF",
+    "description": "Gotowa do wydruku lub czytania na tablecie. Pięknie sformatowana, z pełnymi ilustracjami.",
     "evolving": {
-      "title": "Zawsze aktualne",
-      "description": "Gdy LLM-y dostają nowe funkcje, aktualizujemy materiały. Uczysz się tego, co działa dziś, nie tego, co działało rok temu."
+      "title": "Okładka z ilustracją",
+      "description": "Pełnoekranowa ilustracja okładkowa z imieniem dziecka jako tytuł. Książka, którą dziecko będzie chciało czytać wielokrotnie."
     },
     "adaptive": {
-      "title": "Dostosowuje się do Twojego postępu",
-      "description": "Opanowałeś podstawy? System odblokuje zaawansowane moduły. Masz z czymś problem? Wzmocni. Trening dopasowany do Twojego faktycznego poziomu."
+      "title": "6 rozdziałów + ilustracje",
+      "description": "Każdy rozdział to oddzielna scena z pełnostronicową ilustracją i tekstem dostosowanym do grupy wiekowej dziecka."
     },
     "feedback": {
-      "title": "Twoje tempo, Twój fokus",
-      "description": "Postęp dyktuje ścieżkę. Skupiamy się na tym, czego potrzebujesz dziś — nie na sztywnym programie, który ignoruje, gdzie jesteś."
+      "title": "Karta rodzica",
+      "description": "Pytania do rozmowy po przeczytaniu bajki, inspirowane technikami terapeutycznymi. Pomaga prowadzić rozmowę o emocjach."
     }
   },
   "testimonials": {
-    "title": "Co mówią użytkownicy",
-    "subtitle": "Opinie profesjonalistów",
+    "title": "Opinie rodziców",
+    "subtitle": "Bajki, które naprawdę pomagają",
     "quote1": {
-      "text": "Nie publikujemy wymyślonych opinii. AITutoro jest w fazie pilotażu — prawdziwe wyniki pokażemy, gdy będą gotowe.",
-      "author": "Zespół AITutoro"
+      "text": "Bajkot jest w fazie beta — zbieramy opinie od pierwszych rodziców. Dołącz i pomóż nam stworzyć narzędzie, które naprawdę pomaga dzieciom.",
+      "author": "Zespół Bajkot"
     },
     "quote2": {
-      "text": "Zamiast fikcyjnych cytatów — zaproszenie. Przetestuj za darmo i oceń sam.",
-      "author": "Dołącz do pilotażu"
+      "text": "Przetestuj za darmo i powiedz nam, co myślisz. Każda opinia pomaga nam tworzyć lepsze bajki.",
+      "author": "Dołącz do beta testów"
     }
   },
   "cta": {
-    "title": "Zbuduj plan nauki AI.",
-    "subtitle": "Nie generyczny kurs. Spersonalizowana ścieżka do mistrzostwa — zbudowana wokół Twojej roli, Twoich narzędzi i Twojej faktycznej pracy.",
-    "button": "Start (5 min)",
-    "privacy": "Twoje dane są szyfrowane i wykorzystywane wyłącznie do personalizacji nauki."
+    "title": "Stwórz bajkę dla swojego dziecka.",
+    "subtitle": "Opisz sytuację, wybierz styl ilustracji — resztą zajmiemy się my. Gotowa bajka w kilka minut.",
+    "button": "Stwórz bajkę",
+    "privacy": "Twoje dane są szyfrowane i wykorzystywane wyłącznie do stworzenia bajki."
   }
 }

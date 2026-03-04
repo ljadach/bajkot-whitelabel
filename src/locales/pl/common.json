@@ -1,13 +1,7 @@
 {
-  "stepComplete": "Ten krok został ukończony",
-  "continueTo": "Przejdź do: {{step}}",
-  "steps": {
-    "chat": "Czat",
-    "verification": "Sprawdzenie umiejętności",
-    "summary": "Podsumowanie",
-    "plan": "Plan szkolenia",
-    "complete": "Zakończenie"
-  },
+  "home": "Strona główna",
+  "createBook": "Stwórz bajkę",
+  "contact": "Kontakt",
   "buttons": {
     "continue": "Kontynuuj",
     "back": "Wstecz",
@@ -58,8 +52,27 @@
     "generatedAt": "Wygenerowano {{date}}",
     "generating": "Generowanie..."
   },
-  "language": {
-    "switchLanguage": "Zmień język",
-    "currentLanguage": "Aktualny język: {{language}}"
+  "logIn": "Zaloguj się",
+  "leadForm": {
+    "title": "Skontaktuj się",
+    "subtitle": "Opowiedz nam o swoich potrzebach, a odezwiemy się wkrótce.",
+    "name": "Imię i nazwisko",
+    "namePlaceholder": "Twoje imię i nazwisko",
+    "email": "Email",
+    "emailPlaceholder": "twoj@email.pl",
+    "phone": "Telefon",
+    "phonePlaceholder": "+48 ...",
+    "organization": "Organizacja",
+    "organizationPlaceholder": "Nazwa firmy lub instytucji",
+    "role": "Twoja rola",
+    "rolePlaceholder": "np. Rodzic, Pedagog, Terapeuta",
+    "message": "Wiadomość",
+    "messagePlaceholder": "Napisz jak możemy pomóc...",
+    "submit": "Wyślij wiadomość",
+    "submitting": "Wysyłanie...",
+    "success": "Dziękujemy! Odezwiemy się wkrótce.",
+    "successTitle": "Dziękujemy!",
+    "error": "Coś poszło nie tak. Spróbuj ponownie.",
+    "privacy": "Twoje dane są szyfrowane i nigdy nie są udostępniane osobom trzecim."
   }
 }

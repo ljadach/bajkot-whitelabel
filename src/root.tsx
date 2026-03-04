@@ -1,20 +1,24 @@
-import { useState, useEffect, Suspense, lazy, type ReactNode } from 'react';
-import { Links, Meta, Outlet, Scripts, ScrollRestoration, isRouteErrorResponse, useRouteError } from 'react-router';
+import { Suspense, lazy, type ReactNode } from 'react';
+import {
+  Links,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+  isRouteErrorResponse,
+  useRouteError,
+} from 'react-router';
 import { Toaster } from 'sonner';
 import './index.css';
 import './lib/i18n';
 
-import { AutoFillProvider } from './components/debug/AutoFillContext';
-import { Snowfall } from './components/Snowfall';
 import { Header } from './components/Header';
 import { ClientOnly } from './components/ClientOnly';
 import { useLangFromUrl } from './hooks/useLangFromUrl';
 
-// ---------------------------------------------------------------------------
-// Lazy client-only components
-// ---------------------------------------------------------------------------
-const LazyClientUtilities = lazy(() => import('./components/ClientAppShell').then((m) => ({ default: m.ClientUtilities })));
-const LazyAuthDebugPanel = lazy(() => import('./components/ClientAppShell').then((m) => ({ default: m.AuthDebugPanel })));
+const LazyClientUtilities = lazy(() =>
+  import('./components/ClientAppShell').then((m) => ({ default: m.ClientUtilities })),
+);
 
 export function Layout({ children }: { children: ReactNode }) {
   const lang = useLangFromUrl();
@@ -26,17 +30,20 @@ export function Layout({ children }: { children: ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap"
+          rel="stylesheet"
+        />
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="robots" content="index, follow" />
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="AITutoro" />
-        <meta property="og:image" content="https://aitutoro.com/android-chrome-512x512.png" />
+        <meta property="og:site_name" content="Bajkot" />
+        <meta property="og:image" content="https://bajkot.pl/android-chrome-512x512.png" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:image" content="https://aitutoro.com/android-chrome-512x512.png" />
+        <meta name="twitter:image" content="https://bajkot.pl/android-chrome-512x512.png" />
         <Meta />
         <Links />
         <script
@@ -45,10 +52,11 @@ export function Layout({ children }: { children: ReactNode }) {
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'Organization',
-              name: 'AITutoro',
-              url: 'https://aitutoro.com',
-              logo: 'https://aitutoro.com/android-chrome-512x512.png',
-              description: 'Personalized AI training platform. Master AI with lessons tailored to your role and tools.',
+              name: 'Bajkot',
+              url: 'https://bajkot.pl',
+              logo: 'https://bajkot.pl/android-chrome-512x512.png',
+              description:
+                'Personalized therapeutic storybooks for children. AI-generated stories that help kids process emotions.',
             }),
           }}
         />
@@ -62,63 +70,36 @@ export function Layout({ children }: { children: ReactNode }) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Root — the app shell
-// ---------------------------------------------------------------------------
-const SNOW_STORAGE_KEY = 'aitutoro-snow-enabled';
-
 export default function Root() {
-  const [snowEnabled, setSnowEnabled] = useState(false);
-
-  useEffect(() => {
-    setSnowEnabled(localStorage.getItem(SNOW_STORAGE_KEY) === 'true');
-    const handleToggle = () => {
-      setSnowEnabled(localStorage.getItem(SNOW_STORAGE_KEY) === 'true');
-    };
-    window.addEventListener('snow-toggle', handleToggle);
-    return () => window.removeEventListener('snow-toggle', handleToggle);
-  }, []);
-
   return (
-    <AutoFillProvider>
-      <div className="h-screen flex flex-col bg-white">
-        {snowEnabled && <Snowfall />}
-        <Header />
-        <div className="flex flex-1 min-h-0 overflow-hidden">
-          <main className="flex-1 overflow-auto bg-neutral-50">
-            <Outlet />
-          </main>
-          <ClientOnly>
-            <Suspense fallback={null}>
-              <LazyAuthDebugPanel />
-            </Suspense>
-          </ClientOnly>
-        </div>
-        <Toaster
-          position="bottom-right"
-          toastOptions={{
-            style: {
-              background: '#0f0f0f',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '13px',
-            },
-          }}
-        />
-        <ClientOnly>
-          <Suspense fallback={null}>
-            <LazyClientUtilities />
-          </Suspense>
-        </ClientOnly>
+    <div className="h-screen flex flex-col bg-white">
+      <Header />
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        <main className="flex-1 overflow-auto bg-neutral-50">
+          <Outlet />
+        </main>
       </div>
-    </AutoFillProvider>
+      <Toaster
+        position="bottom-right"
+        toastOptions={{
+          style: {
+            background: '#0f0f0f',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '13px',
+          },
+        }}
+      />
+      <ClientOnly>
+        <Suspense fallback={null}>
+          <LazyClientUtilities />
+        </Suspense>
+      </ClientOnly>
+    </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// HydrateFallback — shown while JS is loading
-// ---------------------------------------------------------------------------
 export function HydrateFallback() {
   return (
     <div className="flex justify-center items-center min-h-screen">
@@ -127,9 +108,6 @@ export function HydrateFallback() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// ErrorBoundary — catches route-level errors
-// ---------------------------------------------------------------------------
 export function ErrorBoundary() {
   const error = useRouteError();
 
@@ -138,7 +116,10 @@ export function ErrorBoundary() {
 
   if (isRouteErrorResponse(error)) {
     title = error.status === 404 ? 'Page not found' : `Error ${error.status}`;
-    message = error.status === 404 ? 'The page you were looking for does not exist.' : error.statusText || message;
+    message =
+      error.status === 404
+        ? 'The page you were looking for does not exist.'
+        : error.statusText || message;
   }
 
   return (
@@ -146,7 +127,10 @@ export function ErrorBoundary() {
       <div className="max-w-md text-center">
         <h1 className="text-2xl font-semibold text-neutral-900 mb-2">{title}</h1>
         <p className="text-neutral-500 mb-6">{message}</p>
-        <a href="/" className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-lg hover:bg-neutral-800 transition-colors">
+        <a
+          href="/"
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-lg hover:bg-neutral-800 transition-colors"
+        >
           Go home
         </a>
       </div>

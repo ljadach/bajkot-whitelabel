@@ -171,28 +171,57 @@ export interface StyleDefinition {
 
 // ── A8: Visual QA ────────────────────────────────
 
-export interface VisualQaIssue {
-  illustrationId: string;
-  issue: string;
-  severity: 'minor' | 'major' | 'critical';
+export interface VisualQaImageScores {
+  character_consistency: number;
+  scene_accuracy: number;
+  technical_quality: number;
+  child_friendliness: number;
+}
+
+export interface VisualQaImage {
+  id: string;
+  scores: VisualQaImageScores;
+  weighted_score: number;
+  visual_anchor_visible: boolean;
+  issues: string[];
+  action: 'KEEP' | 'REGENERATE';
 }
 
 export interface VisualQa {
-  status: 'PASS' | 'NEEDS_REVISION';
-  overallQuality: number; // 1-5
-  consistencyScore: number; // 1-5
-  issues: VisualQaIssue[];
+  status: 'PASS' | 'REGENERATE';
+  overall_consistency_score: number;
+  images: VisualQaImage[];
+  summary: { total_images: number; keep: number; regenerate: number };
+  confidence: string;
 }
 
 // ── A10: Final QA ────────────────────────────────
 
+export interface FinalQaChecks {
+  personalization: {
+    status: string;
+    name_correct: boolean;
+    dedication_present: boolean;
+    issues: string[];
+  };
+  completeness: {
+    status: string;
+    cover: boolean;
+    all_beats: boolean;
+    parent_card: boolean;
+    missing: string[];
+  };
+  text_image_coherence: { status: string; issues: string[] };
+  content_safety: { status: string; issues: string[] };
+}
+
 export interface FinalQa {
-  status: 'APPROVED' | 'NEEDS_REVISION';
-  storyQuality: number; // 1-5
-  illustrationQuality: number; // 1-5
-  therapeuticValue: number; // 1-5
-  overallScore: number; // 1-5
+  status: 'PASS' | 'MINOR_ISSUES' | 'FAIL';
+  checks: FinalQaChecks;
+  overall_quality_score: number;
+  recommendation: 'DELIVER' | 'DELIVER_WITH_FLAG' | 'BLOCK';
   notes: string;
+  confidence: string;
 }
 
 // ── Problem Catalog Types ────────────────────────

@@ -12,16 +12,16 @@ Our illustration style extends the icon language already used in the product (He
 
 **Core identity:**
 
-| Property | Definition |
-|----------|-----------|
-| **Technique** | Line art — outlined strokes, no fills except for strategic color infusions |
-| **Stroke** | Consistent weight (1.5-2px at standard size), round caps, round joins |
-| **Color strategy** | Predominantly ink/neutral lines with **targeted coral** infusions for emphasis |
-| **Complexity** | Medium — more detailed than icons, simpler than traditional illustration |
-| **Perspective** | Flat or subtle isometric. No 3D rendering, no photorealism. |
-| **Human figures** | Minimal and abstract — silhouettes, gestures, single-line faces. Never detailed portraits. |
-| **Objects** | Recognizable but simplified. Screens, documents, charts rendered as clean outlines. |
-| **Negative space** | Generous. Illustrations breathe. Never fill the entire canvas. |
+| Property           | Definition                                                                                 |
+| ------------------ | ------------------------------------------------------------------------------------------ |
+| **Technique**      | Line art — outlined strokes, no fills except for strategic color infusions                 |
+| **Stroke**         | Consistent weight (1.5-2px at standard size), round caps, round joins                      |
+| **Color strategy** | Predominantly ink/neutral lines with **targeted coral** infusions for emphasis             |
+| **Complexity**     | Medium — more detailed than icons, simpler than traditional illustration                   |
+| **Perspective**    | Flat or subtle isometric. No 3D rendering, no photorealism.                                |
+| **Human figures**  | Minimal and abstract — silhouettes, gestures, single-line faces. Never detailed portraits. |
+| **Objects**        | Recognizable but simplified. Screens, documents, charts rendered as clean outlines.        |
+| **Negative space** | Generous. Illustrations breathe. Never fill the entire canvas.                             |
 
 ### Why This Style
 
@@ -64,27 +64,28 @@ Mirrors the editorial principle: **every visual element must contribute signal**
 
 ### 3.1 Line Work
 
-| Element | Usage | Stroke |
-|---------|-------|--------|
-| **Primary lines** | Main subject outlines | 2px, `#0f0f0f` |
-| **Secondary lines** | Supporting details, connections | 1.5px, `#525252` |
-| **Tertiary lines** | Background structure, grids | 1px, `#e5e5e5` |
-| **Dashed lines** | Flow, movement, connection | 1.5px, dashed, `#737373` |
-| **Accent strokes** | Emphasis, active elements | 2px, `#ff6b35` |
+| Element             | Usage                           | Stroke                   |
+| ------------------- | ------------------------------- | ------------------------ |
+| **Primary lines**   | Main subject outlines           | 2px, `#0f0f0f`           |
+| **Secondary lines** | Supporting details, connections | 1.5px, `#525252`         |
+| **Tertiary lines**  | Background structure, grids     | 1px, `#e5e5e5`           |
+| **Dashed lines**    | Flow, movement, connection      | 1.5px, dashed, `#737373` |
+| **Accent strokes**  | Emphasis, active elements       | 2px, `#ff6b35`           |
 
 ### 3.2 Color Infusions
 
 "Strategic" means: **maximum 15-20% of the illustration area should carry color.** The rest is line work on white.
 
-| Color | Role | When to use |
-|-------|------|-------------|
-| **Coral `#ff6b35`** | Primary emphasis | The key concept, the "aha moment," the active element |
-| **Coral Wash `#fff5f0`** | Soft highlight | Background area behind the key concept |
-| **Ink `#0f0f0f`** | Primary structure | All main line work |
-| **Mid Gray `#737373`** | Supporting detail | Secondary elements, labels |
-| **Light Gray `#e5e5e5`** | Structural grid | Background geometry, guidelines |
+| Color                    | Role              | When to use                                           |
+| ------------------------ | ----------------- | ----------------------------------------------------- |
+| **Coral `#ff6b35`**      | Primary emphasis  | The key concept, the "aha moment," the active element |
+| **Coral Wash `#fff5f0`** | Soft highlight    | Background area behind the key concept                |
+| **Ink `#0f0f0f`**        | Primary structure | All main line work                                    |
+| **Mid Gray `#737373`**   | Supporting detail | Secondary elements, labels                            |
+| **Light Gray `#e5e5e5`** | Structural grid   | Background geometry, guidelines                       |
 
 **Segment-specific illustrations** may swap coral for the segment accent:
+
 - Business: Navy `#1e3a5f` infusions
 - Education: Forest `#4a7c59` infusions
 - Executive: Slate `#4a5568` infusions
@@ -93,18 +94,18 @@ Mirrors the editorial principle: **every visual element must contribute signal**
 
 These motifs form a shared vocabulary across all illustrations:
 
-| Motif | Represents | Visual form |
-|-------|-----------|-------------|
-| **Node graph** | AI, neural networks, connections | Circles connected by lines |
-| **Ascending steps** | Progress, learning path | Staircase or rising blocks |
-| **Screen with content** | Digital workspace, tools | Simplified rectangle with line "text" |
-| **Arrow / path** | Flow, process, direction | Clean directional line |
-| **Magnifying glass** | Analysis, prompt optimization | Circle + handle |
-| **Clock / timer** | "5 minutes a day," efficiency | Simple circle with hands |
-| **Person silhouette** | Learner, professional | Single-stroke abstract figure |
-| **Document stack** | Company documents, training material | Overlapping rectangles |
-| **Checkmark** | Completion, mastery | Clean angular check |
-| **Spark / star** | Insight, result | Small angular burst (not emoji-like) |
+| Motif                   | Represents                           | Visual form                           |
+| ----------------------- | ------------------------------------ | ------------------------------------- |
+| **Node graph**          | AI, neural networks, connections     | Circles connected by lines            |
+| **Ascending steps**     | Progress, learning path              | Staircase or rising blocks            |
+| **Screen with content** | Digital workspace, tools             | Simplified rectangle with line "text" |
+| **Arrow / path**        | Flow, process, direction             | Clean directional line                |
+| **Magnifying glass**    | Analysis, prompt optimization        | Circle + handle                       |
+| **Clock / timer**       | "5 minutes a day," efficiency        | Simple circle with hands              |
+| **Person silhouette**   | Learner, professional                | Single-stroke abstract figure         |
+| **Document stack**      | Company documents, training material | Overlapping rectangles                |
+| **Checkmark**           | Completion, mastery                  | Clean angular check                   |
+| **Spark / star**        | Insight, result                      | Small angular burst (not emoji-like)  |
 
 ---
 
@@ -150,16 +151,16 @@ Every illustration has ONE focal point — the element with the coral infusion. 
 
 ### 5.1 Dimensions & Formats
 
-| Content Type | Dimensions | Aspect Ratio | Format | Safe Zone |
-|-------------|-----------|-------------|--------|-----------|
-| **Blog header** | 1200 x 630px | ~1.9:1 | PNG/SVG | 10% margin all sides |
-| **Social card (OG)** | 1200 x 630px | ~1.9:1 | PNG | 15% margin (text overlay zone) |
-| **Social post (square)** | 1080 x 1080px | 1:1 | PNG | 10% margin |
-| **Thumbnail (small)** | 400 x 300px | 4:3 | PNG/SVG | 5% margin |
-| **Hero illustration** | 1920 x 800px | ~2.4:1 | SVG preferred | Center-weighted, edges can bleed |
-| **In-article diagram** | 800px wide, variable height | Flexible | SVG | Full bleed within content column |
-| **Email header** | 600 x 200px | 3:1 | PNG | 10% margin |
-| **Favicon / icon** | 512 x 512px | 1:1 | PNG/SVG | 15% margin |
+| Content Type             | Dimensions                  | Aspect Ratio | Format        | Safe Zone                        |
+| ------------------------ | --------------------------- | ------------ | ------------- | -------------------------------- |
+| **Blog header**          | 1200 x 630px                | ~1.9:1       | PNG/SVG       | 10% margin all sides             |
+| **Social card (OG)**     | 1200 x 630px                | ~1.9:1       | PNG           | 15% margin (text overlay zone)   |
+| **Social post (square)** | 1080 x 1080px               | 1:1          | PNG           | 10% margin                       |
+| **Thumbnail (small)**    | 400 x 300px                 | 4:3          | PNG/SVG       | 5% margin                        |
+| **Hero illustration**    | 1920 x 800px                | ~2.4:1       | SVG preferred | Center-weighted, edges can bleed |
+| **In-article diagram**   | 800px wide, variable height | Flexible     | SVG           | Full bleed within content column |
+| **Email header**         | 600 x 200px                 | 3:1          | PNG           | 10% margin                       |
+| **Favicon / icon**       | 512 x 512px                 | 1:1          | PNG/SVG       | 15% margin                       |
 
 ### 5.2 Text in Illustrations
 
@@ -222,6 +223,7 @@ Never use these. They produce off-brand results:
 ### 6.4 Subject-Specific Prompt Templates
 
 #### AI / Machine Learning Concept
+
 ```
 A clean, minimal line art illustration showing [SPECIFIC AI CONCEPT, e.g., "a prompt being refined through multiple iterations"].
 Central element: [e.g., "a text document with arrows showing transformation stages"].
@@ -232,6 +234,7 @@ No fills except coral highlight. Flat, diagrammatic style.
 ```
 
 #### Learning / Progress Concept
+
 ```
 A clean, minimal line art illustration representing [SPECIFIC LEARNING CONCEPT, e.g., "personalized learning paths"].
 Central element: [e.g., "branching paths diverging from a single starting point, each leading to different endpoints"].
@@ -242,6 +245,7 @@ Professional technical documentation aesthetic.
 ```
 
 #### Professional / Workplace Concept
+
 ```
 A clean, minimal line art illustration depicting [SPECIFIC WORKPLACE CONCEPT, e.g., "team members each receiving customized AI training"].
 Central element: [e.g., "abstract person silhouettes connected to personalized screens showing different content"].
@@ -254,15 +258,15 @@ White background, generous whitespace, 2px consistent outlines.
 
 Pre-defined combinations for common visual needs:
 
-| Recipe | Subject | Coral on | Supporting |
-|--------|---------|----------|------------|
-| **Hero: Platform** | Screen outline with lesson cards inside | Active lesson card | Navigation elements, sidebar |
-| **Hero: Speed** | Clock with 5-minute mark + condensed content | The 5-min marker | Content lines flowing inward |
-| **Feature: Personalization** | Branching path from single origin | User's chosen path | Unchosen paths in light gray |
-| **Feature: Assessment** | Chat bubble sequence + analysis | Analysis output | Chat messages in gray |
-| **Feature: Competency** | Grid/matrix with filled and empty cells | Filled cells (mastery) | Empty cells (gaps) |
-| **Blog: Generic** | Document + magnifying glass + node graph | Core finding | Supporting structure |
-| **Social: Quote** | Large quotation marks + text lines | Quotation marks | Text lines in gray |
+| Recipe                       | Subject                                      | Coral on               | Supporting                   |
+| ---------------------------- | -------------------------------------------- | ---------------------- | ---------------------------- |
+| **Hero: Platform**           | Screen outline with lesson cards inside      | Active lesson card     | Navigation elements, sidebar |
+| **Hero: Speed**              | Clock with 5-minute mark + condensed content | The 5-min marker       | Content lines flowing inward |
+| **Feature: Personalization** | Branching path from single origin            | User's chosen path     | Unchosen paths in light gray |
+| **Feature: Assessment**      | Chat bubble sequence + analysis              | Analysis output        | Chat messages in gray        |
+| **Feature: Competency**      | Grid/matrix with filled and empty cells      | Filled cells (mastery) | Empty cells (gaps)           |
+| **Blog: Generic**            | Document + magnifying glass + node graph     | Core finding           | Supporting structure         |
+| **Social: Quote**            | Large quotation marks + text lines           | Quotation marks        | Text lines in gray           |
 
 ### 6.6 Quality Checklist
 
@@ -282,9 +286,10 @@ Before publishing any generated or created illustration:
 
 ## 7. Photography
 
-**AITutoro does not use photography in its primary visual language.**
+**Bajkot does not use photography in its primary visual language.**
 
 If photography is ever needed (press, partnerships, physical events):
+
 - Black and white only, high contrast.
 - People in professional contexts, candid (not posed).
 - No stock photography. Ever.
@@ -296,13 +301,13 @@ If photography is ever needed (press, partnerships, physical events):
 
 When illustrating data, charts, or metrics:
 
-| Element | Color | Usage |
-|---------|-------|-------|
-| **Primary data** | `#0f0f0f` (Ink) | Main data series |
-| **Highlight data** | `#ff6b35` (Coral) | Featured metric, key insight |
-| **Secondary data** | `#737373` (Muted) | Comparison, context |
-| **Grid / axes** | `#e5e5e5` (Line) | Background structure |
-| **Labels** | `#525252` (Ink Secondary) | Axis labels, annotations |
+| Element            | Color                     | Usage                        |
+| ------------------ | ------------------------- | ---------------------------- |
+| **Primary data**   | `#0f0f0f` (Ink)           | Main data series             |
+| **Highlight data** | `#ff6b35` (Coral)         | Featured metric, key insight |
+| **Secondary data** | `#737373` (Muted)         | Comparison, context          |
+| **Grid / axes**    | `#e5e5e5` (Line)          | Background structure         |
+| **Labels**         | `#525252` (Ink Secondary) | Axis labels, annotations     |
 
 - Prefer bar charts and line charts. Avoid pie charts (hard to read accurately).
 - Always label axes. Never rely on color alone for meaning.
@@ -335,7 +340,7 @@ When illustrating data, charts, or metrics:
 
 ## 10. Version History
 
-| Version | Date | Summary | Author |
-|---------|------|---------|--------|
-| 1.0 | 2026 Feb 13 | Initial publication. Style definition, AI prompt guide, composition rules. | Lukasz + Claude |
-| | | | |
+| Version | Date        | Summary                                                                    | Author          |
+| ------- | ----------- | -------------------------------------------------------------------------- | --------------- |
+| 1.0     | 2026 Feb 13 | Initial publication. Style definition, AI prompt guide, composition rules. | Lukasz + Claude |
+|         |             |                                                                            |                 |

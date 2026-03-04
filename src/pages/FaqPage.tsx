@@ -11,12 +11,35 @@ type Category = string;
 
 /* ─── FaqCard ─── */
 
-function FaqCard({ id, question, answer, isOpen, onToggle }: { id: string; question: string; answer: string; isOpen: boolean; onToggle: () => void }) {
+function FaqCard({
+  id,
+  question,
+  answer,
+  isOpen,
+  onToggle,
+}: {
+  id: string;
+  question: string;
+  answer: string;
+  isOpen: boolean;
+  onToggle: () => void;
+}) {
   return (
     <div className="faq-card">
-      <button onClick={onToggle} className="w-full flex items-center justify-between p-5 text-left bg-white hover:bg-neutral-50 transition-colors" aria-expanded={isOpen} aria-controls={`faq-answer-${id}`}>
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between p-5 text-left bg-white hover:bg-neutral-50 transition-colors"
+        aria-expanded={isOpen}
+        aria-controls={`faq-answer-${id}`}
+      >
         <span className="font-semibold text-neutral-900 pr-4">{question}</span>
-        <svg className={`w-5 h-5 text-neutral-400 transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <svg
+          className={`w-5 h-5 text-neutral-400 transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
@@ -56,7 +79,10 @@ export function FaqPage() {
   const categoryIds = allCategoryGroups.map((g) => g.category);
 
   // Filtered view
-  const visibleGroups = activeCategory === 'all' ? allCategoryGroups : allCategoryGroups.filter((g) => g.category === activeCategory);
+  const visibleGroups =
+    activeCategory === 'all'
+      ? allCategoryGroups
+      : allCategoryGroups.filter((g) => g.category === activeCategory);
 
   return (
     <PageShell>
@@ -65,9 +91,24 @@ export function FaqPage() {
           '@context': 'https://schema.org',
           '@type': 'BreadcrumbList',
           itemListElement: [
-            { '@type': 'ListItem', position: 1, name: 'AITutoro', item: `https://aitutoro.com/${lang}/` },
-            { '@type': 'ListItem', position: 2, name: t('supportBreadcrumb'), item: `https://aitutoro.com/${lang}/support/faq` },
-            { '@type': 'ListItem', position: 3, name: t('breadcrumb'), item: `https://aitutoro.com/${lang}/support/faq` },
+            {
+              '@type': 'ListItem',
+              position: 1,
+              name: 'Bajkot',
+              item: `https://bajkot.pl/${lang}/`,
+            },
+            {
+              '@type': 'ListItem',
+              position: 2,
+              name: t('supportBreadcrumb'),
+              item: `https://bajkot.pl/${lang}/support/faq`,
+            },
+            {
+              '@type': 'ListItem',
+              position: 3,
+              name: t('breadcrumb'),
+              item: `https://bajkot.pl/${lang}/support/faq`,
+            },
           ],
         }}
       />
@@ -114,7 +155,14 @@ export function FaqPage() {
             <h2 className="text-xl font-semibold text-neutral-900 mb-4">{group.label}</h2>
             <div className="space-y-3">
               {group.items.map((item) => (
-                <FaqCard key={item.id} id={item.id} question={item.question} answer={item.answer} isOpen={openFaq === item.id} onToggle={() => toggleFaq(item.id)} />
+                <FaqCard
+                  key={item.id}
+                  id={item.id}
+                  question={item.question}
+                  answer={item.answer}
+                  isOpen={openFaq === item.id}
+                  onToggle={() => toggleFaq(item.id)}
+                />
               ))}
             </div>
           </div>

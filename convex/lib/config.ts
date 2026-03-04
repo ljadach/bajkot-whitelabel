@@ -3,7 +3,6 @@ export enum ConfigType {
 }
 
 export enum ConfigKey {
-  AUTO_GENERATE_EXERCISES = 'AUTO_GENERATE_EXERCISES',
   DEBUG_DB_LOGGING = 'DEBUG_DB_LOGGING',
 }
 
@@ -14,10 +13,6 @@ export const DEFAULT_CONFIG: Record<
     value: string;
   }
 > = {
-  [ConfigKey.AUTO_GENERATE_EXERCISES]: {
-    type: ConfigType.SYSTEM,
-    value: 'false',
-  },
   [ConfigKey.DEBUG_DB_LOGGING]: {
     type: ConfigType.SYSTEM,
     value: 'false',

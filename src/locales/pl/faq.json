@@ -1,11 +1,11 @@
 {
   "meta": {
-    "title": "FAQ — AITutoro",
-    "description": "Znajdź odpowiedzi na najczęstsze pytania dotyczące platformy szkoleniowej AITutoro, cennika, prywatności i funkcji technicznych."
+    "title": "FAQ — Bajkot",
+    "description": "Odpowiedzi na najczęstsze pytania o spersonalizowane bajki terapeutyczne Bajkot."
   },
   "hero": {
     "title": "Najczęściej zadawane pytania",
-    "subtitle": "Wszystko, co musisz wiedzieć o AITutoro. Nie możesz znaleźć odpowiedzi? Skontaktuj się z naszym zespołem wsparcia."
+    "subtitle": "Wszystko o Bajkot. Nie znalazłeś odpowiedzi? Napisz do nas."
   },
   "breadcrumb": "FAQ",
   "supportBreadcrumb": "Wsparcie",
@@ -13,783 +13,73 @@
   "filterAll": "Wszystkie",
   "cta": {
     "headline": "Masz więcej pytań?",
-    "description": "Nasz zespół jest tu, aby pomóc. Napisz do nas, a odpowiemy w ciągu 48 godzin.",
+    "description": "Napisz do nas, a odpowiemy w ciągu 48 godzin.",
     "contact": "Skontaktuj się",
-    "trial": "Rozpocznij za darmo"
+    "trial": "Stwórz bajkę za darmo"
   },
   "categoryLabels": {
     "gettingStarted": "Pierwsze kroki",
-    "enterprise": "Dla firm i bezpieczeństwo",
-    "toolComparisons": "Porównanie narzędzi AI",
-    "toolGuides": "Przewodniki po narzędziach AI",
-    "choosingTools": "Wybór narzędzi AI"
+    "content": "Treść bajek",
+    "technical": "Kwestie techniczne",
+    "safety": "Bezpieczeństwo"
   },
-  "categoryOrder": [
-    "gettingStarted",
-    "enterprise",
-    "toolComparisons",
-    "toolGuides",
-    "choosingTools"
-  ],
+  "categoryOrder": ["gettingStarted", "content", "technical", "safety"],
   "items": {
-    "time": {
-      "question": "Ile czasu zajmuje szkolenie z AITutoro?",
-      "answer": "Kalibracja: poniżej 5 minut. Codzienne moduły: 5-10 minut. Wystarczająco krótko, żeby zmieścić się między spotkaniami, wystarczająco skutecznie, żeby zrobić różnicę.",
+    "whatIsBajkot": {
+      "question": "Czym jest Bajkot?",
+      "answer": "Bajkot tworzy spersonalizowane bajki terapeutyczne dla dzieci. Opisujesz sytuację dziecka (lęki, wyzwania, trudne emocje), a nasz system generuje bajkę z ilustracjami, w której bohater wygląda jak Twoje dziecko i przeżywa podobne wyzwania — ucząc się nowych strategii radzenia sobie.",
       "category": "gettingStarted",
       "faqVisible": true,
-      "pages": [
-        "home",
-        "individuals",
-        "freelancers",
-        "creators",
-        "personal-productivity"
-      ]
+      "pages": ["home"]
     },
-    "tools": {
-      "question": "O jakich narzędziach AI mogę się nauczyć w AITutoro?",
-      "answer": "Wszystkie główne narzędzia AI: ChatGPT, Claude, Gemini, Microsoft Copilot, Perplexity, NotebookLM, Grok, Midjourney i DALL-E. Trening dopasowany do konkretnych narzędzi, których używasz — nie generyczne rady dla narzędzi, których nie masz.",
+    "howLong": {
+      "question": "Ile trwa stworzenie bajki?",
+      "answer": "Cały proces zajmuje kilka minut. Wypełniasz formularz (2-3 min), wybierasz styl ilustracji, a nasz system generuje bajkę z 7 ilustracjami i 16 stronami. Gotowy PDF jest dostępny od razu.",
       "category": "gettingStarted",
       "faqVisible": true,
-      "pages": [
-        "home",
-        "individuals"
-      ]
+      "pages": ["home"]
     },
-    "levels": {
-      "question": "Czy to jest kurs dla początkujących czy zaawansowanych?",
-      "answer": "Dla obu. Analiza promptu identyfikuje dokładnie, gdzie jesteś. Początkujący dostają podstawy. Zaawansowani pomijają je i od razu przechodzą do złożonych technik. Zero straconego czasu na rzeczy, które już znasz.",
+    "ageRange": {
+      "question": "Dla jakiego wieku są bajki?",
+      "answer": "Bajkot tworzy bajki dla trzech grup wiekowych: 3-5 lat, 6-8 lat i 9+ lat. Tekst, słownictwo i elementy terapeutyczne są automatycznie dostosowane do wieku dziecka.",
       "category": "gettingStarted",
       "faqVisible": true,
-      "pages": [
-        "home",
-        "individuals",
-        "career-changers"
-      ]
+      "pages": ["home"]
     },
-    "trial": {
-      "question": "Jak działa darmowa wersja próbna?",
-      "answer": "Otrzymujesz natychmiastowy dostęp do dwóch pierwszych modułów nauki bez podawania danych karty kredytowej. Po ich ukończeniu możesz wybrać plan subskrypcyjny, aby kontynuować.",
-      "category": "gettingStarted",
+    "therapeutic": {
+      "question": "Jak działają elementy terapeutyczne?",
+      "answer": "Każda bajka zawiera techniki z terapii poznawczo-behawioralnej (CBT) i biblioterapii. Bohater modeluje zdrowe strategie radzenia sobie z trudnościami. Bajka przechodzi automatyczną recenzję psychologiczną, która sprawdza bezpieczeństwo emocjonalne i adekwatność terapeutyczną.",
+      "category": "content",
       "faqVisible": true,
-      "pages": [
-        "pricing"
-      ]
+      "pages": ["home"]
     },
-    "login": {
-      "question": "Dlaczego muszę się zalogować?",
-      "answer": "Aby zapisać postępy i spersonalizować ścieżkę. System dostosowuje się w miarę Twojego rozwoju — musi pamiętać, gdzie jesteś.",
-      "category": "gettingStarted",
+    "problems": {
+      "question": "Jakie problemy mogą być tematem bajki?",
+      "answer": "Bajkot obsługuje szeroką gamę wyzwań dziecięcych: strach przed ciemnością, lęk separacyjny, problemy z rówieśnikami, trudności z wyrażaniem emocji, nieśmiałość, złość, zmiany życiowe (przeprowadzka, nowe rodzeństwo) i wiele innych.",
+      "category": "content",
       "faqVisible": true,
-      "pages": [
-        "home"
-      ]
+      "pages": ["home"]
     },
-    "promptData": {
-      "question": "Jak są przetwarzane moje prompty?",
-      "answer": "Tylko do oceny poziomu umiejętności. Nie trenujemy modeli na Twoich danych. Nigdy nie udostępniamy ich osobom trzecim. Twoje prompty zostają Twoje.",
-      "category": "gettingStarted",
+    "illustrations": {
+      "question": "Jak wyglądają ilustracje?",
+      "answer": "Oferujemy dwa style artystyczne do wyboru. Przed wygenerowaniem bajki zobaczysz podgląd postaci dziecka w obu stylach i wybierzesz ten, który bardziej Ci odpowiada. Każda bajka zawiera 7 unikalnych ilustracji — okładkę i 6 scen.",
+      "category": "content",
       "faqVisible": true,
-      "pages": [
-        "home"
-      ]
+      "pages": ["home"]
     },
-    "lms": {
-      "question": "Czy można zintegrować to z naszym LMS?",
-      "answer": "Tak. Zapewniamy API i możliwości eksportu dla Cornerstone, SAP SuccessFactors i innych głównych platform. AITutoro uzupełnia to, co macie.",
-      "category": "enterprise",
+    "format": {
+      "question": "W jakim formacie otrzymuję bajkę?",
+      "answer": "Bajka jest dostarczana jako PDF w kwadratowym formacie (210×210mm) — idealnym do druku lub czytania na tablecie. 16 stron: okładka, dedykacja, 6 rozdziałów z ilustracjami, karta rodzica i tylna okładka.",
+      "category": "technical",
       "faqVisible": true,
-      "pages": [
-        "business"
-      ]
+      "pages": ["home"]
     },
-    "staffReadiness": {
-      "question": "Jak mierzycie gotowość kadry do AI?",
-      "answer": "Prosimy nauczycieli o wskazanie narzędzi AI, z których korzystają, oraz opisanie swojego doświadczenia. Następnie oceniamy ich umiejętności w praktycznym zadaniu promptowania. Dzięki temu widzisz dokładnie, na jakim poziomie jest każdy członek kadry i gdzie potrzebne jest wsparcie.",
-      "category": "enterprise",
+    "privacy": {
+      "question": "Czy moje dane są bezpieczne?",
+      "answer": "Tak. Dane są szyfrowane i wykorzystywane wyłącznie do stworzenia bajki. Nie udostępniamy ich osobom trzecim. Możesz w każdej chwili poprosić o usunięcie swoich danych.",
+      "category": "safety",
       "faqVisible": true,
-      "pages": [
-        "edu"
-      ]
-    },
-    "targets": {
-      "question": "Czy możemy określić konkretne cele kompetencyjne?",
-      "answer": "Tak. Administratorzy mogą konfigurować AITutoro za pomocą własnych materiałów — szkolenie dopasowane do potrzeb, terminologii i procesów organizacji.",
-      "category": "enterprise",
-      "faqVisible": true,
-      "pages": [
-        "business",
-        "edu",
-        "executive"
-      ]
-    },
-    "executiveDifference": {
-      "question": "Czym to różni się od standardowych szkoleń AI?",
-      "answer": "Szkolenie dla kadry zarządzającej dopasowuje się do ich potrzeb — jeśli trzeba, skupia się na decyzjach strategicznych, ocenie ryzyka i transformacji organizacyjnej — nie tylko na tutorialach narzędziowych. Pomagamy zrozumieć, co AI oznacza dla Twojego biznesu, nie tylko jak pisać lepsze prompty.",
-      "category": "enterprise",
-      "faqVisible": false,
-      "pages": [
-        "executive"
-      ]
-    },
-    "executiveTime": {
-      "question": "Jaki jest wymóg czasowy dla kadry zarządzającej?",
-      "answer": "Krótkie briefingi z destylowanymi wnioskami. Opcjonalne pogłębione sesje dla konkretnych inicjatyw strategicznych. Zaprojektowane dla liderów, którzy mają 30 minut, nie 30 godzin.",
-      "category": "enterprise",
-      "faqVisible": true,
-      "pages": [
-        "executive"
-      ]
-    },
-    "euAiAct": {
-      "question": "Jak działa zgodność z EU AI Act?",
-      "answer": "Automatycznie generujemy logi gotowe do audytu, dokumentujące postępy szkoleniowe zespołu i objęte kompetencje AI. Raporty można wyeksportować w dowolnym momencie dla inspektora ds. zgodności.",
-      "category": "enterprise",
-      "faqVisible": true,
-      "pages": [
-        "pricing"
-      ]
-    },
-    "documents": {
-      "question": "Czy mogę przesłać własne dokumenty firmowe?",
-      "answer": "Tak, w planie Enterprise możesz przesłać wewnętrzne polityki, dokumentację narzędzi i wytyczne. Nasz AI wykorzysta je do sterowania modułami szkoleniowymi, zapewniając, że Twój zespół uczy się korzystać z AI zgodnie z Waszymi zasadami.",
-      "category": "enterprise",
-      "faqVisible": true,
-      "pages": [
-        "pricing"
-      ]
-    },
-    "onPremise": {
-      "question": "Czy oferujecie instalację on-premise?",
-      "answer": "Tak, nasz plan Enterprise+ wspiera pełne wdrożenie on-premise (Docker/Kubernetes) dla organizacji z rygorystycznymi wymaganiami dotyczącymi lokalizacji danych.",
-      "category": "enterprise",
-      "faqVisible": true,
-      "pages": [
-        "pricing"
-      ]
-    },
-    "boardPresentations": {
-      "question": "Czy to może wspierać nasze prezentacje dla zarządu?",
-      "answer": "Tak. Zapewniamy metryki i wizualizacje gotowe dla zarządu, które demonstrują gotowość AI i postęp adopcji. Mówimy do zarządu jego językiem.",
-      "category": "enterprise",
-      "faqVisible": true,
-      "pages": [
-        "executive"
-      ]
-    },
-    "dataProtection": {
-      "question": "Jak chronione są nasze dane?",
-      "answer": "AITutoro przechowuje dane w izolowanych bazach z szyfrowaniem. Dokumentacja firmy nigdy nie trafia do publicznych modeli. Stosujemy szyfrowanie end-to-end i izolację danych.",
-      "category": "enterprise",
-      "faqVisible": true,
-      "pages": [
-        "business",
-        "edu",
-        "executive"
-      ]
-    },
-    "contentIntegrity": {
-      "question": "Co z integralnością treści generowanych przez AI?",
-      "answer": "Szkolimy zespoły w identyfikacji treści generowanych przez AI i utrzymaniu profesjonalnych standardów. Częścią dobrego wykorzystania AI jest znajomość jej ograniczeń.",
-      "category": "enterprise",
-      "faqVisible": true,
-      "pages": [
-        "business"
-      ]
-    },
-    "roi": {
-      "question": "Jak mierzycie zwrot z inwestycji w szkolenia?",
-      "answer": "Śledzimy faktyczną poprawę umiejętności, nie tylko wskaźniki ukończenia. Zobaczysz dokładnie, które kompetencje się poprawiły, o ile i w których zespołach. Przejdź od 'przeszkoliliśmy wszystkich' do 'wszyscy się poprawili'.",
-      "category": "enterprise",
-      "faqVisible": true,
-      "pages": [
-        "business"
-      ]
-    },
-    "academicIntegrity": {
-      "question": "Jak to odnosi się do kwestii uczciwości akademickiej?",
-      "answer": "Szkolimy kadrę w identyfikacji treści generowanych przez AI, projektowaniu ocen wymagających prawdziwego myślenia i tworzeniu autentycznych doświadczeń edukacyjnych. Częścią biegłości AI jest rozumienie jej ograniczeń.",
-      "category": "enterprise",
-      "faqVisible": false,
-      "pages": [
-        "edu"
-      ]
-    },
-    "chatgptVsClaudeCoding": {
-      "question": "Czy Claude jest lepszy do kodowania niż ChatGPT?",
-      "answer": "W przypadku standardowego generowania kodu są prawie remisowe - wyniki SWE-bench Verified wynoszą 80,8% (Claude) w porównaniu do 80,0% (GPT-5.2). Claude osiąga przewagę w autonomicznych, wieloetapowych zadaniach kodowania, w których znaczenie ma agent terminalowy Claude Code i zapisywanie punktów kontrolnych. ChatGPT jest lepszy w przypadku kodowania wspomaganego badaniami i zadań delegowanych do chmury za pośrednictwem Codex.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "chatgpt-vs-claude",
-        "chatgpt"
-      ]
-    },
-    "chatgptVsClaudeFree": {
-      "question": "Czy darmowa wersja Claude jest lepsza niż darmowa wersja ChatGPT?",
-      "answer": "Od lutego 2026 r. bezpłatna warstwa Claude oferuje Sonnet 4.5 bez reklam, tworzenia plików i konektorów innych firm. Darmowa warstwa ChatGPT zapewnia ograniczony dostęp do GPT-5.2 (10 wiadomości na 5 godzin), ale teraz zawiera reklamy i mniej wbudowanych funkcji. Dla większości użytkowników darmowa warstwa Claude zapewnia większą wartość.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "chatgpt-vs-claude",
-        "chatgpt"
-      ]
-    },
-    "chatgptVsClaudeData": {
-      "question": "Która sztuczna inteligencja jest lepsza do analizy danych?",
-      "answer": "Claude prowadzi w benchmarkach pracy z wiedzą (GDPval-AA Elo: 1,606 w porównaniu do 1,462) i przepływach pracy analizy dokumentów. Dojrzała integracja ChatGPT z wyszukiwarką internetową daje mu przewagę, gdy analiza wymaga pobierania danych na żywo lub źródeł wielojęzycznych.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "chatgpt-vs-claude",
-        "claude"
-      ]
-    },
-    "chatgptVsClaudePricing": {
-      "question": "Jakie są różnice cenowe między Claude Pro i ChatGPT Plus?",
-      "answer": "Obie kosztują $20/miesiąc. Różnica polega na wyższych poziomach: Claude oferuje Max za $100/miesiąc (5-krotne użycie) i $200/miesiąc (20-krotne użycie). ChatGPT oferuje Pro za $200/miesiąc z dostępem o3-pro. Ceny na poziomie API faworyzują ChatGPT - GPT-5.2 kosztuje 1,75 USD/1M tokenów wejściowych w porównaniu do Claude Opus 4.6 za 5 USD/1M.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "chatgpt-vs-claude"
-      ]
-    },
-    "chatgptVsCopilotDifference": {
-      "question": "Jaka jest różnica między ChatGPT a Microsoft Copilot?",
-      "answer": "ChatGPT to samodzielny asystent AI OpenAI do badań, pracy twórczej, kodowania i zadań ogólnego przeznaczenia na dowolnej platformie. Microsoft Copilot to warstwa AI wbudowana w aplikacje Microsoft 365 (Word, Excel, Outlook, Teams) i Windows. Mają one wspólne korzenie modelu GPT, ale działają na oddzielnej infrastrukturze z różnymi modelami obsługi danych i prywatności.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "chatgpt-vs-copilot",
-        "copilot",
-        "chatgpt"
-      ]
-    },
-    "chatgptVsCopilotFree": {
-      "question": "Czy Copilot jest darmowy jak ChatGPT?",
-      "answer": "Obie oferują darmowe poziomy z ograniczeniami. ChatGPT Free zapewnia GPT-5.2 Instant z ograniczeniami szybkości. Copilot Free zapewnia GPT-5 Smart Mode z 15 wzmocnieniami obrazu dziennie. Dla firm, Copilot Chat jest darmowy dla wszystkich użytkowników Entra ID z subskrypcją Microsoft 365 - jest to znacząca przewaga nad ChatGPT, który nie ma darmowej warstwy biznesowej.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "chatgpt-vs-copilot",
-        "copilot"
-      ]
-    },
-    "chatgptVsCopilotCoding": {
-      "question": "Czy ChatGPT jest lepszy niż Copilot do kodowania?",
-      "answer": "To zależy od zadania. GitHub Copilot (oddzielny od M365 Copilot) wyróżnia się uzupełnianiem kodu inline i integracją IDE z bezpłatną warstwą oferującą 2000 uzupełnień miesięcznie. ChatGPT Codex obsługuje autonomiczne kodowanie oparte na zadaniach - uruchamianie agentów w piaskownicach w chmurze i tworzenie żądań ściągnięcia z wydań. Wielu deweloperów korzysta z obu rozwiązań jednocześnie.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "chatgpt-vs-copilot"
-      ]
-    },
-    "chatgptVsCopilotRebrand": {
-      "question": "Czy Copilot jest rebrandingiem ChatGPT?",
-      "answer": "Nie. Microsoft Copilot to odrębny produkt zbudowany na infrastrukturze Azure OpenAI (a nie usługach publicznych OpenAI), z własnym potokiem danych, gwarancjami prywatności i architekturą obejmującą wiele modeli, która obecnie obejmuje dostawców spoza OpenAI (Anthropic, Google, xAI). Współdzielą one technologię modelu, ale są oddzielnymi produktami od oddzielnych firm.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "chatgpt-vs-copilot",
-        "copilot"
-      ]
-    },
-    "chatgptVsGeminiBetter": {
-      "question": "Co jest lepsze: ChatGPT czy Gemini?",
-      "answer": "Żadne z nich nie jest uniwersalnie lepsze. ChatGPT prowadzi pod względem kreatywnego pisania, benchmarków kodowania (80,0% SWE-bench) i integracji z innymi firmami. Gemini jest liderem pod względem dogłębności badań, dokładności faktów (72,1% SimpleQA), rozmiaru okna kontekstowego (1 mln tokenów) i integracji z Google Workspace. Decyzja zależy od konkretnego przypadku użycia i ekosystemu narzędzi.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "chatgpt-vs-gemini",
-        "gemini",
-        "chatgpt"
-      ]
-    },
-    "chatgptVsGeminiPower": {
-      "question": "Czy Gemini jest potężniejszy niż ChatGPT?",
-      "answer": "W niektórych benchmarkach tak. Gemini 3 Pro znajduje się na szczycie tabeli liderów Areny (1501 Elo) i prowadzi w matematyce (95% AIME 2025) i dokładności faktów. ChatGPT ma przewagę w kodowaniu i kreatywności. \"Potężniejszy\" zależy wyłącznie od zadania.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "chatgpt-vs-gemini"
-      ]
-    },
-    "chatgptVsGeminiDifferences": {
-      "question": "Jakie są główne różnice między ChatGPT i Gemini?",
-      "answer": "Największe różnice strukturalne to okno kontekstowe (1 mln tokenów Gemini w porównaniu do 128 tys. konsumentów ChatGPT), podejście do wyszukiwania w sieci (natywne ugruntowanie wyszukiwarki Google w porównaniu z wyszukiwaniem opartym na Bing) oraz integracja ekosystemu (Google Workspace w porównaniu z szerszymi konektorami innych firm). Warstwy cenowe są porównywalne i wynoszą około 20 USD miesięcznie.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "chatgpt-vs-gemini",
-        "gemini"
-      ]
-    },
-    "chatgptVsGeminiBoth": {
-      "question": "Czy mogę używać jednocześnie ChatGPT i Gemini?",
-      "answer": "Wielu profesjonalistów używa ChatGPT do redagowania i kodowania, a następnie przełącza się na Gemini do badań i zadań Google Workspace. Bezpłatne poziomy obu platform są wystarczająco hojne, aby umożliwić pracę z dwoma narzędziami. Szkolenie AITutoro obejmuje strategie międzyplatformowe, dzięki czemu można budować umiejętności w obu jednocześnie.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "chatgpt-vs-gemini"
-      ]
-    },
-    "claudeVsGeminiBetter": {
-      "question": "Co jest lepsze, Claude czy Gemini?",
-      "answer": "Nie ma uniwersalnego zwycięzcy. Claude prowadzi w kodowaniu (80,8% SWE-bench), agentowych przepływach pracy, pisaniu w przedsiębiorstwie (GDPval-AA Elo: 1606 vs 1195) i analizie dokumentów. Gemini jest liderem w zakresie multimodalnego rozumienia (81,0% MMMU Pro), integracji Google Workspace i cen API. Twój przepływ pracy określa właściwy wybór.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "claude-vs-gemini",
-        "claude",
-        "gemini"
-      ]
-    },
-    "claudeVsGeminiCoding": {
-      "question": "Czy do kodowania lepszy jest Claude czy Gemini?",
-      "answer": "Claude prowadzi w benchmarkach kodowania: 80,8% w SWE-bench Verified w porównaniu do 76,2% Gemini i 65,4% w Terminal-Bench w porównaniu do 56,2%. Claude Code zapewnia dedykowanego asystenta kodowania opartego na terminalu. Zaletą Gemini jest okno kontekstowe z 1 mln tokenów do analizy dużych baz kodu.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "claude-vs-gemini",
-        "claude"
-      ]
-    },
-    "claudeVsGeminiPricing": {
-      "question": "Jak wypada cena Claude w porównaniu do Gemini?",
-      "answer": "Na poziomie podstawowym Gemini jest tańsze (7,99 USD miesięcznie w porównaniu do 20 USD miesięcznie). Na średnim poziomie ceny są zbieżne (19,99 USD vs 20 USD). Ceny API zdecydowanie faworyzują Gemini: Opus 4.6 kosztuje 5 USD / 25 USD za milion tokenów w porównaniu z Gemini 3 Pro za 2 USD / 12 USD. Gemini oferuje również bezpłatny poziom API dla modeli Flash.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "claude-vs-gemini"
-      ]
-    },
-    "claudeVsGeminiMultimodal": {
-      "question": "Czy Claude może przetwarzać wideo i audio jak Gemini?",
-      "answer": "Nie. Gemini przetwarza wideo i audio natywnie - nie wymaga etapu transkrypcji ani konwersji plików. Claude akceptuje tekst, obrazy i pliki PDF, ale nie może bezpośrednio przetwarzać plików wideo lub audio. Jeśli Twoja praca polega na analizowaniu nagrań ze spotkań lub treści multimedialnych, Gemini ma wyraźną przewagę.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "claude-vs-gemini"
-      ]
-    },
-    "copilotVsGeminiSuperior": {
-      "question": "Czy Copilot lub Gemini jest wyraźnie lepszy?",
-      "answer": "Ani jedno, ani drugie. Copilot wyróżnia się głęboką integracją z Microsoft 365 - formułami Excel, podsumowaniami spotkań Teams, automatyzacją SharePoint. Gemini wyróżnia się w przepływach pracy badawczej, analizie dużych kontekstów (1 mln tokenów) i multimodalnej pracy twórczej (wideo 4K z Veo 3.1). Wydajność zależy od istniejącego ekosystemu i podstawowych przepływów pracy.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "copilot-vs-gemini",
-        "copilot",
-        "gemini"
-      ]
-    },
-    "copilotVsGeminiAddons": {
-      "question": "Czy potrzebujesz drogich dodatków, aby uzyskać dostęp do funkcji AI?",
-      "answer": "Google dołączył Gemini do wszystkich planów Workspace Business i Enterprise w styczniu 2025 roku, eliminując oddzielny dodatek. Microsoft nadal wymaga oddzielnej licencji Copilot (18-30 USD za użytkownika miesięcznie) oprócz subskrypcji Microsoft 365. Dzięki temu całkowity koszt posiadania Gemini jest znacznie niższy dla zespołów Google Workspace.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "copilot-vs-gemini"
-      ]
-    },
-    "copilotVsGeminiContext": {
-      "question": "Czy okna kontekstowe są w przybliżeniu równoważne między Copilot i Gemini?",
-      "answer": "Modele Gemini obsługują 1 048 576 tokenów wejściowych - około trzy razy więcej niż 400 000 tokenów kontekstu deweloperskiego GPT-5.2-Codex i osiem razy więcej niż 128 000 tokenów GPT-4o. W przypadku przepływów pracy obejmujących całe bazy kodu lub dokumenty składające się z wielu rozdziałów, różnica ta jest istotna.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "copilot-vs-gemini"
-      ]
-    },
-    "copilotVsGeminiModels": {
-      "question": "Czy Copilot używa tylko modeli GPT z OpenAI?",
-      "answer": "Od stycznia 2026 r. Microsoft Copilot wykorzystuje routing wielu modeli między GPT-4o, GPT-5, GPT-5.2 (za pośrednictwem usługi Azure OpenAI) oraz Claude Opus 4.5 i Sonnet 4.5 (za pośrednictwem Anthropic). Pozwala to Copilotowi dopasować określone zadania do modelu najlepiej dostosowanego do szybkości, kreatywności lub rozszerzonego rozumowania.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "copilot-vs-gemini"
-      ]
-    },
-    "midjourneyVsDalleBetter": {
-      "question": "Czy Midjourney jest lepszy niż DALL-E?",
-      "answer": "DALL-E 3 nie istnieje już w ChatGPT - został zastąpiony przez natywne generowanie obrazu GPT-4o w marcu 2025 roku. Midjourney wyróżnia się kontrolą artystyczną, jakością estetyczną i tworzeniem na dużą skalę z generowaniem wideo. ChatGPT (GPT-4o) wyróżnia się renderowaniem tekstu, fotorealizmem i integracją konwersacyjnego przepływu pracy. Żadna z nich nie jest uniwersalnie lepsza.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "midjourney-vs-dalle",
-        "midjourney",
-        "dalle"
-      ]
-    },
-    "midjourneyVsDalleText": {
-      "question": "Która sztuczna inteligencja generuje lepszy tekst na obrazach?",
-      "answer": "ChatGPT (GPT-4o) wygrywa zdecydowanie w renderowaniu tekstu. Dokładnie renderuje znaki, etykiety, diagramy i wielowierszowe fragmenty tekstu. Midjourney V7 poprawił tekst w stosunku do V6, ale tekst pozostaje niewiarygodny dla wszystkiego, co wymaga czytelnego wyjścia.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "midjourney-vs-dalle",
-        "dalle"
-      ]
-    },
-    "midjourneyVsDalleFree": {
-      "question": "Czy mogę używać generowania obrazu Midjourney lub ChatGPT za darmo?",
-      "answer": "ChatGPT oferuje darmowe generowanie obrazów (2-3 obrazy dziennie). Midjourney nie ma darmowego poziomu - plan podstawowy wynosi 10 USD miesięcznie (Basic). Dla okazjonalnych użytkowników darmowy poziom ChatGPT jest wystarczający. Dla dużych twórców, Midjourney Standard (30 USD/miesiąc) z nieograniczonym trybem Relax zapewnia lepszą wartość.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "midjourney-vs-dalle",
-        "midjourney",
-        "dalle"
-      ]
-    },
-    "midjourneyVsDalleCommercial": {
-      "question": "Czy mogę używać obrazów generowanych przez AI w celach komercyjnych?",
-      "answer": "Tak, na obu platformach. Płatni subskrybenci Midjourney są właścicielami wygenerowanych zasobów, ale firmy o rocznych przychodach powyżej 1 mln USD muszą korzystać z planów Pro (60 USD/miesiąc) lub Mega. OpenAI przypisuje użytkownikom pełne prawa we wszystkich planach, w tym darmowych. Uwaga: obrazy generowane wyłącznie przez sztuczną inteligencję mogą nie podlegać prawom autorskim zgodnie z prawem Stanów Zjednoczonych. OpenAI oferuje ochronę praw autorskich dla klientów korporacyjnych; Midjourney nie oferuje odszkodowania z tytułu własności intelektualnej.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "midjourney-vs-dalle",
-        "midjourney"
-      ]
-    },
-    "claudeVsChatgpt": {
-      "question": "Czy Claude jest lepszy od ChatGPT?",
-      "answer": "Żaden nie jest uniwersalnie lepszy. Claude przoduje w benchmarkach kodowania, pisaniu długich form i precyzyjnym wykonywaniu instrukcji. ChatGPT ma szerszy zestaw funkcji, w tym generowanie obrazów, rozmowy głosowe i większy ekosystem integracji zewnętrznych. Właściwy wybór zależy od konkretnego workflow.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "claude"
-      ]
-    },
-    "grokVsChatgpt": {
-      "question": "Jak Grok wypada w porównaniu z ChatGPT?",
-      "answer": "Grok to asystent xAI zintegrowany z X (Twitter), zapewniający dostęp w czasie rzeczywistym do postów i trendów. ChatGPT to narzędzie ogólnego przeznaczenia z szerszym zestawem funkcji. Wybierz Grok do analizy mediów społecznościowych w czasie rzeczywistym i integracji z X; wybierz ChatGPT dla wszechstronności w każdym workflow.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "grok"
-      ]
-    },
-    "perplexityVsChatgpt": {
-      "question": "Czy Perplexity jest lepszy niż ChatGPT do badań?",
-      "answer": "Do badań wymagających cytowania źródeł — tak. Każda odpowiedź Perplexity zawiera cytaty inline ze źródeł linkujące do oryginalnych stron. ChatGPT może przeszukiwać internet, ale cały projekt Perplexity jest zbudowany wokół odpowiedzi zweryfikowanych źródłowo. Do zadań ogólnego przeznaczenia poza badaniami ChatGPT jest bardziej wszechstronny.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "perplexity"
-      ]
-    },
-    "notebooklmVsPerplexity": {
-      "question": "Czym NotebookLM różni się od Perplexity?",
-      "answer": "NotebookLM pracuje z TWOIMI źródłami — przesyłasz dokumenty, a on odpowiada na pytania wyłącznie na podstawie Twoich materiałów. Perplexity przeszukuje internet w czasie rzeczywistym, podając odpowiedzi z cytatami. Używaj NotebookLM do syntezy konkretnych dokumentów; używaj Perplexity do szerszych badań z weryfikacją źródeł.",
-      "category": "toolComparisons",
-      "faqVisible": false,
-      "pages": [
-        "notebooklm"
-      ]
-    },
-    "chatgptStart": {
-      "question": "Jak zacząć naukę ChatGPT?",
-      "answer": "Utwórz darmowe konto na chatgpt.com, skonfiguruj Custom Instructions ze swoją rolą i preferencjami i uruchom kilka promptów startowych obejmujących pisanie, analizę i zadania twórcze. Jeśli szukasz ustrukturyzowanego szkolenia dopasowanego do Twojego poziomu, AITutoro oferuje prowadzone ścieżki nauki.",
-      "category": "toolGuides",
-      "faqVisible": false,
-      "pages": [
-        "chatgpt"
-      ]
-    },
-    "chatgptBasics": {
-      "question": "Jakie są podstawy ChatGPT?",
-      "answer": "ChatGPT to konwersacyjna AI od OpenAI, która generuje tekst, obrazy, kod i odpowiedzi głosowe. Podstawy obejmują pisanie czytelnych promptów, zrozumienie, który plan cenowy pasuje do Twoich potrzeb, konfigurację pamięci i Custom Instructions oraz wiedzę, kiedy weryfikować wyniki w źródłach pierwotnych.",
-      "category": "toolGuides",
-      "faqVisible": false,
-      "pages": [
-        "chatgpt"
-      ]
-    },
-    "claudeStart": {
-      "question": "Jak zacząć korzystać z Claude?",
-      "answer": "Zarejestruj się na claude.ai za pomocą e-maila, konta Google lub Apple ID. Rozpocznij rozmowę, wypróbuj Artifacts do generowania dokumentów i kodu, a po osiągnięciu limitów przejdź na Pro. Claude doskonale radzi sobie z długimi dokumentami, kodowaniem i dokładną analizą.",
-      "category": "toolGuides",
-      "faqVisible": false,
-      "pages": [
-        "claude"
-      ]
-    },
-    "geminiPricing": {
-      "question": "Ile kosztuje Google Gemini?",
-      "answer": "Gemini oferuje cztery plany: bezpłatny (50 kredytów/dzień), AI Plus ($7,99/miesiąc), AI Pro ($19,99/miesiąc z pełną integracją Workspace) i AI Ultra ($249,99/miesiąc dla badaczy i zaawansowanych użytkowników). AI Plus został uruchomiony w styczniu 2026 jako najtańszy punkt wejścia.",
-      "category": "toolGuides",
-      "faqVisible": false,
-      "pages": [
-        "gemini"
-      ]
-    },
-    "geminiWorkspace": {
-      "question": "Czy Gemini działa z Google Workspace?",
-      "answer": "Tak — to największa zaleta Gemini. Na planie AI Pro i wyżej Gemini pojawia się jako panel boczny w Gmailu, Dokumentach, Arkuszach, Prezentacjach i Meet. Tworzy szkice maili, podsumowuje dokumenty, generuje formuły i buduje prezentacje bez opuszczania aplikacji.",
-      "category": "toolGuides",
-      "faqVisible": false,
-      "pages": [
-        "gemini"
-      ]
-    },
-    "grokFree": {
-      "question": "Czy Grok jest darmowy?",
-      "answer": "Grok jest dostępny przez X (Twitter). Podstawowy dostęp jest w ramach konta X. Rozszerzone funkcje są dostępne przez subskrypcje X Premium. Dokładny zakres funkcji na poszczególnych planach zależy od poziomu subskrypcji X.",
-      "category": "toolGuides",
-      "faqVisible": false,
-      "pages": [
-        "grok"
-      ]
-    },
-    "grokBest": {
-      "question": "Do czego Grok nadaje się najlepiej?",
-      "answer": "Grok doskonale sprawdza się w pobieraniu informacji w czasie rzeczywistym z X/Twittera, co czyni go idealnym do monitorowania trendów, wiadomości i nastrojów w mediach społecznościowych. Jest również silny w zadaniach analitycznych i kodowaniu dzięki architekturze modelu Grok-3.",
-      "category": "toolGuides",
-      "faqVisible": false,
-      "pages": [
-        "grok"
-      ]
-    },
-    "notebooklmFree": {
-      "question": "Czy NotebookLM jest darmowy?",
-      "answer": "Tak. Bezpłatny plan NotebookLM obejmuje 100 notatników z 50 źródłami każdy i 50 czatów dziennie. To wystarczające dla większości workflow badawczych i edukacyjnych. Dodatkowe funkcje, takie jak 500 notatników i 300 źródeł na notatnik, są dostępne przez Google AI Pro ($19,99/miesiąc).",
-      "category": "toolGuides",
-      "faqVisible": false,
-      "pages": [
-        "notebooklm"
-      ]
-    },
-    "notebooklmAudio": {
-      "question": "Czym są Audio Overviews w NotebookLM?",
-      "answer": "Audio Overviews przekształcają przesłane źródła w dyskusje audio w stylu podcastu, generowane automatycznie. Ta wyróżniająca funkcja pozwala słuchać podsumowań materiałów badawczych w drodze — przydatne przed spotkaniami lub podczas dojazdów.",
-      "category": "toolGuides",
-      "faqVisible": false,
-      "pages": [
-        "notebooklm"
-      ]
-    },
-    "perplexityFree": {
-      "question": "Czy Perplexity jest darmowy?",
-      "answer": "Tak. Bezpłatny plan obejmuje nieograniczone wyszukiwania podstawowe, pięć wyszukiwań Pro co cztery godziny i trzy zapytania Deep Research dziennie. Pro za $20/miesiąc odblokowuje pełne możliwości, w tym nieograniczone wyszukiwania Pro i rozszerzone badania.",
-      "category": "toolGuides",
-      "faqVisible": false,
-      "pages": [
-        "perplexity"
-      ]
-    },
-    "perplexitySources": {
-      "question": "W jaki sposób Perplexity cytuje źródła?",
-      "answer": "Perplexity umieszcza w każdej odpowiedzi numerowane cytaty inline, linkujące bezpośrednio do oryginalnych stron. To nie jest chatbot zgadujący z danych treningowych — przeszukuje internet w czasie rzeczywistym i buduje odpowiedzi z weryfikowalnych źródeł.",
-      "category": "toolGuides",
-      "faqVisible": false,
-      "pages": [
-        "perplexity"
-      ]
-    },
-    "compareWhichBest": {
-      "question": "Które narzędzie AI jest ogólnie najlepsze?",
-      "answer": "Nie ma jednego \"najlepszego\" narzędzia. ChatGPT przoduje w badaniach i multimediach. Claude przoduje w jakości pisania i długich dokumentach. Gemini integruje się z Google Workspace. Copilot działa wewnątrz Microsoft 365. Najlepszym narzędziem jest to, które pasuje do istniejącego przepływu pracy i priorytetów.",
-      "category": "choosingTools",
-      "faqVisible": true,
-      "pages": [
-        "compare-hub",
-        "tools-hub"
-      ]
-    },
-    "compareFreeTiers": {
-      "question": "Czy narzędzia AI są darmowe?",
-      "answer": "Wszystkie główne narzędzia oferują darmowe poziomy z limitami użytkowania. ChatGPT, Claude, Gemini, DALL-E (przez ChatGPT), Microsoft Copilot, NotebookLM i Perplexity oferują darmowy dostęp — Midjourney to jedyne główne narzędzie bez darmowego planu (plany zaczynają się od $10/miesiąc). W przypadku zastosowań profesjonalnych, płatne plany (10-20 USD/miesiąc) usuwają ograniczenia i odblokowują zaawansowane funkcje, takie jak dłuższe okna kontekstowe, tworzenie plików i priorytetowy dostęp.",
-      "category": "choosingTools",
-      "faqVisible": true,
-      "pages": [
-        "compare-hub",
-        "tools-hub"
-      ]
-    },
-    "compareTeams": {
-      "question": "Które narzędzie AI jest najlepsze dla zespołów?",
-      "answer": "W przypadku organizacji opartych na Microsoft, Copilot integruje się bezpośrednio z Teams, Outlook i SharePoint. Dla zespołów Google Workspace, Gemini jest naturalnym rozwiązaniem. Dla zespołów, które potrzebują najlepszego samodzielnego modelu niezależnie od ekosystemu, Claude Team (25-30 USD / miejsce) i ChatGPT Team (25-30 USD / miejsce) oferują kontrolę administracyjną, obszary robocze projektów i pulpity nawigacyjne.",
-      "category": "choosingTools",
-      "faqVisible": true,
-      "pages": [
-        "compare-hub"
-      ]
-    },
-    "toolsLearnFirst": {
-      "question": "Które narzędzie AI warto poznać jako pierwsze?",
-      "answer": "Zacznij od ChatGPT, jeśli szukasz narzędzia ogólnego przeznaczenia, które robi wszystko. Jeśli pracujesz w Google Workspace, zacznij od Gemini. Jeśli kodujesz, zacznij od Claude. Najlepszy punkt wyjścia zależy od codziennego workflow — wybierz narzędzie osadzone w ekosystemie, z którego już korzystasz.",
-      "category": "choosingTools",
-      "faqVisible": true,
-      "pages": [
-        "tools-hub",
-        "compare-hub",
-        "individuals",
-        "creators"
-      ]
-    },
-    "toolsFast": {
-      "question": "Jak szybko nauczyć się narzędzi AI?",
-      "answer": "Pomiń tutoriale i zacznij od jednego prawdziwego zadania z codziennej pracy. Napisz prawdziwego maila, przeanalizuj prawdziwy arkusz kalkulacyjny lub zdebuguj prawdziwy kod. Ustrukturyzowane platformy szkoleniowe jak AITutoro przyspieszają proces, dopasowując ćwiczenia do poziomu umiejętności i dając informacje zwrotne.",
-      "category": "choosingTools",
-      "faqVisible": true,
-      "pages": [
-        "tools-hub",
-        "individuals",
-        "personal-productivity"
-      ]
-    },
-    "glossaryAiVsGenAi": {
-      "question": "Jaka jest różnica między AI a generatywną AI?",
-      "answer": "AI to każdy system wykonujący zadania, które normalnie wymagają ludzkiej inteligencji. Generatywna AI to podzbiór, który tworzy nowe treści — tekst, obrazy, kod — ucząc się wzorców z danych treningowych. Kiedy ludzie mówią \"AI\" w 2026 roku, prawie zawsze mają na myśli generatywną AI.",
-      "category": "choosingTools",
-      "faqVisible": true,
-      "pages": [
-        "glossary"
-      ]
-    },
-    "glossaryLlmVsNlp": {
-      "question": "Jaka jest różnica między LLM a NLP?",
-      "answer": "NLP (Natural Language Processing) to szersza dziedzina umożliwiania komputerom rozumienia ludzkiego języka. LLM (Large Language Models) to najpotężniejsze narzędzia NLP w historii — modele oparte na transformerach trenowane na ogromnych zbiorach tekstu. Wszystkie LLM to NLP, ale NLP obejmuje wiele innych technik poza LLM.",
-      "category": "choosingTools",
-      "faqVisible": true,
-      "pages": [
-        "glossary"
-      ]
-    },
-    "glossaryTokens": {
-      "question": "Czym są tokeny w AI?",
-      "answer": "Tokeny to najmniejsze jednostki tekstu przetwarzane przez modele językowe — mniej więcej cztery znaki lub 0,75 słowa każdy. Każda interakcja z AI jest mierzona w tokenach, a ceny API są podawane za milion tokenów. Zrozumienie tokenów pomaga zarządzać kosztami i wiedzieć, dlaczego niektóre odpowiedzi zostają ucięte.",
-      "category": "choosingTools",
-      "faqVisible": true,
-      "pages": [
-        "glossary"
-      ]
-    },
-    "freelancerHowUseAi": {
-      "question": "Jak freelancer może wykorzystać sztuczną inteligencję?",
-      "answer": "Freelancerzy wykorzystują sztuczną inteligencję w trzech obszarach: pracy z klientami (oferty, badania, projekty, przeglądy kodu), administracji (e-maile, umowy, faktury) oraz rozwoju biznesu (poszukiwanie klientów, badania cenowe, działania następcze). Największe korzyści płyną z integracji sztucznej inteligencji z konkretnymi zadaniami, a nie z ogólnymi podpowiedziami. AITutoro szkoli cię w zakresie narzędzi, z których już korzystasz, w scenariuszach odpowiadających rzeczywistej pracy z klientami.",
-      "category": "gettingStarted",
-      "faqVisible": false,
-      "pages": [
-        "freelancers"
-      ]
-    },
-    "freelancerWillAiReplace": {
-      "question": "Czy sztuczna inteligencja zastąpi freelancerów?",
-      "answer": "Freelancerzy wykonujący prace o charakterze ogólnym borykają się z realną presją — liczba zleceń pisarskich spadła o 33%, a tłumaczeniowych o 19%. Jednak specjaliści, którzy wykorzystują sztuczną inteligencję do szybszego wykonywania prac o wyższej jakości, zdobywają więcej projektów i żądają wyższych stawek. 49% menedżerów ds. rekrutacji planuje zwiększyć zatrudnienie freelancerów. Podział dotyczy osób, które celowo się szkoliły, i tych, które tego nie zrobiły.",
-      "category": "gettingStarted",
-      "faqVisible": false,
-      "pages": [
-        "freelancers"
-      ]
-    },
-    "freelancerWhatTools": {
-      "question": "Jakich narzędzi AI używają freelancerzy?",
-      "answer": "Najczęściej używane są ChatGPT, Claude, Gemini i Copilot do pisania i badań; Midjourney i DALL-E do pracy wizualnej; oraz specjalistyczne narzędzia do kodowania, audio i wideo. To, jakie narzędzie wybierzesz, ma mniejsze znaczenie niż to, jak go używasz — 73% freelancerów ma już dostęp do sztucznej inteligencji. Różnica polega na ustrukturyzowanym szkoleniu, a nie na dostępie.",
-      "category": "gettingStarted",
-      "faqVisible": false,
-      "pages": [
-        "freelancers"
-      ]
-    },
-    "freelancerHowImprove": {
-      "question": "W jaki sposób sztuczna inteligencja może pomóc mi stać się lepszym freelancerem?",
-      "answer": "Skracając czas poświęcany na prace niepodlegające rozliczeniu. 25–40% czasu pracy freelancerów zajmuje administracja, poszukiwanie klientów i koszty ogólne. Sztuczna inteligencja zajmuje się tworzeniem szkiców, podsumowań badań, szablonów e-maili i standardowych umów, dzięki czemu godziny pracy podlegające rozliczeniu pozostają rozliczane. 50% freelancerów, którzy przeszli szkolenie z zakresu wdrażania sztucznej inteligencji, zarobiło dzięki temu więcej.",
-      "category": "gettingStarted",
-      "faqVisible": false,
-      "pages": [
-        "freelancers"
-      ]
-    },
-    "careerChangerNoCoding": {
-      "question": "Czy potrzebuję doświadczenia w programowaniu, aby pracować w dziedzinie sztucznej inteligencji?",
-      "answer": "Nie. Najszybciej rozwijające się stanowiska związane ze sztuczną inteligencją nie wymagają umiejętności programowania. 82% nowych stanowisk związanych ze sztuczną inteligencją przedkłada komunikację, krytyczne myślenie i wiedzę branżową nad umiejętności techniczne. Osoby odpowiedzialne za rekrutację sprawdzają biegłość w posługiwaniu się sztuczną inteligencją — umiejętność efektywnej pracy z narzędziami AI. Można się tego nauczyć bez doświadczenia w programowaniu.",
-      "category": "gettingStarted",
-      "faqVisible": false,
-      "pages": [
-        "career-changers"
-      ]
-    },
-    "careerChangerHowLong": {
-      "question": "Ile czasu zajmuje opanowanie języka AI?",
-      "answer": "Pięć godzin ustrukturyzowanego szkolenia to krytyczny próg. Pracownicy, którzy go przekroczą, stają się regularnymi, pewnymi siebie użytkownikami sztucznej inteligencji, a wskaźnik adopcji wynosi 79% (BCG 2025). Szkolenie adaptacyjne AITutoro koncentruje się konkretnie na osiągnięciu i przekroczeniu tego progu — nie jest to 40-godzinny kurs obejmujący wszystko w teorii.",
-      "category": "gettingStarted",
-      "faqVisible": false,
-      "pages": [
-        "career-changers"
-      ]
-    },
-    "careerChangerWhatJobs": {
-      "question": "Jakie zawody związane ze sztuczną inteligencją nie wymagają umiejętności kodowania?",
-      "answer": "Inżynier ds. podpowiedzi AI, trener AI, strateg ds. treści AI, kierownik projektu AI, recenzent ds. etyki AI oraz stanowiska wspomagane przez AI w marketingu, HR, dziale prawnym i operacyjnym. Większość szybko rozwijających się stanowisk związanych z AI polega na zastosowaniu sztucznej inteligencji do istniejącej wiedzy specjalistycznej — twoje obecne doświadczenie jest atutem.",
-      "category": "gettingStarted",
-      "faqVisible": false,
-      "pages": [
-        "career-changers"
-      ]
-    },
-    "careerChangerCv": {
-      "question": "Jak pokazać umiejętności związane ze sztuczną inteligencją w CV?",
-      "answer": "Konkretność przeważa nad referencjami. Podaj nazwy używanych narzędzi (ChatGPT, Claude, Gemini), opisz kontekst pracy (propozycje, analizy, badania) i, jeśli to możliwe, określ wyniki w ujęciu ilościowym (oszczędność czasu, wielkość produkcji). Certyfikat ukończenia ustrukturyzowanego szkolenia ma większą wartość niż niejasne sformułowanie \"biegły w sztucznej inteligencji\" — świadczy on o świadomym doskonaleniu umiejętności.",
-      "category": "gettingStarted",
-      "faqVisible": false,
-      "pages": [
-        "career-changers"
-      ]
-    },
-    "creatorWillAiBeGeneric": {
-      "question": "Czy sztuczna inteligencja sprawi, że moje treści będą wyglądały na generyczne?",
-      "answer": "Tylko jeśli podasz ogólne wskazówki. Każdy twórca używający tego samego polecenia \"napisz mi podpis\" otrzyma ten sam podpis. Zachowanie stylu jest umiejętnością, którą można wyćwiczyć — wymaga nauczenia się dostosowywania wyników AI do konkretnego stylu, odbiorców i formatu. Moduły inżynierii poleceń AITutoro bezpośrednio zajmują się tą kwestią.",
-      "category": "gettingStarted",
-      "faqVisible": false,
-      "pages": [
-        "creators"
-      ]
-    },
-    "creatorWhichToolsFirst": {
-      "question": "Które narzędzia AI twórcy powinni poznać w pierwszej kolejności?",
-      "answer": "Zacznij od tekstowego AI (ChatGPT lub Claude) do tworzenia pomysłów, pisania scenariuszy i zmiany przeznaczenia. Dodaj wizualną sztuczną inteligencję (Midjourney lub DALL-E), jeśli twoja praca zawiera dużo obrazów. Narzędzie ma mniejsze znaczenie niż nauka jego integracji z konkretnym procesem produkcyjnym — tworzeniem pomysłów, pisaniem scenariuszy, formatowaniem, dystrybucją. AITutoro szkoli cię w zakresie całego procesu, a nie pojedynczych narzędzi.",
-      "category": "gettingStarted",
-      "faqVisible": false,
-      "pages": [
-        "creators"
-      ]
-    },
-    "creatorVoicePreservation": {
-      "question": "W jaki sposób szkolenie z zakresu sztucznej inteligencji pozwala zachować mój kreatywny styl wypowiedzi?",
-      "answer": "Poprzez inżynierię podpowiedzi — nie filtry. Uczysz się dostarczać sztucznej inteligencji wystarczającą ilość kontekstu dotyczącego twojego tonu, stylu, odniesień i odbiorców, aby generowała ona spójne wyniki zgodne z wizerunkiem marki. 85% twórców twierdzi, że sztuczna inteligencja, która uczy się ich stylu, jest ich największą potrzebą. Moduły AITutoro koncentrują się na technikach podpowiedzi, które pozwalają to osiągnąć.",
-      "category": "gettingStarted",
-      "faqVisible": false,
-      "pages": [
-        "creators"
-      ]
-    },
-    "productivityWhyNotSaving": {
-      "question": "Dlaczego nie oszczędzam czasu dzięki sztucznej inteligencji?",
-      "answer": "Zazwyczaj jeden z trzech powodów: nadmierne poleganie na jednym lub dwóch poleceniach, które działają, ale nie są skalowalne; niedocenianie zadań, które AI wykonuje dobrze, a które źle (problem nierównej granicy); lub brak integracji AI z rzeczywistym przepływem pracy — używanie jej sporadycznie, a nie na co dzień. Wszystkie trzy są lukami szkoleniowymi, a nie lukami narzędziowymi.",
-      "category": "gettingStarted",
-      "faqVisible": false,
-      "pages": [
-        "personal-productivity"
-      ]
-    },
-    "productivityHowLong": {
-      "question": "Jak długo trzeba czekać na rzeczywisty wzrost wydajności?",
-      "answer": "Większość osób zauważa wymierną oszczędność czasu już w pierwszym tygodniu systematycznej nauki — jeśli stosują szkolenie do rzeczywistych codziennych zadań, a nie do przykładów z podręcznika. Dane Rezerwy Federalnej dotyczące codziennych użytkowników sztucznej inteligencji, którzy oszczędzają ponad 4 godziny tygodniowo, odzwierciedlają konsekwentne, nawykowe korzystanie z niej, wypracowane poprzez celowe szkolenie. Moduły AITutoro zostały zaprojektowane tak, aby wyrobić ten nawyk w sesjach trwających 15–20 minut.",
-      "category": "gettingStarted",
-      "faqVisible": false,
-      "pages": [
-        "personal-productivity"
-      ]
-    },
-    "productivityMostImpactful": {
-      "question": "Jaka jest najbardziej przydatna umiejętność związana ze sztuczną inteligencją, której warto się nauczyć jako pierwszej?",
-      "answer": "Jasność poleceń — precyzyjne określenie kontekstu, formatu i wyniku w każdym poleceniu. Jest to podstawa wszystkich innych umiejętności sztucznej inteligencji i najważniejszy czynnik odróżniający użytkowników, którzy oszczędzają czas, od tych, którzy tego nie robią. Gdy już to osiągniesz, wszystkie pozostałe moduły będą opierać się na tej podstawie.",
-      "category": "gettingStarted",
-      "faqVisible": false,
-      "pages": [
-        "personal-productivity"
-      ]
+      "pages": ["home"]
     }
   }
 }

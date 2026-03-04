@@ -1,4 +1,4 @@
-import { query, mutation, internalQuery } from '../_generated/server';
+import { query, mutation, internalQuery, internalMutation } from '../_generated/server';
 import { v } from 'convex/values';
 import { assertAdmin } from '../lib/roles';
 import { auditLog, validateConfigValue } from '../lib/adminGuards';
@@ -13,7 +13,7 @@ export const list = query({
       value: v.string(),
       updatedBy: v.string(),
       updatedAt: v.number(),
-    })
+    }),
   ),
   handler: async (ctx) => {
     await assertAdmin(ctx);
@@ -44,6 +44,34 @@ export const getInternal = internalQuery({
       .withIndex('by_key', (q) => q.eq('key', key))
       .first();
     return row?.value ?? null;
+  },
+});
+
+// Internal mutation without admin check — for use by internal actions (e.g., font caching)
+export const setInternal = internalMutation({
+  args: { key: v.string(), value: v.string() },
+  returns: v.null(),
+  handler: async (ctx, { key, value }) => {
+    const existing = await ctx.db
+      .query('adminConfig')
+      .withIndex('by_key', (q) => q.eq('key', key))
+      .first();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        value,
+        updatedBy: 'system',
+        updatedAt: Date.now(),
+      });
+    } else {
+      await ctx.db.insert('adminConfig', {
+        key,
+        value,
+        updatedBy: 'system',
+        updatedAt: Date.now(),
+      });
+    }
+    return null;
   },
 });
 

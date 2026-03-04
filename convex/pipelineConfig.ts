@@ -14,10 +14,9 @@ export const getPipeline = query({
         temperature: v.number(),
         retries: v.number(),
         baseDelayMs: v.number(),
-        webSearch: v.optional(v.object({ enabled: v.literal(true), maxResults: v.number() })),
         reasoning: v.optional(v.boolean()),
         expect: v.optional(v.union(v.literal('object'), v.literal('array'), v.literal('any'))),
-      })
+      }),
     ),
   }),
   handler: async (ctx) => {
@@ -26,13 +25,14 @@ export const getPipeline = query({
     const profile = process.env.LLM_CONFIG_PROFILE || 'prod';
     const config = getLlmConfig();
 
-    const stages = (Object.entries(config) as [PipelineStage, (typeof config)[PipelineStage]][]).map(([stage, cfg]) => ({
+    const stages = (
+      Object.entries(config) as [PipelineStage, (typeof config)[PipelineStage]][]
+    ).map(([stage, cfg]) => ({
       stage,
       model: cfg.model,
       temperature: cfg.temperature,
       retries: cfg.retries,
       baseDelayMs: cfg.baseDelayMs,
-      ...(cfg.webSearch ? { webSearch: cfg.webSearch } : {}),
       ...(cfg.reasoning !== undefined ? { reasoning: cfg.reasoning } : {}),
       ...(cfg.expect ? { expect: cfg.expect } : {}),
     }));

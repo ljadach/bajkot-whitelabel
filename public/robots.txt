@@ -2,14 +2,7 @@ User-agent: *
 Allow: /en/
 Allow: /pl/
 Allow: /de/
-Disallow: /chat
-Disallow: /verification
-Disallow: /summary
-Disallow: /plan
-Disallow: /complete
-Disallow: /dashboard
-Disallow: /settings
-Disallow: /team
-Disallow: /test
+Disallow: /admin
+Disallow: /book/
 
-Sitemap: https://aitutoro.com/sitemap.xml
+Sitemap: https://bajkot.pl/sitemap.xml

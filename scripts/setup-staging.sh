@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # ============================================================
-# AITutor Staging Environment Setup
+# Bajkot Staging Environment Setup
 # ============================================================
 # Vercel handles everything — builds frontend AND deploys Convex backend.
 # No GitHub Actions needed.
@@ -30,7 +30,7 @@ info() { echo -e "  $1"; }
 
 echo ""
 echo "============================================"
-echo "  AITutor Staging Setup"
+echo "  Bajkot Staging Setup"
 echo "============================================"
 echo ""
 
@@ -39,7 +39,7 @@ echo ""
 # --------------------------------------------------
 step "Step 1: Convex staging project"
 info "Go to https://dashboard.convex.dev → Create new project"
-info "Name suggestion: ${BOLD}aitutorc-staging${NC}"
+info "Name suggestion: ${BOLD}bajkot-staging${NC}"
 echo ""
 read -p "  Staging CONVEX_DEPLOY_KEY: " STAGING_DEPLOY_KEY
 [[ -z "$STAGING_DEPLOY_KEY" ]] && { echo "  Error: CONVEX_DEPLOY_KEY cannot be empty"; exit 1; }
@@ -50,9 +50,7 @@ info "Deploying schema to staging..."
 CONVEX_DEPLOY_KEY="$STAGING_DEPLOY_KEY" npx convex deploy
 info "Done."
 
-info "Seeding staging database..."
-CONVEX_DEPLOY_KEY="$STAGING_DEPLOY_KEY" npx convex run --prod seed:seedStaging
-info "Done."
+info "Schema deployed."
 
 # --------------------------------------------------
 # Step 2: Set Convex staging env vars
@@ -67,8 +65,8 @@ echo ""
 info "  ${BOLD}Optional (full feature parity):${NC}"
 info "    LANGFUSE_SECRET_KEY, LANGFUSE_PUBLIC_KEY, LANGFUSE_BASE_URL"
 info "    STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET (test mode)"
-info "    GOOGLE_GENERATIVE_AI_API_KEY, GOOGLE_API_KEY"
-info "    CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_STREAM_API_TOKEN"
+info "    GOOGLE_GENERATIVE_AI_API_KEY (Gemini — image generation)"
+info "    GOOGLE_GENERATIVE_AI_API_KEY"
 echo ""
 read -p "  Press Enter when done..."
 
@@ -76,7 +74,7 @@ read -p "  Press Enter when done..."
 # Step 3: Create Vercel staging project
 # --------------------------------------------------
 step "Step 3: Vercel staging project"
-info "Go to https://vercel.com/new → Import ${BOLD}c3z/aitutorc${NC} repo"
+info "Go to https://vercel.com/new → Import ${BOLD}c3z/bajkot${NC} repo"
 echo ""
 info "Configure:"
 info "  Framework:      Vite"
@@ -90,7 +88,7 @@ info "  CONVEX_DEPLOY_KEY                = $STAGING_DEPLOY_KEY"
 info "  VITE_CLERK_PUBLISHABLE_KEY       = pk_test_... (Clerk dev instance)"
 info "  VITE_PUBLIC_POSTHOG_KEY          = phc_... (same as prod or separate)"
 info "  VITE_PUBLIC_POSTHOG_HOST         = https://eu.i.posthog.com"
-info "  VITE_CLOUDFLARE_CUSTOMER_SUBDOMAIN = gpnloy4tnwlnwyko"
+info "  VITE_TURNSTILE_SITE_KEY            = (Cloudflare Turnstile — lead form captcha)"
 echo ""
 warn "VITE_CONVEX_URL is auto-injected by --cmd-url-env-var-name. Don't set it manually."
 echo ""
@@ -112,7 +110,7 @@ info "  CONVEX_DEPLOY_KEY                = (your prod deploy key)"
 info "  VITE_CLERK_PUBLISHABLE_KEY       = pk_live_... (or pk_test_ for now)"
 info "  VITE_PUBLIC_POSTHOG_KEY          = phc_..."
 info "  VITE_PUBLIC_POSTHOG_HOST         = https://eu.i.posthog.com"
-info "  VITE_CLOUDFLARE_CUSTOMER_SUBDOMAIN = gpnloy4tnwlnwyko"
+info "  VITE_TURNSTILE_SITE_KEY            = (Cloudflare Turnstile — lead form captcha)"
 echo ""
 read -p "  Press Enter when done..."
 
@@ -140,10 +138,10 @@ fi
 # --------------------------------------------------
 step "Step 6: Custom domain (optional)"
 info "In Vercel staging project → Settings → Domains:"
-info "  Add: ${BOLD}staging.aitutorc.pl${NC}"
+info "  Add: ${BOLD}staging.bajkot.pl${NC}"
 info ""
 info "This requires a CNAME record in your DNS:"
-info "  staging.aitutorc.pl → cname.vercel-dns.com"
+info "  staging.bajkot.pl → cname.vercel-dns.com"
 echo ""
 
 # --------------------------------------------------
@@ -158,8 +156,8 @@ echo "  Staging: push to 'staging' → Vercel auto-deploys"
 echo "  Prod:    push to 'main'    → Vercel auto-deploys"
 echo ""
 echo "  Workflow:"
-echo "    feature/* ──PR──→ staging ──auto──→ staging.aitutorc.pl"
-echo "    staging   ──PR──→ main    ──auto──→ aitutorc.pl"
+echo "    feature/* ──PR──→ staging ──auto──→ staging.bajkot.pl"
+echo "    staging   ──PR──→ main    ──auto──→ bajkot.pl"
 echo ""
 echo "  No CI/CD config needed. Vercel handles everything."
 echo ""
