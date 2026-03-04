@@ -1,6 +1,6 @@
 # PostHog Analytics & Feature Flags
 
-This document describes how to use PostHog for analytics tracking and feature flags in the AITutor application.
+This document describes how to use PostHog for analytics tracking and feature flags in the Bajkot application.
 
 ## Setup
 
@@ -103,11 +103,11 @@ import { useConsent } from '@lib/telemetry';
 
 function CookieBanner() {
   const {
-    consentStatus,      // 'accepted' | 'rejected' | 'custom' | null
+    consentStatus, // 'accepted' | 'rejected' | 'custom' | null
     isAnalyticsEnabled, // boolean
-    acceptAll,          // () => void
-    rejectAll,          // () => void
-    setCustomConsent,   // (analytics: boolean) => void
+    acceptAll, // () => void
+    rejectAll, // () => void
+    setCustomConsent, // (analytics: boolean) => void
   } = useConsent();
 
   if (consentStatus) return null; // Already has consent
@@ -216,11 +216,7 @@ With payload:
 With fallback:
 
 ```tsx
-<PostHogFeature
-  flag="new-feature"
-  match={true}
-  fallback={<OldFeature />}
->
+<PostHogFeature flag="new-feature" match={true} fallback={<OldFeature />}>
   <NewFeature />
 </PostHogFeature>
 ```
@@ -234,10 +230,7 @@ import { PostHogCaptureOnViewed } from '@lib/telemetry';
 
 function ProductGallery() {
   return (
-    <PostHogCaptureOnViewed
-      name="product-gallery"
-      properties={{ category: 'featured' }}
-    >
+    <PostHogCaptureOnViewed name="product-gallery" properties={{ category: 'featured' }}>
       <div>Gallery content</div>
     </PostHogCaptureOnViewed>
   );
@@ -323,12 +316,12 @@ posthog.init(posthogKey, {
   api_host: posthogHost,
   defaults: '2025-05-30',
   session_recording: {
-    maskAllInputs: true,           // Mask all inputs for privacy
+    maskAllInputs: true, // Mask all inputs for privacy
     maskTextSelector: '[data-private]', // Custom masking selector
   },
   disable_session_recording: false,
-  autocapture: false,              // Manual tracking only
-  capture_pageview: false,         // Manual page view tracking
+  autocapture: false, // Manual tracking only
+  capture_pageview: false, // Manual page view tracking
   persistence: 'localStorage+cookie',
   opt_out_capturing_by_default: true, // Wait for consent
   feature_flag_request_timeout_ms: 3000,

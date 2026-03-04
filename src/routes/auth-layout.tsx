@@ -31,8 +31,11 @@ export function ErrorBoundary() {
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold text-neutral-900 mb-2">Oops</h1>
         <p className="text-neutral-500 mb-4">{message}</p>
-        <Link to="/dashboard" className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-lg hover:bg-neutral-800 transition-colors">
-          Back to dashboard
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-lg hover:bg-neutral-800 transition-colors"
+        >
+          Back to home
         </Link>
       </div>
     </div>

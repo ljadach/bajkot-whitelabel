@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAction } from 'convex/react';
 import { api } from '../../convex/_generated/api';
-import type { Segment } from './landing/SegmentContext';
+type Segment = 'business' | 'edu' | 'executive';
 import { toast } from 'sonner';
 
 interface LeadCaptureModalProps {
@@ -10,7 +10,8 @@ interface LeadCaptureModalProps {
   onClose: () => void;
 }
 
-const TURNSTILE_SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+const TURNSTILE_SCRIPT_SRC =
+  'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 
 type TurnstileRenderOptions = {
   sitekey: string;
@@ -57,10 +58,20 @@ function loadTurnstileScript(): Promise<void> {
     });
 
   return new Promise((resolve, reject) => {
-    const existingScript = document.querySelector<HTMLScriptElement>(`script[src="${TURNSTILE_SCRIPT_SRC}"]`);
+    const existingScript = document.querySelector<HTMLScriptElement>(
+      `script[src="${TURNSTILE_SCRIPT_SRC}"]`,
+    );
     if (existingScript) {
-      existingScript.addEventListener('load', () => void waitForTurnstile().then(resolve).catch(reject), { once: true });
-      existingScript.addEventListener('error', () => reject(new Error('Failed to load Turnstile script')), { once: true });
+      existingScript.addEventListener(
+        'load',
+        () => void waitForTurnstile().then(resolve).catch(reject),
+        { once: true },
+      );
+      existingScript.addEventListener(
+        'error',
+        () => reject(new Error('Failed to load Turnstile script')),
+        { once: true },
+      );
       void waitForTurnstile()
         .then(resolve)
         .catch(() => {
@@ -80,7 +91,7 @@ function loadTurnstileScript(): Promise<void> {
 }
 
 export function LeadCaptureModal({ segment, onClose }: LeadCaptureModalProps) {
-  const { t, i18n } = useTranslation('segment-common');
+  const { t, i18n } = useTranslation('common');
   const submitLead = useAction(api.leads.submitLead);
   const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
   const captchaEnabled = Boolean(turnstileSiteKey);
@@ -239,7 +250,12 @@ export function LeadCaptureModal({ segment, onClose }: LeadCaptureModalProps) {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md animate-slideUp" role="dialog" aria-modal="true" aria-labelledby="lead-modal-title">
+      <div
+        className="bg-white rounded-xl shadow-xl w-full max-w-md animate-slideUp"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="lead-modal-title"
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-neutral-100">
           <div>
@@ -248,8 +264,18 @@ export function LeadCaptureModal({ segment, onClose }: LeadCaptureModalProps) {
             </h2>
             <p className="text-sm text-neutral-500 mt-0.5">{t('leadForm.subtitle')}</p>
           </div>
-          <button onClick={onClose} className="p-1 text-neutral-400 hover:text-neutral-600 transition-colors" aria-label="Close">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <button
+            onClick={onClose}
+            className="p-1 text-neutral-400 hover:text-neutral-600 transition-colors"
+            aria-label="Close"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -260,21 +286,41 @@ export function LeadCaptureModal({ segment, onClose }: LeadCaptureModalProps) {
           {showSuccess ? (
             <div className="py-8 text-center">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
-                <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg
+                  className="w-8 h-8 text-green-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-neutral-900 mb-2">{t('leadForm.successTitle', 'Thank you!')}</h3>
+              <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+                {t('leadForm.successTitle', 'Thank you!')}
+              </h3>
               <p className="text-neutral-500">{t('leadForm.success')}</p>
             </div>
           ) : (
             <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
-              {error && <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{error}</div>}
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                  {error}
+                </div>
+              )}
 
               {/* Honeypot field (should stay empty) */}
               <div className="hidden" aria-hidden="true">
                 <label htmlFor="website">Website</label>
-                <input type="text" id="website" name="website" autoComplete="off" tabIndex={-1} value={formData.website} onChange={handleChange} />
+                <input
+                  type="text"
+                  id="website"
+                  name="website"
+                  autoComplete="off"
+                  tabIndex={-1}
+                  value={formData.website}
+                  onChange={handleChange}
+                />
               </div>
 
               <div>
@@ -328,7 +374,10 @@ export function LeadCaptureModal({ segment, onClose }: LeadCaptureModalProps) {
               </div>
 
               <div>
-                <label htmlFor="organization" className="block text-sm font-medium text-neutral-700 mb-1">
+                <label
+                  htmlFor="organization"
+                  className="block text-sm font-medium text-neutral-700 mb-1"
+                >
                   {t('leadForm.organization')} *
                 </label>
                 <input
@@ -362,7 +411,10 @@ export function LeadCaptureModal({ segment, onClose }: LeadCaptureModalProps) {
               </div>
 
               <div>
-                <label htmlFor="message" className="block text-sm font-medium text-neutral-700 mb-1">
+                <label
+                  htmlFor="message"
+                  className="block text-sm font-medium text-neutral-700 mb-1"
+                >
                   {t('leadForm.message')}
                 </label>
                 <textarea
@@ -380,7 +432,9 @@ export function LeadCaptureModal({ segment, onClose }: LeadCaptureModalProps) {
               {captchaEnabled && (
                 <div className="space-y-2">
                   <div ref={captchaContainerRef} />
-                  {!isCaptchaReady && <p className="text-xs text-neutral-500">Loading security verification...</p>}
+                  {!isCaptchaReady && (
+                    <p className="text-xs text-neutral-500">Loading security verification...</p>
+                  )}
                 </div>
               )}
 
@@ -405,7 +459,9 @@ export function LeadCaptureModal({ segment, onClose }: LeadCaptureModalProps) {
         {/* Footer - only show if not in success state */}
         {!showSuccess && (
           <div className="px-4 pb-4">
-            <p className="text-xs text-neutral-400 text-center">{t('leadForm.privacy', 'Your data is encrypted and never shared with third parties.')}</p>
+            <p className="text-xs text-neutral-400 text-center">
+              {t('leadForm.privacy', 'Your data is encrypted and never shared with third parties.')}
+            </p>
           </div>
         )}
       </div>

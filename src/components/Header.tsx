@@ -1,43 +1,35 @@
 import { Suspense, lazy } from 'react';
 import { Link } from 'react-router';
-import { LANGUAGES, type SupportedLanguage } from '@/locales';
-import i18n from 'i18next';
-import { SegmentBreadcrumb } from './SegmentBreadcrumb';
 import { ClientOnly } from './ClientOnly';
 
-const LazyHeaderActions = lazy(() => import('./ClientAppShell').then((m) => ({ default: m.HeaderActions })));
-
-function LanguageSwitcherStatic() {
-  const lang = (i18n.language?.split('-')[0] || 'en') as SupportedLanguage;
-  const current = LANGUAGES[lang] || LANGUAGES.en;
-  return (
-    <div className="p-2 rounded-lg text-neutral-500">
-      <span className="text-lg">{current.flag}</span>
-    </div>
-  );
-}
-
-const headerFallback = (
-  <div className="flex items-center gap-1">
-    <LanguageSwitcherStatic />
-  </div>
+const LazyHeaderActions = lazy(() =>
+  import('./ClientAppShell').then((m) => ({ default: m.HeaderActions })),
 );
+
+const headerFallback = <div className="flex items-center gap-1" />;
 
 export function Header() {
   return (
     <header className="sticky top-0 z-20 bg-white border-b border-neutral-200">
       <div className="h-14 max-w-content mx-auto px-4 sm:px-6 flex items-center justify-between">
-        <Link to="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+        <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-neutral-900 flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                <path d="M2 17l10 5 10-5" />
-                <path d="M2 12l10 5 10-5" />
+              <svg
+                className="w-4 h-4 text-white"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
               </svg>
             </div>
-            <span className="text-[15px] font-semibold text-neutral-900 tracking-tight">AITutoro</span>
-            <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide rounded bg-orange-100 text-orange-600">Beta</span>
+            <span className="text-[15px] font-semibold text-neutral-900 tracking-tight">
+              Bajkot
+            </span>
           </div>
         </Link>
         <ClientOnly fallback={headerFallback}>
@@ -46,7 +38,6 @@ export function Header() {
           </Suspense>
         </ClientOnly>
       </div>
-      <SegmentBreadcrumb />
     </header>
   );
 }

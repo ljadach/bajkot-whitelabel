@@ -38,7 +38,7 @@ fi
 
 # --- Swap .vercel/project.json to staging ---
 
-STAGING_VERCEL_PROJECT='{"projectId":"prj_qZoGrZ4YVA4RPcFZ2mdBt53PT5n9","orgId":"team_Qdygd6yJDFdnDQ7MNbN7T8pU","projectName":"aitutorc-staging"}'
+STAGING_VERCEL_PROJECT='{"projectId":"prj_qZoGrZ4YVA4RPcFZ2mdBt53PT5n9","orgId":"team_Qdygd6yJDFdnDQ7MNbN7T8pU","projectName":"bajkot-staging"}'
 
 if [ ! -f .vercel/project.json ]; then
   fail ".vercel/project.json not found. Run 'vercel link' first."
@@ -55,11 +55,11 @@ CONVEX_DEPLOY_KEY="$STAGING_CONVEX_DEPLOY_KEY" npx convex deploy
 
 # --- Step 2: Deploy frontend to Vercel staging ---
 
-step "Deploying frontend to Vercel staging (aitutorc-staging)..."
+step "Deploying frontend to Vercel staging (bajkot-staging)..."
 vercel --prod --yes --scope itsgglobal
 
 # --- Done ---
 
 echo -e "\n${GREEN}✓ Staging deploy complete!${NC}"
 echo "  Convex: coordinated-seahorse-267"
-echo "  Vercel: https://staging.aitutoro.com"
+echo "  Vercel: https://staging.bajkot.pl"

@@ -1,14 +1,7 @@
 import { Authenticated, Unauthenticated, useQuery } from 'convex/react';
 import { Navigate, Outlet } from 'react-router';
 import { api } from '../../convex/_generated/api';
-import { UserIdentification, LanguageSyncOnLogin } from '../components/ClientAppShell';
-import { isSupported, detectBrowserLanguage } from '@/locales';
-
-function LanguageRedirect() {
-  const stored = localStorage.getItem('preferredLanguage');
-  const lang = stored && isSupported(stored) ? stored : detectBrowserLanguage();
-  return <Navigate to={`/${lang}/`} replace />;
-}
+import { UserIdentification } from '../components/ClientAppShell';
 
 function AuthenticatedContent() {
   const loggedInUser = useQuery(api.auth.loggedInUser);
@@ -23,7 +16,6 @@ function AuthenticatedContent() {
 
   return (
     <>
-      <LanguageSyncOnLogin />
       <UserIdentification />
       <Outlet />
     </>
@@ -38,7 +30,7 @@ export default function AuthLayoutInner() {
         <AuthenticatedContent />
       </Authenticated>
       <Unauthenticated>
-        <LanguageRedirect />
+        <Navigate to="/pl/" replace />
       </Unauthenticated>
     </>
   );

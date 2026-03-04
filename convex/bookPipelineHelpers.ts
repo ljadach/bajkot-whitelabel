@@ -75,6 +75,23 @@ export const updateRetryCount = internalMutation({
   },
 });
 
+// ── Update Visual QA Retry Count ─────────────────────────
+
+export const updateVisualQaRetryCount = internalMutation({
+  args: {
+    orderId: v.id('bookOrders'),
+    visualQaRetryCount: v.number(),
+  },
+  returns: v.null(),
+  handler: async (ctx, { orderId, visualQaRetryCount }) => {
+    await ctx.db.patch(orderId, {
+      visualQaRetryCount,
+      updatedAt: Date.now(),
+    });
+    return null;
+  },
+});
+
 // ── Save Illustration ──────────────────────────────────────
 
 export const saveIllustration = internalMutation({

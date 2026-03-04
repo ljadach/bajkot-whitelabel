@@ -23,15 +23,12 @@ export const listOrders = query({
       error: v.union(v.string(), v.null()),
       chosenStyle: v.union(v.string(), v.null()),
       createdAt: v.number(),
-    })
+    }),
   ),
   handler: async (ctx) => {
     await assertAdmin(ctx);
 
-    const orders = await ctx.db
-      .query('bookOrders')
-      .order('desc')
-      .take(200);
+    const orders = await ctx.db.query('bookOrders').order('desc').take(200);
 
     return orders.map((o) => ({
       _id: o._id,
@@ -129,10 +126,168 @@ export const batchCreate = action({
         // Schedule A0 (intake) for this order
         await ctx.scheduler.runAfter(0, internal.bookAgents.intake, { orderId });
       } catch (err) {
-        errors.push(`#${i} (${profile.childName}): ${err instanceof Error ? err.message : String(err)}`);
+        errors.push(
+          `#${i} (${profile.childName}): ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     }
 
     return { created: createdIds, errors };
+  },
+});
+
+// ── Get order detail (admin view) ────────────────────────────
+
+const AGENT_STATUS_MAP: Record<string, { status: string; agent: string }> = {
+  A0: { status: 'intake', agent: 'A0' },
+  A1: { status: 'profiling', agent: 'A1' },
+  A2: { status: 'story_planning', agent: 'A2' },
+  A3: { status: 'story_writing', agent: 'A3' },
+  A4: { status: 'psych_review', agent: 'A4' },
+  A5: { status: 'art_direction', agent: 'A5' },
+  A6: { status: 'character_design', agent: 'A6' },
+  A7: { status: 'illustrating', agent: 'A7' },
+  A8: { status: 'visual_qa', agent: 'A8' },
+  A9: { status: 'composing_pdf', agent: 'A9' },
+  A10: { status: 'final_qa', agent: 'A10' },
+  A11: { status: 'delivering', agent: 'A11' },
+};
+
+export const getOrderDetail = query({
+  args: { orderId: v.id('bookOrders') },
+  returns: v.any(),
+  handler: async (ctx, { orderId }) => {
+    await assertAdmin(ctx);
+
+    const order = await ctx.db.get(orderId);
+    if (!order) return null;
+
+    // Get illustrations
+    const illustrations = await ctx.db
+      .query('bookIllustrations')
+      .withIndex('by_order', (q) => q.eq('orderId', orderId))
+      .collect();
+
+    // Resolve storage URLs for illustrations
+    const illustrationUrls = await Promise.all(
+      illustrations.map(async (ill) => ({
+        illustrationId: ill.illustrationId,
+        url: await ctx.storage.getUrl(ill.storageId),
+        prompt: ill.prompt,
+        width: ill.width,
+        height: ill.height,
+        sceneRef: ill.sceneRef,
+      })),
+    );
+
+    // Resolve style vote image URLs
+    const styleVoteUrlA = order.styleVoteImageA
+      ? await ctx.storage.getUrl(order.styleVoteImageA)
+      : null;
+    const styleVoteUrlB = order.styleVoteImageB
+      ? await ctx.storage.getUrl(order.styleVoteImageB)
+      : null;
+
+    // Resolve PDF URL
+    const pdfUrl = order.pdfStorageId ? await ctx.storage.getUrl(order.pdfStorageId) : null;
+
+    return {
+      _id: order._id,
+      childName: order.childName,
+      ageBracket: order.ageBracket,
+      gender: order.gender,
+      problemId: order.problemId,
+      status: order.status,
+      currentAgent: order.currentAgent ?? null,
+      error: order.error ?? null,
+      chosenStyle: order.chosenStyle ?? null,
+      retryCount: order.retryCount ?? 0,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt ?? null,
+      completedAt: order.completedAt ?? null,
+      // Artifacts
+      orderData: order.orderData ?? null,
+      characterProfile: order.characterProfile ?? null,
+      storyBlueprint: order.storyBlueprint ?? null,
+      storyDraft: order.storyDraft ?? null,
+      psychReview: order.psychReview ?? null,
+      illustrationPlan: order.illustrationPlan ?? null,
+      visualQa: order.visualQa ?? null,
+      finalQa: order.finalQa ?? null,
+      // Media
+      illustrationUrls,
+      styleVoteUrlA,
+      styleVoteUrlB,
+      pdfUrl,
+    };
+  },
+});
+
+// ── Retry order from specific agent ──────────────────────────
+
+export const retryOrder = action({
+  args: {
+    orderId: v.id('bookOrders'),
+    fromAgent: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, { orderId, fromAgent }) => {
+    const { subject } = await assertAdmin(ctx);
+
+    const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
+    if (!order) throw new Error('Order not found');
+
+    const agent = fromAgent ?? order.currentAgent ?? 'A0';
+    const mapping = AGENT_STATUS_MAP[agent];
+    if (!mapping) throw new Error(`Unknown agent: ${agent}`);
+
+    // Clear error, set status to the agent's step
+    await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
+      orderId,
+      status: mapping.status,
+      currentAgent: mapping.agent,
+      error: '',
+    });
+
+    await ctx.runMutation(internal.admin.bookBatch.auditRetry, {
+      actor: subject,
+      orderId,
+      fromAgent: agent,
+    });
+
+    // Agent function map
+    const agentFunctions: Record<string, any> = {
+      A0: internal.bookAgents.intake,
+      A1: internal.bookAgents.profileChild,
+      A2: internal.bookAgents.planStory,
+      A3: internal.bookAgents.writeStory,
+      A4: internal.bookAgents.reviewPsych,
+      A5: internal.bookAgents.directArt,
+      A6: internal.bookAgents.designCharacter,
+      A7: internal.bookAgents.illustrate,
+      A8: internal.bookAgents.reviewVisual,
+      A9: internal.bookAgents.composePdf,
+      A10: internal.bookAgents.reviewFinal,
+      A11: internal.bookAgents.deliver,
+    };
+
+    const fn = agentFunctions[agent];
+    if (!fn) throw new Error(`No function for agent: ${agent}`);
+
+    await ctx.scheduler.runAfter(0, fn, { orderId });
+    return null;
+  },
+});
+
+export const auditRetry = internalMutation({
+  args: {
+    actor: v.string(),
+    orderId: v.id('bookOrders'),
+    fromAgent: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, { actor, orderId, fromAgent }) => {
+    await auditLog(ctx, actor, 'bookBatch.retry', orderId, { fromAgent });
+    return null;
   },
 });
