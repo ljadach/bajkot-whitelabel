@@ -529,6 +529,109 @@ const applicationTables = {
     language: v.string(),
     createdAt: v.number(),
   }).index('by_created', ['createdAt']),
+
+  // ============================================
+  // Book Pipeline (Bajkot)
+  // ============================================
+
+  // Book orders — one per child's personalized book
+  bookOrders: defineTable({
+    // ── Owner ────────────────────────────────────
+    clerkUserId: v.string(),
+
+    // ── Order form data ──────────────────────────
+    childName: v.string(),
+    ageBracket: v.union(v.literal('3-5'), v.literal('6-8'), v.literal('9+')),
+    gender: v.union(v.literal('boy'), v.literal('girl')),
+    problemId: v.string(), // key from PROBLEMS map
+    problemDetail: v.optional(v.string()), // free text, max 500
+    favoriteToy: v.optional(v.string()), // max 100
+    glasses: v.boolean(),
+    hairColor: v.string(), // key from HAIR_COLOR_MAP
+    hairStyle: v.string(), // key from HAIR_STYLE_MAP
+    eyeColor: v.string(), // key from EYE_COLOR_MAP
+    skinTone: v.string(), // key from SKIN_TONE_MAP
+    outfit: v.string(), // key from OUTFIT_MAP
+    email: v.optional(v.string()),
+
+    // ── Pipeline status ──────────────────────────
+    status: v.union(
+      v.literal('intake'), // A0 done, pipeline starting
+      v.literal('profiling'), // A1 running
+      v.literal('story_planning'), // A2 running
+      v.literal('story_writing'), // A3 running
+      v.literal('psych_review'), // A4 running
+      v.literal('art_direction'), // A5 running
+      v.literal('character_design'), // A6 running
+      v.literal('style_vote'), // A6b — waiting for human
+      v.literal('illustrating'), // A7 running
+      v.literal('visual_qa'), // A8 running
+      v.literal('composing_pdf'), // A9 running
+      v.literal('final_qa'), // A10 running
+      v.literal('delivering'), // A11 running
+      v.literal('completed'), // done
+      v.literal('failed'), // error
+    ),
+    currentAgent: v.optional(v.string()), // e.g. "A3" for display
+    error: v.optional(v.string()),
+    retryCount: v.optional(v.number()), // for A3/A4 loop tracking
+
+    // ── Artifacts (JSON strings) ─────────────────
+    orderData: v.optional(v.string()), // A0: normalized Order JSON
+    characterProfile: v.optional(v.string()), // A1: CharacterProfile JSON
+    storyBlueprint: v.optional(v.string()), // A2: StoryBlueprint JSON
+    storyDraft: v.optional(v.string()), // A3: StoryDraft JSON
+    psychReview: v.optional(v.string()), // A4: PsychReview JSON
+    illustrationPlan: v.optional(v.string()), // A5: IllustrationPlan JSON
+    visualQa: v.optional(v.string()), // A8: VisualQA JSON
+    finalQa: v.optional(v.string()), // A10: FinalQA JSON
+
+    // ── Style vote ───────────────────────────────
+    styleVoteImageA: v.optional(v.id('_storage')), // Convex storage ID
+    styleVoteImageB: v.optional(v.id('_storage')),
+    chosenStyle: v.optional(v.union(v.literal('A'), v.literal('B'))),
+
+    // ── Final output ─────────────────────────────
+    pdfStorageId: v.optional(v.id('_storage')), // Final PDF in Convex storage
+    downloadUrl: v.optional(v.string()), // Signed URL (generated on demand)
+
+    // ── Payment ──────────────────────────────────
+    paymentStatus: v.optional(
+      v.union(v.literal('pending'), v.literal('completed'), v.literal('failed'))
+    ),
+    stripeSessionId: v.optional(v.string()),
+
+    // ── Timestamps ───────────────────────────────
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+    completedAt: v.optional(v.number()),
+  })
+    .index('by_clerk_user', ['clerkUserId'])
+    .index('by_status', ['status'])
+    .index('by_clerk_user_and_status', ['clerkUserId', 'status']),
+
+  // Book illustrations — 7+ images per order, each with Convex storage ID
+  bookIllustrations: defineTable({
+    orderId: v.id('bookOrders'),
+    illustrationId: v.string(), // "cover", "scene_1" .. "scene_6"
+    storageId: v.id('_storage'), // Convex file storage
+    prompt: v.string(), // The generation prompt used
+    width: v.number(),
+    height: v.number(),
+    sceneRef: v.optional(v.number()), // beat number reference
+    createdAt: v.number(),
+  })
+    .index('by_order', ['orderId'])
+    .index('by_order_and_id', ['orderId', 'illustrationId']),
+
+  // Book prompts — prompt storage for runtime editing (optional for MVP)
+  bookPrompts: defineTable({
+    filename: v.string(), // e.g. "A1_child_profiler"
+    agentName: v.string(), // e.g. "Child Profiler"
+    content: v.string(), // Full prompt markdown
+    isModified: v.boolean(),
+    updatedAt: v.number(),
+  }).index('by_filename', ['filename']),
 };
 
 export default defineSchema({

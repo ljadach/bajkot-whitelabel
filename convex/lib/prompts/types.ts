@@ -32,4 +32,20 @@ export enum PromptTemplate {
   ExerciseEvaluationUser = 'exerciseEvaluationUser',
   ExerciseGenerationSystem = 'exerciseGenerationSystem',
   ExerciseGenerationUser = 'exerciseGenerationUser',
+
+  // Book Pipeline (A0-A11)
+  BookIntake = 'bookIntake',
+  BookChildProfiler = 'bookChildProfiler',
+  BookStoryArchitect = 'bookStoryArchitect',
+  BookStoryWriter = 'bookStoryWriter',
+  BookPsychReviewer = 'bookPsychReviewer',
+  BookArtDirector = 'bookArtDirector',
+  BookCharacterDesigner = 'bookCharacterDesigner',
+  BookStyleVote = 'bookStyleVote',
+  BookIllustrator = 'bookIllustrator',
+  BookVisualQa = 'bookVisualQa',
+  BookComposer = 'bookComposer',
+  BookFinalQa = 'bookFinalQa',
+  BookDelivery = 'bookDelivery',
+  BookPipelineIndex = 'bookPipelineIndex',
 }

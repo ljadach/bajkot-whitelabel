@@ -78,6 +78,10 @@ export default [
     route('team/invite/:token', 'routes/app/join-team.tsx'),
     route('assessment', 'routes/app/legacy-assessment.tsx'),
     route('course-preview', 'routes/app/legacy-course-preview.tsx'),
+    route('book/order', 'routes/app/book-order.tsx'),
+    route('book/:orderId/progress', 'routes/app/book-progress.tsx'),
+    route('book/:orderId/vote', 'routes/app/book-vote.tsx'),
+    route('book/:orderId/result', 'routes/app/book-result.tsx'),
   ]),
 
   // Legacy redirects (bare paths without lang prefix)

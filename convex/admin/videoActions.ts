@@ -185,7 +185,7 @@ export const syncFromGoogleDrive = action({
     const driveFiles = await gdriveListVideos(folderId, googleApiKey);
 
     const existingVideos = await ctx.runQuery(api.admin.videos.list, {});
-    const existingHashes = new Set(existingVideos.map((vid) => vid.fileHash));
+    const existingHashes = new Set(existingVideos.map((vid: { fileHash: string }) => vid.fileHash));
 
     return gdriveCompare(driveFiles, existingHashes);
   },

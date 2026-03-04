@@ -7,6 +7,7 @@ import { AdminConfig } from './pages/AdminConfig';
 import { VideoList } from './pages/VideoList';
 import { SegmentEditor } from './pages/SegmentEditor';
 import { CorpusEditor } from './pages/CorpusEditor';
+import { BookBatch } from './pages/BookBatch';
 
 const NAV_ITEMS = [
   { to: '/admin', label: 'Dashboard', icon: 'grid', end: true },
@@ -14,6 +15,7 @@ const NAV_ITEMS = [
   { to: '/admin/videos', label: 'Videos', icon: 'film' },
   { to: '/admin/segments', label: 'Segments', icon: 'scissors' },
   { to: '/admin/corpus', label: 'Corpus', icon: 'book' },
+  { to: '/admin/batch', label: 'Batch', icon: 'stack' },
 ];
 
 function NavIcon({ icon }: { icon: string }) {
@@ -62,6 +64,16 @@ function NavIcon({ icon }: { icon: string }) {
             strokeLinecap="round"
             strokeLinejoin="round"
             d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"
+          />
+        </svg>
+      );
+    case 'stack':
+      return (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M6.429 9.75 2.25 12l4.179 2.25m0-4.5 5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L12 12.75l-5.571-3m11.142 0 4.179 2.25L12 17.25l-9.75-5.25 4.179-2.25m11.142 0 4.179 2.25L12 21.75l-9.75-5.25 4.179-2.25"
           />
         </svg>
       );
@@ -137,6 +149,7 @@ export function AdminLayout() {
               <Route path="videos" element={<VideoList />} />
               <Route path="segments" element={<SegmentEditor />} />
               <Route path="corpus" element={<CorpusEditor />} />
+              <Route path="batch" element={<BookBatch />} />
             </Routes>
           </Suspense>
         </div>

@@ -33,7 +33,16 @@ export type PipelineStage =
   | 'exploration.full'
   | 'exploreQa'
   | 'autoFill'
-  | 'feynmanQuestions';
+  | 'feynmanQuestions'
+  // ── Book Pipeline ─────────────────────────────────
+  | 'book.profiling'        // A1 — Child Profiler
+  | 'book.storyPlanning'    // A2 — Story Architect
+  | 'book.storyWriting'     // A3 — Story Writer
+  | 'book.psychReview'      // A4 — Psych Reviewer
+  | 'book.artDirection'     // A5 — Art Director
+  | 'book.visualQa'         // A8 — Visual QA
+  | 'book.finalQa'          // A10 — Final QA
+  ;
 
 export interface StageConfig {
   model: string;
@@ -88,6 +97,15 @@ const DEFAULT_LLM_CONFIG: LlmConfig = {
 
   // ── Admin auto-fill (no reasoning, cheap model) ──────────
   autoFill: { model: 'anthropic/claude-haiku-4-5', temperature: 0.7, retries: 3, baseDelayMs: 250, reasoning: false },
+
+  // ── Book Pipeline ─────────────────────────────────
+  'book.profiling':     { model: 'google/gemini-2.5-flash', temperature: 0.7, retries: 3, baseDelayMs: 250, expect: 'object' },
+  'book.storyPlanning': { model: 'google/gemini-2.5-flash', temperature: 0.6, retries: 3, baseDelayMs: 250, expect: 'object' },
+  'book.storyWriting':  { model: 'google/gemini-2.5-flash', temperature: 0.8, retries: 3, baseDelayMs: 500, expect: 'object' },
+  'book.psychReview':   { model: 'google/gemini-2.5-flash', temperature: 0.3, retries: 3, baseDelayMs: 250, expect: 'object' },
+  'book.artDirection':  { model: 'google/gemini-2.5-flash', temperature: 0.6, retries: 4, baseDelayMs: 250, expect: 'object' },
+  'book.visualQa':      { model: 'google/gemini-2.5-flash', temperature: 0.3, retries: 3, baseDelayMs: 250, expect: 'object' },
+  'book.finalQa':       { model: 'google/gemini-2.5-flash', temperature: 0.2, retries: 3, baseDelayMs: 250, expect: 'object' },
 };
 
 // ── Test config — everything on cheapest/fastest model ─────

@@ -258,7 +258,7 @@ export const generateExplorationChapterInternal = internalAction({
     let explorationContext = '';
     if (prevExploration.length > 0) {
       explorationContext = prevExploration
-        .map((ch) => {
+        .map((ch: { content: string; chapterNumber: number }) => {
           try {
             const parsed = JSON.parse(ch.content);
             return `## Exploration Chapter ${ch.chapterNumber}: ${parsed.title || 'Untitled'}\n${(parsed.content || '').slice(0, 800)}`;
@@ -276,9 +276,9 @@ export const generateExplorationChapterInternal = internalAction({
       clerkUserId: args.clerkUserId,
     });
     let toolContext = '';
-    const nonExploration = allArtifacts.filter((a) => a.toolId !== 'exploration');
+    const nonExploration = allArtifacts.filter((a: { toolId: string }) => a.toolId !== 'exploration');
     if (nonExploration.length > 0) {
-      const toolLines = nonExploration.map((a) => `[${a.toolId} ch${a.chapterNumber}]: ${a.content.slice(0, 300)}`);
+      const toolLines = nonExploration.map((a: { toolId: string; chapterNumber: number; content: string }) => `[${a.toolId} ch${a.chapterNumber}]: ${a.content.slice(0, 300)}`);
       toolContext = toolLines.join('\n').slice(0, 2000);
     }
 

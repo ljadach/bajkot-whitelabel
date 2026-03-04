@@ -21,7 +21,9 @@
     "test:e2e:headed": "playwright test --config=e2e/playwright.config.ts --headed",
     "test:e2e:debug": "PWDEBUG=1 playwright test --config=e2e/playwright.config.ts",
     "test:e2e:login": "playwright test e2e/tests/00-login.spec.ts --config=e2e/playwright.config.ts --headed --global-timeout 360000",
-    "e2e:login": "playwright test e2e/tests/00-login.spec.ts --config=e2e/playwright.config.ts --headed --global-timeout 360000"
+    "e2e:login": "playwright test e2e/tests/00-login.spec.ts --config=e2e/playwright.config.ts --headed --global-timeout 360000",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.71",
@@ -43,6 +45,7 @@
     "i18next": "^25.7.4",
     "i18next-browser-languagedetector": "^8.2.0",
     "isbot": "^5",
+    "jspdf": "^4.2.0",
     "openai": "^6.8.1",
     "posthog-js": "^1.316.0",
     "react": "^19.0.0",
@@ -75,6 +78,7 @@
     "tailwindcss": "~3",
     "typescript": "~5.9",
     "typescript-eslint": "^8.24.1",
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "vitest": "^4.0.18"
   }
 }

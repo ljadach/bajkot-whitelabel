@@ -6,6 +6,7 @@ import { intakeFallbacks, INTAKE_SYSTEM_FALLBACK } from './prompts/intakeFallbac
 import { courseFallbacks, PLAYBOOK_VIDEO_INSTRUCTIONS } from './prompts/courseFallbacks';
 import { exerciseFallbacks, EXERCISE_TYPE_GUIDELINES } from './prompts/exerciseFallbacks';
 import { toolFallbacks } from './prompts/toolFallbacks';
+import { bookFallbacks } from './prompts/bookFallbacks';
 
 // Re-export everything consumers need
 export { PromptTemplate } from './prompts/types';
@@ -26,7 +27,7 @@ export const USE_LANGFUSE_PROMPTS = false;
 const PROMPT_CONFIGS: Record<PromptTemplate, PromptConfig> = {
   ...Object.fromEntries(
     Object.values(PromptTemplate).map((key) => {
-      const config = intakeFallbacks[key] ?? courseFallbacks[key] ?? exerciseFallbacks[key] ?? toolFallbacks[key];
+      const config = intakeFallbacks[key] ?? courseFallbacks[key] ?? exerciseFallbacks[key] ?? toolFallbacks[key] ?? bookFallbacks[key];
       if (!config) throw new Error(`Missing prompt config for template: ${key}`);
       return [key, config];
     })
@@ -229,6 +230,95 @@ const templateSchemas: Record<PromptTemplate, z.ZodType<any>> = {
       SIBLING_MODULES: z.string().default(''),
     })
     .strict(),
+
+  // ── Book Pipeline (A0-A11) ────────────────────────────────
+  [PromptTemplate.BookIntake]: emptySchema,
+  [PromptTemplate.BookChildProfiler]: z
+    .object({
+      ORDER_JSON: z.string(),
+      ART_STYLE_SPEC: z.string().default(''),
+    })
+    .strict(),
+  [PromptTemplate.BookStoryArchitect]: z
+    .object({
+      ORDER_JSON: z.string(),
+      CHARACTER_PROFILE: z.string(),
+    })
+    .strict(),
+  [PromptTemplate.BookStoryWriter]: z
+    .object({
+      STORY_BLUEPRINT: z.string(),
+      CHARACTER_PROFILE: z.string(),
+    })
+    .strict(),
+  [PromptTemplate.BookPsychReviewer]: z
+    .object({
+      ORDER_JSON: z.string(),
+      CHARACTER_PROFILE: z.string(),
+      STORY_BLUEPRINT: z.string(),
+      STORY_DRAFT: z.string(),
+    })
+    .strict(),
+  [PromptTemplate.BookArtDirector]: z
+    .object({
+      CHARACTER_PROFILE: z.string(),
+      STORY_BLUEPRINT: z.string(),
+      STORY_DRAFT: z.string(),
+      ART_STYLE: z.string().default(''),
+      ART_MODIFIERS: z.string().default(''),
+    })
+    .strict(),
+  [PromptTemplate.BookCharacterDesigner]: z
+    .object({
+      CHARACTER_DESCRIPTION_EN: z.string(),
+      GUIDE_DESCRIPTION_EN: z.string().default(''),
+      VISUAL_ANCHOR: z.string(),
+      ART_STYLE: z.string().default(''),
+      ART_MODIFIERS: z.string().default(''),
+    })
+    .strict(),
+  [PromptTemplate.BookStyleVote]: emptySchema,
+  [PromptTemplate.BookIllustrator]: z
+    .object({
+      ART_STYLE: z.string().default(''),
+      ART_MODIFIERS: z.string().default(''),
+      ILLUSTRATION_ID: z.string().default(''),
+      ILLUSTRATION_PROMPT: z.string().default(''),
+      VISUAL_ANCHOR: z.string().default(''),
+      ASPECT_RATIO: z.string().default(''),
+    })
+    .strict(),
+  [PromptTemplate.BookVisualQa]: z
+    .object({
+      VISUAL_ANCHOR: z.string(),
+      CHARACTER_DESCRIPTION_EN: z.string(),
+      GUIDE_DESCRIPTION_EN: z.string().default(''),
+      ILLUSTRATION_PLAN: z.string(),
+    })
+    .strict(),
+  [PromptTemplate.BookComposer]: z
+    .object({
+      MOOD_PALETTE_0: z.string().default('#F5C35E'),
+      MOOD_PALETTE_1: z.string().default('#C9A0DC'),
+    })
+    .strict(),
+  [PromptTemplate.BookFinalQa]: z
+    .object({
+      STORY_DRAFT: z.string(),
+      CHARACTER_PROFILE: z.string(),
+      ILLUSTRATION_PLAN: z.string(),
+    })
+    .strict(),
+  [PromptTemplate.BookDelivery]: z
+    .object({
+      CHILD_NAME: z.string().default(''),
+      BOOK_TITLE: z.string().default(''),
+      DOWNLOAD_URL: z.string().default(''),
+      DOWNLOAD_EXPIRY: z.string().default('48 godzin'),
+      UPSELL_URL: z.string().default(''),
+    })
+    .strict(),
+  [PromptTemplate.BookPipelineIndex]: emptySchema,
 };
 
 export async function renderPrompt(template: PromptTemplate, params: Record<string, string> = {}): Promise<string> {

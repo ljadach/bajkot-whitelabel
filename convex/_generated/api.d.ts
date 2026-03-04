@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as admin_bookBatch from "../admin/bookBatch.js";
 import type * as admin_config from "../admin/config.js";
 import type * as admin_corpus from "../admin/corpus.js";
 import type * as admin_debugContent from "../admin/debugContent.js";
@@ -19,6 +20,10 @@ import type * as ai from "../ai.js";
 import type * as auth from "../auth.js";
 import type * as autoFillChat from "../autoFillChat.js";
 import type * as backendLogs from "../backendLogs.js";
+import type * as bookAgents from "../bookAgents.js";
+import type * as bookComposer from "../bookComposer.js";
+import type * as bookPipeline from "../bookPipeline.js";
+import type * as bookPipelineHelpers from "../bookPipelineHelpers.js";
 import type * as config from "../config.js";
 import type * as contact from "../contact.js";
 import type * as courseAi from "../courseAi.js";
@@ -35,6 +40,9 @@ import type * as leads from "../leads.js";
 import type * as learnerArtifacts from "../learnerArtifacts.js";
 import type * as lib_actionHelpers from "../lib/actionHelpers.js";
 import type * as lib_adminGuards from "../lib/adminGuards.js";
+import type * as lib_bookAgentUtils from "../lib/bookAgentUtils.js";
+import type * as lib_bookData from "../lib/bookData.js";
+import type * as lib_bookTypes from "../lib/bookTypes.js";
 import type * as lib_chatMessage from "../lib/chatMessage.js";
 import type * as lib_cloudflareStream from "../lib/cloudflareStream.js";
 import type * as lib_config from "../lib/config.js";
@@ -43,6 +51,7 @@ import type * as lib_corpusPreselection from "../lib/corpusPreselection.js";
 import type * as lib_dbHelpers from "../lib/dbHelpers.js";
 import type * as lib_editorialGuide from "../lib/editorialGuide.js";
 import type * as lib_geminiClient from "../lib/geminiClient.js";
+import type * as lib_geminiImageGen from "../lib/geminiImageGen.js";
 import type * as lib_googleDrive from "../lib/googleDrive.js";
 import type * as lib_jsonUtils from "../lib/jsonUtils.js";
 import type * as lib_langfuse from "../lib/langfuse.js";
@@ -56,6 +65,7 @@ import type * as lib_logger from "../lib/logger.js";
 import type * as lib_pipelineConfig from "../lib/pipelineConfig.js";
 import type * as lib_profileXml from "../lib/profileXml.js";
 import type * as lib_prompts from "../lib/prompts.js";
+import type * as lib_prompts_bookFallbacks from "../lib/prompts/bookFallbacks.js";
 import type * as lib_prompts_courseFallbacks from "../lib/prompts/courseFallbacks.js";
 import type * as lib_prompts_exerciseFallbacks from "../lib/prompts/exerciseFallbacks.js";
 import type * as lib_prompts_intakeFallbacks from "../lib/prompts/intakeFallbacks.js";
@@ -89,6 +99,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "admin/bookBatch": typeof admin_bookBatch;
   "admin/config": typeof admin_config;
   "admin/corpus": typeof admin_corpus;
   "admin/debugContent": typeof admin_debugContent;
@@ -100,6 +111,10 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   autoFillChat: typeof autoFillChat;
   backendLogs: typeof backendLogs;
+  bookAgents: typeof bookAgents;
+  bookComposer: typeof bookComposer;
+  bookPipeline: typeof bookPipeline;
+  bookPipelineHelpers: typeof bookPipelineHelpers;
   config: typeof config;
   contact: typeof contact;
   courseAi: typeof courseAi;
@@ -116,6 +131,9 @@ declare const fullApi: ApiFromModules<{
   learnerArtifacts: typeof learnerArtifacts;
   "lib/actionHelpers": typeof lib_actionHelpers;
   "lib/adminGuards": typeof lib_adminGuards;
+  "lib/bookAgentUtils": typeof lib_bookAgentUtils;
+  "lib/bookData": typeof lib_bookData;
+  "lib/bookTypes": typeof lib_bookTypes;
   "lib/chatMessage": typeof lib_chatMessage;
   "lib/cloudflareStream": typeof lib_cloudflareStream;
   "lib/config": typeof lib_config;
@@ -124,6 +142,7 @@ declare const fullApi: ApiFromModules<{
   "lib/dbHelpers": typeof lib_dbHelpers;
   "lib/editorialGuide": typeof lib_editorialGuide;
   "lib/geminiClient": typeof lib_geminiClient;
+  "lib/geminiImageGen": typeof lib_geminiImageGen;
   "lib/googleDrive": typeof lib_googleDrive;
   "lib/jsonUtils": typeof lib_jsonUtils;
   "lib/langfuse": typeof lib_langfuse;
@@ -137,6 +156,7 @@ declare const fullApi: ApiFromModules<{
   "lib/pipelineConfig": typeof lib_pipelineConfig;
   "lib/profileXml": typeof lib_profileXml;
   "lib/prompts": typeof lib_prompts;
+  "lib/prompts/bookFallbacks": typeof lib_prompts_bookFallbacks;
   "lib/prompts/courseFallbacks": typeof lib_prompts_courseFallbacks;
   "lib/prompts/exerciseFallbacks": typeof lib_prompts_exerciseFallbacks;
   "lib/prompts/intakeFallbacks": typeof lib_prompts_intakeFallbacks;

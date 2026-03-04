@@ -51,6 +51,7 @@ import enSegmentFreelancers from '@/locales/en/segment-freelancers.json';
 import enSegmentCareerChangers from '@/locales/en/segment-career-changers.json';
 import enSegmentCreators from '@/locales/en/segment-creators.json';
 import enSegmentPersonalProductivity from '@/locales/en/segment-personal-productivity.json';
+import enBook from '@/locales/en/book.json';
 
 // Polish
 import plCommon from '@/locales/pl/common.json';
@@ -97,6 +98,7 @@ import plSegmentFreelancers from '@/locales/pl/segment-freelancers.json';
 import plSegmentCareerChangers from '@/locales/pl/segment-career-changers.json';
 import plSegmentCreators from '@/locales/pl/segment-creators.json';
 import plSegmentPersonalProductivity from '@/locales/pl/segment-personal-productivity.json';
+import plBook from '@/locales/pl/book.json';
 
 // German
 import deCommon from '@/locales/de/common.json';
@@ -143,6 +145,7 @@ import deSegmentFreelancers from '@/locales/de/segment-freelancers.json';
 import deSegmentCareerChangers from '@/locales/de/segment-career-changers.json';
 import deSegmentCreators from '@/locales/de/segment-creators.json';
 import deSegmentPersonalProductivity from '@/locales/de/segment-personal-productivity.json';
+import deBook from '@/locales/de/book.json';
 
 const resources = {
   en: {
@@ -190,6 +193,7 @@ const resources = {
     'segment-career-changers': enSegmentCareerChangers,
     'segment-creators': enSegmentCreators,
     'segment-personal-productivity': enSegmentPersonalProductivity,
+    book: enBook,
   },
   pl: {
     common: plCommon,
@@ -236,6 +240,7 @@ const resources = {
     'segment-career-changers': plSegmentCareerChangers,
     'segment-creators': plSegmentCreators,
     'segment-personal-productivity': plSegmentPersonalProductivity,
+    book: plBook,
   },
   de: {
     common: deCommon,
@@ -282,6 +287,7 @@ const resources = {
     'segment-career-changers': deSegmentCareerChangers,
     'segment-creators': deSegmentCreators,
     'segment-personal-productivity': deSegmentPersonalProductivity,
+    book: deBook,
   },
 };
 
@@ -343,6 +349,7 @@ void instance.init({
     'segment-career-changers',
     'segment-creators',
     'segment-personal-productivity',
+    'book',
   ],
   defaultNS: 'common',
 
