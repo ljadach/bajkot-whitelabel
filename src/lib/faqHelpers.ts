@@ -16,7 +16,11 @@ export interface FaqCategoryGroup {
  * Build FAQ category groups for the /faq page.
  * Only includes items where faqVisible is true, ordered by categoryOrder.
  */
-export function buildFaqPageGroups(items: Record<string, FaqItemData>, categoryLabels: Record<string, string>, categoryOrder: string[]): FaqCategoryGroup[] {
+export function buildFaqPageGroups(
+  items: Record<string, FaqItemData>,
+  categoryLabels: Record<string, string>,
+  categoryOrder: string[],
+): FaqCategoryGroup[] {
   return categoryOrder
     .map((catId) => ({
       category: catId,
@@ -36,7 +40,10 @@ export function buildFaqPageGroups(items: Record<string, FaqItemData>, categoryL
  * Get FAQ items for a specific page (product page, comparison page, etc.).
  * Returns items whose `pages` array includes the given pageKey.
  */
-export function getPageFaqItems(items: Record<string, FaqItemData>, pageKey: string): { id: string; question: string; answer: string }[] {
+export function getPageFaqItems(
+  items: Record<string, FaqItemData>,
+  pageKey: string,
+): { id: string; question: string; answer: string }[] {
   return Object.entries(items)
     .filter(([, item]) => item.pages.includes(pageKey))
     .map(([id, item]) => ({

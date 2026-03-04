@@ -37,6 +37,6 @@ startTransition(() => {
     document,
     <StrictMode>
       <App />
-    </StrictMode>
+    </StrictMode>,
   );
 });

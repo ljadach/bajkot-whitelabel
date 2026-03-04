@@ -3,7 +3,7 @@ import { lazy, Suspense } from 'react';
 const BookOrderForm = lazy(() =>
   import('../../components/book/BookOrderForm').then((m) => ({
     default: m.BookOrderForm,
-  }))
+  })),
 );
 
 export default function BookOrder() {

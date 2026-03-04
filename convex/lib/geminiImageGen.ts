@@ -36,7 +36,7 @@ export async function generateImage(
   options: {
     width?: number;
     height?: number;
-  } = {}
+  } = {},
 ): Promise<Uint8Array | null> {
   const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
   if (!apiKey) {
@@ -49,7 +49,9 @@ export async function generateImage(
   const maxRetries = 3;
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      console.log(`[ImageGen] Generating (attempt ${attempt + 1}): "${prompt.substring(0, 80)}..."`);
+      console.log(
+        `[ImageGen] Generating (attempt ${attempt + 1}): "${prompt.substring(0, 80)}..."`,
+      );
 
       const response = await fetch(`${API_BASE}/${MODEL}:generateContent?key=${apiKey}`, {
         method: 'POST',
@@ -91,7 +93,7 @@ export async function generateImage(
               bytes[i] = binaryString.charCodeAt(i);
             }
             console.log(
-              `[ImageGen] Got image (${part.inlineData.mimeType}, ${(bytes.length / 1024).toFixed(0)}KB)`
+              `[ImageGen] Got image (${part.inlineData.mimeType}, ${(bytes.length / 1024).toFixed(0)}KB)`,
             );
             return bytes;
           }

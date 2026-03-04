@@ -59,7 +59,11 @@ export interface RateLimitResult {
  * @param actionType - Type of action ('llm_call', 'profile_update')
  * @returns RateLimitResult
  */
-export async function checkRateLimit(ctx: GenericMutationCtx<DataModel>, clerkUserId: string, actionType: ActionType): Promise<RateLimitResult> {
+export async function checkRateLimit(
+  ctx: GenericMutationCtx<DataModel>,
+  clerkUserId: string,
+  actionType: ActionType,
+): Promise<RateLimitResult> {
   const config = RATE_LIMIT_CONFIG[actionType];
   const now = Date.now();
   const windowStart = now - config.windowMs;
@@ -67,11 +71,15 @@ export async function checkRateLimit(ctx: GenericMutationCtx<DataModel>, clerkUs
   // Fetch existing rate limit record
   const existing = await ctx.db
     .query('rateLimits')
-    .withIndex('by_clerk_user_action', (q) => q.eq('clerkUserId', clerkUserId).eq('actionType', actionType))
+    .withIndex('by_clerk_user_action', (q) =>
+      q.eq('clerkUserId', clerkUserId).eq('actionType', actionType),
+    )
     .first();
 
   // Filter recent calls within window (sliding window)
-  const recentCalls = existing ? existing.calls.filter((timestamp) => timestamp >= windowStart) : [];
+  const recentCalls = existing
+    ? existing.calls.filter((timestamp) => timestamp >= windowStart)
+    : [];
 
   const callCount = recentCalls.length;
   const allowed = callCount < config.maxCalls;
@@ -106,7 +114,9 @@ export async function checkRateLimit(ctx: GenericMutationCtx<DataModel>, clerkUs
     allowed,
     remaining: allowed ? remaining - 1 : remaining, // Subtract 1 if we just consumed a call
     resetAt,
-    message: allowed ? undefined : `Rate limit exceeded. You can try again in ${Math.ceil((resetAt - now) / 1000)} seconds.`,
+    message: allowed
+      ? undefined
+      : `Rate limit exceeded. You can try again in ${Math.ceil((resetAt - now) / 1000)} seconds.`,
   };
 }
 
@@ -120,17 +130,25 @@ export async function checkRateLimit(ctx: GenericMutationCtx<DataModel>, clerkUs
  * @param actionType - Type of action
  * @returns RateLimitResult (without incrementing)
  */
-export async function getRateLimitStatus(ctx: GenericQueryCtx<DataModel>, clerkUserId: string, actionType: ActionType): Promise<RateLimitResult> {
+export async function getRateLimitStatus(
+  ctx: GenericQueryCtx<DataModel>,
+  clerkUserId: string,
+  actionType: ActionType,
+): Promise<RateLimitResult> {
   const config = RATE_LIMIT_CONFIG[actionType];
   const now = Date.now();
   const windowStart = now - config.windowMs;
 
   const existing = await ctx.db
     .query('rateLimits')
-    .withIndex('by_clerk_user_action', (q) => q.eq('clerkUserId', clerkUserId).eq('actionType', actionType))
+    .withIndex('by_clerk_user_action', (q) =>
+      q.eq('clerkUserId', clerkUserId).eq('actionType', actionType),
+    )
     .first();
 
-  const recentCalls = existing ? existing.calls.filter((timestamp) => timestamp >= windowStart) : [];
+  const recentCalls = existing
+    ? existing.calls.filter((timestamp) => timestamp >= windowStart)
+    : [];
 
   const callCount = recentCalls.length;
   const allowed = callCount < config.maxCalls;
@@ -142,7 +160,9 @@ export async function getRateLimitStatus(ctx: GenericQueryCtx<DataModel>, clerkU
     allowed,
     remaining,
     resetAt,
-    message: allowed ? undefined : `Rate limit exceeded. You can try again in ${Math.ceil((resetAt - now) / 1000)} seconds.`,
+    message: allowed
+      ? undefined
+      : `Rate limit exceeded. You can try again in ${Math.ceil((resetAt - now) / 1000)} seconds.`,
   };
 }
 
@@ -153,10 +173,16 @@ export async function getRateLimitStatus(ctx: GenericQueryCtx<DataModel>, clerkU
  * @param clerkUserId - The Clerk user ID to reset
  * @param actionType - Type of action to reset
  */
-export async function resetRateLimit(ctx: GenericMutationCtx<DataModel>, clerkUserId: string, actionType: ActionType): Promise<void> {
+export async function resetRateLimit(
+  ctx: GenericMutationCtx<DataModel>,
+  clerkUserId: string,
+  actionType: ActionType,
+): Promise<void> {
   const existing = await ctx.db
     .query('rateLimits')
-    .withIndex('by_clerk_user_action', (q) => q.eq('clerkUserId', clerkUserId).eq('actionType', actionType))
+    .withIndex('by_clerk_user_action', (q) =>
+      q.eq('clerkUserId', clerkUserId).eq('actionType', actionType),
+    )
     .first();
 
   if (existing) {

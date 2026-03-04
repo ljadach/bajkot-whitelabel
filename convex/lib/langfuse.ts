@@ -16,7 +16,11 @@ export type ObservationOptions = {
 export type Observation = {
   update: (data: Record<string, unknown>) => Observation;
   end: () => Promise<void>;
-  startObservation: (name: string, attributes?: Record<string, unknown>, options?: ObservationOptions) => Observation;
+  startObservation: (
+    name: string,
+    attributes?: Record<string, unknown>,
+    options?: ObservationOptions,
+  ) => Observation;
   context: () => { traceId: string; spanId: string };
 };
 
@@ -31,7 +35,8 @@ if (!process.env.LANGFUSE_BASE_URL) {
   process.env.LANGFUSE_BASE_URL = 'https://cloud.langfuse.com';
 }
 
-const hasCredentials = Boolean(process.env.LANGFUSE_SECRET_KEY) && Boolean(process.env.LANGFUSE_PUBLIC_KEY);
+const hasCredentials =
+  Boolean(process.env.LANGFUSE_SECRET_KEY) && Boolean(process.env.LANGFUSE_PUBLIC_KEY);
 
 const serviceName = process.env.LANGFUSE_SERVICE_NAME || 'convex-app';
 const scopeName = 'convex.manual';
@@ -51,7 +56,7 @@ class MinimalObservation implements Observation {
     private readonly traceId: string,
     private readonly spanId: string,
     private readonly propagated: PropagatedAttributes,
-    private readonly parentSpanId?: string
+    private readonly parentSpanId?: string,
   ) {
     this.attributes = { ...initialAttributes };
     this.startMs = Date.now();
@@ -62,7 +67,11 @@ class MinimalObservation implements Observation {
     return this;
   }
 
-  startObservation(name: string, attributes: Record<string, unknown> = {}, options: ObservationOptions = {}): Observation {
+  startObservation(
+    name: string,
+    attributes: Record<string, unknown> = {},
+    options: ObservationOptions = {},
+  ): Observation {
     return createObservation({
       name,
       attributes,
@@ -115,8 +124,24 @@ function getCurrentContext(): ActiveContext | null {
   return contextStack.length > 0 ? contextStack[contextStack.length - 1] : null;
 }
 
-function createObservation(params: { name: string; attributes?: Record<string, unknown>; type: string; traceId: string; parentSpanId?: string; propagated: PropagatedAttributes; spanId?: string }): MinimalObservation {
-  return new MinimalObservation(params.name, params.type, params.attributes || {}, params.traceId, params.spanId || randomHex(8), params.propagated, params.parentSpanId);
+function createObservation(params: {
+  name: string;
+  attributes?: Record<string, unknown>;
+  type: string;
+  traceId: string;
+  parentSpanId?: string;
+  propagated: PropagatedAttributes;
+  spanId?: string;
+}): MinimalObservation {
+  return new MinimalObservation(
+    params.name,
+    params.type,
+    params.attributes || {},
+    params.traceId,
+    params.spanId || randomHex(8),
+    params.propagated,
+    params.parentSpanId,
+  );
 }
 
 function formatPropagatedAttributes(propagated: PropagatedAttributes): Record<string, unknown> {
@@ -144,7 +169,7 @@ async function flushObservation(
     propagated: PropagatedAttributes;
     startTimeMs: number;
     endTimeMs: number;
-  }
+  },
 ) {
   if (!langfuseEnabled) return;
   const payload = {
@@ -198,7 +223,11 @@ export function isLangfuseEnabled(): boolean {
   return langfuseEnabled;
 }
 
-export async function startActiveObservation<T>(name: string, handler: (span: Observation) => Promise<T>, options: ObservationOptions = {}): Promise<T> {
+export async function startActiveObservation<T>(
+  name: string,
+  handler: (span: Observation) => Promise<T>,
+  options: ObservationOptions = {},
+): Promise<T> {
   if (!langfuseEnabled) {
     return await handler(dummyObservation);
   }
@@ -236,7 +265,11 @@ export async function startActiveObservation<T>(name: string, handler: (span: Ob
   }
 }
 
-export function startObservation(name: string, attributes: Record<string, unknown> = {}, options: ObservationOptions = {}): Observation {
+export function startObservation(
+  name: string,
+  attributes: Record<string, unknown> = {},
+  options: ObservationOptions = {},
+): Observation {
   if (!langfuseEnabled) {
     return dummyObservation;
   }
@@ -261,9 +294,12 @@ export function observe<F extends (...args: any[]) => any>(
     asType?: ObservationOptions['asType'];
     captureInput?: boolean;
     captureOutput?: boolean;
-  } = {}
+  } = {},
 ): (...args: Parameters<F>) => Promise<Awaited<ReturnType<F>>> {
-  return async function observed(this: unknown, ...args: Parameters<F>): Promise<Awaited<ReturnType<F>>> {
+  return async function observed(
+    this: unknown,
+    ...args: Parameters<F>
+  ): Promise<Awaited<ReturnType<F>>> {
     const spanName = options.name || fn.name || 'anonymous';
     return startActiveObservation<Awaited<ReturnType<F>>>(
       spanName,
@@ -284,7 +320,7 @@ export function observe<F extends (...args: any[]) => any>(
           throw error;
         }
       },
-      { asType: options.asType || 'span' }
+      { asType: options.asType || 'span' },
     );
   };
 }
@@ -295,7 +331,10 @@ export function updateActiveObservation(attributes: Record<string, unknown>): vo
   ctx?.observation.update(attributes);
 }
 
-export async function propagateAttributes<T>(attrs: PropagatedAttributes, handler: () => Promise<T>): Promise<T> {
+export async function propagateAttributes<T>(
+  attrs: PropagatedAttributes,
+  handler: () => Promise<T>,
+): Promise<T> {
   if (!langfuseEnabled) {
     return handler();
   }
@@ -312,7 +351,12 @@ export async function propagateAttributes<T>(attrs: PropagatedAttributes, handle
   }
 }
 
-export async function withLangfuseSpan<T>(name: string, attributes: Record<string, unknown>, fn: (span?: Observation) => Promise<T> | T, options: ObservationOptions = {}): Promise<T> {
+export async function withLangfuseSpan<T>(
+  name: string,
+  attributes: Record<string, unknown>,
+  fn: (span?: Observation) => Promise<T> | T,
+  options: ObservationOptions = {},
+): Promise<T> {
   if (!langfuseEnabled) {
     return await fn();
   }
@@ -322,6 +366,6 @@ export async function withLangfuseSpan<T>(name: string, attributes: Record<strin
       span.update(attributes);
       return await fn(span);
     },
-    options
+    options,
   );
 }

@@ -14,7 +14,13 @@ import { v } from 'convex/values';
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 const MAX_SUBMISSIONS_PER_EMAIL = 2;
 
-const inquiryTypeValidator = v.union(v.literal('enterprise_sales'), v.literal('technical_support'), v.literal('partnerships'), v.literal('press_media'), v.literal('general'));
+const inquiryTypeValidator = v.union(
+  v.literal('enterprise_sales'),
+  v.literal('technical_support'),
+  v.literal('partnerships'),
+  v.literal('press_media'),
+  v.literal('general'),
+);
 
 /**
  * Check if an email has been submitted recently (rate limiting)
@@ -34,7 +40,9 @@ export const checkContactRateLimit = internalQuery({
     const recentSubmissions = await ctx.db
       .query('contactSubmissions')
       .withIndex('by_created')
-      .filter((q) => q.and(q.gte(q.field('createdAt'), windowStart), q.eq(q.field('email'), normalizedEmail)))
+      .filter((q) =>
+        q.and(q.gte(q.field('createdAt'), windowStart), q.eq(q.field('email'), normalizedEmail)),
+      )
       .collect();
 
     const recentCount = recentSubmissions.length;

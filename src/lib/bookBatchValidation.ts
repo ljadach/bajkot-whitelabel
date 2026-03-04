@@ -40,7 +40,11 @@ export function validateBatchProfile(profile: unknown): { valid: boolean; errors
   const p = profile as Record<string, unknown>;
 
   // Required string fields
-  if (typeof p.childName !== 'string' || p.childName.trim().length < 2 || p.childName.trim().length > 30) {
+  if (
+    typeof p.childName !== 'string' ||
+    p.childName.trim().length < 2 ||
+    p.childName.trim().length > 30
+  ) {
     errors.push('childName: must be 2-30 characters');
   }
 
@@ -81,11 +85,17 @@ export function validateBatchProfile(profile: unknown): { valid: boolean; errors
   }
 
   // Optional fields
-  if (p.problemDetail !== undefined && (typeof p.problemDetail !== 'string' || p.problemDetail.length > 500)) {
+  if (
+    p.problemDetail !== undefined &&
+    (typeof p.problemDetail !== 'string' || p.problemDetail.length > 500)
+  ) {
     errors.push('problemDetail: must be a string, max 500 characters');
   }
 
-  if (p.favoriteToy !== undefined && (typeof p.favoriteToy !== 'string' || p.favoriteToy.length > 100)) {
+  if (
+    p.favoriteToy !== undefined &&
+    (typeof p.favoriteToy !== 'string' || p.favoriteToy.length > 100)
+  ) {
     errors.push('favoriteToy: must be a string, max 100 characters');
   }
 

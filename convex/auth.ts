@@ -15,7 +15,7 @@ export const loggedInUser = query({
       email: v.optional(v.string()),
       pictureUrl: v.optional(v.string()),
     }),
-    v.null()
+    v.null(),
   ),
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();

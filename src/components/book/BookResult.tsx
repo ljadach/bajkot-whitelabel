@@ -10,7 +10,7 @@ export function BookResult() {
 
   const downloadUrl = useQuery(
     api.bookPipeline.getDownloadUrl,
-    orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip'
+    orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip',
   );
 
   if (!orderId) {
@@ -26,7 +26,13 @@ export function BookResult() {
       <div className="rounded-xl border-2 border-success bg-emerald-50 p-8">
         {/* Success icon */}
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
-          <svg className="w-8 h-8 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg
+            className="w-8 h-8 text-success"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>

@@ -1,7 +1,13 @@
 // Icon components for value propositions
 const icons = {
   chart: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -10,7 +16,13 @@ const icons = {
     </svg>
   ),
   document: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -19,7 +31,13 @@ const icons = {
     </svg>
   ),
   users: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -28,12 +46,28 @@ const icons = {
     </svg>
   ),
   clock: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+      />
     </svg>
   ),
   lightbulb: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -42,12 +76,28 @@ const icons = {
     </svg>
   ),
   shield: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
+      />
     </svg>
   ),
   academic: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -56,7 +106,13 @@ const icons = {
     </svg>
   ),
   briefcase: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -80,21 +136,35 @@ interface LandingValuePropsProps {
   sectionSubtitle?: string;
 }
 
-export function LandingValueProps({ items, sectionTitle, sectionSubtitle }: LandingValuePropsProps) {
+export function LandingValueProps({
+  items,
+  sectionTitle,
+  sectionSubtitle,
+}: LandingValuePropsProps) {
   return (
     <section className="section-alt section-spacing">
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
         {(sectionTitle || sectionSubtitle) && (
           <div className="text-center mb-12">
-            {sectionTitle && <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-4">{sectionTitle}</h2>}
-            {sectionSubtitle && <p className="text-neutral-500 max-w-2xl mx-auto">{sectionSubtitle}</p>}
+            {sectionTitle && (
+              <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-4">
+                {sectionTitle}
+              </h2>
+            )}
+            {sectionSubtitle && (
+              <p className="text-neutral-500 max-w-2xl mx-auto">{sectionSubtitle}</p>
+            )}
           </div>
         )}
         <div className="grid md:grid-cols-3 gap-8">
           {items.map((item, index) => (
             <div key={index} className="feature-card group">
-              <div className="segment-icon-box mb-5 transition-transform group-hover:scale-105">{icons[item.icon]}</div>
-              <h3 className="text-lg font-bold text-neutral-900 mb-3 tracking-tight">{item.title}</h3>
+              <div className="segment-icon-box mb-5 transition-transform group-hover:scale-105">
+                {icons[item.icon]}
+              </div>
+              <h3 className="text-lg font-bold text-neutral-900 mb-3 tracking-tight">
+                {item.title}
+              </h3>
               <p className="text-neutral-600 text-[15px] leading-relaxed">{item.description}</p>
             </div>
           ))}

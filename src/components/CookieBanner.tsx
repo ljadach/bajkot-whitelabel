@@ -6,7 +6,8 @@ export function CookieBanner() {
   const { t } = useTranslation('cookies');
   const [isVisible, setIsVisible] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const { consentStatus, acceptAll, rejectAll, setCustomConsent, isAnalyticsEnabled } = useConsent();
+  const { consentStatus, acceptAll, rejectAll, setCustomConsent, isAnalyticsEnabled } =
+    useConsent();
 
   useEffect(() => {
     // Show banner if no consent has been given
@@ -43,13 +44,22 @@ export function CookieBanner() {
               <p className="text-sm text-muted leading-relaxed">{t('description')}</p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <button onClick={() => setShowSettings(true)} className="px-4 py-2 text-muted hover:text-accent border border-line rounded-container transition-colors text-sm font-medium">
+              <button
+                onClick={() => setShowSettings(true)}
+                className="px-4 py-2 text-muted hover:text-accent border border-line rounded-container transition-colors text-sm font-medium"
+              >
                 {t('buttons.settings')}
               </button>
-              <button onClick={handleReject} className="px-4 py-2 text-muted hover:text-ink border border-line rounded-container transition-colors text-sm font-medium">
+              <button
+                onClick={handleReject}
+                className="px-4 py-2 text-muted hover:text-ink border border-line rounded-container transition-colors text-sm font-medium"
+              >
                 {t('buttons.rejectAll')}
               </button>
-              <button onClick={handleAccept} className="px-6 py-2 bg-accent text-white rounded-container hover:bg-accent-hover transition-colors text-sm font-semibold">
+              <button
+                onClick={handleAccept}
+                className="px-6 py-2 bg-accent text-white rounded-container hover:bg-accent-hover transition-colors text-sm font-semibold"
+              >
                 {t('buttons.accept')}
               </button>
             </div>
@@ -68,7 +78,9 @@ export function CookieBanner() {
                     <p className="text-sm text-muted">{t('essential.description')}</p>
                   </div>
                   <div className="ml-4">
-                    <div className="px-3 py-1 bg-green-100 text-green-800 rounded-chip text-xs font-semibold">{t('essential.badge')}</div>
+                    <div className="px-3 py-1 bg-green-100 text-green-800 rounded-chip text-xs font-semibold">
+                      {t('essential.badge')}
+                    </div>
                   </div>
                 </div>
 
@@ -80,7 +92,12 @@ export function CookieBanner() {
                   </div>
                   <div className="ml-4">
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" id="analytics-toggle" defaultChecked={isAnalyticsEnabled} className="sr-only peer" />
+                      <input
+                        type="checkbox"
+                        id="analytics-toggle"
+                        defaultChecked={isAnalyticsEnabled}
+                        className="sr-only peer"
+                      />
                       <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
                     </label>
                   </div>
@@ -89,12 +106,17 @@ export function CookieBanner() {
             </div>
 
             <div className="flex justify-end gap-3">
-              <button onClick={() => setShowSettings(false)} className="px-4 py-2 text-muted hover:text-ink border border-line rounded-container transition-colors text-sm font-medium">
+              <button
+                onClick={() => setShowSettings(false)}
+                className="px-4 py-2 text-muted hover:text-ink border border-line rounded-container transition-colors text-sm font-medium"
+              >
                 {t('buttons.cancel')}
               </button>
               <button
                 onClick={() => {
-                  const analyticsToggle = document.getElementById('analytics-toggle') as HTMLInputElement;
+                  const analyticsToggle = document.getElementById(
+                    'analytics-toggle',
+                  ) as HTMLInputElement;
                   handleSaveSettings(analyticsToggle?.checked || false);
                 }}
                 className="px-6 py-2 bg-accent text-white rounded-container hover:bg-accent-hover transition-colors text-sm font-semibold"
