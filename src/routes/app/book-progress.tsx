@@ -3,7 +3,7 @@ import { lazy, Suspense } from 'react';
 const BookProgress = lazy(() =>
   import('../../components/book/BookProgress').then((m) => ({
     default: m.BookProgress,
-  }))
+  })),
 );
 
 export default function BookProgressPage() {

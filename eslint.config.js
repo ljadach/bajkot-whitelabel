@@ -6,7 +6,14 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['dist', 'eslint.config.js', 'convex/_generated', 'postcss.config.js', 'tailwind.config.js', 'vite.config.ts'],
+    ignores: [
+      'dist',
+      'eslint.config.js',
+      'convex/_generated',
+      'postcss.config.js',
+      'tailwind.config.js',
+      'vite.config.ts',
+    ],
   },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommendedTypeChecked],
@@ -33,7 +40,10 @@ export default tseslint.config(
       // linting down the line.
 
       // Only warn on unused variables, and ignore variables starting with `_`
-      '@typescript-eslint/no-unused-vars': ['warn', { varsIgnorePattern: '^_', argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { varsIgnorePattern: '^_', argsIgnorePattern: '^_' },
+      ],
 
       // Allow escaping the compiler
       '@typescript-eslint/ban-ts-comment': 'error',
@@ -106,5 +116,5 @@ export default tseslint.config(
     rules: {
       'max-lines': ['warn', { max: 500, skipBlankLines: true, skipComments: true }],
     },
-  }
+  },
 );

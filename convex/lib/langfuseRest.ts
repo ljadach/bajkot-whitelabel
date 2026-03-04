@@ -43,7 +43,11 @@ export type ManualTraceOptions = {
   endTimeMs?: number;
 };
 
-export async function sendManualTrace(name: string, attributes: Record<string, unknown> = {}, options: ManualTraceOptions = {}) {
+export async function sendManualTrace(
+  name: string,
+  attributes: Record<string, unknown> = {},
+  options: ManualTraceOptions = {},
+) {
   if (!publicKey || !secretKey) {
     console.warn('[langfuse-rest] missing credentials, skipping trace', {
       hasPublic: Boolean(publicKey),

@@ -4,7 +4,14 @@ declare module '@langfuse/tracing' {
     end: () => void;
   };
 
-  export function startActiveObservation<T>(name: string, handler: (span: Observation) => Promise<T>): Promise<T>;
+  export function startActiveObservation<T>(
+    name: string,
+    handler: (span: Observation) => Promise<T>,
+  ): Promise<T>;
 
-  export function startObservation(name: string, payload?: Record<string, unknown>, options?: { asType?: string }): Observation;
+  export function startObservation(
+    name: string,
+    payload?: Record<string, unknown>,
+    options?: { asType?: string },
+  ): Observation;
 }

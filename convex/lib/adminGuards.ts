@@ -18,7 +18,10 @@ export function assertBulkLimit(ids: unknown[], label = 'items') {
 
 // ── Admin rate limiting ───────────────────────────────────────
 
-export async function checkAdminRateLimit(ctx: GenericMutationCtx<DataModel>, clerkUserId: string): Promise<void> {
+export async function checkAdminRateLimit(
+  ctx: GenericMutationCtx<DataModel>,
+  clerkUserId: string,
+): Promise<void> {
   const result = await checkRateLimit(ctx, clerkUserId, 'admin_action');
   if (!result.allowed) {
     throw new Error(result.message ?? 'Admin rate limit exceeded');
@@ -27,7 +30,13 @@ export async function checkAdminRateLimit(ctx: GenericMutationCtx<DataModel>, cl
 
 // ── Audit log ─────────────────────────────────────────────────
 
-export async function auditLog(ctx: GenericMutationCtx<DataModel>, actor: string, action: string, target?: string, details?: Record<string, unknown>): Promise<void> {
+export async function auditLog(
+  ctx: GenericMutationCtx<DataModel>,
+  actor: string,
+  action: string,
+  target?: string,
+  details?: Record<string, unknown>,
+): Promise<void> {
   await ctx.db.insert('adminAuditLog', {
     actor,
     action,

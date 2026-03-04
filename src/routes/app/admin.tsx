@@ -1,6 +1,8 @@
 import { lazy, Suspense } from 'react';
 
-const AdminLayout = lazy(() => import('../../admin/AdminLayout').then((m) => ({ default: m.AdminLayout })));
+const AdminLayout = lazy(() =>
+  import('../../admin/AdminLayout').then((m) => ({ default: m.AdminLayout })),
+);
 
 export default function Admin() {
   return (

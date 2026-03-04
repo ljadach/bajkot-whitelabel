@@ -16,7 +16,7 @@ export function BookStyleVote() {
 
   const images = useQuery(
     api.bookPipeline.getStyleVoteImages,
-    orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip'
+    orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip',
   );
 
   const submitVote = useMutation(api.bookPipeline.submitStyleVote);
@@ -74,11 +74,7 @@ export function BookStyleVote() {
           }`}
         >
           {images.imageUrlA ? (
-            <img
-              src={images.imageUrlA}
-              alt={t('vote.styleA')}
-              className="w-full rounded-lg mb-3"
-            />
+            <img src={images.imageUrlA} alt={t('vote.styleA')} className="w-full rounded-lg mb-3" />
           ) : (
             <div className="w-full aspect-square rounded-lg bg-bg-muted flex items-center justify-center mb-3">
               <span className="text-muted text-sm">Image A</span>
@@ -98,11 +94,7 @@ export function BookStyleVote() {
           }`}
         >
           {images.imageUrlB ? (
-            <img
-              src={images.imageUrlB}
-              alt={t('vote.styleB')}
-              className="w-full rounded-lg mb-3"
-            />
+            <img src={images.imageUrlB} alt={t('vote.styleB')} className="w-full rounded-lg mb-3" />
           ) : (
             <div className="w-full aspect-square rounded-lg bg-bg-muted flex items-center justify-center mb-3">
               <span className="text-muted text-sm">Image B</span>
@@ -119,7 +111,11 @@ export function BookStyleVote() {
           disabled={!selected || isSubmitting}
           className="rounded-lg bg-accent px-8 py-3.5 text-base font-semibold text-white hover:bg-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? t('vote.confirming') : selected ? t('vote.confirm') : t('vote.chooseFirst')}
+          {isSubmitting
+            ? t('vote.confirming')
+            : selected
+              ? t('vote.confirm')
+              : t('vote.chooseFirst')}
         </button>
       </div>
     </div>

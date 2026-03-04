@@ -83,8 +83,7 @@ export const PROBLEMS: Record<string, ProblemDefinition> = {
     title_pl: 'Nieśmiałość',
     context_pl:
       'Dziecko chce uczestniczyć, ale boi się odrzucenia. Pokaż, że pierwszy krok jest najtrudniejszy — a potem robi się łatwiej.',
-    metaphor_pl:
-      'Muszla, z której wychodzi perła dopiero gdy się otworzy. Ślimak Odważniak.',
+    metaphor_pl: 'Muszla, z której wychodzi perła dopiero gdy się otworzy. Ślimak Odważniak.',
     category: 'social',
   },
   sharing_difficulty: {

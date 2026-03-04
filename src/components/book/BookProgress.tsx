@@ -13,7 +13,7 @@ export function BookProgress() {
 
   const progress = useQuery(
     api.bookPipeline.getOrderProgress,
-    orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip'
+    orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip',
   );
 
   // Auto-redirect on status changes
@@ -94,11 +94,19 @@ export function BookProgress() {
               {/* Status icon */}
               <div className="shrink-0">
                 {state === 'done' && (
-                  <svg className="w-5 h-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg
+                    className="w-5 h-5 text-success"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 )}
-                {state === 'active' && <div className="w-4 h-4 spinner border-accent/30 border-t-accent" />}
+                {state === 'active' && (
+                  <div className="w-4 h-4 spinner border-accent/30 border-t-accent" />
+                )}
                 {state === 'waiting' && <div className="w-4 h-4 rounded-full bg-neutral-300" />}
               </div>
 
@@ -106,7 +114,11 @@ export function BookProgress() {
               {pipelineStep.agent && (
                 <span
                   className={`text-xs font-mono font-bold shrink-0 ${
-                    state === 'active' ? 'text-accent' : state === 'done' ? 'text-success' : 'text-muted'
+                    state === 'active'
+                      ? 'text-accent'
+                      : state === 'done'
+                        ? 'text-success'
+                        : 'text-muted'
                   }`}
                 >
                   {pipelineStep.agent}

@@ -10,7 +10,13 @@ interface BreadcrumbProps {
 }
 
 const ChevronIcon = () => (
-  <svg className="w-3 h-3 text-neutral-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+  <svg
+    className="w-3 h-3 text-neutral-400 flex-shrink-0"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    aria-hidden="true"
+  >
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
   </svg>
 );
@@ -24,7 +30,14 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
           <li key={index} className="flex items-center gap-2">
             {index > 0 && <ChevronIcon />}
             {item.href ? (
-              <Link to={item.href} className={index === 0 ? 'hover:text-neutral-600 transition-colors' : 'text-neutral-500 hover:text-neutral-600 transition-colors'}>
+              <Link
+                to={item.href}
+                className={
+                  index === 0
+                    ? 'hover:text-neutral-600 transition-colors'
+                    : 'text-neutral-500 hover:text-neutral-600 transition-colors'
+                }
+              >
                 {item.label}
               </Link>
             ) : (

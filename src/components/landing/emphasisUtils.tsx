@@ -104,7 +104,10 @@ const EMPHASIS_PATTERNS = [
   /ewolucj\S+\s+sztucznej\s+inteligencji/gi,
 ];
 
-export function emphasizeText(text: string, className = 'font-semibold text-neutral-800'): ReactNode[] {
+export function emphasizeText(
+  text: string,
+  className = 'font-semibold text-neutral-800',
+): ReactNode[] {
   // Build a combined pattern
   const combinedPattern = new RegExp(`(${EMPHASIS_PATTERNS.map((p) => p.source).join('|')})`, 'gi');
 

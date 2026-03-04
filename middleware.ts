@@ -19,7 +19,10 @@ export default function middleware(request: Request): Response | undefined {
   if (url.pathname !== '/') return undefined;
 
   const cookieLang = request.headers.get('cookie')?.match(/(?:^|;\s*)lang=([^;]+)/)?.[1];
-  const lang = cookieLang && (SUPPORTED as readonly string[]).includes(cookieLang) ? cookieLang : parseLang(request.headers.get('accept-language'));
+  const lang =
+    cookieLang && (SUPPORTED as readonly string[]).includes(cookieLang)
+      ? cookieLang
+      : parseLang(request.headers.get('accept-language'));
 
   return Response.redirect(new URL(`/${lang}/`, url), 302);
 }

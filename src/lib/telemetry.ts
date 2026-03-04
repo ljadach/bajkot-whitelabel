@@ -6,7 +6,12 @@
  *
  * @see docs/posthog.md for usage documentation
  */
-import { usePostHog, useFeatureFlagEnabled, useFeatureFlagVariantKey, useFeatureFlagPayload } from '@posthog/react';
+import {
+  usePostHog,
+  useFeatureFlagEnabled,
+  useFeatureFlagVariantKey,
+  useFeatureFlagPayload,
+} from '@posthog/react';
 import { useCallback, useEffect, useMemo } from 'react';
 
 // Re-export React components from @posthog/react
@@ -16,7 +21,19 @@ export { PostHogFeature, PostHogCaptureOnViewed } from '@posthog/react';
 // TYPES
 // ============================================================================
 
-export type TelemetryEvent = 'chat_view_opened' | 'widget_rendered' | 'option_selected' | 'free_text_entered' | 'validation_failed' | 'xml_field_completed' | 'outline_generated' | 'module_toggled' | 'checkout_started' | 'checkout_completed' | 'page_view' | 'button_clicked';
+export type TelemetryEvent =
+  | 'chat_view_opened'
+  | 'widget_rendered'
+  | 'option_selected'
+  | 'free_text_entered'
+  | 'validation_failed'
+  | 'xml_field_completed'
+  | 'outline_generated'
+  | 'module_toggled'
+  | 'checkout_started'
+  | 'checkout_completed'
+  | 'page_view'
+  | 'button_clicked';
 
 export interface TelemetryProps {
   session_id?: string;
@@ -64,14 +81,14 @@ export function useAnalytics() {
       posthog.capture(event, properties);
       console.debug(`Tracked: ${event}`, properties);
     },
-    [posthog]
+    [posthog],
   );
 
   const identify = useCallback(
     (userId: string, properties?: Record<string, unknown>) => {
       posthog?.identify(userId, properties);
     },
-    [posthog]
+    [posthog],
   );
 
   const reset = useCallback(() => {
@@ -86,14 +103,14 @@ export function useAnalytics() {
     (properties: Record<string, unknown>) => {
       posthog?.setPersonProperties(properties);
     },
-    [posthog]
+    [posthog],
   );
 
   const group = useCallback(
     (groupType: string, groupKey: string, groupProperties?: Record<string, unknown>) => {
       posthog?.group(groupType, groupKey, groupProperties);
     },
-    [posthog]
+    [posthog],
   );
 
   return {
@@ -173,7 +190,7 @@ export function useConsent() {
         console.log('Analytics disabled (custom)');
       }
     },
-    [posthog]
+    [posthog],
   );
 
   // Apply saved consent on mount

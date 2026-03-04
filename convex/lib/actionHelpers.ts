@@ -20,7 +20,9 @@ export interface AuthenticatedLlmContext {
  * Handles: authentication check, rate limiting, log context.
  * Model is resolved per-stage from pipelineConfig — no global model needed.
  */
-export async function prepareAuthenticatedLlmAction(ctx: ActionCtx): Promise<AuthenticatedLlmContext> {
+export async function prepareAuthenticatedLlmAction(
+  ctx: ActionCtx,
+): Promise<AuthenticatedLlmContext> {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) {
     throw new Error('Not authenticated');

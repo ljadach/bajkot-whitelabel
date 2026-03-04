@@ -30,7 +30,10 @@ export function normalizePages(raw: any): StoryDraft['pages'] {
       readAloudVersion: b.text_pl || b.text || '',
     }));
   }
-  console.warn('[normalizePages] Could not find pages/scenes in LLM response. Keys:', Object.keys(raw));
+  console.warn(
+    '[normalizePages] Could not find pages/scenes in LLM response. Keys:',
+    Object.keys(raw),
+  );
   return [];
 }
 

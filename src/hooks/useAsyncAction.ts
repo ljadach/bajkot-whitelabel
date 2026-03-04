@@ -16,7 +16,7 @@ export function useAsyncAction<T extends (...args: Parameters<T>) => Promise<unk
   action: T,
   options?: {
     onError?: (error: unknown) => void;
-  }
+  },
 ): {
   execute: (...args: Parameters<T>) => Promise<void>;
   isLoading: boolean;
@@ -38,7 +38,7 @@ export function useAsyncAction<T extends (...args: Parameters<T>) => Promise<unk
         setIsLoading(false);
       }
     },
-    [action, options]
+    [action, options],
   );
 
   return { execute, isLoading };

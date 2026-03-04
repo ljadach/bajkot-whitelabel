@@ -83,7 +83,10 @@ export const getAllLogUsers = query({
 
     // Get all unique clerkUserIds from logs
     const allLogs = await ctx.db.query('llmLogs').collect();
-    const userMap = new Map<string, { clerkUserId: string; logCount: number; lastActivity: number }>();
+    const userMap = new Map<
+      string,
+      { clerkUserId: string; logCount: number; lastActivity: number }
+    >();
 
     for (const log of allLogs) {
       // Skip logs without clerkUserId (legacy data)

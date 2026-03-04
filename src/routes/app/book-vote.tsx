@@ -3,7 +3,7 @@ import { lazy, Suspense } from 'react';
 const BookStyleVote = lazy(() =>
   import('../../components/book/BookStyleVote').then((m) => ({
     default: m.BookStyleVote,
-  }))
+  })),
 );
 
 export default function BookVotePage() {

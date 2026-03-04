@@ -192,10 +192,14 @@ export function BookOrderForm() {
       {/* Step 1: Child */}
       {step === 0 && (
         <div className="rounded-xl border border-line bg-bg p-6">
-          <h2 className="text-base font-semibold text-accent mb-4">{t('order.sectionAboutChild')}</h2>
+          <h2 className="text-base font-semibold text-accent mb-4">
+            {t('order.sectionAboutChild')}
+          </h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-ink mb-1">{t('order.childName')}</label>
+              <label className="block text-sm font-semibold text-ink mb-1">
+                {t('order.childName')}
+              </label>
               <input
                 type="text"
                 value={form.childName}
@@ -207,7 +211,9 @@ export function BookOrderForm() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-semibold text-ink mb-1">{t('order.age')}</label>
+                <label className="block text-sm font-semibold text-ink mb-1">
+                  {t('order.age')}
+                </label>
                 <select
                   value={form.ageBracket}
                   onChange={(e) => update('ageBracket', e.target.value as FormData['ageBracket'])}
@@ -215,13 +221,17 @@ export function BookOrderForm() {
                 >
                   {AGE_BRACKETS.map((ab) => (
                     <option key={ab} value={ab}>
-                      {t(`order.ageBracket${ab.replace('-', '').replace('+', '')}` as 'order.ageBracket35')}
+                      {t(
+                        `order.ageBracket${ab.replace('-', '').replace('+', '')}` as 'order.ageBracket35',
+                      )}
                     </option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-ink mb-1">{t('order.gender')}</label>
+                <label className="block text-sm font-semibold text-ink mb-1">
+                  {t('order.gender')}
+                </label>
                 <select
                   value={form.gender}
                   onChange={(e) => update('gender', e.target.value as FormData['gender'])}
@@ -242,7 +252,9 @@ export function BookOrderForm() {
           <h2 className="text-base font-semibold text-accent mb-4">{t('order.sectionTopic')}</h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-ink mb-1">{t('order.problemCategory')}</label>
+              <label className="block text-sm font-semibold text-ink mb-1">
+                {t('order.problemCategory')}
+              </label>
               <select
                 value={form.problemCategory}
                 onChange={(e) => {
@@ -260,7 +272,9 @@ export function BookOrderForm() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-ink mb-1">{t('order.problem')}</label>
+              <label className="block text-sm font-semibold text-ink mb-1">
+                {t('order.problem')}
+              </label>
               <select
                 value={form.problemId}
                 onChange={(e) => update('problemId', e.target.value as ProblemId)}
@@ -276,7 +290,9 @@ export function BookOrderForm() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-ink mb-1">{t('order.problemDetail')}</label>
+              <label className="block text-sm font-semibold text-ink mb-1">
+                {t('order.problemDetail')}
+              </label>
               <textarea
                 value={form.problemDetail}
                 onChange={(e) => update('problemDetail', e.target.value)}
@@ -294,69 +310,91 @@ export function BookOrderForm() {
       {/* Step 3: Appearance */}
       {step === 2 && (
         <div className="rounded-xl border border-line bg-bg p-6">
-          <h2 className="text-base font-semibold text-accent mb-4">{t('order.sectionAppearance')}</h2>
+          <h2 className="text-base font-semibold text-accent mb-4">
+            {t('order.sectionAppearance')}
+          </h2>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-semibold text-ink mb-1">{t('order.hairColor')}</label>
+                <label className="block text-sm font-semibold text-ink mb-1">
+                  {t('order.hairColor')}
+                </label>
                 <select
                   value={form.hairColor}
                   onChange={(e) => update('hairColor', e.target.value)}
                   className="w-full rounded-lg border-2 border-line bg-bg px-3 py-2.5 text-base focus:border-accent focus:outline-none"
                 >
                   {Object.entries(HAIR_COLORS).map(([key, label]) => (
-                    <option key={key} value={key}>{label}</option>
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-ink mb-1">{t('order.hairStyle')}</label>
+                <label className="block text-sm font-semibold text-ink mb-1">
+                  {t('order.hairStyle')}
+                </label>
                 <select
                   value={form.hairStyle}
                   onChange={(e) => update('hairStyle', e.target.value)}
                   className="w-full rounded-lg border-2 border-line bg-bg px-3 py-2.5 text-base focus:border-accent focus:outline-none"
                 >
                   {Object.entries(HAIR_STYLES).map(([key, label]) => (
-                    <option key={key} value={key}>{label}</option>
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
                   ))}
                 </select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-semibold text-ink mb-1">{t('order.eyeColor')}</label>
+                <label className="block text-sm font-semibold text-ink mb-1">
+                  {t('order.eyeColor')}
+                </label>
                 <select
                   value={form.eyeColor}
                   onChange={(e) => update('eyeColor', e.target.value)}
                   className="w-full rounded-lg border-2 border-line bg-bg px-3 py-2.5 text-base focus:border-accent focus:outline-none"
                 >
                   {Object.entries(EYE_COLORS).map(([key, label]) => (
-                    <option key={key} value={key}>{label}</option>
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-ink mb-1">{t('order.skinTone')}</label>
+                <label className="block text-sm font-semibold text-ink mb-1">
+                  {t('order.skinTone')}
+                </label>
                 <select
                   value={form.skinTone}
                   onChange={(e) => update('skinTone', e.target.value)}
                   className="w-full rounded-lg border-2 border-line bg-bg px-3 py-2.5 text-base focus:border-accent focus:outline-none"
                 >
                   {Object.entries(SKIN_TONES).map(([key, label]) => (
-                    <option key={key} value={key}>{label}</option>
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
                   ))}
                 </select>
               </div>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-ink mb-1">{t('order.outfit')}</label>
+              <label className="block text-sm font-semibold text-ink mb-1">
+                {t('order.outfit')}
+              </label>
               <select
                 value={form.outfit}
                 onChange={(e) => update('outfit', e.target.value)}
                 className="w-full rounded-lg border-2 border-line bg-bg px-3 py-2.5 text-base focus:border-accent focus:outline-none"
               >
                 {Object.entries(OUTFITS).map(([key, label]) => (
-                  <option key={key} value={key}>{label}</option>
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -391,7 +429,9 @@ export function BookOrderForm() {
           <h2 className="text-base font-semibold text-accent mb-4">{t('order.sectionGuide')}</h2>
           <p className="text-sm text-muted mb-4">{t('order.guideDescription')}</p>
           <div>
-            <label className="block text-sm font-semibold text-ink mb-1">{t('order.favoriteToy')}</label>
+            <label className="block text-sm font-semibold text-ink mb-1">
+              {t('order.favoriteToy')}
+            </label>
             <input
               type="text"
               value={form.favoriteToy}
@@ -412,16 +452,44 @@ export function BookOrderForm() {
           <div className="space-y-2">
             <SummaryRow label={t('order.childName')} value={form.childName} />
             <SummaryRow label={t('order.age')} value={form.ageBracket} />
-            <SummaryRow label={t('order.gender')} value={form.gender === 'boy' ? t('order.genderBoy') : t('order.genderGirl')} />
-            <SummaryRow label={t('order.problem')} value={form.problemId ? PROBLEMS[form.problemId]?.title_pl : '—'} />
-            {form.problemDetail && <SummaryRow label={t('order.problemDetail')} value={form.problemDetail} />}
-            <SummaryRow label={t('order.hairColor')} value={HAIR_COLORS[form.hairColor as keyof typeof HAIR_COLORS] ?? form.hairColor} />
-            <SummaryRow label={t('order.hairStyle')} value={HAIR_STYLES[form.hairStyle as keyof typeof HAIR_STYLES] ?? form.hairStyle} />
-            <SummaryRow label={t('order.eyeColor')} value={EYE_COLORS[form.eyeColor as keyof typeof EYE_COLORS] ?? form.eyeColor} />
-            <SummaryRow label={t('order.skinTone')} value={SKIN_TONES[form.skinTone as keyof typeof SKIN_TONES] ?? form.skinTone} />
-            <SummaryRow label={t('order.outfit')} value={OUTFITS[form.outfit as keyof typeof OUTFITS] ?? form.outfit} />
-            <SummaryRow label={t('order.glasses')} value={form.glasses ? t('order.glassesYes') : t('order.glassesNo')} />
-            {form.favoriteToy && <SummaryRow label={t('order.favoriteToy')} value={form.favoriteToy} />}
+            <SummaryRow
+              label={t('order.gender')}
+              value={form.gender === 'boy' ? t('order.genderBoy') : t('order.genderGirl')}
+            />
+            <SummaryRow
+              label={t('order.problem')}
+              value={form.problemId ? PROBLEMS[form.problemId]?.title_pl : '—'}
+            />
+            {form.problemDetail && (
+              <SummaryRow label={t('order.problemDetail')} value={form.problemDetail} />
+            )}
+            <SummaryRow
+              label={t('order.hairColor')}
+              value={HAIR_COLORS[form.hairColor as keyof typeof HAIR_COLORS] ?? form.hairColor}
+            />
+            <SummaryRow
+              label={t('order.hairStyle')}
+              value={HAIR_STYLES[form.hairStyle as keyof typeof HAIR_STYLES] ?? form.hairStyle}
+            />
+            <SummaryRow
+              label={t('order.eyeColor')}
+              value={EYE_COLORS[form.eyeColor as keyof typeof EYE_COLORS] ?? form.eyeColor}
+            />
+            <SummaryRow
+              label={t('order.skinTone')}
+              value={SKIN_TONES[form.skinTone as keyof typeof SKIN_TONES] ?? form.skinTone}
+            />
+            <SummaryRow
+              label={t('order.outfit')}
+              value={OUTFITS[form.outfit as keyof typeof OUTFITS] ?? form.outfit}
+            />
+            <SummaryRow
+              label={t('order.glasses')}
+              value={form.glasses ? t('order.glassesYes') : t('order.glassesNo')}
+            />
+            {form.favoriteToy && (
+              <SummaryRow label={t('order.favoriteToy')} value={form.favoriteToy} />
+            )}
           </div>
 
           <div className="mt-4">

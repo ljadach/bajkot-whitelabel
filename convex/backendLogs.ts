@@ -19,13 +19,18 @@ export const storeBackendLog = internalMutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     // Check if DB logging is enabled
-    const dbLoggingEnabled = (await getConfigValueFromDb(ctx, ConfigKey.DEBUG_DB_LOGGING)) === 'true';
+    const dbLoggingEnabled =
+      (await getConfigValueFromDb(ctx, ConfigKey.DEBUG_DB_LOGGING)) === 'true';
     if (!dbLoggingEnabled) {
       return null;
     }
 
     // Keep only last MAX_LOGS to avoid bloat
-    const existingLogs = await ctx.db.query('backendLogs').withIndex('by_timestamp').order('desc').collect();
+    const existingLogs = await ctx.db
+      .query('backendLogs')
+      .withIndex('by_timestamp')
+      .order('desc')
+      .collect();
 
     if (existingLogs.length >= MAX_LOGS) {
       const toDelete = existingLogs.slice(MAX_LOGS - 1);
@@ -61,7 +66,7 @@ export const getBackendLogs = query({
       message: v.string(),
       data: v.optional(v.string()),
       timestamp: v.number(),
-    })
+    }),
   ),
   handler: async (ctx, args) => {
     await assertAdmin(ctx);

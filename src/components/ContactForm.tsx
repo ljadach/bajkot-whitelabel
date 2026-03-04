@@ -3,9 +3,20 @@ import { useTranslation } from 'react-i18next';
 import { useAction } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 
-type InquiryType = 'enterprise_sales' | 'technical_support' | 'partnerships' | 'press_media' | 'general';
+type InquiryType =
+  | 'enterprise_sales'
+  | 'technical_support'
+  | 'partnerships'
+  | 'press_media'
+  | 'general';
 
-const INQUIRY_TYPES: InquiryType[] = ['enterprise_sales', 'technical_support', 'partnerships', 'press_media', 'general'];
+const INQUIRY_TYPES: InquiryType[] = [
+  'enterprise_sales',
+  'technical_support',
+  'partnerships',
+  'press_media',
+  'general',
+];
 
 export function ContactForm() {
   const { t, i18n } = useTranslation('contact');
@@ -21,7 +32,9 @@ export function ContactForm() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     setError(null);
@@ -58,7 +71,13 @@ export function ContactForm() {
     return (
       <div className="bg-white rounded-xl border border-neutral-200 p-8 text-center">
         <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
-          <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg
+            className="w-6 h-6 text-green-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
@@ -69,37 +88,79 @@ export function ContactForm() {
   }
 
   return (
-    <form onSubmit={(e) => void handleSubmit(e)} className="bg-white rounded-xl border border-neutral-200 p-6 sm:p-8 space-y-5">
+    <form
+      onSubmit={(e) => void handleSubmit(e)}
+      className="bg-white rounded-xl border border-neutral-200 p-6 sm:p-8 space-y-5"
+    >
       {/* Name */}
       <div>
         <label htmlFor="contact-name" className="block text-sm font-medium text-neutral-700 mb-1.5">
           {t('form.name')}
         </label>
-        <input id="contact-name" name="name" type="text" required className="input" placeholder={t('form.namePlaceholder')} value={formData.name} onChange={handleChange} />
+        <input
+          id="contact-name"
+          name="name"
+          type="text"
+          required
+          className="input"
+          placeholder={t('form.namePlaceholder')}
+          value={formData.name}
+          onChange={handleChange}
+        />
       </div>
 
       {/* Email */}
       <div>
-        <label htmlFor="contact-email" className="block text-sm font-medium text-neutral-700 mb-1.5">
+        <label
+          htmlFor="contact-email"
+          className="block text-sm font-medium text-neutral-700 mb-1.5"
+        >
           {t('form.email')}
         </label>
-        <input id="contact-email" name="email" type="email" required className="input" placeholder={t('form.emailPlaceholder')} value={formData.email} onChange={handleChange} />
+        <input
+          id="contact-email"
+          name="email"
+          type="email"
+          required
+          className="input"
+          placeholder={t('form.emailPlaceholder')}
+          value={formData.email}
+          onChange={handleChange}
+        />
       </div>
 
       {/* Inquiry type */}
       <div>
-        <label htmlFor="contact-inquiry" className="block text-sm font-medium text-neutral-700 mb-1.5">
+        <label
+          htmlFor="contact-inquiry"
+          className="block text-sm font-medium text-neutral-700 mb-1.5"
+        >
           {t('form.inquiryType')}
         </label>
         <div className="relative">
-          <select id="contact-inquiry" name="inquiryType" required className="input appearance-none pr-10" value={formData.inquiryType} onChange={handleChange}>
+          <select
+            id="contact-inquiry"
+            name="inquiryType"
+            required
+            className="input appearance-none pr-10"
+            value={formData.inquiryType}
+            onChange={handleChange}
+          >
             {INQUIRY_TYPES.map((type) => (
               <option key={type} value={type}>
                 {t(`form.inquiryOptions.${type}`)}
               </option>
             ))}
           </select>
-          <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <polyline points="6 9 12 15 18 9" />
           </svg>
         </div>
@@ -107,10 +168,22 @@ export function ContactForm() {
 
       {/* Question */}
       <div>
-        <label htmlFor="contact-question" className="block text-sm font-medium text-neutral-700 mb-1.5">
+        <label
+          htmlFor="contact-question"
+          className="block text-sm font-medium text-neutral-700 mb-1.5"
+        >
           {t('form.question')}
         </label>
-        <textarea id="contact-question" name="question" required rows={5} className="textarea" placeholder={t('form.questionPlaceholder')} value={formData.question} onChange={handleChange} />
+        <textarea
+          id="contact-question"
+          name="question"
+          required
+          rows={5}
+          className="textarea"
+          placeholder={t('form.questionPlaceholder')}
+          value={formData.question}
+          onChange={handleChange}
+        />
       </div>
 
       {/* Error */}
@@ -123,7 +196,8 @@ export function ContactForm() {
         className="w-full py-3 px-6 rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-60"
         style={{ backgroundColor: 'var(--accent)' }}
         onMouseEnter={(e) => {
-          if (!isSubmitting) (e.target as HTMLButtonElement).style.backgroundColor = 'var(--accent-hover)';
+          if (!isSubmitting)
+            (e.target as HTMLButtonElement).style.backgroundColor = 'var(--accent-hover)';
         }}
         onMouseLeave={(e) => {
           (e.target as HTMLButtonElement).style.backgroundColor = 'var(--accent)';

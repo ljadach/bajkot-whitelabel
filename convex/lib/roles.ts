@@ -16,7 +16,10 @@ import { DataModel } from '../_generated/dataModel';
 
 export type Role = 'admin';
 
-type AnyCtx = GenericQueryCtx<DataModel> | GenericMutationCtx<DataModel> | GenericActionCtx<DataModel>;
+type AnyCtx =
+  | GenericQueryCtx<DataModel>
+  | GenericMutationCtx<DataModel>
+  | GenericActionCtx<DataModel>;
 
 /**
  * Get the current user's identity or null if not authenticated

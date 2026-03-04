@@ -96,7 +96,12 @@ function applyPairedSingleAsterisk(text: string): string {
 // - Supports **bold**, *italic* or _italic_, `code`, and newlines -> <br/>
 // - Intentionally simple to avoid pulling extra deps
 function escapeHtml(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function inlineMd(s: string): string {

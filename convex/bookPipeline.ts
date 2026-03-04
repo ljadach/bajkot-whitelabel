@@ -234,7 +234,7 @@ export const getMyOrders = query({
       status: v.string(),
       createdAt: v.number(),
       completedAt: v.union(v.number(), v.null()),
-    })
+    }),
   ),
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
