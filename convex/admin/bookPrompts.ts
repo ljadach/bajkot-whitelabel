@@ -1,6 +1,7 @@
 /**
  * Admin CRUD for book pipeline prompts.
  * Prompts are stored in the bookPrompts table and loaded by agents at runtime.
+ * Version history tracked in bookPromptVersions table.
  * CLI sync: seedPrompts (migration), exportAllPrompts, importPrompt.
  */
 
@@ -41,6 +42,44 @@ const BOOK_PROMPT_META: Record<string, { agent: string; filename: string }> = {
   [PromptTemplate.BookPipelineIndex]: { agent: 'Index', filename: 'index' },
 };
 
+// Valid PromptTemplate values for import validation
+const VALID_PROMPT_KEYS = new Set(Object.values(PromptTemplate) as string[]);
+
+// ── Helper: get next version number for a prompt key ──────────
+
+async function getNextVersion(
+  ctx: { db: { query: (table: 'bookPromptVersions') => any } },
+  promptKey: string,
+): Promise<number> {
+  const latest = await ctx.db
+    .query('bookPromptVersions')
+    .withIndex('by_prompt_key_version', (q: any) => q.eq('promptKey', promptKey))
+    .order('desc')
+    .first();
+  return latest ? latest.version + 1 : 1;
+}
+
+// ── Helper: save current content as a version snapshot ─────────
+
+async function saveVersionSnapshot(
+  ctx: { db: any },
+  promptKey: string,
+  content: string,
+  editedBy: string,
+  changeNote?: string,
+): Promise<number> {
+  const version = await getNextVersion(ctx, promptKey);
+  await ctx.db.insert('bookPromptVersions', {
+    promptKey,
+    content,
+    version,
+    editedBy,
+    editedAt: Date.now(),
+    changeNote,
+  });
+  return version;
+}
+
 // ── List all book prompts from DB ─────────────────────────────
 
 export const listBookPrompts = query({
@@ -52,6 +91,7 @@ export const listBookPrompts = query({
       filename: v.string(),
       dbContent: v.union(v.string(), v.null()),
       hasPrompt: v.boolean(),
+      versionCount: v.number(),
     }),
   ),
   handler: async (ctx) => {
@@ -65,12 +105,19 @@ export const listBookPrompts = query({
         .withIndex('by_filename', (q) => q.eq('filename', meta.filename))
         .first();
 
+      // Count versions for this prompt key
+      const versions = await ctx.db
+        .query('bookPromptVersions')
+        .withIndex('by_prompt_key', (q) => q.eq('promptKey', templateKey))
+        .collect();
+
       results.push({
         key: templateKey,
         agentName: meta.agent,
         filename: meta.filename,
         dbContent: dbEntry?.content ?? null,
         hasPrompt: !!dbEntry,
+        versionCount: versions.length,
       });
     }
 
@@ -115,6 +162,11 @@ export const saveBookPrompt = mutation({
       .withIndex('by_filename', (q) => q.eq('filename', meta.filename))
       .first();
 
+    // Save current content as a version BEFORE overwriting
+    if (existing) {
+      await saveVersionSnapshot(ctx, templateKey, existing.content, subject);
+    }
+
     if (existing) {
       await ctx.db.patch(existing._id, {
         content,
@@ -157,12 +209,382 @@ export const resetBookPrompt = mutation({
       .first();
 
     if (existing) {
+      // Save current content as version before resetting
+      await saveVersionSnapshot(ctx, templateKey, existing.content, subject, 'Before reset');
       await ctx.db.delete(existing._id);
     }
 
     await auditLog(ctx, subject, 'bookPrompts.reset', meta.filename, { templateKey });
 
     return null;
+  },
+});
+
+// ── List versions for a prompt ────────────────────────────────
+
+export const listPromptVersions = query({
+  args: { promptKey: v.string() },
+  returns: v.array(
+    v.object({
+      _id: v.id('bookPromptVersions'),
+      promptKey: v.string(),
+      version: v.number(),
+      editedBy: v.string(),
+      editedAt: v.number(),
+      changeNote: v.union(v.string(), v.null()),
+      contentPreview: v.string(),
+    }),
+  ),
+  handler: async (ctx, { promptKey }) => {
+    await assertAdmin(ctx);
+
+    const versions = await ctx.db
+      .query('bookPromptVersions')
+      .withIndex('by_prompt_key_version', (q) => q.eq('promptKey', promptKey))
+      .order('desc')
+      .take(50);
+
+    return versions.map((ver) => ({
+      _id: ver._id,
+      promptKey: ver.promptKey,
+      version: ver.version,
+      editedBy: ver.editedBy,
+      editedAt: ver.editedAt,
+      changeNote: ver.changeNote ?? null,
+      contentPreview: ver.content.slice(0, 200),
+    }));
+  },
+});
+
+// ── Get full content of a specific version ────────────────────
+
+export const getPromptVersion = query({
+  args: { versionId: v.id('bookPromptVersions') },
+  returns: v.object({
+    content: v.string(),
+    version: v.number(),
+    editedBy: v.string(),
+    editedAt: v.number(),
+    changeNote: v.union(v.string(), v.null()),
+  }),
+  handler: async (ctx, { versionId }) => {
+    await assertAdmin(ctx);
+
+    const ver = await ctx.db.get(versionId);
+    if (!ver) throw new Error('Version not found');
+
+    return {
+      content: ver.content,
+      version: ver.version,
+      editedBy: ver.editedBy,
+      editedAt: ver.editedAt,
+      changeNote: ver.changeNote ?? null,
+    };
+  },
+});
+
+// ── Restore a previous version ────────────────────────────────
+
+export const restorePromptVersion = mutation({
+  args: {
+    promptKey: v.string(),
+    versionId: v.id('bookPromptVersions'),
+  },
+  returns: v.null(),
+  handler: async (ctx, { promptKey, versionId }) => {
+    const { subject } = await assertAdmin(ctx);
+
+    const meta = BOOK_PROMPT_META[promptKey];
+    if (!meta) throw new Error(`Unknown template key: ${promptKey}`);
+
+    const ver = await ctx.db.get(versionId);
+    if (!ver) throw new Error('Version not found');
+    if (ver.promptKey !== promptKey) throw new Error('Version does not belong to this prompt');
+
+    // Save current content as a version before overwriting
+    const existing = await ctx.db
+      .query('bookPrompts')
+      .withIndex('by_filename', (q) => q.eq('filename', meta.filename))
+      .first();
+
+    if (existing) {
+      await saveVersionSnapshot(ctx, promptKey, existing.content, subject);
+    }
+
+    // Write the restored content
+    const restoredContent = ver.content;
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        content: restoredContent,
+        isModified: true,
+        updatedAt: Date.now(),
+      });
+    } else {
+      await ctx.db.insert('bookPrompts', {
+        filename: meta.filename,
+        agentName: meta.agent,
+        content: restoredContent,
+        isModified: true,
+        updatedAt: Date.now(),
+      });
+    }
+
+    // Record the restore as a new version entry
+    await saveVersionSnapshot(
+      ctx,
+      promptKey,
+      restoredContent,
+      subject,
+      `Restored from v${ver.version}`,
+    );
+
+    await auditLog(ctx, subject, 'bookPrompts.restore', meta.filename, {
+      promptKey,
+      restoredFromVersion: ver.version,
+      contentLength: restoredContent.length,
+    });
+
+    return null;
+  },
+});
+
+// ── Export single prompt as JSON (admin UI) ───────────────────
+
+export const exportPrompt = query({
+  args: { promptKey: v.string() },
+  returns: v.string(),
+  handler: async (ctx, { promptKey }) => {
+    await assertAdmin(ctx);
+
+    const meta = BOOK_PROMPT_META[promptKey];
+    if (!meta) throw new Error(`Unknown template key: ${promptKey}`);
+
+    const entry = await ctx.db
+      .query('bookPrompts')
+      .withIndex('by_filename', (q) => q.eq('filename', meta.filename))
+      .first();
+
+    if (!entry) throw new Error(`Prompt not found in DB: ${promptKey}`);
+
+    // Get latest version number
+    const latestVer = await ctx.db
+      .query('bookPromptVersions')
+      .withIndex('by_prompt_key_version', (q) => q.eq('promptKey', promptKey))
+      .order('desc')
+      .first();
+
+    return JSON.stringify(
+      {
+        promptKey,
+        agentName: meta.agent,
+        content: entry.content,
+        exportedAt: new Date().toISOString(),
+        version: latestVer?.version ?? 0,
+      },
+      null,
+      2,
+    );
+  },
+});
+
+// ── Export ALL prompts as JSON (admin UI) ──────────────────────
+
+export const exportAllPromptsAdmin = query({
+  args: {},
+  returns: v.string(),
+  handler: async (ctx) => {
+    await assertAdmin(ctx);
+
+    const results = [];
+
+    for (const [templateKey, meta] of Object.entries(BOOK_PROMPT_META)) {
+      const entry = await ctx.db
+        .query('bookPrompts')
+        .withIndex('by_filename', (q) => q.eq('filename', meta.filename))
+        .first();
+
+      if (entry) {
+        const latestVer = await ctx.db
+          .query('bookPromptVersions')
+          .withIndex('by_prompt_key_version', (q) => q.eq('promptKey', templateKey))
+          .order('desc')
+          .first();
+
+        results.push({
+          promptKey: templateKey,
+          agentName: meta.agent,
+          content: entry.content,
+          exportedAt: new Date().toISOString(),
+          version: latestVer?.version ?? 0,
+        });
+      }
+    }
+
+    return JSON.stringify(results, null, 2);
+  },
+});
+
+// ── Import single prompt (admin UI) ───────────────────────────
+
+export const importPromptAdmin = mutation({
+  args: {
+    promptKey: v.string(),
+    content: v.string(),
+    changeNote: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, { promptKey, content, changeNote }) => {
+    const { subject } = await assertAdmin(ctx);
+
+    if (!VALID_PROMPT_KEYS.has(promptKey)) {
+      throw new Error(`Invalid promptKey: ${promptKey}. Must be a valid PromptTemplate value.`);
+    }
+
+    const meta = BOOK_PROMPT_META[promptKey];
+    if (!meta) throw new Error(`Unknown template key: ${promptKey}`);
+
+    const existing = await ctx.db
+      .query('bookPrompts')
+      .withIndex('by_filename', (q) => q.eq('filename', meta.filename))
+      .first();
+
+    // Save current content as version before overwriting
+    if (existing) {
+      await saveVersionSnapshot(ctx, promptKey, existing.content, subject);
+    }
+
+    // Write new content
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        content,
+        isModified: true,
+        updatedAt: Date.now(),
+      });
+    } else {
+      await ctx.db.insert('bookPrompts', {
+        filename: meta.filename,
+        agentName: meta.agent,
+        content,
+        isModified: true,
+        updatedAt: Date.now(),
+      });
+    }
+
+    // Record as a new version
+    await saveVersionSnapshot(ctx, promptKey, content, subject, changeNote ?? 'Imported from file');
+
+    await auditLog(ctx, subject, 'bookPrompts.import', meta.filename, {
+      promptKey,
+      contentLength: content.length,
+      changeNote,
+    });
+
+    return null;
+  },
+});
+
+// ── Import all prompts from JSON (admin UI) ───────────────────
+
+export const importAllPromptsAdmin = mutation({
+  args: {
+    data: v.string(),
+  },
+  returns: v.object({
+    imported: v.number(),
+    failed: v.number(),
+    errors: v.array(v.string()),
+  }),
+  handler: async (ctx, { data }) => {
+    const { subject } = await assertAdmin(ctx);
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(data);
+    } catch {
+      throw new Error('Invalid JSON');
+    }
+
+    if (!Array.isArray(parsed)) {
+      throw new Error('Expected JSON array');
+    }
+
+    let imported = 0;
+    let failed = 0;
+    const errors: string[] = [];
+
+    for (const item of parsed) {
+      if (!item || typeof item !== 'object') {
+        errors.push('Skipped non-object entry');
+        failed++;
+        continue;
+      }
+
+      const { promptKey, content } = item as { promptKey?: string; content?: string };
+
+      if (!promptKey || typeof promptKey !== 'string') {
+        errors.push('Entry missing promptKey');
+        failed++;
+        continue;
+      }
+
+      if (!content || typeof content !== 'string') {
+        errors.push(`${promptKey}: missing content`);
+        failed++;
+        continue;
+      }
+
+      if (!VALID_PROMPT_KEYS.has(promptKey)) {
+        errors.push(`${promptKey}: invalid promptKey`);
+        failed++;
+        continue;
+      }
+
+      const meta = BOOK_PROMPT_META[promptKey];
+      if (!meta) {
+        errors.push(`${promptKey}: no meta mapping`);
+        failed++;
+        continue;
+      }
+
+      const existing = await ctx.db
+        .query('bookPrompts')
+        .withIndex('by_filename', (q) => q.eq('filename', meta.filename))
+        .first();
+
+      // Save current content as version before overwriting
+      if (existing) {
+        await saveVersionSnapshot(ctx, promptKey, existing.content, subject);
+      }
+
+      if (existing) {
+        await ctx.db.patch(existing._id, {
+          content,
+          isModified: true,
+          updatedAt: Date.now(),
+        });
+      } else {
+        await ctx.db.insert('bookPrompts', {
+          filename: meta.filename,
+          agentName: meta.agent,
+          content,
+          isModified: true,
+          updatedAt: Date.now(),
+        });
+      }
+
+      // Record as version
+      await saveVersionSnapshot(ctx, promptKey, content, subject, 'Bulk import');
+
+      imported++;
+    }
+
+    await auditLog(ctx, subject, 'bookPrompts.importAll', undefined, {
+      imported,
+      failed,
+      errors,
+    });
+
+    return { imported, failed, errors };
   },
 });
 

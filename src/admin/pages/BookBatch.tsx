@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useQuery, useAction, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import {
@@ -9,6 +9,8 @@ import {
 import { PRECANNED_PROFILES } from '../../lib/bookTestProfiles';
 import { PROBLEMS } from '../../lib/bookData';
 import type { Id } from '../../../convex/_generated/dataModel';
+import { toast } from 'sonner';
+import { OrderTimeline } from '../../components/book/OrderTimeline';
 
 type ValidationResult = { index: number; profile: BatchProfile; valid: boolean; errors: string[] };
 
@@ -44,6 +46,20 @@ const ARTIFACT_FIELDS = [
   { key: 'visualQa', label: 'Visual QA (A8)' },
   { key: 'finalQa', label: 'Final QA (A10)' },
 ] as const;
+
+// ════════════════════════════════════════════════════════════
+// Helper: download a string as a file
+// ════════════════════════════════════════════════════════════
+
+function downloadJson(content: string, filename: string) {
+  const blob = new Blob([content], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 // ════════════════════════════════════════════════════════════
 // Main component
@@ -283,7 +299,7 @@ function LaunchTab() {
                   <th className="py-2 pr-3">Dziecko</th>
                   <th className="py-2 pr-3">Styl</th>
                   <th className="py-2 pr-3">Status</th>
-                  <th className="py-2">Błędy</th>
+                  <th className="py-2">Bledy</th>
                 </tr>
               </thead>
               <tbody>
@@ -296,7 +312,7 @@ function LaunchTab() {
                       <span
                         className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${r.valid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
                       >
-                        {r.valid ? 'OK' : 'Błąd'}
+                        {r.valid ? 'OK' : 'Blad'}
                       </span>
                     </td>
                     <td className="py-2 text-red-600 text-xs">{r.errors.join('; ')}</td>
@@ -353,7 +369,7 @@ function OrdersTab() {
                 <th className="py-2 pr-3">Agent</th>
                 <th className="py-2 pr-3">Styl</th>
                 <th className="py-2 pr-3">Utworzono</th>
-                <th className="py-2">Błąd</th>
+                <th className="py-2">Blad</th>
               </tr>
             </thead>
             <tbody>
@@ -404,10 +420,14 @@ function OrdersTab() {
 
 function OrderDetailPanel({ orderId }: { orderId: Id<'bookOrders'> }) {
   const detail = useQuery(api.admin.bookBatch.getOrderDetail, { orderId });
+  const pipelineEvents = useQuery(api.bookPipelineEvents.getOrderEvents, { orderId });
   const retryOrder = useAction(api.admin.bookBatch.retryOrder);
+  const cancelOrderAction = useAction(api.admin.bookBatch.cancelOrder);
   const [retrying, setRetrying] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const [retryAgent, setRetryAgent] = useState('');
   const [openArtifacts, setOpenArtifacts] = useState<Set<string>>(new Set());
+  const [timelineOpen, setTimelineOpen] = useState(false);
 
   if (!detail) {
     return <div className="p-4 text-sm text-neutral-400">Loading...</div>;
@@ -421,6 +441,17 @@ function OrderDetailPanel({ orderId }: { orderId: Id<'bookOrders'> }) {
       // Error will be visible in order status
     } finally {
       setRetrying(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    setCancelling(true);
+    try {
+      await cancelOrderAction({ orderId, reason: 'Stopped by admin' });
+    } catch {
+      // Error visible in order status
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -460,6 +491,27 @@ function OrderDetailPanel({ orderId }: { orderId: Id<'bookOrders'> }) {
         <span className="text-xs text-neutral-400">Retries: {detail.retryCount}</span>
       </div>
 
+      {/* Pipeline Timeline (collapsible) */}
+      <div className="border border-neutral-200 rounded-lg bg-white">
+        <button
+          onClick={() => setTimelineOpen(!timelineOpen)}
+          className="w-full flex items-center justify-between px-3 py-2 text-xs hover:bg-neutral-50"
+        >
+          <span className="font-bold uppercase tracking-wide text-neutral-400">
+            Historia pipeline
+          </span>
+          <span className="text-neutral-400">
+            {pipelineEvents ? `${pipelineEvents.length} events` : '...'}{' '}
+            {timelineOpen ? '\u25B2' : '\u25BC'}
+          </span>
+        </button>
+        {timelineOpen && (
+          <div className="px-3 pb-3">
+            <OrderTimeline events={pipelineEvents} compact />
+          </div>
+        )}
+      </div>
+
       {/* Timestamps */}
       <div className="flex gap-4 text-xs text-neutral-400">
         <span>Created: {new Date(detail.createdAt).toLocaleString('pl-PL')}</span>
@@ -473,6 +525,15 @@ function OrderDetailPanel({ orderId }: { orderId: Id<'bookOrders'> }) {
 
       {/* Actions */}
       <div className="flex items-center gap-3">
+        {detail.status !== 'completed' && detail.status !== 'failed' && (
+          <button
+            onClick={() => void handleCancel()}
+            disabled={cancelling}
+            className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-500 disabled:opacity-40"
+          >
+            {cancelling ? 'Stopping...' : 'Stop'}
+          </button>
+        )}
         {detail.status === 'failed' && detail.currentAgent && (
           <button
             onClick={() => void handleRetry(detail.currentAgent)}
@@ -481,6 +542,11 @@ function OrderDetailPanel({ orderId }: { orderId: Id<'bookOrders'> }) {
           >
             {retrying ? 'Retrying...' : `Retry from ${detail.currentAgent}`}
           </button>
+        )}
+        {detail.llmCallCount != null && (
+          <span className="text-xs text-neutral-400">
+            API calls: <span className="font-mono font-semibold">{detail.llmCallCount}</span>/50
+          </span>
         )}
         <div className="flex items-center gap-1">
           <select
@@ -631,10 +697,17 @@ function PromptsTab() {
   const prompts = useQuery(api.admin.bookPrompts.listBookPrompts);
   const savePrompt = useMutation(api.admin.bookPrompts.saveBookPrompt);
   const resetPrompt = useMutation(api.admin.bookPrompts.resetBookPrompt);
+  const restoreVersion = useMutation(api.admin.bookPrompts.restorePromptVersion);
+  const importSingle = useMutation(api.admin.bookPrompts.importPromptAdmin);
+  const importAll = useMutation(api.admin.bookPrompts.importAllPromptsAdmin);
 
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [editorContent, setEditorContent] = useState('');
   const [saving, setSaving] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+
+  const importFileRef = useRef<HTMLInputElement>(null);
+  const importAllFileRef = useRef<HTMLInputElement>(null);
 
   // When prompts load, auto-select the first one
   const effectiveKey = selectedKey ?? prompts?.[0]?.key ?? null;
@@ -643,6 +716,7 @@ function PromptsTab() {
   const handleSelect = (key: string) => {
     setSelectedKey(key);
     setLastSyncedKey(null); // force re-sync on next render
+    setHistoryOpen(false);
   };
 
   // All prompts live in DB now (seeded from fallbacks)
@@ -660,6 +734,9 @@ function PromptsTab() {
     setSaving(true);
     try {
       await savePrompt({ templateKey: effectiveKey, content: editorContent });
+      toast.success('Prompt zapisany');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Blad zapisu');
     } finally {
       setSaving(false);
     }
@@ -671,10 +748,79 @@ function PromptsTab() {
     try {
       await resetPrompt({ templateKey: effectiveKey });
       setLastSyncedKey(null); // force re-sync on next render
+      toast.success('Prompt zresetowany do domyslnego');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Blad resetu');
     } finally {
       setSaving(false);
     }
   };
+
+  // ── Export single prompt ──────────────────────────────────
+  const exportSingleJson = useQuery(
+    api.admin.bookPrompts.exportPrompt,
+    effectiveKey && selectedPrompt?.hasPrompt ? { promptKey: effectiveKey } : 'skip',
+  );
+
+  const handleExportSingle = () => {
+    if (!exportSingleJson || !effectiveKey) return;
+    const meta = selectedPrompt;
+    const filename = `prompt-${meta?.filename ?? effectiveKey}.json`;
+    downloadJson(exportSingleJson, filename);
+    toast.success('Prompt wyeksportowany');
+  };
+
+  // ── Export all prompts ────────────────────────────────────
+  const exportAllJson = useQuery(api.admin.bookPrompts.exportAllPromptsAdmin);
+
+  const handleExportAll = () => {
+    if (!exportAllJson) return;
+    downloadJson(exportAllJson, 'all-prompts.json');
+    toast.success('Wszystkie prompty wyeksportowane');
+  };
+
+  // ── Import single prompt ──────────────────────────────────
+  const handleImportSingle = useCallback(
+    async (file: File) => {
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text) as { promptKey?: string; content?: string };
+        if (!parsed.promptKey || !parsed.content) {
+          toast.error('Plik JSON musi zawierac promptKey i content');
+          return;
+        }
+        await importSingle({
+          promptKey: parsed.promptKey,
+          content: parsed.content,
+          changeNote: 'Imported from file',
+        });
+        toast.success(`Prompt ${parsed.promptKey} zaimportowany`);
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Blad importu');
+      }
+    },
+    [importSingle],
+  );
+
+  // ── Import all prompts ────────────────────────────────────
+  const handleImportAll = useCallback(
+    async (file: File) => {
+      try {
+        const text = await file.text();
+        const result = await importAll({ data: text });
+        if (result.failed > 0) {
+          toast.warning(
+            `Zaimportowano ${result.imported}, bledy: ${result.failed} (${result.errors.join(', ')})`,
+          );
+        } else {
+          toast.success(`Zaimportowano ${result.imported} promptów`);
+        }
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Blad importu');
+      }
+    },
+    [importAll],
+  );
 
   // Extract placeholders from editor content
   const placeholders = editorContent
@@ -700,11 +846,24 @@ function PromptsTab() {
             onClick={() => handleSelect(p.key)}
             className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
               effectiveKey === p.key
-                ? 'bg-neutral-800 text-white'
-                : 'hover:bg-neutral-100 text-neutral-700'
+                ? 'bg-neutral-100 text-neutral-900'
+                : 'hover:bg-neutral-50 text-neutral-600'
             }`}
           >
-            <div className="font-medium">{p.agentName}</div>
+            <div className="flex items-center gap-2">
+              <span className="font-medium flex-1">{p.agentName}</span>
+              {p.versionCount > 0 && (
+                <span
+                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                    effectiveKey === p.key
+                      ? 'bg-neutral-600 text-neutral-300'
+                      : 'bg-neutral-200 text-neutral-500'
+                  }`}
+                >
+                  v{p.versionCount}
+                </span>
+              )}
+            </div>
             {p.hasPrompt && (
               <span className="text-xs bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded">
                 Modified
@@ -712,12 +871,57 @@ function PromptsTab() {
             )}
           </button>
         ))}
+
+        {/* Import/Export All section */}
+        <div className="pt-4 border-t border-neutral-200 mt-4 space-y-2">
+          <button
+            onClick={handleExportAll}
+            disabled={!exportAllJson}
+            className="w-full rounded-lg bg-neutral-100 px-3 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-200 transition-colors disabled:opacity-40 flex items-center gap-2"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+              />
+            </svg>
+            Export all prompts
+          </button>
+          <button
+            onClick={() => importAllFileRef.current?.click()}
+            className="w-full rounded-lg bg-neutral-100 px-3 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-200 transition-colors flex items-center gap-2"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+              />
+            </svg>
+            Import all prompts
+          </button>
+          <input
+            ref={importAllFileRef}
+            type="file"
+            accept=".json"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) void handleImportAll(file);
+              e.target.value = '';
+            }}
+          />
+        </div>
       </div>
 
       {/* Right: editor */}
       <div className="flex-1 space-y-3">
         {selectedPrompt && (
           <>
+            {/* Header with export/import buttons */}
             <div className="flex items-center gap-3">
               <h3 className="font-semibold text-neutral-900">{selectedPrompt.agentName}</h3>
               <span
@@ -729,6 +933,52 @@ function PromptsTab() {
               >
                 {selectedPrompt.hasPrompt ? 'Modified' : 'Default'}
               </span>
+
+              <div className="ml-auto flex items-center gap-2">
+                {/* Export single */}
+                <button
+                  onClick={handleExportSingle}
+                  disabled={!exportSingleJson}
+                  title="Export prompt"
+                  className="rounded-md bg-neutral-100 p-1.5 text-neutral-600 hover:bg-neutral-200 transition-colors disabled:opacity-30"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                    />
+                  </svg>
+                </button>
+
+                {/* Import single */}
+                <button
+                  onClick={() => importFileRef.current?.click()}
+                  title="Import prompt"
+                  className="rounded-md bg-neutral-100 p-1.5 text-neutral-600 hover:bg-neutral-200 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                    />
+                  </svg>
+                </button>
+                <input
+                  ref={importFileRef}
+                  type="file"
+                  accept=".json"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) void handleImportSingle(file);
+                    e.target.value = '';
+                  }}
+                />
+              </div>
             </div>
 
             <textarea
@@ -764,9 +1014,239 @@ function PromptsTab() {
                 </button>
               )}
             </div>
+
+            {/* Version History Section */}
+            {effectiveKey && (
+              <VersionHistoryPanel
+                promptKey={effectiveKey}
+                isOpen={historyOpen}
+                onToggle={() => setHistoryOpen(!historyOpen)}
+                onRestore={async (versionId) => {
+                  try {
+                    await restoreVersion({ promptKey: effectiveKey, versionId });
+                    setLastSyncedKey(null);
+                    toast.success('Wersja przywrocona');
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : 'Blad przywracania');
+                  }
+                }}
+              />
+            )}
           </>
         )}
       </div>
     </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════
+// Version History Panel
+// ════════════════════════════════════════════════════════════
+
+function VersionHistoryPanel({
+  promptKey,
+  isOpen,
+  onToggle,
+  onRestore,
+}: {
+  promptKey: string;
+  isOpen: boolean;
+  onToggle: () => void;
+  onRestore: (versionId: Id<'bookPromptVersions'>) => Promise<void>;
+}) {
+  const versions = useQuery(api.admin.bookPrompts.listPromptVersions, { promptKey });
+  const [expandedVersion, setExpandedVersion] = useState<string | null>(null);
+  const [confirmRestore, setConfirmRestore] = useState<string | null>(null);
+  const [restoring, setRestoring] = useState(false);
+
+  const handleRestore = async (versionId: Id<'bookPromptVersions'>) => {
+    setRestoring(true);
+    try {
+      await onRestore(versionId);
+      setConfirmRestore(null);
+    } finally {
+      setRestoring(false);
+    }
+  };
+
+  return (
+    <div className="rounded-lg border border-neutral-200 overflow-hidden">
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between px-4 py-3 bg-neutral-50 hover:bg-neutral-100 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <svg
+            className={`w-4 h-4 text-neutral-500 transition-transform ${isOpen ? 'rotate-90' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+          <span className="text-sm font-semibold text-neutral-700">Historia wersji</span>
+          {versions && versions.length > 0 && (
+            <span className="text-xs bg-neutral-200 text-neutral-600 px-1.5 py-0.5 rounded-full">
+              {versions.length}
+            </span>
+          )}
+        </div>
+      </button>
+
+      {isOpen && (
+        <div className="border-t border-neutral-200">
+          {!versions ? (
+            <div className="flex justify-center py-4">
+              <div className="w-4 h-4 spinner" />
+            </div>
+          ) : versions.length === 0 ? (
+            <div className="px-4 py-3 text-sm text-neutral-400">
+              Brak historii wersji dla tego promptu.
+            </div>
+          ) : (
+            <div className="max-h-80 overflow-y-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b bg-neutral-50 text-neutral-500 text-left">
+                    <th className="px-3 py-2 font-medium">Wersja</th>
+                    <th className="px-3 py-2 font-medium">Data</th>
+                    <th className="px-3 py-2 font-medium">Edytor</th>
+                    <th className="px-3 py-2 font-medium">Notatka</th>
+                    <th className="px-3 py-2 font-medium w-24">Akcja</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {versions.map((ver) => {
+                    const isExpanded = expandedVersion === ver._id;
+                    const isConfirming = confirmRestore === ver._id;
+
+                    return (
+                      <VersionRow
+                        key={ver._id}
+                        ver={ver}
+                        isExpanded={isExpanded}
+                        isConfirming={isConfirming}
+                        restoring={restoring}
+                        onToggleExpand={() => setExpandedVersion(isExpanded ? null : ver._id)}
+                        onConfirmRestore={() => setConfirmRestore(ver._id)}
+                        onCancelRestore={() => setConfirmRestore(null)}
+                        onRestore={() => void handleRestore(ver._id as Id<'bookPromptVersions'>)}
+                      />
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════
+// Version Row (expanded view with full content)
+// ════════════════════════════════════════════════════════════
+
+function VersionRow({
+  ver,
+  isExpanded,
+  isConfirming,
+  restoring,
+  onToggleExpand,
+  onConfirmRestore,
+  onCancelRestore,
+  onRestore,
+}: {
+  ver: {
+    _id: string;
+    version: number;
+    editedAt: number;
+    editedBy: string;
+    changeNote: string | null;
+    contentPreview: string;
+  };
+  isExpanded: boolean;
+  isConfirming: boolean;
+  restoring: boolean;
+  onToggleExpand: () => void;
+  onConfirmRestore: () => void;
+  onCancelRestore: () => void;
+  onRestore: () => void;
+}) {
+  // Only fetch full content when expanded
+  const fullVersion = useQuery(
+    api.admin.bookPrompts.getPromptVersion,
+    isExpanded ? { versionId: ver._id as Id<'bookPromptVersions'> } : 'skip',
+  );
+
+  // Truncate subject ID for display
+  const editorDisplay = ver.editedBy.length > 20 ? ver.editedBy.slice(0, 18) + '...' : ver.editedBy;
+
+  return (
+    <>
+      <tr
+        className="border-b border-neutral-100 hover:bg-neutral-50 cursor-pointer"
+        onClick={onToggleExpand}
+      >
+        <td className="px-3 py-2 font-mono font-bold text-neutral-700">v{ver.version}</td>
+        <td className="px-3 py-2 text-neutral-500">
+          {new Date(ver.editedAt).toLocaleString('pl-PL', {
+            day: '2-digit',
+            month: '2-digit',
+            year: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
+        </td>
+        <td className="px-3 py-2 text-neutral-500" title={ver.editedBy}>
+          {editorDisplay}
+        </td>
+        <td className="px-3 py-2 text-neutral-400 max-w-[200px] truncate">
+          {ver.changeNote ?? '—'}
+        </td>
+        <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
+          {isConfirming ? (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={onRestore}
+                disabled={restoring}
+                className="rounded bg-amber-600 px-2 py-1 text-[10px] font-bold text-white hover:bg-amber-500 disabled:opacity-40"
+              >
+                {restoring ? '...' : 'Na pewno?'}
+              </button>
+              <button
+                onClick={onCancelRestore}
+                className="rounded bg-neutral-200 px-2 py-1 text-[10px] font-bold text-neutral-600 hover:bg-neutral-300"
+              >
+                Nie
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={onConfirmRestore}
+              className="rounded bg-neutral-200 px-2 py-1 text-[10px] font-bold text-neutral-600 hover:bg-neutral-300 transition-colors"
+            >
+              Przywroc
+            </button>
+          )}
+        </td>
+      </tr>
+      {isExpanded && (
+        <tr>
+          <td colSpan={5} className="px-3 py-2 bg-neutral-50">
+            {fullVersion ? (
+              <pre className="text-xs font-mono text-neutral-700 whitespace-pre-wrap max-h-48 overflow-y-auto rounded bg-white border border-neutral-200 p-3">
+                {fullVersion.content}
+              </pre>
+            ) : (
+              <div className="flex justify-center py-2">
+                <div className="w-3 h-3 spinner" />
+              </div>
+            )}
+          </td>
+        </tr>
+      )}
+    </>
   );
 }
