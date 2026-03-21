@@ -5,11 +5,13 @@ import { api } from '../../convex/_generated/api';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { AdminConfig } from './pages/AdminConfig';
 import { BookBatch } from './pages/BookBatch';
+import { AdminLogs } from './pages/AdminLogs';
 
 const NAV_ITEMS = [
   { to: '/admin', label: 'Dashboard', icon: 'grid', end: true },
   { to: '/admin/config', label: 'Config', icon: 'settings' },
   { to: '/admin/batch', label: 'Book Batch', icon: 'stack' },
+  { to: '/admin/logs', label: 'Logs', icon: 'logs' },
 ];
 
 function NavIcon({ icon }: { icon: string }) {
@@ -63,6 +65,22 @@ function NavIcon({ icon }: { icon: string }) {
           />
         </svg>
       );
+    case 'logs':
+      return (
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={1.5}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+          />
+        </svg>
+      );
     default:
       return null;
   }
@@ -98,7 +116,7 @@ export function AdminLayout() {
               to={item.to}
               end={item.end}
               className={({ isActive }) =>
-                `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-neutral-900 text-white' : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'}`
+                `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-neutral-100 text-neutral-900' : 'text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700'}`
               }
             >
               <NavIcon icon={item.icon} />
@@ -108,7 +126,7 @@ export function AdminLayout() {
         </div>
       </nav>
 
-      <div className="flex-1 overflow-auto bg-neutral-50/50">
+      <div className="flex-1 overflow-auto bg-neutral-50">
         <div className="p-8">
           <Suspense
             fallback={
@@ -121,6 +139,7 @@ export function AdminLayout() {
               <Route index element={<AdminDashboard />} />
               <Route path="config" element={<AdminConfig />} />
               <Route path="batch" element={<BookBatch />} />
+              <Route path="logs" element={<AdminLogs />} />
             </Routes>
           </Suspense>
         </div>

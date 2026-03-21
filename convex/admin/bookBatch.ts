@@ -10,6 +10,85 @@ import { Id } from '../_generated/dataModel';
 import { assertAdmin } from '../lib/roles';
 import { assertBulkLimit, auditLog } from '../lib/adminGuards';
 
+// ── Pipeline stats (admin dashboard) ─────────────────────────
+
+export const getPipelineStats = query({
+  args: {},
+  returns: v.object({
+    totalOrders: v.number(),
+    completedOrders: v.number(),
+    failedOrders: v.number(),
+    inProgressOrders: v.number(),
+    avgCompletionTimeMs: v.union(v.number(), v.null()),
+    successRate: v.number(),
+    ordersByStatus: v.any(),
+    recentOrders: v.array(
+      v.object({
+        _id: v.id('bookOrders'),
+        childName: v.string(),
+        status: v.string(),
+        currentAgent: v.union(v.string(), v.null()),
+        createdAt: v.number(),
+      }),
+    ),
+  }),
+  handler: async (ctx) => {
+    await assertAdmin(ctx);
+
+    const allOrders = await ctx.db.query('bookOrders').order('desc').take(500);
+
+    const totalOrders = allOrders.length;
+
+    const ordersByStatus: Record<string, number> = {};
+    let completedOrders = 0;
+    let failedOrders = 0;
+    let inProgressOrders = 0;
+    let totalCompletionTime = 0;
+    let completionCount = 0;
+
+    for (const order of allOrders) {
+      // Count by status
+      ordersByStatus[order.status] = (ordersByStatus[order.status] || 0) + 1;
+
+      if (order.status === 'completed') {
+        completedOrders++;
+        if (order.completedAt) {
+          totalCompletionTime += order.completedAt - order.createdAt;
+          completionCount++;
+        }
+      } else if (order.status === 'failed') {
+        failedOrders++;
+      } else {
+        inProgressOrders++;
+      }
+    }
+
+    const avgCompletionTimeMs = completionCount > 0 ? totalCompletionTime / completionCount : null;
+    const denominator = completedOrders + failedOrders;
+    const successRate = denominator > 0 ? Math.round((completedOrders / denominator) * 100) : 0;
+
+    // Recent 10 orders
+    const recentOrders = allOrders.slice(0, 10).map((o) => ({
+      _id: o._id,
+      childName: o.childName,
+      status: o.status,
+      currentAgent: o.currentAgent ?? null,
+      createdAt: o.createdAt,
+    }));
+
+    return {
+      totalOrders,
+      completedOrders,
+      failedOrders,
+      inProgressOrders,
+      avgCompletionTimeMs,
+      successRate,
+      ordersByStatus,
+      recentOrders,
+    };
+  },
+});
+
 // ── List all book orders (admin view) ────────────────────────
 
 export const listOrders = query({
@@ -275,6 +354,24 @@ export const retryOrder = action({
     if (!fn) throw new Error(`No function for agent: ${agent}`);
 
     await ctx.scheduler.runAfter(0, fn, { orderId });
+    return null;
+  },
+});
+
+// ── Cancel a running order ──────────────────────────────────
+
+export const cancelOrder = action({
+  args: {
+    orderId: v.id('bookOrders'),
+    reason: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, { orderId, reason }) => {
+    await assertAdmin(ctx);
+    await ctx.runMutation(internal.bookPipelineHelpers.cancelOrder, {
+      orderId,
+      reason: reason || 'Cancelled by admin',
+    });
     return null;
   },
 });
