@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
 import { PIPELINE_STEPS } from '@lib/bookData';
+import { OrderTimeline } from './OrderTimeline';
 
 export function BookProgress() {
   const { t } = useTranslation('book');
@@ -13,6 +14,11 @@ export function BookProgress() {
 
   const progress = useQuery(
     api.bookPipeline.getOrderProgress,
+    orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip',
+  );
+
+  const events = useQuery(
+    api.bookPipelineEvents.getOrderEventsPublic,
     orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip',
   );
 
@@ -25,7 +31,7 @@ export function BookProgress() {
     } else if (progress.status === 'completed') {
       void navigate(`/book/${orderId}/result`);
     }
-  }, [progress?.status, progress?.hasStyleVoteImages, orderId, navigate]);
+  }, [progress, orderId, navigate]);
 
   if (!orderId) {
     return (
@@ -147,6 +153,16 @@ export function BookProgress() {
           );
         })}
       </div>
+
+      {/* Narrative timeline */}
+      {events && events.length > 0 && (
+        <div className="mt-6">
+          <h2 className="text-sm font-semibold text-muted mb-2">
+            {t('progress.timeline', 'Co teraz robimy')}
+          </h2>
+          <OrderTimeline events={events} />
+        </div>
+      )}
     </div>
   );
 }
