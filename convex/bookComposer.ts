@@ -20,6 +20,7 @@ import { v } from 'convex/values';
 import { parseArtifact } from './lib/bookTypes';
 import type { StoryDraft, StoryBlueprint, CharacterProfile } from './lib/bookTypes';
 import type { Id } from './_generated/dataModel';
+import { getNarrative } from './bookPipelineEvents';
 import PDFDocument from 'pdfkit';
 
 // Page dimensions in points (210mm square)
@@ -73,19 +74,9 @@ export const generatePdf = internalAction({
         doc.on('end', () => resolve(Buffer.concat(chunks)));
       });
 
-      // Register fonts
-      if (regular) {
-        doc.registerFont('NotoSans', regular);
-        doc.registerFont('Body', regular);
-      } else {
-        doc.registerFont('Body', 'Helvetica');
-      }
-      if (bold) {
-        doc.registerFont('NotoSansBold', bold);
-        doc.registerFont('Title', bold);
-      } else {
-        doc.registerFont('Title', 'Helvetica-Bold');
-      }
+      // Register fonts (NotoSans for Polish diacritics, Helvetica as fallback)
+      doc.registerFont('Body', regular ?? 'Helvetica');
+      doc.registerFont('Title', bold ?? 'Helvetica-Bold');
 
       // ── Page 1: Cover ────────────────────────────
       doc.addPage({ size: [PAGE_SIZE, PAGE_SIZE], margin: 0 });
@@ -145,13 +136,9 @@ export const generatePdf = internalAction({
             il.illustrationId === `scene_${page.beatNumber}` ||
             il.illustrationId === `scene_${i + 1}`,
         );
-        if (ill) {
-          const imgBuf = await fetchImageBuffer(ctx, ill.storageId);
-          if (imgBuf) {
-            doc.image(imgBuf, 0, 0, { width: PAGE_SIZE, height: PAGE_SIZE });
-          } else {
-            drawPlaceholder(doc, `Scena ${page.beatNumber}`, fontSize.small);
-          }
+        const imgBuf = ill ? await fetchImageBuffer(ctx, ill.storageId) : null;
+        if (imgBuf) {
+          doc.image(imgBuf, 0, 0, { width: PAGE_SIZE, height: PAGE_SIZE });
         } else {
           drawPlaceholder(doc, `Scena ${page.beatNumber}`, fontSize.small);
         }
@@ -167,49 +154,72 @@ export const generatePdf = internalAction({
 
       // ── Page 15: Parent card ─────────────────────
       doc.addPage({ size: [PAGE_SIZE, PAGE_SIZE], margin: MARGIN });
+
+      const parentCard = draft.parentCard;
+      const cardTitle = parentCard?.title || 'Drogi Rodzicu';
+      const cardIntro =
+        parentCard?.introPl ||
+        `Ta bajka została stworzona specjalnie dla ${order.childName}. ` +
+          'Poniżej znajdziesz pytania, które możesz zadać dziecku po przeczytaniu bajki, ' +
+          'aby porozmawiać o uczuciach i doświadczeniach bohatera.';
+
       doc
         .font('Title')
         .fontSize(fontSize.title - 4)
         .fillColor('#333333');
-      doc.text('Drogi Rodzicu', MARGIN, MARGIN, {
+      doc.text(cardTitle, MARGIN, MARGIN, {
         width: CONTENT_WIDTH,
         align: 'center',
       });
 
       doc.moveDown(1);
       doc.font('Body').fontSize(fontSize.small).fillColor('#444444');
-      doc.text(
-        `Ta bajka została stworzona specjalnie dla ${order.childName}. ` +
-          'Poniżej znajdziesz pytania, które możesz zadać dziecku po przeczytaniu bajki, ' +
-          'aby porozmawiać o uczuciach i doświadczeniach bohatera.',
-        { width: CONTENT_WIDTH },
-      );
+      doc.text(cardIntro, { width: CONTENT_WIDTH });
 
-      // Discussion questions from blueprint
-      if (blueprint?.beats) {
+      // Discussion questions -- prefer LLM-generated, fallback to blueprint
+      let questions: string[];
+      if (parentCard?.questions && parentCard.questions.length > 0) {
+        questions = parentCard.questions.map((q) => `• ${q}`);
+      } else {
+        const name = profile.childName || order.childName;
+        questions = (blueprint?.beats || [])
+          .filter((b) => b.therapeuticGoal)
+          .slice(0, 4)
+          .map(
+            (b) => `• Jak myślisz, co czuł ${name} gdy ${b.summary.toLowerCase().slice(0, 60)}?`,
+          );
+      }
+
+      if (questions.length > 0) {
         doc.moveDown(1);
         doc.font('Title').fontSize(fontSize.small + 1);
         doc.text('Pytania do rozmowy:', { width: CONTENT_WIDTH });
         doc.moveDown(0.5);
         doc.font('Body').fontSize(fontSize.small);
 
-        const questions = blueprint.beats
-          .filter((b) => b.therapeuticGoal)
-          .slice(0, 4)
-          .map(
-            (b) =>
-              `• Jak myślisz, co czuł ${profile.childName || order.childName} gdy ${b.summary.toLowerCase().slice(0, 60)}?`,
-          );
         for (const q of questions) {
           doc.text(q, { width: CONTENT_WIDTH });
           doc.moveDown(0.3);
         }
       }
 
+      // Activity section (trustee parity)
+      if (parentCard?.activityPl) {
+        doc.moveDown(0.8);
+        doc.font('Title').fontSize(fontSize.small + 1);
+        doc.text('Wspólna aktywność:', { width: CONTENT_WIDTH });
+        doc.moveDown(0.5);
+        doc.font('Body').fontSize(fontSize.small);
+        doc.text(parentCard.activityPl, { width: CONTENT_WIDTH });
+      }
+
       // ── Page 16: Back cover ──────────────────────
       doc.addPage({ size: [PAGE_SIZE, PAGE_SIZE], margin: MARGIN });
       doc.font('Body').fontSize(fontSize.small).fillColor('#666666');
-      const backText = `Stworzone z miłością przez Bajkot\nDla: ${order.childName}`;
+
+      const blurb = draft.coverBlurb || '';
+      const colophon = `Stworzone z miłością przez Bajkot\n© ${new Date().getFullYear()} Bajkot`;
+      const backText = blurb ? `${blurb}\n\n${colophon}` : `Dla: ${order.childName}\n\n${colophon}`;
       const backHeight = doc.heightOfString(backText, { width: CONTENT_WIDTH, align: 'center' });
       const backY = (PAGE_SIZE - backHeight) / 2;
       doc.text(backText, MARGIN, backY, {
@@ -229,14 +239,29 @@ export const generatePdf = internalAction({
         pdfStorageId,
       });
 
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A9',
+        event: 'complete',
+        narrative: getNarrative('A9', 'complete'),
+      });
+
       // Schedule A10 (final QA)
       await ctx.scheduler.runAfter(0, internal.bookAgents.reviewFinal, { orderId });
     } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A9',
+        event: 'error',
+        narrative: getNarrative('A9', 'error', errMsg),
+        details: errMsg,
+      });
       await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
         orderId,
         status: 'failed',
         currentAgent: 'A9',
-        error: error instanceof Error ? error.message : String(error),
+        error: errMsg,
       });
     }
     return null;

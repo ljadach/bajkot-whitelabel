@@ -39,7 +39,24 @@ import {
   type VisualQa,
   type FinalQa,
 } from './lib/bookTypes';
-import { normalizePages, applyCorrections } from './lib/bookAgentUtils';
+import { normalizePages, applyCorrections, normalizeParentCard } from './lib/bookAgentUtils';
+import { getNarrative } from './bookPipelineEvents';
+
+/**
+ * Increment LLM call counter and abort if budget exceeded.
+ * Call this before every LLM or image generation call.
+ */
+async function checkCallBudget(ctx: ActionCtx, orderId: any): Promise<void> {
+  const { exceeded, count } = await ctx.runMutation(
+    internal.bookPipelineHelpers.incrementLlmCallCount,
+    { orderId },
+  );
+  if (exceeded) {
+    throw new Error(
+      `Order LLM call budget exceeded (${count} calls). Pipeline stopped to prevent runaway costs.`,
+    );
+  }
+}
 
 /**
  * Load prompt from DB and apply placeholders.
@@ -74,6 +91,12 @@ export const intake = internalAction({
         orderId,
         status: 'intake',
         currentAgent: 'A0',
+      });
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A0',
+        event: 'start',
+        narrative: getNarrative('A0', 'start'),
       });
 
       const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
@@ -124,14 +147,29 @@ export const intake = internalAction({
         value: JSON.stringify(normalized),
       });
 
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A0',
+        event: 'complete',
+        narrative: getNarrative('A0', 'complete'),
+      });
+
       // Schedule A1
       await ctx.scheduler.runAfter(0, internal.bookAgents.profileChild, { orderId });
     } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A0',
+        event: 'error',
+        narrative: getNarrative('A0', 'error', errMsg),
+        details: errMsg,
+      });
       await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
         orderId,
         status: 'failed',
         currentAgent: 'A0',
-        error: error instanceof Error ? error.message : String(error),
+        error: errMsg,
       });
     }
     return null;
@@ -152,6 +190,12 @@ export const profileChild = internalAction({
         status: 'profiling',
         currentAgent: 'A1',
       });
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A1',
+        event: 'start',
+        narrative: getNarrative('A1', 'start'),
+      });
 
       const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
       if (!order?.orderData) throw new Error('Order data not found');
@@ -170,7 +214,8 @@ export const profileChild = internalAction({
             ART_STYLE_SPEC: artStyleSpec,
           });
 
-          const result = await chatJsonForStage<CharacterProfile>(
+          await checkCallBudget(ctx, orderId);
+          return await chatJsonForStage<CharacterProfile>(
             'book.profiling',
             {
               system: systemPrompt,
@@ -179,8 +224,6 @@ export const profileChild = internalAction({
             undefined,
             logContext,
           );
-
-          return result;
         },
         { asType: 'span' },
       );
@@ -191,15 +234,30 @@ export const profileChild = internalAction({
         value: JSON.stringify(profile),
       });
 
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A1',
+        event: 'complete',
+        narrative: getNarrative('A1', 'complete'),
+      });
+
       // Fork: schedule both story track (A2) and image track (A6) in parallel
       await ctx.scheduler.runAfter(0, internal.bookAgents.planStory, { orderId });
       await ctx.scheduler.runAfter(0, internal.bookAgents.designCharacter, { orderId });
     } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A1',
+        event: 'error',
+        narrative: getNarrative('A1', 'error', errMsg),
+        details: errMsg,
+      });
       await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
         orderId,
         status: 'failed',
         currentAgent: 'A1',
-        error: error instanceof Error ? error.message : String(error),
+        error: errMsg,
       });
     }
     return null;
@@ -220,6 +278,12 @@ export const planStory = internalAction({
         status: 'story_planning',
         currentAgent: 'A2',
       });
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A2',
+        event: 'start',
+        narrative: getNarrative('A2', 'start'),
+      });
 
       const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
       if (!order?.orderData || !order?.characterProfile) throw new Error('Missing A0/A1 artifacts');
@@ -236,6 +300,7 @@ export const planStory = internalAction({
             CHARACTER_PROFILE: order.characterProfile!,
           });
 
+          await checkCallBudget(ctx, orderId);
           return await chatJsonForStage<StoryBlueprint>(
             'book.storyPlanning',
             {
@@ -255,14 +320,29 @@ export const planStory = internalAction({
         value: JSON.stringify(blueprint),
       });
 
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A2',
+        event: 'complete',
+        narrative: getNarrative('A2', 'complete'),
+      });
+
       // Schedule A3
       await ctx.scheduler.runAfter(0, internal.bookAgents.writeStory, { orderId });
     } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A2',
+        event: 'error',
+        narrative: getNarrative('A2', 'error', errMsg),
+        details: errMsg,
+      });
       await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
         orderId,
         status: 'failed',
         currentAgent: 'A2',
-        error: error instanceof Error ? error.message : String(error),
+        error: errMsg,
       });
     }
     return null;
@@ -286,6 +366,12 @@ export const writeStory = internalAction({
         status: 'story_writing',
         currentAgent: 'A3',
       });
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A3',
+        event: 'start',
+        narrative: getNarrative('A3', 'start'),
+      });
 
       const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
       if (!order?.storyBlueprint || !order?.characterProfile)
@@ -307,6 +393,7 @@ export const writeStory = internalAction({
 {
   "title": "string",
   "dedication": "string",
+  "coverBlurb": "1-2 sentence back cover blurb in Polish",
   "pages": [
     { "beatNumber": 1, "text": "Polish prose for beat 1", "readAloudVersion": "simplified version" },
     { "beatNumber": 2, "text": "...", "readAloudVersion": "..." },
@@ -315,6 +402,12 @@ export const writeStory = internalAction({
     { "beatNumber": 5, "text": "...", "readAloudVersion": "..." },
     { "beatNumber": 6, "text": "...", "readAloudVersion": "..." }
   ],
+  "parentCard": {
+    "title": "Drogi Rodzicu",
+    "introPl": "2-3 warm sentences explaining the therapeutic purpose of this story",
+    "questions": ["Q1: identify with emotion", "Q2: reflect on solution", "Q3: personal transfer"],
+    "activityPl": "Fun parent-child activity based on the story's strategy (3-4 sentences, frame as play)"
+  },
   "wordCount": 780
 }`;
 
@@ -323,6 +416,7 @@ export const writeStory = internalAction({
             userMessage = `Write the complete story, applying these corrections from the psych reviewer:\n\n${corrections}\n\n${jsonSchema}`;
           }
 
+          await checkCallBudget(ctx, orderId);
           const raw = await chatJsonForStage<any>(
             'book.storyWriting',
             { system: systemPrompt, user: userMessage },
@@ -336,6 +430,8 @@ export const writeStory = internalAction({
             dedication: raw.dedication || '',
             pages: normalizePages(raw),
             wordCount: raw.wordCount || raw.total_word_count || 0,
+            coverBlurb: raw.coverBlurb || raw.cover_blurb || '',
+            parentCard: normalizeParentCard(raw),
           };
 
           return normalized;
@@ -349,14 +445,29 @@ export const writeStory = internalAction({
         value: JSON.stringify(draft),
       });
 
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A3',
+        event: 'complete',
+        narrative: getNarrative('A3', 'complete'),
+      });
+
       // Schedule A4 (psych review)
       await ctx.scheduler.runAfter(0, internal.bookAgents.reviewPsych, { orderId });
     } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A3',
+        event: 'error',
+        narrative: getNarrative('A3', 'error', errMsg),
+        details: errMsg,
+      });
       await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
         orderId,
         status: 'failed',
         currentAgent: 'A3',
-        error: error instanceof Error ? error.message : String(error),
+        error: errMsg,
       });
     }
     return null;
@@ -376,6 +487,12 @@ export const reviewPsych = internalAction({
         orderId,
         status: 'psych_review',
         currentAgent: 'A4',
+      });
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A4',
+        event: 'start',
+        narrative: getNarrative('A4', 'start'),
       });
 
       const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
@@ -402,6 +519,7 @@ export const reviewPsych = internalAction({
             STORY_DRAFT: order.storyDraft!,
           });
 
+          await checkCallBudget(ctx, orderId);
           return await chatJsonForStage<PsychReview>(
             'book.psychReview',
             {
@@ -423,9 +541,21 @@ export const reviewPsych = internalAction({
 
       // Handle review result
       if (review.status === 'PASS') {
+        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+          orderId,
+          agent: 'A4',
+          event: 'complete',
+          narrative: getNarrative('A4', 'complete'),
+        });
         // Proceed to A5
         await ctx.scheduler.runAfter(0, internal.bookAgents.directArt, { orderId });
       } else if (review.status === 'PASS_WITH_CORRECTIONS') {
+        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+          orderId,
+          agent: 'A4',
+          event: 'complete',
+          narrative: getNarrative('A4', 'complete'),
+        });
         // Apply corrections to story draft and proceed to A5
         const storyDraft = parseArtifact<StoryDraft>(order.storyDraft, 'storyDraft');
         const corrected = applyCorrections(storyDraft, review);
@@ -437,6 +567,12 @@ export const reviewPsych = internalAction({
         await ctx.scheduler.runAfter(0, internal.bookAgents.directArt, { orderId });
       } else {
         // FAIL — retry A3
+        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+          orderId,
+          agent: 'A4',
+          event: 'retry',
+          narrative: getNarrative('A4', 'retry'),
+        });
         const retryCount = (order.retryCount || 0) + 1;
         await ctx.runMutation(internal.bookPipelineHelpers.updateRetryCount, {
           orderId,
@@ -456,11 +592,19 @@ export const reviewPsych = internalAction({
         }
       }
     } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A4',
+        event: 'error',
+        narrative: getNarrative('A4', 'error', errMsg),
+        details: errMsg,
+      });
       await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
         orderId,
         status: 'failed',
         currentAgent: 'A4',
-        error: error instanceof Error ? error.message : String(error),
+        error: errMsg,
       });
     }
     return null;
@@ -481,6 +625,12 @@ export const directArt = internalAction({
         status: 'art_direction',
         currentAgent: 'A5',
       });
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A5',
+        event: 'start',
+        narrative: getNarrative('A5', 'start'),
+      });
 
       const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
       if (!order?.storyDraft || !order?.characterProfile || !order?.storyBlueprint) {
@@ -499,8 +649,8 @@ export const directArt = internalAction({
             CHARACTER_PROFILE: order.characterProfile!,
             STORY_BLUEPRINT: order.storyBlueprint!,
             STORY_DRAFT: order.storyDraft!,
-            ART_STYLE: profile.visualPromptBase || STYLE_A.style,
-            ART_MODIFIERS: STYLE_A.modifiers,
+            ART_STYLE: profile.artStyleSpec?.style || profile.visualPromptBase || STYLE_A.style,
+            ART_MODIFIERS: profile.artStyleSpec?.modifiers || STYLE_A.modifiers,
           });
 
           const userMessage = `Design all 7 illustration prompts (cover + scene_1 through scene_6).
@@ -529,6 +679,7 @@ Return ONLY valid JSON matching this schema:
   ]
 }`;
 
+          await checkCallBudget(ctx, orderId);
           const raw = await chatJsonForStage<any>(
             'book.artDirection',
             { system: systemPrompt, user: userMessage },
@@ -536,38 +687,29 @@ Return ONLY valid JSON matching this schema:
             logContext,
           );
 
-          // Normalize
+          // Normalize LLM output (handles camelCase/snake_case variants)
           const rawIlls: any[] = raw.illustrations || [];
-          const expectedIds = [
-            'cover',
-            'scene_1',
-            'scene_2',
-            'scene_3',
-            'scene_4',
-            'scene_5',
-            'scene_6',
-          ];
+          const fallbackId = (i: number): string => (i === 0 ? 'cover' : `scene_${i}`);
 
           const normalized: IllustrationPlan = {
             styleGuide: raw.styleGuide || raw.style_guide || '',
             characterConsistencyNotes:
               raw.characterConsistencyNotes || raw.character_consistency_notes || '',
-            illustrations: rawIlls.map((ill: any, i: number) => ({
-              illustrationId:
-                ill.illustrationId ||
-                ill.id ||
-                ill.illustration_id ||
-                expectedIds[i] ||
-                `scene_${i}`,
-              beatRef: ill.beatRef ?? ill.beat_ref ?? ill.scene_ref ?? (i === 0 ? 0 : i),
-              sceneDescription:
-                ill.sceneDescription || ill.scene_description || ill.composition || '',
-              prompt: ill.prompt || ill.image_prompt || '',
-              mood: ill.mood || '',
-              keyElements: ill.keyElements || ill.key_elements || [],
-              width: ill.width || (i === 0 ? 600 : 900),
-              height: ill.height || (i === 0 ? 900 : 600),
-            })),
+            illustrations: rawIlls.map((ill: any, i: number) => {
+              const isCover = i === 0;
+              return {
+                illustrationId:
+                  ill.illustrationId || ill.id || ill.illustration_id || fallbackId(i),
+                beatRef: ill.beatRef ?? ill.beat_ref ?? ill.scene_ref ?? (isCover ? 0 : i),
+                sceneDescription:
+                  ill.sceneDescription || ill.scene_description || ill.composition || '',
+                prompt: ill.prompt || ill.image_prompt || '',
+                mood: ill.mood || '',
+                keyElements: ill.keyElements || ill.key_elements || [],
+                width: ill.width || (isCover ? 600 : 900),
+                height: ill.height || (isCover ? 900 : 600),
+              };
+            }),
           };
 
           return normalized;
@@ -581,16 +723,31 @@ Return ONLY valid JSON matching this schema:
         value: JSON.stringify(plan),
       });
 
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A5',
+        event: 'complete',
+        narrative: getNarrative('A5', 'complete'),
+      });
+
       // Story track done — check if image track (style vote) is also done
       await ctx.runMutation(internal.bookPipelineHelpers.checkParallelTracksComplete, {
         orderId,
       });
     } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A5',
+        event: 'error',
+        narrative: getNarrative('A5', 'error', errMsg),
+        details: errMsg,
+      });
       await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
         orderId,
         status: 'failed',
         currentAgent: 'A5',
-        error: error instanceof Error ? error.message : String(error),
+        error: errMsg,
       });
     }
     return null;
@@ -611,42 +768,34 @@ export const designCharacter = internalAction({
         status: 'character_design',
         currentAgent: 'A6',
       });
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A6',
+        event: 'start',
+        narrative: getNarrative('A6', 'start'),
+      });
 
       const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
       if (!order?.characterProfile) throw new Error('Missing character profile');
 
       const profile = parseArtifact<CharacterProfile>(order.characterProfile, 'characterProfile');
       const childDesc = profile.physicalDescription || profile.visualPromptBase || '';
-      const childName = profile.childName || order.childName;
 
       // Generate Style A reference image
       const promptA = `Children's book character design in BOLD GRAPHIC MIXED-MEDIA style: THICK BLACK INK OUTLINES, paper collage textures, FLAT color shapes, cream paper background. Character: ${childDesc}, standing in a neutral pose, front view, full body visible, centered composition. Style: ${STYLE_A.style}. ${STYLE_A.modifiers}. Character design reference sheet, well-lit, no text.`;
 
+      await checkCallBudget(ctx, orderId);
       const imageA = await generateImage(promptA, { width: 512, height: 512 });
 
       // Generate Style B reference image
       const promptB = `Children's book character design in SOFT WATERCOLOR PAINTING style: NO OUTLINES, wet watercolor washes, paint bleeding and dripping, dreamy atmospheric background. Character: ${childDesc}, standing in a neutral pose, front view, full body visible, centered composition. Style: ${STYLE_B.style}. ${STYLE_B.modifiers}. Character design reference sheet, well-lit, no text.`;
 
+      await checkCallBudget(ctx, orderId);
       const imageB = await generateImage(promptB, { width: 512, height: 512 });
 
-      // Store images in Convex file storage
-      let storageIdA;
-      let storageIdB;
-
-      if (imageA) {
-        const blobA = new Blob([imageA.buffer as ArrayBuffer], { type: 'image/png' });
-        storageIdA = await ctx.storage.store(blobA);
-      } else {
-        // Fallback: store a minimal 1x1 PNG placeholder
-        storageIdA = await storeMinimalPlaceholder(ctx);
-      }
-
-      if (imageB) {
-        const blobB = new Blob([imageB.buffer as ArrayBuffer], { type: 'image/png' });
-        storageIdB = await ctx.storage.store(blobB);
-      } else {
-        storageIdB = await storeMinimalPlaceholder(ctx);
-      }
+      // Store images in Convex file storage (placeholder if generation failed)
+      const storageIdA = await storeImageOrPlaceholder(ctx, imageA);
+      const storageIdB = await storeImageOrPlaceholder(ctx, imageB);
 
       // Update order with style vote images
       await ctx.runMutation(internal.bookPipelineHelpers.updateStyleVoteImages, {
@@ -655,14 +804,33 @@ export const designCharacter = internalAction({
         styleVoteImageB: storageIdB,
       });
 
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A6',
+        event: 'complete',
+        narrative: getNarrative('A6', 'complete'),
+      });
+
       // Batch mode: if chosenStyle is already set, skip the vote pause
       const freshOrder = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
       if (freshOrder?.chosenStyle) {
+        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+          orderId,
+          agent: 'A6b',
+          event: 'complete',
+          narrative: getNarrative('A6b', 'complete'),
+        });
         await ctx.runMutation(internal.bookPipelineHelpers.checkParallelTracksComplete, {
           orderId,
         });
       } else {
         // Regular flow — pause for user vote
+        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+          orderId,
+          agent: 'A6b',
+          event: 'start',
+          narrative: getNarrative('A6b', 'start'),
+        });
         await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
           orderId,
           status: 'style_vote',
@@ -670,11 +838,19 @@ export const designCharacter = internalAction({
         });
       }
     } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A6',
+        event: 'error',
+        narrative: getNarrative('A6', 'error', errMsg),
+        details: errMsg,
+      });
       await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
         orderId,
         status: 'failed',
         currentAgent: 'A6',
-        error: error instanceof Error ? error.message : String(error),
+        error: errMsg,
       });
     }
     return null;
@@ -683,7 +859,7 @@ export const designCharacter = internalAction({
 
 /** Fetch all illustration images from storage as Uint8Array for multimodal LLM input */
 async function fetchIllustrationImages(
-  ctx: any,
+  ctx: ActionCtx,
   illustrations: Array<{ storageId: any; illustrationId: string }>,
   agent: string,
 ): Promise<Array<{ data: Uint8Array; mimeType: string }>> {
@@ -703,8 +879,17 @@ async function fetchIllustrationImages(
   return images;
 }
 
+/** Store generated image data or a placeholder if generation failed */
+async function storeImageOrPlaceholder(ctx: ActionCtx, imageData: Uint8Array | null): Promise<any> {
+  if (imageData) {
+    const blob = new Blob([imageData.buffer as ArrayBuffer], { type: 'image/png' });
+    return await ctx.storage.store(blob);
+  }
+  return await storeMinimalPlaceholder(ctx);
+}
+
 /** Store a minimal placeholder image when Gemini is unavailable */
-async function storeMinimalPlaceholder(ctx: any) {
+async function storeMinimalPlaceholder(ctx: ActionCtx) {
   // Minimal valid 1x1 white PNG (67 bytes)
   const minPng = new Uint8Array([
     137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0, 1, 8, 2, 0,
@@ -729,6 +914,12 @@ export const illustrate = internalAction({
         status: 'illustrating',
         currentAgent: 'A7',
       });
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A7',
+        event: 'start',
+        narrative: getNarrative('A7', 'start'),
+      });
 
       const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
       if (!order?.illustrationPlan || !order?.characterProfile) {
@@ -739,12 +930,19 @@ export const illustrate = internalAction({
       const profile = parseArtifact<CharacterProfile>(order.characterProfile, 'characterProfile');
       const chosenStyle = order.chosenStyle === 'B' ? STYLE_B : STYLE_A;
 
-      // Build consistency preamble
+      // Build consistency preamble (trustee-parity: include guide + visual anchor)
       const styleLine = `${chosenStyle.style}. ${chosenStyle.modifiers}.`;
-      const childLine = profile.physicalDescription
-        ? `Main character (appears in EVERY image): ${profile.physicalDescription}.`
+      const childDesc = profile.descriptionEn || profile.physicalDescription || '';
+      const childLine = childDesc ? `Main character (appears in EVERY image): ${childDesc}.` : '';
+      const guideLine = profile.guideCharacter?.descriptionEn
+        ? `Guide character: ${profile.guideCharacter.descriptionEn}.`
         : '';
-      const consistencyPreamble = [styleLine, childLine].filter(Boolean).join(' ');
+      const anchorLine = profile.visualAnchor
+        ? `Recurring visual anchor object: ${profile.visualAnchor}.`
+        : '';
+      const consistencyPreamble = [styleLine, childLine, guideLine, anchorLine]
+        .filter(Boolean)
+        .join(' ');
 
       // Generate each illustration sequentially (rate limiting)
       for (const ill of plan.illustrations) {
@@ -756,15 +954,9 @@ export const illustrate = internalAction({
         const width = isCover ? 600 : 900;
         const height = isCover ? 900 : 600;
 
+        await checkCallBudget(ctx, orderId);
         const imageData = await generateImage(fullPrompt, { width, height });
-
-        let storageId;
-        if (imageData) {
-          const blob = new Blob([imageData.buffer as ArrayBuffer], { type: 'image/png' });
-          storageId = await ctx.storage.store(blob);
-        } else {
-          storageId = await storeMinimalPlaceholder(ctx);
-        }
+        const storageId = await storeImageOrPlaceholder(ctx, imageData);
 
         await ctx.runMutation(internal.bookPipelineHelpers.saveIllustration, {
           orderId,
@@ -777,14 +969,29 @@ export const illustrate = internalAction({
         });
       }
 
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A7',
+        event: 'complete',
+        narrative: getNarrative('A7', 'complete'),
+      });
+
       // Schedule A8
       await ctx.scheduler.runAfter(0, internal.bookAgents.reviewVisual, { orderId });
     } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A7',
+        event: 'error',
+        narrative: getNarrative('A7', 'error', errMsg),
+        details: errMsg,
+      });
       await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
         orderId,
         status: 'failed',
         currentAgent: 'A7',
-        error: error instanceof Error ? error.message : String(error),
+        error: errMsg,
       });
     }
     return null;
@@ -804,6 +1011,12 @@ export const reviewVisual = internalAction({
         orderId,
         status: 'visual_qa',
         currentAgent: 'A8',
+      });
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A8',
+        event: 'start',
+        narrative: getNarrative('A8', 'start'),
       });
 
       const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
@@ -827,12 +1040,13 @@ export const reviewVisual = internalAction({
           span.update({ orderId, agent: 'A8', imageCount: images.length });
 
           const systemPrompt = await getPrompt(ctx, PromptTemplate.BookVisualQa, {
-            VISUAL_ANCHOR: profile.visualPromptBase || '',
-            CHARACTER_DESCRIPTION_EN: profile.physicalDescription || '',
-            GUIDE_DESCRIPTION_EN: '',
+            VISUAL_ANCHOR: profile.visualAnchor || profile.visualPromptBase || '',
+            CHARACTER_DESCRIPTION_EN: profile.descriptionEn || profile.physicalDescription || '',
+            GUIDE_DESCRIPTION_EN: profile.guideCharacter?.descriptionEn || '',
             ILLUSTRATION_PLAN: JSON.stringify(plan.illustrations),
           });
 
+          await checkCallBudget(ctx, orderId);
           return await chatJsonForStageWithImages<VisualQa>(
             'book.visualQa',
             {
@@ -855,6 +1069,12 @@ export const reviewVisual = internalAction({
 
       // Handle REGENERATE with retry logic (max 3)
       if (qa.status === 'REGENERATE') {
+        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+          orderId,
+          agent: 'A8',
+          event: 'retry',
+          narrative: getNarrative('A8', 'retry'),
+        });
         const retryCount = (order.visualQaRetryCount || 0) + 1;
         await ctx.runMutation(internal.bookPipelineHelpers.updateVisualQaRetryCount, {
           orderId,
@@ -866,18 +1086,38 @@ export const reviewVisual = internalAction({
           await ctx.scheduler.runAfter(0, internal.bookAgents.illustrate, { orderId });
         } else {
           console.warn(`[A8] Max visual QA retries reached (${retryCount}), proceeding to A9`);
+          await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+            orderId,
+            agent: 'A8',
+            event: 'complete',
+            narrative: getNarrative('A8', 'complete'),
+          });
           await ctx.scheduler.runAfter(0, internal.bookAgents.composePdf, { orderId });
         }
       } else {
         // PASS → proceed to A9
+        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+          orderId,
+          agent: 'A8',
+          event: 'complete',
+          narrative: getNarrative('A8', 'complete'),
+        });
         await ctx.scheduler.runAfter(0, internal.bookAgents.composePdf, { orderId });
       }
     } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A8',
+        event: 'error',
+        narrative: getNarrative('A8', 'error', errMsg),
+        details: errMsg,
+      });
       await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
         orderId,
         status: 'failed',
         currentAgent: 'A8',
-        error: error instanceof Error ? error.message : String(error),
+        error: errMsg,
       });
     }
     return null;
@@ -898,15 +1138,29 @@ export const composePdf = internalAction({
         status: 'composing_pdf',
         currentAgent: 'A9',
       });
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A9',
+        event: 'start',
+        narrative: getNarrative('A9', 'start'),
+      });
 
       // Schedule the actual PDF generation to the separate bookComposer file
       await ctx.scheduler.runAfter(0, internal.bookComposer.generatePdf, { orderId });
     } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A9',
+        event: 'error',
+        narrative: getNarrative('A9', 'error', errMsg),
+        details: errMsg,
+      });
       await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
         orderId,
         status: 'failed',
         currentAgent: 'A9',
-        error: error instanceof Error ? error.message : String(error),
+        error: errMsg,
       });
     }
     return null;
@@ -926,6 +1180,12 @@ export const reviewFinal = internalAction({
         orderId,
         status: 'final_qa',
         currentAgent: 'A10',
+      });
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A10',
+        event: 'start',
+        narrative: getNarrative('A10', 'start'),
       });
 
       const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
@@ -952,6 +1212,7 @@ export const reviewFinal = internalAction({
             ILLUSTRATION_PLAN: order.illustrationPlan!,
           });
 
+          await checkCallBudget(ctx, orderId);
           return await chatJsonForStageWithImages<FinalQa>(
             'book.finalQa',
             {
@@ -975,25 +1236,47 @@ export const reviewFinal = internalAction({
       // Handle recommendation
       if (qa.recommendation === 'BLOCK') {
         console.error(`[A10] Final QA BLOCKED order ${orderId}: ${qa.notes}`);
+        const blockMsg = `Final QA blocked: ${qa.notes}`;
+        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+          orderId,
+          agent: 'A10',
+          event: 'error',
+          narrative: getNarrative('A10', 'error', blockMsg),
+          details: blockMsg,
+        });
         await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
           orderId,
           status: 'failed',
           currentAgent: 'A10',
-          error: `Final QA blocked: ${qa.notes}`,
+          error: blockMsg,
         });
       } else {
         if (qa.recommendation === 'DELIVER_WITH_FLAG') {
           console.warn(`[A10] Delivering with flag: ${qa.notes}`);
         }
+        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+          orderId,
+          agent: 'A10',
+          event: 'complete',
+          narrative: getNarrative('A10', 'complete'),
+        });
         // DELIVER or DELIVER_WITH_FLAG → schedule A11
         await ctx.scheduler.runAfter(0, internal.bookAgents.deliver, { orderId });
       }
     } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A10',
+        event: 'error',
+        narrative: getNarrative('A10', 'error', errMsg),
+        details: errMsg,
+      });
       await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
         orderId,
         status: 'failed',
         currentAgent: 'A10',
-        error: error instanceof Error ? error.message : String(error),
+        error: errMsg,
       });
     }
     return null;
@@ -1014,6 +1297,12 @@ export const deliver = internalAction({
         status: 'delivering',
         currentAgent: 'A11',
       });
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A11',
+        event: 'start',
+        narrative: getNarrative('A11', 'start'),
+      });
 
       const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
       if (!order) throw new Error('Order not found');
@@ -1025,12 +1314,26 @@ export const deliver = internalAction({
 
       // Mark complete
       await ctx.runMutation(internal.bookPipelineHelpers.markOrderComplete, { orderId });
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A11',
+        event: 'complete',
+        narrative: getNarrative('A11', 'complete'),
+      });
     } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        orderId,
+        agent: 'A11',
+        event: 'error',
+        narrative: getNarrative('A11', 'error', errMsg),
+        details: errMsg,
+      });
       await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
         orderId,
         status: 'failed',
         currentAgent: 'A11',
-        error: error instanceof Error ? error.message : String(error),
+        error: errMsg,
       });
     }
     return null;

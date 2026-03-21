@@ -146,6 +146,7 @@ const applicationTables = {
     error: v.optional(v.string()),
     retryCount: v.optional(v.number()),
     visualQaRetryCount: v.optional(v.number()),
+    llmCallCount: v.optional(v.number()),
 
     // Artifacts (JSON strings)
     orderData: v.optional(v.string()),
@@ -201,6 +202,34 @@ const applicationTables = {
     isModified: v.boolean(),
     updatedAt: v.number(),
   }).index('by_filename', ['filename']),
+
+  // Pipeline narrative events (human-readable timeline)
+  bookPipelineEvents: defineTable({
+    orderId: v.id('bookOrders'),
+    agent: v.string(),
+    event: v.union(
+      v.literal('start'),
+      v.literal('complete'),
+      v.literal('error'),
+      v.literal('retry'),
+      v.literal('info'),
+    ),
+    narrative: v.string(),
+    details: v.optional(v.string()),
+    timestamp: v.number(),
+  }).index('by_order', ['orderId']),
+
+  // Prompt version history
+  bookPromptVersions: defineTable({
+    promptKey: v.string(),
+    content: v.string(),
+    version: v.number(),
+    editedBy: v.string(),
+    editedAt: v.number(),
+    changeNote: v.optional(v.string()),
+  })
+    .index('by_prompt_key', ['promptKey'])
+    .index('by_prompt_key_version', ['promptKey', 'version']),
 };
 
 export default defineSchema({

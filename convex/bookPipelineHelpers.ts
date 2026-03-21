@@ -6,6 +6,7 @@
 import { internalMutation, internalQuery } from './_generated/server';
 import { internal } from './_generated/api';
 import { v } from 'convex/values';
+import { getNarrative } from './bookPipelineEvents';
 
 // ── Get Order ──────────────────────────────────────────────
 
@@ -28,14 +29,15 @@ export const updateOrderStatus = internalMutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.orderId, {
-      // args.status is v.string() for flexibility — callers pass typed BookOrderStatus values.
-      // The `as any` avoids coupling this internal mutation to the union type.
-      status: args.status as any,
+    const patch: Record<string, any> = {
+      status: args.status,
       currentAgent: args.currentAgent,
       updatedAt: Date.now(),
-      ...(args.error !== undefined ? { error: args.error } : {}),
-    });
+    };
+    if (args.error !== undefined) {
+      patch.error = args.error;
+    }
+    await ctx.db.patch(args.orderId, patch);
     return null;
   },
 });
@@ -87,6 +89,48 @@ export const updateVisualQaRetryCount = internalMutation({
     await ctx.db.patch(orderId, {
       visualQaRetryCount,
       updatedAt: Date.now(),
+    });
+    return null;
+  },
+});
+
+// ── LLM Call Budget ──────────────────────────────────────────
+// Max LLM + image gen calls per order before auto-failing.
+
+const MAX_LLM_CALLS_PER_ORDER = 50;
+
+export const incrementLlmCallCount = internalMutation({
+  args: { orderId: v.id('bookOrders') },
+  returns: v.object({ count: v.number(), exceeded: v.boolean() }),
+  handler: async (ctx, { orderId }) => {
+    const order = await ctx.db.get(orderId);
+    if (!order) return { count: 0, exceeded: true };
+    const count = (order.llmCallCount || 0) + 1;
+    await ctx.db.patch(orderId, { llmCallCount: count, updatedAt: Date.now() });
+    return { count, exceeded: count > MAX_LLM_CALLS_PER_ORDER };
+  },
+});
+
+// ── Cancel Order ─────────────────────────────────────────────
+// Allows admin to stop a running pipeline by marking it as failed.
+
+export const cancelOrder = internalMutation({
+  args: { orderId: v.id('bookOrders'), reason: v.optional(v.string()) },
+  returns: v.null(),
+  handler: async (ctx, { orderId, reason }) => {
+    const order = await ctx.db.get(orderId);
+    if (!order || order.status === 'completed' || order.status === 'failed') return null;
+    await ctx.db.patch(orderId, {
+      status: 'failed' as const,
+      error: reason || 'Cancelled by admin',
+      updatedAt: Date.now(),
+    });
+    await ctx.db.insert('bookPipelineEvents', {
+      orderId,
+      agent: order.currentAgent || '?',
+      event: 'error',
+      narrative: `Pipeline zatrzymany: ${reason || 'anulowany przez admina'}`,
+      timestamp: Date.now(),
     });
     return null;
   },
@@ -210,5 +254,61 @@ export const getIllustrations = internalQuery({
       .query('bookIllustrations')
       .withIndex('by_order', (q) => q.eq('orderId', orderId))
       .collect();
+  },
+});
+
+// ── Auto-resolve Style Votes (Cron) ──────────────────────
+// Orders stuck in style_vote for 15+ minutes get auto-resolved to Style A.
+
+const STYLE_VOTE_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
+
+export const autoResolveStyleVotes = internalMutation({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    const cutoff = Date.now() - STYLE_VOTE_TIMEOUT_MS;
+    const stuckOrders = await ctx.db
+      .query('bookOrders')
+      .withIndex('by_status', (q) => q.eq('status', 'style_vote'))
+      .take(50);
+
+    for (const order of stuckOrders) {
+      const orderTime = order.updatedAt || order.createdAt;
+      if (orderTime >= cutoff || order.chosenStyle) continue;
+
+      console.warn(
+        `[autoResolveStyleVotes] Order ${order._id} timed out at style_vote — defaulting to Style A`,
+      );
+      await ctx.db.insert('bookPipelineEvents', {
+        orderId: order._id,
+        agent: 'A6b',
+        event: 'info',
+        narrative: 'Czas na wybór stylu minął — wybieram automatycznie styl A',
+        timestamp: Date.now(),
+      });
+      await ctx.db.patch(order._id, {
+        chosenStyle: 'A',
+        updatedAt: Date.now(),
+      });
+      await ctx.db.insert('bookPipelineEvents', {
+        orderId: order._id,
+        agent: 'A6b',
+        event: 'complete',
+        narrative: getNarrative('A6b', 'complete'),
+        timestamp: Date.now(),
+      });
+      // Re-read to get current illustrationPlan state (may have changed since query snapshot)
+      const fresh = await ctx.db.get(order._id);
+      if (fresh && !!fresh.illustrationPlan && fresh.status !== 'illustrating') {
+        await ctx.db.patch(order._id, {
+          status: 'illustrating' as const,
+          updatedAt: Date.now(),
+        });
+        await ctx.scheduler.runAfter(0, internal.bookAgents.illustrate, {
+          orderId: order._id,
+        });
+      }
+    }
+    return null;
   },
 });

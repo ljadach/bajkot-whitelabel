@@ -76,6 +76,19 @@ export interface NormalizedOrder {
 
 // ── A1: Character Profile ────────────────────────
 
+export interface GuideCharacter {
+  name: string;
+  descriptionPl: string;
+  descriptionEn: string;
+  role: string;
+}
+
+export interface ArtStyleSpec {
+  style: string;
+  modifiers: string;
+  moodPalette: string[];
+}
+
 export interface CharacterProfile {
   childName: string;
   age: string;
@@ -86,6 +99,14 @@ export interface CharacterProfile {
   strengths: string[];
   companions: string[];
   visualPromptBase: string;
+  // Trustee-parity fields (optional for backward compat)
+  descriptionPl?: string;
+  descriptionEn?: string;
+  visualAnchor?: string;
+  personalitySketch?: string;
+  guideCharacter?: GuideCharacter;
+  artStyleSpec?: ArtStyleSpec;
+  characterReferencePrompt?: string;
 }
 
 // ── A2: Story Blueprint ──────────────────────────
@@ -97,6 +118,18 @@ export interface StoryBeat {
   emotionalArc: string;
   therapeuticGoal: string;
   settingDescription: string;
+  // Trustee-parity fields
+  summaryPl?: string;
+  summaryEn?: string;
+  wordBudget?: number;
+  visualDirection?: string;
+  keyDialogue?: string | null;
+}
+
+export interface ActionableTakeaway {
+  strategyNamePl: string;
+  howToPl: string;
+  strategyNameEn?: string;
 }
 
 export interface StoryBlueprint {
@@ -105,6 +138,19 @@ export interface StoryBlueprint {
   theme: string;
   therapeuticApproach: string;
   beats: StoryBeat[];
+  // Trustee-parity fields
+  arcType?: string;
+  targetTotalWords?: number;
+  oldStrategy?: string;
+  newStrategy?: string;
+  actionableTakeaway?: ActionableTakeaway;
+  parentQuestions?: string[];
+  pagesPlan?: Array<{
+    pageNumber: number;
+    contentType: string;
+    beatRef: number;
+    illustrationId: string;
+  }>;
 }
 
 // ── A3: Story Draft ──────────────────────────────
@@ -115,11 +161,21 @@ export interface StoryPage {
   readAloudVersion: string;
 }
 
+export interface ParentCard {
+  title: string;
+  introPl: string;
+  questions: string[];
+  activityPl: string;
+}
+
 export interface StoryDraft {
   title: string;
   dedication: string;
   pages: StoryPage[];
   wordCount: number;
+  // Trustee-parity fields
+  coverBlurb?: string;
+  parentCard?: ParentCard;
 }
 
 // ── A4: Psych Review ─────────────────────────────
@@ -129,6 +185,29 @@ export interface PsychCorrection {
   issue: string;
   suggestion: string;
   severity: 'low' | 'medium' | 'high';
+  // Trustee-parity: enable find/replace instead of append
+  originalPl?: string;
+  correctedPl?: string;
+}
+
+export interface PsychCheckResult {
+  status: string;
+  issues?: string[];
+  note?: string;
+}
+
+export interface PsychReviewChecks {
+  safetyScan?: PsychCheckResult;
+  therapeuticStructure?: PsychCheckResult & {
+    beatChecks?: Array<{ beat: number; status: string; note: string }>;
+  };
+  metaphorCoherence?: PsychCheckResult;
+  personalizationAccuracy?: PsychCheckResult & {
+    visualAnchorCount?: number;
+    nameDeclensionCorrect?: boolean;
+  };
+  languageAppropriateness?: PsychCheckResult;
+  emotionalCalibration?: PsychCheckResult;
 }
 
 export interface PsychReview {
@@ -138,6 +217,9 @@ export interface PsychReview {
   therapeuticAlignment: number; // 1-5
   emotionalSafety: number; // 1-5
   corrections: PsychCorrection[];
+  // Trustee-parity fields
+  checks?: PsychReviewChecks;
+  confidence?: 'HIGH' | 'MEDIUM' | 'LOW';
 }
 
 // ── A5: Illustration Plan ────────────────────────
