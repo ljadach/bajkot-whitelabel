@@ -21,5 +21,7 @@ jobs:
         run: npx tsc -p . --noEmit
       - name: ESLint
         run: npx eslint "src/**/*.{ts,tsx}"
+      - name: Unit Tests
+        run: npm test
       - name: Build
         run: npx react-router build

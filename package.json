@@ -17,6 +17,8 @@
     "setup:staging": "bash scripts/setup-staging.sh",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "npx playwright test --config=e2e/playwright.config.ts",
+    "test:e2e:ui": "npx playwright test --config=e2e/playwright.config.ts --ui",
     "check:dead-code": "knip",
     "analyze": "SONDA=true react-router build",
     "prepare": "simple-git-hooks"
