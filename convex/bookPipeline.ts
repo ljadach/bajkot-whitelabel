@@ -189,7 +189,9 @@ export const submitStyleVote = mutation({
   returns: v.null(),
   handler: async (ctx, { orderId, choice }) => {
     const order = await assertOrderOwner(ctx, orderId);
-    if (order.status !== 'style_vote') throw new Error('Not in voting state');
+    if (order.chosenStyle) throw new Error('Style already chosen');
+    if (!order.styleVoteImageA || !order.styleVoteImageB)
+      throw new Error('Style vote images not ready');
 
     await ctx.db.patch(orderId, {
       chosenStyle: choice,
