@@ -68,6 +68,24 @@ export function BookProgress() {
     );
   }
 
+  if (progress.status === 'paused') {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-8">
+        <div className="rounded-xl border-2 border-yellow-200 bg-yellow-50 p-8 text-center">
+          <h2 className="text-lg font-semibold text-yellow-700 mb-2">
+            {t('progress.pausedHeading', 'Tworzenie bajki wstrzymane')}
+          </h2>
+          <p className="text-sm text-yellow-600">
+            {t(
+              'progress.pausedDescription',
+              'Bajka zostanie wznowiona wkrótce. Nie musisz nic robić.',
+            )}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const currentIndex = PIPELINE_STEPS.findIndex((s) => s.status === progress.status);
 
   return (

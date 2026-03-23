@@ -60,7 +60,9 @@
     "stepDone": "Gotowe",
     "errorHeading": "Wystapil blad",
     "errorDescription": "Przepraszamy, cos poszlo nie tak. Sprobuj ponownie.",
-    "retry": "Ponow"
+    "retry": "Ponow",
+    "pausedHeading": "Tworzenie bajki wstrzymane",
+    "pausedDescription": "Bajka zostanie wznowiona wkrotce. Nie musisz nic robic."
   },
   "vote": {
     "heading": "Wybierz styl ilustracji",

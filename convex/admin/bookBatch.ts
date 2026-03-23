@@ -304,6 +304,25 @@ export const getOrderDetail = query({
 
 // ── Retry order from specific agent ──────────────────────────
 
+// Required upstream artifacts per agent
+const AGENT_REQUIRED_ARTIFACTS: Record<string, string[]> = {
+  A0: [],
+  A1: ['orderData'],
+  A2: ['orderData', 'characterProfile'],
+  A3: ['storyBlueprint', 'characterProfile'],
+  A4: ['storyDraft', 'storyBlueprint', 'orderData', 'characterProfile'],
+  A5: ['storyDraft', 'characterProfile', 'storyBlueprint'],
+  A6: ['characterProfile'],
+  A7: ['illustrationPlan', 'characterProfile'],
+  A8: ['illustrationPlan', 'characterProfile'],
+  A9: ['storyDraft'],
+  A10: ['storyDraft', 'characterProfile', 'illustrationPlan'],
+  A11: [],
+};
+
+// Agents at or after A7 that benefit from illustration cleanup
+const ILLUSTRATION_CLEANUP_AGENTS = new Set(['A7', 'A8', 'A9', 'A10']);
+
 export const retryOrder = action({
   args: {
     orderId: v.id('bookOrders'),
@@ -320,17 +339,34 @@ export const retryOrder = action({
     const mapping = AGENT_STATUS_MAP[agent];
     if (!mapping) throw new Error(`Unknown agent: ${agent}`);
 
-    // Clear error, set status to the agent's step
-    await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
+    // Validate required upstream artifacts exist
+    const required = AGENT_REQUIRED_ARTIFACTS[agent] ?? [];
+    const orderRecord = order as Record<string, unknown>;
+    const missing = required.filter((field) => !orderRecord[field]);
+    if (missing.length > 0) {
+      throw new Error(
+        `Cannot retry from ${agent}: missing upstream artifacts [${missing.join(', ')}]. ` +
+          `Retry from an earlier stage to regenerate them.`,
+      );
+    }
+
+    // Clean up illustrations when retrying from A7+ to prevent duplicates
+    if (ILLUSTRATION_CLEANUP_AGENTS.has(agent)) {
+      const deleted = await ctx.runMutation(
+        internal.bookPipelineHelpers.deleteIllustrationsForOrder,
+        { orderId },
+      );
+      if (deleted > 0) {
+        console.log(`[retryOrder] Cleaned ${deleted} illustrations before retry from ${agent}`);
+      }
+    }
+
+    // Atomic: reset status + audit in one transaction
+    await ctx.runMutation(internal.admin.bookBatch.resetOrderForRetry, {
       orderId,
       status: mapping.status,
       currentAgent: mapping.agent,
-      error: '',
-    });
-
-    await ctx.runMutation(internal.admin.bookBatch.auditRetry, {
       actor: subject,
-      orderId,
       fromAgent: agent,
     });
 
@@ -376,15 +412,26 @@ export const cancelOrder = action({
   },
 });
 
-export const auditRetry = internalMutation({
+// Atomic: reset order status + audit log in one transaction
+export const resetOrderForRetry = internalMutation({
   args: {
-    actor: v.string(),
     orderId: v.id('bookOrders'),
+    status: v.string(),
+    currentAgent: v.string(),
+    actor: v.string(),
     fromAgent: v.string(),
   },
   returns: v.null(),
-  handler: async (ctx, { actor, orderId, fromAgent }) => {
-    await auditLog(ctx, actor, 'bookBatch.retry', orderId, { fromAgent });
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.orderId, {
+      status: args.status as 'intake',
+      currentAgent: args.currentAgent,
+      error: '',
+      updatedAt: Date.now(),
+    });
+    await auditLog(ctx, args.actor, 'bookBatch.retry', args.orderId, {
+      fromAgent: args.fromAgent,
+    });
     return null;
   },
 });

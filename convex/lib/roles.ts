@@ -12,7 +12,7 @@
  */
 
 import { GenericActionCtx, GenericMutationCtx, GenericQueryCtx } from 'convex/server';
-import { DataModel } from '../_generated/dataModel';
+import { DataModel, Id } from '../_generated/dataModel';
 
 export type Role = 'admin';
 
@@ -98,4 +98,19 @@ export async function assertAdmin(ctx: AnyCtx): Promise<{ subject: string }> {
     throw new Error('Access denied: requires admin role');
   }
   return { subject: identity.subject };
+}
+
+type DbCtx = GenericQueryCtx<DataModel> | GenericMutationCtx<DataModel>;
+
+/**
+ * Assert the current user owns the given bookOrder.
+ * Returns the order document for further use.
+ */
+export async function assertOrderOwner(ctx: DbCtx, orderId: Id<'bookOrders'>) {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) throw new Error('Not authenticated');
+  const order = await ctx.db.get(orderId);
+  if (!order) throw new Error('Order not found');
+  if (order.clerkUserId !== identity.subject) throw new Error('Not authorized');
+  return order;
 }

@@ -43,7 +43,8 @@ export type BookOrderStatus =
   | 'final_qa'
   | 'delivering'
   | 'completed'
-  | 'failed';
+  | 'failed'
+  | 'paused';
 
 export type PaymentStatus = 'pending' | 'completed' | 'failed';
 

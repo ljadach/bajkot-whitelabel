@@ -8,6 +8,7 @@
 
 import { internalMutation, query } from './_generated/server';
 import { v } from 'convex/values';
+import { assertOrderOwner } from './lib/roles';
 import { assertAdmin } from './lib/roles';
 
 // ── Narrative map ────────────────────────────────────────────
@@ -168,13 +169,7 @@ export const getOrderEventsPublic = query({
     }),
   ),
   handler: async (ctx, { orderId }) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error('Not authenticated');
-
-    // Verify the order belongs to this user
-    const order = await ctx.db.get(orderId);
-    if (!order) throw new Error('Order not found');
-    if (order.clerkUserId !== identity.subject) throw new Error('Not authorized');
+    await assertOrderOwner(ctx, orderId);
 
     const events = await ctx.db
       .query('bookPipelineEvents')

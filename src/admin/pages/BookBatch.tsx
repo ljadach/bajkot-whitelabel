@@ -32,6 +32,7 @@ const STATUS_COLORS: Record<string, string> = {
   delivering: 'bg-green-100 text-green-800',
   completed: 'bg-green-200 text-green-900',
   failed: 'bg-red-100 text-red-800',
+  paused: 'bg-yellow-100 text-yellow-800',
 };
 
 const AGENT_LIST = ['A0', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11'];
@@ -525,22 +526,26 @@ function OrderDetailPanel({ orderId }: { orderId: Id<'bookOrders'> }) {
 
       {/* Actions */}
       <div className="flex items-center gap-3">
-        {detail.status !== 'completed' && detail.status !== 'failed' && (
-          <button
-            onClick={() => void handleCancel()}
-            disabled={cancelling}
-            className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-500 disabled:opacity-40"
-          >
-            {cancelling ? 'Stopping...' : 'Stop'}
-          </button>
-        )}
-        {detail.status === 'failed' && detail.currentAgent && (
+        {detail.status !== 'completed' &&
+          detail.status !== 'failed' &&
+          detail.status !== 'paused' && (
+            <button
+              onClick={() => void handleCancel()}
+              disabled={cancelling}
+              className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-500 disabled:opacity-40"
+            >
+              {cancelling ? 'Stopping...' : 'Stop'}
+            </button>
+          )}
+        {(detail.status === 'failed' || detail.status === 'paused') && detail.currentAgent && (
           <button
             onClick={() => void handleRetry(detail.currentAgent)}
             disabled={retrying}
             className="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-500 disabled:opacity-40"
           >
-            {retrying ? 'Retrying...' : `Retry from ${detail.currentAgent}`}
+            {retrying
+              ? 'Retrying...'
+              : `${detail.status === 'paused' ? 'Resume' : 'Retry'} from ${detail.currentAgent}`}
           </button>
         )}
         {detail.llmCallCount != null && (

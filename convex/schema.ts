@@ -141,6 +141,7 @@ const applicationTables = {
       v.literal('delivering'),
       v.literal('completed'),
       v.literal('failed'),
+      v.literal('paused'),
     ),
     currentAgent: v.optional(v.string()),
     error: v.optional(v.string()),

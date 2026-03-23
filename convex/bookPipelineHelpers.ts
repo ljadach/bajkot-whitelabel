@@ -119,20 +119,44 @@ export const cancelOrder = internalMutation({
   returns: v.null(),
   handler: async (ctx, { orderId, reason }) => {
     const order = await ctx.db.get(orderId);
-    if (!order || order.status === 'completed' || order.status === 'failed') return null;
+    if (
+      !order ||
+      order.status === 'completed' ||
+      order.status === 'failed' ||
+      order.status === 'paused'
+    )
+      return null;
     await ctx.db.patch(orderId, {
-      status: 'failed' as const,
-      error: reason || 'Cancelled by admin',
+      status: 'paused',
+      error: reason || 'Paused by admin',
       updatedAt: Date.now(),
     });
     await ctx.db.insert('bookPipelineEvents', {
       orderId,
       agent: order.currentAgent || '?',
-      event: 'error',
-      narrative: `Pipeline zatrzymany: ${reason || 'anulowany przez admina'}`,
+      event: 'info',
+      narrative: `Pipeline wstrzymany: ${reason || 'zatrzymany przez admina'}`,
       timestamp: Date.now(),
     });
     return null;
+  },
+});
+
+// ── Delete illustrations for an order (cleanup before retry) ─
+
+export const deleteIllustrationsForOrder = internalMutation({
+  args: { orderId: v.id('bookOrders') },
+  returns: v.number(),
+  handler: async (ctx, { orderId }) => {
+    const illustrations = await ctx.db
+      .query('bookIllustrations')
+      .withIndex('by_order', (q) => q.eq('orderId', orderId))
+      .take(100);
+    for (const ill of illustrations) {
+      await ctx.storage.delete(ill.storageId);
+      await ctx.db.delete(ill._id);
+    }
+    return illustrations.length;
   },
 });
 
@@ -209,7 +233,7 @@ export const markOrderComplete = internalMutation({
   returns: v.null(),
   handler: async (ctx, { orderId }) => {
     await ctx.db.patch(orderId, {
-      status: 'completed' as const,
+      status: 'completed',
       currentAgent: undefined,
       completedAt: Date.now(),
       updatedAt: Date.now(),
@@ -234,10 +258,15 @@ export const checkParallelTracksComplete = internalMutation({
     // Image track done = user has voted
     const imageTrackDone = !!order.chosenStyle;
 
+    // Don't proceed if order is paused/failed/completed
+    if (order.status === 'paused' || order.status === 'failed' || order.status === 'completed') {
+      return null;
+    }
+
     if (storyTrackDone && imageTrackDone && order.status !== 'illustrating') {
       // Both tracks complete — start A7 (illustrate)
       // Guard: set status atomically to prevent double-scheduling
-      await ctx.db.patch(orderId, { status: 'illustrating' as const, updatedAt: Date.now() });
+      await ctx.db.patch(orderId, { status: 'illustrating', updatedAt: Date.now() });
       await ctx.scheduler.runAfter(0, internal.bookAgents.illustrate, { orderId });
     }
     return null;
@@ -301,7 +330,7 @@ export const autoResolveStyleVotes = internalMutation({
       const fresh = await ctx.db.get(order._id);
       if (fresh && !!fresh.illustrationPlan && fresh.status !== 'illustrating') {
         await ctx.db.patch(order._id, {
-          status: 'illustrating' as const,
+          status: 'illustrating',
           updatedAt: Date.now(),
         });
         await ctx.scheduler.runAfter(0, internal.bookAgents.illustrate, {

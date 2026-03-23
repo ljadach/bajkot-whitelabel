@@ -7,6 +7,7 @@ import { action, internalMutation, mutation, query } from './_generated/server';
 import { internal } from './_generated/api';
 import { v } from 'convex/values';
 import { Id } from './_generated/dataModel';
+import { assertOrderOwner } from './lib/roles';
 
 // ── Start a new book order ─────────────────────────────────
 
@@ -132,8 +133,7 @@ export const getOrderProgress = query({
     hasPdf: v.boolean(),
   }),
   handler: async (ctx, { orderId }) => {
-    const order = await ctx.db.get(orderId);
-    if (!order) throw new Error('Order not found');
+    const order = await assertOrderOwner(ctx, orderId);
 
     return {
       status: order.status,
@@ -159,8 +159,7 @@ export const getStyleVoteImages = query({
     status: v.string(),
   }),
   handler: async (ctx, { orderId }) => {
-    const order = await ctx.db.get(orderId);
-    if (!order) throw new Error('Order not found');
+    const order = await assertOrderOwner(ctx, orderId);
 
     let imageUrlA: string | null = null;
     let imageUrlB: string | null = null;
@@ -189,12 +188,7 @@ export const submitStyleVote = mutation({
   },
   returns: v.null(),
   handler: async (ctx, { orderId, choice }) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error('Not authenticated');
-
-    const order = await ctx.db.get(orderId);
-    if (!order) throw new Error('Order not found');
-    if (order.clerkUserId !== identity.subject) throw new Error('Not authorized');
+    const order = await assertOrderOwner(ctx, orderId);
     if (order.status !== 'style_vote') throw new Error('Not in voting state');
 
     await ctx.db.patch(orderId, {
@@ -217,8 +211,8 @@ export const getDownloadUrl = query({
   args: { orderId: v.id('bookOrders') },
   returns: v.union(v.string(), v.null()),
   handler: async (ctx, { orderId }) => {
-    const order = await ctx.db.get(orderId);
-    if (!order?.pdfStorageId) return null;
+    const order = await assertOrderOwner(ctx, orderId);
+    if (!order.pdfStorageId) return null;
     return await ctx.storage.getUrl(order.pdfStorageId);
   },
 });
