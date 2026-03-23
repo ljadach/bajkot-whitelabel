@@ -1,7 +1,8 @@
 import type { Config } from '@react-router/dev/config';
 import { vercelPreset } from '@vercel/react-router/vite';
 
-const MARKETING_PATHS = ['/', '/support/faq', '/about/contact'];
+// Contact page excluded from prerender — ContactForm uses useAction (requires ConvexProvider)
+const MARKETING_PATHS = ['/', '/support/faq'];
 
 export default {
   appDirectory: 'src',
