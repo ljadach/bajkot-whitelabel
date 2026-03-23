@@ -14,6 +14,7 @@ export default [
 
   // Auth-gated app routes
   layout('routes/auth-layout.tsx', [
+    route('dashboard', 'routes/app/dashboard.tsx'),
     route('book/order', 'routes/app/book-order.tsx'),
     route('book/:orderId/progress', 'routes/app/book-progress.tsx'),
     route('book/:orderId/vote', 'routes/app/book-vote.tsx'),

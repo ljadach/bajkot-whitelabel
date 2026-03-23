@@ -33,8 +33,14 @@ function AuthenticatedActions() {
   return (
     <div className="flex items-center gap-2">
       <Link
-        to="/book/order"
+        to="/dashboard"
         className="text-sm font-medium text-neutral-700 hover:text-neutral-900 px-3 py-1.5 rounded-lg hover:bg-neutral-100 transition-colors"
+      >
+        Panel
+      </Link>
+      <Link
+        to="/book/order"
+        className="text-sm font-medium text-white bg-neutral-900 hover:bg-neutral-800 px-3 py-1.5 rounded-lg transition-colors"
       >
         Stwórz bajkę
       </Link>

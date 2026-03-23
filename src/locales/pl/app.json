@@ -1,10 +1,10 @@
 {
   "meta": {
-    "title": "Bajkot — Spersonalizowana bajka terapeutyczna dla Twojego dziecka",
+    "title": "BiD — Spersonalizowana bajka terapeutyczna dla Twojego dziecka",
     "description": "Opowiedz nam o swoim dziecku, a stworzymy spersonalizowaną bajkę terapeutyczną z ilustracjami — gotową jako piękny PDF do czytania razem."
   },
   "branding": {
-    "appName": "Bajkot",
+    "appName": "BiD",
     "preBeta": "Beta"
   },
   "nav": {
@@ -75,8 +75,8 @@
     "title": "Opinie rodziców",
     "subtitle": "Bajki, które naprawdę pomagają",
     "quote1": {
-      "text": "Bajkot jest w fazie beta — zbieramy opinie od pierwszych rodziców. Dołącz i pomóż nam stworzyć narzędzie, które naprawdę pomaga dzieciom.",
-      "author": "Zespół Bajkot"
+      "text": "BiD jest w fazie beta — zbieramy opinie od pierwszych rodziców. Dołącz i pomóż nam stworzyć narzędzie, które naprawdę pomaga dzieciom.",
+      "author": "Zespół BiD"
     },
     "quote2": {
       "text": "Przetestuj za darmo i powiedz nam, co myślisz. Każda opinia pomaga nam tworzyć lepsze bajki.",

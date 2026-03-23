@@ -94,7 +94,7 @@ export function FaqPage() {
             {
               '@type': 'ListItem',
               position: 1,
-              name: 'Bajkot',
+              name: 'BiD',
               item: `https://bajkot.pl/${lang}/`,
             },
             {

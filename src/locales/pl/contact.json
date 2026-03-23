@@ -2,12 +2,12 @@
   "breadcrumb": "Kontakt",
   "aboutBreadcrumb": "O nas",
   "meta": {
-    "title": "Kontakt — Bajkot",
-    "description": "Skontaktuj się z zespołem Bajkot. Sprzedaż, pomoc techniczna, współpraca i zapytania prasowe."
+    "title": "Kontakt — BiD",
+    "description": "Skontaktuj się z zespołem BiD. Sprzedaż, pomoc techniczna, współpraca i zapytania prasowe."
   },
   "header": {
     "heading": "Skontaktuj się z nami",
-    "body": "Masz pytania o <strong>Bajkot</strong>? Sprawdź nasze <faqLink>FAQ</faqLink> lub napisz do nas — odpowiemy najszybciej jak to możliwe."
+    "body": "Masz pytania o <strong>BiD</strong>? Sprawdź nasze <faqLink>FAQ</faqLink> lub napisz do nas — odpowiemy najszybciej jak to możliwe."
   },
   "form": {
     "name": "Imię i nazwisko",
