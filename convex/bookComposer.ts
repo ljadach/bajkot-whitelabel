@@ -74,9 +74,12 @@ export const generatePdf = internalAction({
         doc.on('end', () => resolve(Buffer.concat(chunks)));
       });
 
-      // Register fonts (NotoSans for Polish diacritics, Helvetica as fallback)
-      doc.registerFont('Body', regular ?? 'Helvetica');
-      doc.registerFont('Title', bold ?? 'Helvetica-Bold');
+      // Register fonts (NotoSans for Polish diacritics)
+      if (!regular || !bold) {
+        throw new Error('Font loading failed — NotoSans unavailable, retry needed');
+      }
+      doc.registerFont('Body', regular);
+      doc.registerFont('Title', bold);
 
       // ── Page 1: Cover ────────────────────────────
       doc.addPage({ size: [PAGE_SIZE, PAGE_SIZE], margin: 0 });
@@ -306,16 +309,12 @@ async function fetchImageBuffer(ctx: ActionCtx, storageId: Id<'_storage'>): Prom
  * Load NotoSans fonts. Checks adminConfig for cached storage ID,
  * otherwise fetches from CDN and caches in Convex file storage.
  */
-async function loadFonts(ctx: ActionCtx): Promise<{ regular: Buffer | null; bold: Buffer | null }> {
-  let regular: Buffer | null = null;
-  let bold: Buffer | null = null;
+async function loadFonts(ctx: ActionCtx): Promise<{ regular: Buffer; bold: Buffer }> {
+  const regular = await loadCachedFont(ctx, FONT_STORAGE_KEY, NOTO_SANS_URL);
+  const bold = await loadCachedFont(ctx, FONT_BOLD_STORAGE_KEY, NOTO_SANS_BOLD_URL);
 
-  try {
-    // Try loading cached regular font
-    regular = await loadCachedFont(ctx, FONT_STORAGE_KEY, NOTO_SANS_URL);
-    bold = await loadCachedFont(ctx, FONT_BOLD_STORAGE_KEY, NOTO_SANS_BOLD_URL);
-  } catch (e) {
-    console.warn('Failed to load NotoSans fonts, falling back to Helvetica:', e);
+  if (!regular || !bold) {
+    throw new Error('NotoSans font fetch returned null — CDN or storage unavailable');
   }
 
   return { regular, bold };
