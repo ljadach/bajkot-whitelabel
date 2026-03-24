@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="pl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bajkoterapia - Opanuj dziecięcą złość magią</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Nunito -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Nunito', 'sans-serif'],
+                    },
+                    colors: {
+                        calm: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        magic: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #FAFAFA; color: #334155; }
+        .hero-gradient { background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%); }
+        .blob-bg {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23E0F2FE' d='M44.7,-76.4C58.8,-69.2,71.8,-59.1,81.3,-46.3C90.8,-33.5,96.8,-18.1,96.5,-2.9C96.2,12.3,89.5,27.3,80.1,40.1C70.6,52.8,58.3,63.2,44.5,70.8C30.7,78.4,15.3,83.1,0.2,82.8C-14.9,82.5,-29.9,77.1,-43.3,69.2C-56.7,61.3,-68.6,50.8,-76.9,37.8C-85.2,24.8,-89.9,9.4,-88.7,-5.5C-87.5,-20.4,-80.4,-34.7,-70.7,-46.3C-61,-57.8,-48.7,-66.6,-35.5,-74.1C-22.3,-81.6,-8.1,-87.8,3.7,-88.4C15.5,-89,30.6,-83.6,44.7,-76.4Z' transform='translate(100 100)' /%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center right;
+            background-size: contain;
+        }
+        /* Hide scrollbar for step transitions */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .wizard-step { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .wizard-step.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Custom Radio Buttons Visuals */
+        .radio-card input:checked + div { border-color: #f59e0b; background-color: #fffbeb; }
+        .radio-card input:checked + div .check-icon { display: block; }
+    </style>
+</head>
+<body class="antialiased selection:bg-magic-400 selection:text-white">
+
+    <!-- NAWIGACJA -->
+    <nav class="w-full py-4 px-6 fixed top-0 bg-white/90 backdrop-blur-md z-50 border-b border-gray-100 shadow-sm">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-book-open text-calm-500 text-2xl"></i>
+                <span class="font-extrabold text-xl text-calm-900 tracking-tight">Bajkoterapia</span>
+            </div>
+            <a href="#kreator" class="bg-magic-500 hover:bg-magic-600 text-white px-5 py-2 rounded-full font-bold transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm md:text-base">
+                Stwórz Bajkę
+            </a>
+        </div>
+    </nav>
+
+    <!-- SEKCJA 1: HERO -->
+    <header class="pt-32 pb-20 px-6 hero-gradient relative overflow-hidden">
+        <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center relative z-10">
+            <div class="space-y-6">
+                <div class="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm border border-calm-100 text-calm-800 text-sm font-bold">
+                    <i class="fa-solid fa-star text-magic-500"></i> Metoda oparta na badaniach
+                </div>
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-calm-900 leading-tight">
+                    Jak poradzić sobie, gdy <span class="text-calm-500">moje dziecko bije innych?</span>
+                </h1>
+                <p class="text-lg md:text-xl text-gray-600 font-medium leading-relaxed">
+                    Pomóż dziecku opanować złość dzięki bajce, w której to <strong class="text-calm-800">ONO jest bohaterem</strong>. 
+                    Odkryj spersonalizowaną bajkoterapię. Naucz malucha radzić sobie z trudnymi emocjami bez krzyku i stresu – w bezpiecznym świecie wyobraźni.
+                </p>
+                <div class="pt-4 flex flex-col sm:flex-row gap-4 items-center sm:items-start">
+                    <a href="#kreator" class="w-full sm:w-auto bg-magic-500 hover:bg-magic-600 text-white px-8 py-4 rounded-full font-extrabold text-lg shadow-xl shadow-magic-500/30 transition transform hover:-translate-y-1 text-center">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> WYGENERUJ BAJKĘ DLA MOJEGO DZIECKA
+                    </a>
+                </div>
+                <p class="text-sm text-gray-500 font-semibold text-center sm:text-left">
+                    <i class="fa-regular fa-clock text-calm-500 mr-1"></i> Gotowa do czytania w 15 minut
+                </p>
+            </div>
+            
+            <div class="relative blob-bg flex justify-center py-10">
+                <div class="relative w-full max-w-md">
+                    <div class="aspect-[4/5] md:aspect-square bg-white rounded-3xl shadow-2xl overflow-hidden border-8 border-white transform rotate-3 hover:rotate-0 transition duration-500">
+                        <img src="https://images.unsplash.com/photo-1544365558-35aa4afcf11f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Uśmiechnięte dziecko czytające magiczną książkę, styl 3D Pixar" class="w-full h-full object-cover">
+                    </div>
+                    <div class="absolute -bottom-6 -left-6 bg-white p-4 rounded-2xl shadow-xl border border-gray-50 flex items-center gap-4 animate-bounce" style="animation-duration: 3s;">
+                        <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-2xl">
+                            <i class="fa-solid fa-shield-heart"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 font-bold uppercase">Gwarancja</p>
+                            <p class="text-sm font-black text-calm-900">100% Bezpiecznych Treści</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- SEKCJA 2: BÓL I EMPATIA -->
+    <section class="py-24 bg-white px-6">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-black text-calm-900 mb-6">
+                    Znasz to uczucie bezradności, gdy emocje wymykają się spod kontroli?
+                </h2>
+            </div>
+            
+            <div class="bg-calm-50/50 rounded-3xl p-8 md:p-12 border border-calm-100 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-calm-100 rounded-full blur-3xl opacity-50 -z-10 -mt-10 -mr-10"></div>
+                
+                <p class="text-lg text-gray-700 leading-relaxed mb-6 font-medium">
+                    Rozumiemy, jak bardzo to stresujące. Odbierasz telefon z placówki i słyszysz, że Twoje <strong class="bg-yellow-100 px-1 rounded text-calm-900">dziecko bije w przedszkolu</strong>. 
+                    Na placu zabaw widzisz, jak w ułamku sekundy, sfrustrowane, <strong class="bg-yellow-100 px-1 rounded text-calm-900">szturcha i popycha</strong> rówieśników, a w domu w mgnieniu oka <strong class="bg-yellow-100 px-1 rounded text-calm-900">bije rodzeństwo</strong> o zabraną zabawkę. Czasem emocje są tak potężne, że maluch aż <strong class="bg-yellow-100 px-1 rounded text-calm-900">gryzie inne dzieci</strong>.
+                </p>
+                
+                <p class="text-lg text-gray-700 leading-relaxed mb-8">
+                    Kiedy Twoje <strong class="bg-yellow-100 px-1 rounded text-calm-900">dziecko bije inne dzieci</strong>, nie robi tego ze złości na Ciebie ani dlatego, że jest "złe". 
+                    Dzieci, zwłaszcza w wieku przedszkolnym, po prostu często nie posiadają słownictwa umożliwiającego bezpośrednią dyskusję o własnych emocjach. Złość znajduje natychmiastowe ujście w ciele.
+                </p>
+
+                <div class="bg-white rounded-2xl p-6 border-l-4 border-magic-500 shadow-md">
+                    <p class="text-xl font-bold text-calm-900">
+                        Zamiast kolejnych wykładów i kar, których dziecko nie potrafi jeszcze przetworzyć, daj mu narzędzie, które naprawdę zrozumie: <span class="text-magic-600">Historię o samym sobie.</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SEKCJA 3: NAUKA / AUTORYTET -->
+    <section class="py-24 bg-calm-900 text-white px-6 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
+            <i class="fa-solid fa-atom text-9xl absolute -top-10 -left-10 text-white"></i>
+            <i class="fa-solid fa-brain text-9xl absolute bottom-10 right-10 text-white"></i>
+        </div>
+
+        <div class="max-w-6xl mx-auto relative z-10">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="text-magic-400 font-bold uppercase tracking-widest text-sm mb-2 block">Podstawy Naukowe</span>
+                <h2 class="text-3xl md:text-4xl font-black mb-6">
+                    Dlaczego spersonalizowana bajka działa skuteczniej niż reprymenda?
+                </h2>
+                <p class="text-calm-100 text-lg">
+                    Personalizowana bajkoterapia to nie tylko piękna pamiątka. To narzędzie psychoedukacyjne opierające się na udowodnionym naukowo <strong>"Efekcie Odniesienia do Ja"</strong> (Self-Reference Effect).
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-calm-800/50 p-8 rounded-3xl border border-calm-700 hover:bg-calm-800 transition">
+                    <div class="w-14 h-14 bg-magic-500 rounded-2xl flex items-center justify-center text-white text-2xl mb-6 shadow-lg"><i class="fa-solid fa-eye"></i></div>
+                    <h3 class="text-xl font-bold mb-3">Uczy przez obserwację</h3>
+                    <p class="text-calm-200 leading-relaxed">Dostarcza dziecku gotowego, pozytywnego "skryptu" zachowania w stresującej sytuacji. Zamiast bić, bohater uczy się nazywać złość.</p>
+                </div>
+                <div class="bg-calm-800/50 p-8 rounded-3xl border border-calm-700 hover:bg-calm-800 transition">
+                    <div class="w-14 h-14 bg-calm-500 rounded-2xl flex items-center justify-center text-white text-2xl mb-6 shadow-lg"><i class="fa-solid fa-shield-halved"></i></div>
+                    <h3 class="text-xl font-bold mb-3">Bezpieczny dystans</h3>
+                    <p class="text-calm-200 leading-relaxed">Dziecko identyfikuje się z postacią, ale pozostaje bezpieczne. Widzi sukces zastępczego Ja i czuje: <em>"Skoro on potrafi, to ja też!"</em>.</p>
+                </div>
+                <div class="bg-calm-800/50 p-8 rounded-3xl border border-calm-700 hover:bg-calm-800 transition">
+                    <div class="w-14 h-14 bg-magic-500 rounded-2xl flex items-center justify-center text-white text-2xl mb-6 shadow-lg"><i class="fa-solid fa-hat-wizard"></i></div>
+                    <h3 class="text-xl font-bold mb-3">Magiczny Przewodnik</h3>
+                    <p class="text-calm-200 leading-relaxed">W historii pojawia się "Mądry Pomocnik" (np. ulubiona zabawka), podpowiadając rozwiązanie i wspierając malucha emocjonalnie.</p>
+                </div>
+            </div>
+            
+            <div class="mt-12 text-center text-sm text-calm-300 bg-calm-800/30 inline-block px-6 py-3 rounded-full border border-calm-700/50 mx-auto w-full max-w-2xl">
+                <i class="fa-solid fa-circle-info mr-2"></i>
+                <strong>Nota:</strong> Bajka pełni funkcję psychoedukacyjną. Nie zastępuje klinicznej psychoterapii.
+            </div>
+        </div>
+    </section>
+
+    <!-- SEKCJA 4: KREATOR (WIZARD) -->
+    <section id="kreator" class="py-24 px-6 bg-gray-50 relative">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-10">
+                <span class="text-magic-500 font-bold uppercase tracking-widest text-sm mb-2 block">Kreator Magii</span>
+                <h2 class="text-3xl md:text-4xl font-black text-calm-900 mb-4">Stwórz Bajkę dla swojego dziecka</h2>
+                <p class="text-gray-600 text-lg">Wypełnij ten prosty formularz w 2 minuty. Resztą zajmie się nasz system.</p>
+            </div>
+
+            <!-- Form Container -->
+            <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+                
+                <!-- Progress Indicator -->
+                <div class="bg-calm-50 px-6 py-4 border-b border-calm-100 flex justify-between items-center text-xs md:text-sm font-bold text-gray-400">
+                    <span id="nav-step-1" class="text-magic-600">1. Bohater</span>
+                    <i class="fa-solid fa-chevron-right text-calm-200"></i>
+                    <span id="nav-step-2">2. Wygląd</span>
+                    <i class="fa-solid fa-chevron-right text-calm-200"></i>
+                    <span id="nav-step-3">3. Misja</span>
+                    <i class="fa-solid fa-chevron-right text-calm-200"></i>
+                    <span id="nav-step-4">4. Finalizacja</span>
+                </div>
+
+                <form id="book-form" onsubmit="return false;" class="p-6 md:p-10">
+                    
+                    <!-- KROK 1: BOHATER -->
+                    <div id="step-1" class="wizard-step active space-y-8">
+                        <div>
+                            <h3 class="text-2xl font-bold text-calm-900 mb-2">Kim jest główny bohater?</h3>
+                            <p class="text-gray-500 text-sm">Te dane pozwolą AI dopasować język opowieści do poziomu Twojego dziecka.</p>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-calm-900 mb-2">Imię dziecka <span class="text-red-500">*</span></label>
+                                <input type="text" id="f-name" required placeholder="np. Jaś, Zosia" class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-magic-500 focus:bg-white outline-none transition font-semibold text-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-calm-900 mb-2">Wiek <span class="text-red-500">*</span></label>
+                                <select id="f-age" required class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-magic-500 outline-none transition font-semibold text-lg cursor-pointer">
+                                    <option value="" disabled selected>Wybierz wiek...</option>
+                                    <option value="3-5">3 - 5 lat (Prostszy język)</option>
+                                    <option value="6-8">6 - 8 lat (Bardziej rozbudowana treść)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-calm-900 mb-3">Płeć dziecka (do poprawnej gramatyki) <span class="text-red-500">*</span></label>
+                            <div class="grid grid-cols-2 gap-4">
+                                <label class="radio-card cursor-pointer relative">
+                                    <input type="radio" name="gender" value="Chłopiec" class="peer sr-only" required>
+                                    <div class="p-4 border-2 border-gray-100 rounded-2xl hover:bg-gray-50 transition text-center">
+                                        <div class="text-4xl mb-2">👦</div>
+                                        <div class="font-bold text-calm-900">Chłopiec</div>
+                                        <i class="fa-solid fa-circle-check check-icon text-magic-500 absolute top-3 right-3 hidden"></i>
+                                    </div>
+                                </label>
+                                <label class="radio-card cursor-pointer relative">
+                                    <input type="radio" name="gender" value="Dziewczynka" class="peer sr-only" required>
+                                    <div class="p-4 border-2 border-gray-100 rounded-2xl hover:bg-gray-50 transition text-center">
+                                        <div class="text-4xl mb-2">👧</div>
+                                        <div class="font-bold text-calm-900">Dziewczynka</div>
+                                        <i class="fa-solid fa-circle-check check-icon text-magic-500 absolute top-3 right-3 hidden"></i>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="pt-4">
+                            <button onclick="goToStep(2)" class="w-full bg-magic-500 hover:bg-magic-600 text-white font-bold py-4 rounded-2xl text-lg shadow-lg shadow-magic-500/30 transition">
+                                Dalej: Wygląd <i class="fa-solid fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- KROK 2: WYGLĄD -->
+                    <div id="step-2" class="wizard-step space-y-8">
+                        <div>
+                            <h3 class="text-2xl font-bold text-calm-900 mb-2">Stwórzmy awatara</h3>
+                            <p class="text-gray-500 text-sm">Ograniczamy opcje ubioru do konkretnych "Kotwic Wizualnych", aby ilustracje 3D w książce były idealnie spójne na każdej stronie!</p>
+                        </div>
+
+                        <!-- Włosy Kolor & Rodzaj -->
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-calm-900 mb-3">Kolor włosów <span class="text-red-500">*</span></label>
+                                <select id="f-hair-color" class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-magic-500 outline-none font-semibold">
+                                    <option value="Blond">Blond</option>
+                                    <option value="Brązowe">Brązowe</option>
+                                    <option value="Czarne">Czarne</option>
+                                    <option value="Rude">Rude</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-calm-900 mb-3">Rodzaj włosów <span class="text-red-500">*</span></label>
+                                <select id="f-hair-type" class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-magic-500 outline-none font-semibold">
+                                    <option value="Proste">Proste / Krótkie</option>
+                                    <option value="Kręcone">Kręcone</option>
+                                    <option value="Długie">Długie</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Oczy & Okulary -->
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-calm-900 mb-3">Kolor oczu <span class="text-red-500">*</span></label>
+                                <select id="f-eyes" class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-magic-500 outline-none font-semibold">
+                                    <option value="Niebieskie">Niebieskie</option>
+                                    <option value="Zielone">Zielone</option>
+                                    <option value="Brązowe">Brązowe</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center mt-8">
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" id="f-glasses" class="w-6 h-6 text-magic-500 border-gray-300 rounded focus:ring-magic-500">
+                                    <span class="font-bold text-calm-900">Dziecko nosi okulary 👓</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Ubranie (Kotwica) -->
+                        <div>
+                            <label class="block text-sm font-bold text-calm-900 mb-3">Ulubiony strój (Wybierz 1 opcję) <span class="text-red-500">*</span></label>
+                            <div class="grid sm:grid-cols-2 gap-4">
+                                <label class="radio-card cursor-pointer relative">
+                                    <input type="radio" name="clothes" value="Czerwona koszulka z rakietą" checked class="peer sr-only">
+                                    <div class="p-4 border-2 border-gray-100 rounded-2xl flex items-center gap-4 transition">
+                                        <div class="w-10 h-10 bg-red-500 rounded-full flex justify-center items-center text-white shadow-sm">🚀</div>
+                                        <span class="font-bold text-sm text-calm-900">Czerwona koszulka z rakietą</span>
+                                        <i class="fa-solid fa-circle-check check-icon text-magic-500 absolute top-1/2 -translate-y-1/2 right-4 hidden"></i>
+                                    </div>
+                                </label>
+                                <label class="radio-card cursor-pointer relative">
+                                    <input type="radio" name="clothes" value="Żółta bluza z dinozaurem" class="peer sr-only">
+                                    <div class="p-4 border-2 border-gray-100 rounded-2xl flex items-center gap-4 transition">
+                                        <div class="w-10 h-10 bg-yellow-400 rounded-full flex justify-center items-center text-white shadow-sm">🦖</div>
+                                        <span class="font-bold text-sm text-calm-900">Żółta bluza z dinozaurem</span>
+                                        <i class="fa-solid fa-circle-check check-icon text-magic-500 absolute top-1/2 -translate-y-1/2 right-4 hidden"></i>
+                                    </div>
+                                </label>
+                                <label class="radio-card cursor-pointer relative">
+                                    <input type="radio" name="clothes" value="Niebieska bluza z kapturem" class="peer sr-only">
+                                    <div class="p-4 border-2 border-gray-100 rounded-2xl flex items-center gap-4 transition">
+                                        <div class="w-10 h-10 bg-blue-500 rounded-full flex justify-center items-center text-white shadow-sm">🧢</div>
+                                        <span class="font-bold text-sm text-calm-900">Niebieska bluza z kapturem</span>
+                                        <i class="fa-solid fa-circle-check check-icon text-magic-500 absolute top-1/2 -translate-y-1/2 right-4 hidden"></i>
+                                    </div>
+                                </label>
+                                <label class="radio-card cursor-pointer relative">
+                                    <input type="radio" name="clothes" value="Żółta sukienka w kwiatki" class="peer sr-only">
+                                    <div class="p-4 border-2 border-gray-100 rounded-2xl flex items-center gap-4 transition">
+                                        <div class="w-10 h-10 bg-yellow-300 rounded-full flex justify-center items-center text-white shadow-sm">🌻</div>
+                                        <span class="font-bold text-sm text-calm-900">Żółta sukienka w kwiatki</span>
+                                        <i class="fa-solid fa-circle-check check-icon text-magic-500 absolute top-1/2 -translate-y-1/2 right-4 hidden"></i>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 pt-4">
+                            <button type="button" onclick="goToStep(1)" class="w-1/3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-4 rounded-2xl transition">
+                                Wróć
+                            </button>
+                            <button type="button" onclick="goToStep(3)" class="w-2/3 bg-magic-500 hover:bg-magic-600 text-white font-bold py-4 rounded-2xl shadow-lg transition">
+                                Dalej: Misja <i class="fa-solid fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- KROK 3: MISJA -->
+                    <div id="step-3" class="wizard-step space-y-8">
+                        <div>
+                            <h3 class="text-2xl font-bold text-calm-900 mb-2">Z jakim wyzwaniem się mierzycie?</h3>
+                            <p class="text-gray-500 text-sm">Wybierz główny temat bajki. Nasze AI ułoży historię, która uczy radzenia sobie z tym problemem poprzez empatię.</p>
+                        </div>
+
+                        <!-- Problem (Zamknięta lista SEO) -->
+                        <div>
+                            <label class="block text-sm font-bold text-calm-900 mb-3">Główny temat bajki <span class="text-red-500">*</span></label>
+                            <select id="f-problem" class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-magic-500 outline-none font-semibold text-lg cursor-pointer">
+                                <optgroup label="Emocje i Zachowanie (Priorytet)">
+                                    <option value="Agresja (bije innych, gryzie)">😡 Dziecko bije innych, gryzie, popycha</option>
+                                    <option value="Napady złości i histeria">💥 Napady złości i trudne emocje</option>
+                                    <option value="Bunt i odmowa współpracy">🙅 Bunt i niechęć do słuchania</option>
+                                </optgroup>
+                                <optgroup label="Relacje">
+                                    <option value="Rywalizacja z rodzeństwem">🤼 Konflikty i rywalizacja z rodzeństwem</option>
+                                    <option value="Niechęć do dzielenia się">🧸 Niechęć do dzielenia się zabawkami</option>
+                                    <option value="Adaptacja przedszkolna">🎒 Pierwsze dni w przedszkolu</option>
+                                </optgroup>
+                                <optgroup label="Inne wyzwania">
+                                    <option value="Trudności z zasypianiem">🌙 Trudności z zasypianiem / lęk przed ciemnością</option>
+                                    <option value="Wybiórczość pokarmowa">🥦 Niejadek - niechęć do jedzenia</option>
+                                    <option value="Inne wyzwanie normatywne">✨ Inny problem (doprecyzuj poniżej)</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <!-- Doprecyzowanie -->
+                        <div>
+                            <label class="block text-sm font-bold text-calm-900 mb-2">Doprecyzowanie problemu (Opcjonalnie)</label>
+                            <p class="text-xs text-gray-400 mb-2">Np. "Bije młodszego brata, gdy ten zabiera klocki"</p>
+                            <textarea id="f-details" rows="2" maxlength="150" class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-magic-500 outline-none text-sm"></textarea>
+                        </div>
+
+                        <!-- Magiczny Przewodnik -->
+                        <div>
+                            <label class="block text-sm font-bold text-calm-900 mb-2">Ulubiona zabawka lub zwierzątko (Opcjonalnie)</label>
+                            <p class="text-xs text-gray-400 mb-2">AI "ożywi" ten przedmiot, czyniąc go mądrym Przewodnikiem (np. pluszowy miś).</p>
+                            <input type="text" id="f-guide" placeholder="np. Pluszowy Piesek, Świecący Robot" class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-magic-500 outline-none font-semibold">
+                        </div>
+
+                        <div class="flex gap-4 pt-4">
+                            <button type="button" onclick="goToStep(2)" class="w-1/3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-4 rounded-2xl transition">
+                                Wróć
+                            </button>
+                            <button type="button" onclick="goToStep(4)" class="w-2/3 bg-magic-500 hover:bg-magic-600 text-white font-bold py-4 rounded-2xl shadow-lg transition">
+                                Dalej: Zakończ <i class="fa-solid fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- KROK 4: FINALIZACJA -->
+                    <div id="step-4" class="wizard-step space-y-8">
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-green-100 text-green-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-4">
+                                <i class="fa-solid fa-wand-sparkles"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-calm-900 mb-2">Mamy wszystko!</h3>
+                            <p class="text-gray-500 text-sm">Podaj e-mail, na który wyślemy gotową książeczkę w formacie PDF (z możliwością druku).</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-calm-900 mb-2">Adres E-mail <span class="text-red-500">*</span></label>
+                            <input type="email" id="f-email" required placeholder="twoj.email@domena.pl" class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-magic-500 outline-none font-semibold text-lg text-center">
+                        </div>
+
+                        <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100">
+                            <label class="flex items-start gap-3 cursor-pointer">
+                                <input type="checkbox" id="f-consent" required class="mt-1 w-5 h-5 text-magic-500 border-gray-300 rounded focus:ring-magic-500">
+                                <span class="text-sm text-calm-900 leading-relaxed">
+                                    Rozumiem, że bajka jest wsparciem edukacyjnym generowanym przez AI, a nie kliniczną poradą medyczną. Zobowiązuję się do przeczytania bajki przed pokazaniem jej dziecku. <span class="text-red-500">*</span>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div class="flex gap-4 pt-4">
+                            <button type="button" onclick="goToStep(3)" class="w-1/3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-4 rounded-2xl transition">
+                                Wróć
+                            </button>
+                            <button type="button" onclick="submitForm()" class="w-2/3 bg-green-500 hover:bg-green-600 text-white font-black py-4 rounded-2xl shadow-xl shadow-green-500/30 transition text-lg flex justify-center items-center gap-2">
+                                PŁACĘ I GENERUJĘ (39 zł)
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- STOPKA -->
+    <footer class="bg-white py-10 border-t border-gray-100 text-center">
+        <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-2 text-calm-900 font-bold">
+                <i class="fa-solid fa-book-open text-calm-500"></i> Bajkoterapia
+            </div>
+            <p class="text-sm text-gray-500 font-medium">
+                &copy; 2026 Wszelkie prawa zastrzeżone. Projekt oparty na badaniach psychologicznych.
+            </p>
+            <div class="flex gap-4 text-sm text-gray-400">
+                <a href="#" class="hover:text-calm-600 transition">Regulamin</a>
+                <a href="#" class="hover:text-calm-600 transition">Prywatność</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODALE (Loading & Paywall) -->
+    
+    <!-- Loading Modal -->
+    <div id="modal-loading" class="fixed inset-0 bg-calm-900/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-8 text-center shadow-2xl">
+            <div class="w-20 h-20 bg-magic-100 rounded-full flex items-center justify-center mx-auto mb-6 relative">
+                <i class="fa-solid fa-wand-magic-sparkles text-magic-600 text-3xl animate-pulse"></i>
+                <div class="absolute inset-0 border-4 border-magic-200 border-t-magic-600 rounded-full animate-spin"></div>
+            </div>
+            <h3 class="text-xl font-bold text-calm-900 mb-2" id="loading-title">Trwa magia...</h3>
+            <p class="text-sm text-gray-500 mb-6" id="loading-desc">Analizujemy wyzwanie wychowawcze.</p>
+            <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                <div id="loading-bar" class="bg-magic-500 h-2 rounded-full w-0 transition-all duration-500"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paywall Modal (Symulacja bramki) -->
+    <div id="modal-paywall" class="fixed inset-0 bg-calm-900/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 text-center relative shadow-2xl">
+            <button onclick="document.getElementById('modal-paywall').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <i class="fa-solid fa-xmark text-2xl"></i>
+            </button>
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-500 text-2xl">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h3 class="text-2xl font-black text-calm-900 mb-2" id="paywall-title">Gotowe do druku!</h3>
+            <p class="text-gray-600 mb-6">Projekt książki został ułożony. Odbierz plik i zacznij przygodę.</p>
+            
+            <div class="bg-gray-50 p-4 rounded-2xl mb-6 text-left space-y-3">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-file-pdf text-red-500"></i>
+                    <span class="font-bold text-gray-700 text-sm">Plik PDF (10 stron)</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-image text-blue-500"></i>
+                    <span class="font-bold text-gray-700 text-sm">5 Ilustracji 3D (Z zachowaniem kotwicy wizualnej)</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-envelope text-gray-500"></i>
+                    <span class="font-bold text-gray-700 text-sm">Wysyłka na e-mail natychmiast po opłaceniu</span>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <span class="text-gray-400 line-through text-lg">99 zł</span>
+                <span class="text-4xl font-extrabold text-magic-600 ml-2">39 zł</span>
+            </div>
+
+            <button class="w-full bg-calm-900 hover:bg-calm-800 text-white font-bold py-4 rounded-2xl shadow-xl transition flex justify-center items-center gap-2">
+                <i class="fa-solid fa-lock"></i> Zapłać (Stripe)
+            </button>
+        </div>
+    </div>
+
+    <!-- SKRYPTY LOGIKI FORMULARZA -->
+    <script>
+        let currentStep = 1;
+        const totalSteps = 4;
+
+        function goToStep(step) {
+            // Walidacja przed przejściem do kolejnego kroku (tylko basic frontend validation)
+            if (step > currentStep) {
+                if (currentStep === 1) {
+                    const name = document.getElementById('f-name').value;
+                    const age = document.getElementById('f-age').value;
+                    const gender = document.querySelector('input[name="gender"]:checked');
+                    if (!name || !age || !gender) {
+                        alert("Uzupełnij imię, wiek i płeć dziecka przed pójściem dalej.");
+                        return;
+                    }
+                }
+            }
+
+            // Hide all steps
+            for (let i = 1; i <= totalSteps; i++) {
+                document.getElementById(`step-${i}`).classList.remove('active');
+            }
+            // Show target step
+            document.getElementById(`step-${step}`).classList.add('active');
+            
+            // Update Navigation UI
+            for (let i = 1; i <= totalSteps; i++) {
+                const nav = document.getElementById(`nav-step-${i}`);
+                if (i === step) {
+                    nav.classList.add('text-magic-600');
+                    nav.classList.remove('text-calm-900', 'text-gray-400');
+                } else if (i < step) {
+                    nav.classList.add('text-calm-900');
+                    nav.classList.remove('text-magic-600', 'text-gray-400');
+                } else {
+                    nav.classList.add('text-gray-400');
+                    nav.classList.remove('text-magic-600', 'text-calm-900');
+                }
+            }
+            currentStep = step;
+            
+            // Scroll to top of the form smoothly
+            document.getElementById('kreator').scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+
+        function submitForm() {
+            // Walidacja kroku 4
+            const email = document.getElementById('f-email').value;
+            const consent = document.getElementById('f-consent').checked;
+            
+            if (!email || !email.includes('@')) {
+                alert("Podaj poprawny adres e-mail.");
+                return;
+            }
+            if (!consent) {
+                alert("Musisz zaakceptować warunki edukacyjne.");
+                return;
+            }
+
+            // Zbierz dane do obiektu JSON (tak jak prosił zespół Tech)
+            const payload = {
+                imie: document.getElementById('f-name').value,
+                wiek: document.getElementById('f-age').value,
+                plec: document.querySelector('input[name="gender"]:checked').value,
+                wlosyKolor: document.getElementById('f-hair-color').value,
+                wlosyRodzaj: document.getElementById('f-hair-type').value,
+                oczy: document.getElementById('f-eyes').value,
+                okulary: document.getElementById('f-glasses').checked,
+                stroj: document.querySelector('input[name="clothes"]:checked').value,
+                problem: document.getElementById('f-problem').value,
+                detale: document.getElementById('f-details').value,
+                przewodnik: document.getElementById('f-guide').value,
+                email: email
+            };
+
+            console.log("Dane wysyłane do API (MVP): ", payload);
+
+            // Symulacja procesu asynchronicznego AI
+            const modalLoading = document.getElementById('modal-loading');
+            const loadingBar = document.getElementById('loading-bar');
+            const loadingTitle = document.getElementById('loading-title');
+            const loadingDesc = document.getElementById('loading-desc');
+            
+            modalLoading.classList.remove('hidden');
+
+            setTimeout(() => { 
+                loadingBar.style.width = '30%'; 
+                loadingDesc.innerText = `Projektuję postać: ${payload.imie}...`; 
+            }, 800);
+            
+            setTimeout(() => { 
+                loadingBar.style.width = '70%'; 
+                loadingDesc.innerText = `Tworzę magiczną opowieść o emocjach...`; 
+            }, 2000);
+            
+            setTimeout(() => { 
+                loadingBar.style.width = '100%'; 
+                loadingTitle.innerText = 'Gotowe!';
+                loadingDesc.innerText = 'Przygotowuję pliki...'; 
+            }, 3500);
+
+            setTimeout(() => {
+                modalLoading.classList.add('hidden');
+                document.getElementById('paywall-title').innerText = `Bajka dla ${payload.imie} czeka!`;
+                document.getElementById('modal-paywall').classList.remove('hidden');
+            }, 4200);
+        }
+    </script>
+</body>
+</html>
