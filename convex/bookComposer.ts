@@ -28,13 +28,10 @@ const PAGE_SIZE = 595.28;
 const MARGIN = 56.7; // ~20mm
 const CONTENT_WIDTH = PAGE_SIZE - 2 * MARGIN;
 
-// Font config key in adminConfig
-const FONT_STORAGE_KEY = 'notoSansStorageId';
 const NOTO_SANS_URL =
-  'https://cdn.jsdelivr.net/fontsource/fonts/noto-sans@latest/latin-400-normal.ttf';
+  'https://cdn.jsdelivr.net/fontsource/fonts/noto-sans@latest/latin-ext-400-normal.ttf';
 const NOTO_SANS_BOLD_URL =
-  'https://cdn.jsdelivr.net/fontsource/fonts/noto-sans@latest/latin-700-normal.ttf';
-const FONT_BOLD_STORAGE_KEY = 'notoSansBoldStorageId';
+  'https://cdn.jsdelivr.net/fontsource/fonts/noto-sans@latest/latin-ext-700-normal.ttf';
 
 export const generatePdf = internalAction({
   args: { orderId: v.id('bookOrders') },
@@ -57,7 +54,7 @@ export const generatePdf = internalAction({
       const fontSize = getFontSize(order.ageBracket);
 
       // Load fonts
-      const { regular, bold } = await loadFonts(ctx);
+      const { regular, bold } = await loadFonts();
 
       // Create square-format PDF
       const doc = new PDFDocument({
@@ -305,67 +302,16 @@ async function fetchImageBuffer(ctx: ActionCtx, storageId: Id<'_storage'>): Prom
   }
 }
 
-/**
- * Load NotoSans fonts. Checks adminConfig for cached storage ID,
- * otherwise fetches from CDN and caches in Convex file storage.
- */
-async function loadFonts(ctx: ActionCtx): Promise<{ regular: Buffer; bold: Buffer }> {
-  const regular = await loadCachedFont(ctx, FONT_STORAGE_KEY, NOTO_SANS_URL);
-  const bold = await loadCachedFont(ctx, FONT_BOLD_STORAGE_KEY, NOTO_SANS_BOLD_URL);
-
-  if (!regular || !bold) {
-    throw new Error('NotoSans font fetch returned null — CDN or storage unavailable');
-  }
-
-  return { regular, bold };
-}
-
-async function loadCachedFont(
-  ctx: ActionCtx,
-  configKey: string,
-  cdnUrl: string,
-): Promise<Buffer | null> {
-  // Check adminConfig for cached storage ID
-  const cachedId = await ctx.runQuery(internal.admin.config.getInternal, { key: configKey });
-  if (cachedId) {
-    try {
-      const buf = await fetchStorageBuffer(ctx, cachedId as unknown as Id<'_storage'>);
-      if (buf) return buf;
-    } catch {
-      // Cache miss — re-fetch
-    }
-  }
-
-  // Fetch from CDN
-  const res = await fetch(cdnUrl, { signal: AbortSignal.timeout(30_000) });
-  if (!res.ok) {
-    console.warn(`Failed to fetch font from ${cdnUrl}: ${res.status}`);
-    return null;
-  }
-  const buf = Buffer.from(await res.arrayBuffer());
-
-  // Cache in storage
-  try {
-    const blob = new Blob([new Uint8Array(buf)], { type: 'font/ttf' });
-    const storageId = await ctx.storage.store(blob);
-    await ctx.runMutation(internal.admin.config.setInternal, {
-      key: configKey,
-      value: storageId,
-    });
-  } catch (e) {
-    console.warn('Failed to cache font in storage:', e);
-  }
-
-  return buf;
-}
-
-async function fetchStorageBuffer(
-  ctx: ActionCtx,
-  storageId: Id<'_storage'>,
-): Promise<Buffer | null> {
-  const url = await ctx.storage.getUrl(storageId);
-  if (!url) return null;
-  const res = await fetch(url, { signal: AbortSignal.timeout(15_000) });
-  if (!res.ok) return null;
+async function fetchFont(url: string): Promise<Buffer> {
+  const res = await fetch(url, { signal: AbortSignal.timeout(30_000) });
+  if (!res.ok) throw new Error(`Font fetch failed: ${url} → ${res.status}`);
   return Buffer.from(await res.arrayBuffer());
+}
+
+async function loadFonts(): Promise<{ regular: Buffer; bold: Buffer }> {
+  const [regular, bold] = await Promise.all([
+    fetchFont(NOTO_SANS_URL),
+    fetchFont(NOTO_SANS_BOLD_URL),
+  ]);
+  return { regular, bold };
 }
