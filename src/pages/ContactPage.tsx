@@ -98,7 +98,7 @@ function Headquarters() {
     <div>
       <h2 className="text-lg font-semibold text-neutral-900 mb-4">{t('hq.heading')}</h2>
       <address className="not-italic text-sm text-neutral-600 leading-relaxed">
-        <strong>BiD</strong>
+        <strong>Bajkoterapia</strong>
         <br />
         {t('hq.line1')}
         <br />
@@ -124,7 +124,7 @@ export function ContactPage() {
             {
               '@type': 'ListItem',
               position: 1,
-              name: 'BiD',
+              name: 'Bajkoterapia',
               item: `https://bajkot.pl/${lang}/`,
             },
             {
@@ -154,7 +154,7 @@ export function ContactPage() {
         data={{
           '@context': 'https://schema.org',
           '@type': 'Organization',
-          name: 'BiD',
+          name: 'Bajkoterapia',
           url: 'https://bajkot.pl',
           address: {
             '@type': 'PostalAddress',

@@ -40,7 +40,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="robots" content="index, follow" />
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="BiD" />
+        <meta property="og:site_name" content="Bajkoterapia" />
         <meta property="og:image" content="https://bajkot.pl/android-chrome-512x512.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:image" content="https://bajkot.pl/android-chrome-512x512.png" />
@@ -52,7 +52,7 @@ export function Layout({ children }: { children: ReactNode }) {
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'Organization',
-              name: 'BiD',
+              name: 'Bajkoterapia',
               url: 'https://bajkot.pl',
               logo: 'https://bajkot.pl/android-chrome-512x512.png',
               description:

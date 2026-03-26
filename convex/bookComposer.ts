@@ -176,7 +176,7 @@ export const generatePdf = internalAction({
         align: 'center',
       });
       doc.font('Body').fontSize(fontSize.small).fillColor('#666666');
-      doc.text('Bajkot', MARGIN, overlayY + overlayH - 30, {
+      doc.text('Bajkoterapia', MARGIN, overlayY + overlayH - 30, {
         width: CONTENT_WIDTH,
         align: 'center',
       });
@@ -308,7 +308,7 @@ export const generatePdf = internalAction({
       doc.font('Body').fontSize(fontSize.small).fillColor('#666666');
 
       const blurb = draft.coverBlurb || '';
-      const colophon = `Stworzone z miłością przez Bajkot\n© ${new Date().getFullYear()} Bajkot`;
+      const colophon = `Stworzone z miłością przez Bajkoterapia\n© ${new Date().getFullYear()} Bajkoterapia`;
       const backText = blurb ? `${blurb}\n\n${colophon}` : `Dla: ${order.childName}\n\n${colophon}`;
       const backHeight = doc.heightOfString(backText, { width: CONTENT_WIDTH, align: 'center' });
       const backY = (PAGE_SIZE - backHeight) / 2;

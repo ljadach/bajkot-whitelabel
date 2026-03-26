@@ -153,7 +153,7 @@ function generateEmailHtml(lead: {
   <div class="container">
     <div class="header">
       <h1 style="margin: 0; font-size: 20px;">New Lead Submission</h1>
-      <p style="margin: 8px 0 0; opacity: 0.9;">Bajkot - ${segmentLabel} Segment</p>
+      <p style="margin: 8px 0 0; opacity: 0.9;">Bajkoterapia - ${segmentLabel} Segment</p>
     </div>
     <div class="content">
       <div class="field">
@@ -290,7 +290,7 @@ async function sendEmailNotification(lead: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Bajkot <info@bajkot.pl>',
+        from: 'Bajkoterapia <info@bajkot.pl>',
         to: ['ljadach@gmail.com', 'cezdmo@gmail.com'],
         subject: `New Lead: ${segmentLabel} - ${lead.organization}`,
         html: generateEmailHtml(lead),

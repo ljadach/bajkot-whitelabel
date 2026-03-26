@@ -1,11 +1,11 @@
 {
   "meta": {
-    "title": "FAQ — BiD",
-    "description": "Odpowiedzi na najczęstsze pytania o spersonalizowane bajki terapeutyczne BiD."
+    "title": "FAQ — Bajkoterapia",
+    "description": "Odpowiedzi na najczęstsze pytania o spersonalizowane bajki terapeutyczne Bajkoterapia."
   },
   "hero": {
     "title": "Najczęściej zadawane pytania",
-    "subtitle": "Wszystko o BiD. Nie znalazłeś odpowiedzi? Napisz do nas."
+    "subtitle": "Wszystko o Bajkoterapia. Nie znalazłeś odpowiedzi? Napisz do nas."
   },
   "breadcrumb": "FAQ",
   "supportBreadcrumb": "Wsparcie",
@@ -25,9 +25,9 @@
   },
   "categoryOrder": ["gettingStarted", "content", "technical", "safety"],
   "items": {
-    "whatIsBiD": {
-      "question": "Czym jest BiD?",
-      "answer": "BiD tworzy spersonalizowane bajki terapeutyczne dla dzieci. Opisujesz sytuację dziecka (lęki, wyzwania, trudne emocje), a nasz system generuje bajkę z ilustracjami, w której bohater wygląda jak Twoje dziecko i przeżywa podobne wyzwania — ucząc się nowych strategii radzenia sobie.",
+    "whatIsBajkoterapia": {
+      "question": "Czym jest Bajkoterapia?",
+      "answer": "Bajkoterapia tworzy spersonalizowane bajki terapeutyczne dla dzieci. Opisujesz sytuację dziecka (lęki, wyzwania, trudne emocje), a nasz system generuje bajkę z ilustracjami, w której bohater wygląda jak Twoje dziecko i przeżywa podobne wyzwania — ucząc się nowych strategii radzenia sobie.",
       "category": "gettingStarted",
       "faqVisible": true,
       "pages": ["home"]
@@ -41,7 +41,7 @@
     },
     "ageRange": {
       "question": "Dla jakiego wieku są bajki?",
-      "answer": "BiD tworzy bajki dla trzech grup wiekowych: 3-5 lat, 6-8 lat i 9+ lat. Tekst, słownictwo i elementy terapeutyczne są automatycznie dostosowane do wieku dziecka.",
+      "answer": "Bajkoterapia tworzy bajki dla trzech grup wiekowych: 3-5 lat, 6-8 lat i 9+ lat. Tekst, słownictwo i elementy terapeutyczne są automatycznie dostosowane do wieku dziecka.",
       "category": "gettingStarted",
       "faqVisible": true,
       "pages": ["home"]
@@ -55,7 +55,7 @@
     },
     "problems": {
       "question": "Jakie problemy mogą być tematem bajki?",
-      "answer": "BiD obsługuje szeroką gamę wyzwań dziecięcych: strach przed ciemnością, lęk separacyjny, problemy z rówieśnikami, trudności z wyrażaniem emocji, nieśmiałość, złość, zmiany życiowe (przeprowadzka, nowe rodzeństwo) i wiele innych.",
+      "answer": "Bajkoterapia obsługuje szeroką gamę wyzwań dziecięcych: strach przed ciemnością, lęk separacyjny, problemy z rówieśnikami, trudności z wyrażaniem emocji, nieśmiałość, złość, zmiany życiowe (przeprowadzka, nowe rodzeństwo) i wiele innych.",
       "category": "content",
       "faqVisible": true,
       "pages": ["home"]

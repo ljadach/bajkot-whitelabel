@@ -94,7 +94,7 @@ export function FaqPage() {
             {
               '@type': 'ListItem',
               position: 1,
-              name: 'BiD',
+              name: 'Bajkoterapia',
               item: `https://bajkot.pl/${lang}/`,
             },
             {

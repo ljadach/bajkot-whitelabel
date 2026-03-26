@@ -106,7 +106,7 @@ export function AdminLayout() {
       <nav className="w-52 bg-white border-r border-neutral-200 flex flex-col py-5 px-3 shrink-0">
         <div className="px-3 mb-6">
           <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
-            BiD Admin
+            Bajkoterapia Admin
           </span>
         </div>
         <div className="space-y-0.5">

@@ -103,7 +103,7 @@ const applicationTables = {
   }).index('by_created', ['createdAt']),
 
   // ============================================
-  // Book Pipeline (Bajkot)
+  // Book Pipeline (Bajkoterapia)
   // ============================================
 
   bookOrders: defineTable({
