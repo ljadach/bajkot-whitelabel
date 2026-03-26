@@ -658,12 +658,21 @@ export const directArt = internalAction({
         async (span) => {
           span.update({ orderId, agent: 'A5' });
 
+          // Art style is intentionally NOT baked into A5 prompts.
+          // A7 (illustrate) prepends the user's chosen style (A or B) at generation time.
+          // If A5 bakes style into ill.prompt, it conflicts with the chosen style in A7.
           const systemPrompt = await getPrompt(ctx, PromptTemplate.BookArtDirector, {
             CHARACTER_PROFILE: order.characterProfile!,
             STORY_BLUEPRINT: order.storyBlueprint!,
             STORY_DRAFT: order.storyDraft!,
-            ART_STYLE: profile.artStyleSpec?.style || profile.visualPromptBase || STYLE_A.style,
-            ART_MODIFIERS: profile.artStyleSpec?.modifiers || STYLE_A.modifiers,
+            ART_STYLE:
+              'NEUTRAL — do NOT include any art style directives in your prompts. ' +
+              'Describe scenes, characters, environments, composition, and mood ONLY. ' +
+              'The visual rendering style will be applied separately at image generation time.',
+            ART_MODIFIERS:
+              'NONE — omit all style modifiers from prompts. ' +
+              'Focus on: what is happening, who is in the scene, where it takes place, ' +
+              'lighting/mood, and camera angle. No references to ink, watercolor, collage, etc.',
           });
 
           const userMessage = `Design all 7 illustration prompts (cover + scene_1 through scene_6).
@@ -792,16 +801,18 @@ export const designCharacter = internalAction({
       if (!order?.characterProfile) throw new Error('Missing character profile');
 
       const profile = parseArtifact<CharacterProfile>(order.characterProfile, 'characterProfile');
-      const childDesc = profile.physicalDescription || profile.visualPromptBase || '';
+      // Use same field priority as A7 for consistency
+      const childDesc =
+        profile.descriptionEn || profile.physicalDescription || profile.visualPromptBase || '';
 
       // Generate Style A reference image
-      const promptA = `Children's book character design in BOLD GRAPHIC MIXED-MEDIA style: THICK BLACK INK OUTLINES, paper collage textures, FLAT color shapes, cream paper background. Character: ${childDesc}, standing in a neutral pose, front view, full body visible, centered composition. Style: ${STYLE_A.style}. ${STYLE_A.modifiers}. Character design reference sheet, well-lit, no text.`;
+      const promptA = `Children's book character design. Character: ${childDesc}, standing in a neutral pose, front view, full body visible, centered composition. Style: ${STYLE_A.style}. ${STYLE_A.modifiers}. Character design reference sheet, well-lit, no text.`;
 
       await checkCallBudget(ctx, orderId);
       const imageA = await generateImage(promptA, { width: 512, height: 512 });
 
       // Generate Style B reference image
-      const promptB = `Children's book character design in SOFT WATERCOLOR PAINTING style: NO OUTLINES, wet watercolor washes, paint bleeding and dripping, dreamy atmospheric background. Character: ${childDesc}, standing in a neutral pose, front view, full body visible, centered composition. Style: ${STYLE_B.style}. ${STYLE_B.modifiers}. Character design reference sheet, well-lit, no text.`;
+      const promptB = `Children's book character design. Character: ${childDesc}, standing in a neutral pose, front view, full body visible, centered composition. Style: ${STYLE_B.style}. ${STYLE_B.modifiers}. Character design reference sheet, well-lit, no text.`;
 
       await checkCallBudget(ctx, orderId);
       const imageB = await generateImage(promptB, { width: 512, height: 512 });
@@ -945,7 +956,8 @@ export const illustrate = internalAction({
 
       // Build consistency preamble (trustee-parity: include guide + visual anchor)
       const styleLine = `${chosenStyle.style}. ${chosenStyle.modifiers}.`;
-      const childDesc = profile.descriptionEn || profile.physicalDescription || '';
+      const childDesc =
+        profile.descriptionEn || profile.physicalDescription || profile.visualPromptBase || '';
       const childLine = childDesc ? `Main character (appears in EVERY image): ${childDesc}.` : '';
       const guideLine = profile.guideCharacter?.descriptionEn
         ? `Guide character: ${profile.guideCharacter.descriptionEn}.`
