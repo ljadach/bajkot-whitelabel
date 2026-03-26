@@ -27,7 +27,6 @@ import PDFDocument from 'pdfkit';
 // load Helvetica.afm from filesystem. On Convex serverless runtime those AFM
 // files don't exist. We skip the default font load — we register NotoSans
 // custom fonts immediately after construction instead.
-const _origInitFonts = PDFDocument.prototype.initFonts;
 PDFDocument.prototype.initFonts = function (this: any) {
   this._fontFamilies = {};
   this._fontCount = 0;
@@ -141,6 +140,10 @@ export const generatePdf = internalAction({
       log('Registering fonts with PDFKit...');
       doc.registerFont('Body', regular);
       doc.registerFont('Title', bold);
+      // Alias standard PDF fonts → NotoSans so any internal PDFKit code path
+      // that calls font('Helvetica') resolves cleanly instead of loading AFM.
+      doc.registerFont('Helvetica', regular);
+      doc.registerFont('Helvetica-Bold', bold);
       doc.font('Body'); // Set default font (initFonts was patched to skip Helvetica)
       log('Fonts registered successfully');
 

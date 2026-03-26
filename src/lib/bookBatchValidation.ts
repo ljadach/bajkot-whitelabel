@@ -28,6 +28,7 @@ export interface BatchProfile {
   glasses: boolean;
   email?: string;
   chosenStyle?: 'A' | 'B';
+  skipQaReviews?: boolean;
 }
 
 export function validateBatchProfile(profile: unknown): { valid: boolean; errors: string[] } {

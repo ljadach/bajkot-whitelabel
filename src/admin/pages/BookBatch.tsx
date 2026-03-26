@@ -116,6 +116,7 @@ function LaunchTab() {
   const batchCreate = useAction(api.admin.bookBatch.batchCreate);
   const [launching, setLaunching] = useState<string | null>(null);
   const [launchResult, setLaunchResult] = useState<string | null>(null);
+  const [skipQaReviews, setSkipQaReviews] = useState(false);
 
   // Custom batch state
   const [jsonInput, setJsonInput] = useState('');
@@ -130,7 +131,8 @@ function LaunchTab() {
     setLaunching(profile.childName);
     setLaunchResult(null);
     try {
-      const result = await batchCreate({ orders: [profile] });
+      const order = skipQaReviews ? { ...profile, skipQaReviews: true } : profile;
+      const result = await batchCreate({ orders: [order] });
       setLaunchResult(`${profile.childName}: ${result.created.length > 0 ? 'started' : 'failed'}`);
     } catch (err) {
       setLaunchResult(`${profile.childName}: ${err instanceof Error ? err.message : String(err)}`);
@@ -143,7 +145,10 @@ function LaunchTab() {
     setLaunching('all');
     setLaunchResult(null);
     try {
-      const result = await batchCreate({ orders: PRECANNED_PROFILES });
+      const orders = skipQaReviews
+        ? PRECANNED_PROFILES.map((p) => ({ ...p, skipQaReviews: true as const }))
+        : PRECANNED_PROFILES;
+      const result = await batchCreate({ orders });
       setLaunchResult(`Started ${result.created.length}/${PRECANNED_PROFILES.length} orders`);
     } catch (err) {
       setLaunchResult(`Error: ${err instanceof Error ? err.message : String(err)}`);
@@ -192,11 +197,32 @@ function LaunchTab() {
 
   return (
     <div className="space-y-6">
+      {/* Fast Mode Toggle */}
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 flex items-center gap-4">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={skipQaReviews}
+            onChange={(e) => setSkipQaReviews(e.target.checked)}
+            className="rounded border-amber-400 text-amber-600 focus:ring-amber-500"
+          />
+          <span className="text-sm font-semibold text-amber-900">Fast Mode</span>
+        </label>
+        <span className="text-xs text-amber-700">
+          Pomija recenzje QA (A4, A8, A10) — szybciej, bez weryfikacji jakości
+        </span>
+      </div>
+
       {/* Quick Launch */}
       <div className="rounded-xl border border-neutral-200 bg-white p-6 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-bold uppercase tracking-wide text-neutral-400">
             Quick Launch
+            {skipQaReviews && (
+              <span className="ml-2 text-xs font-semibold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full normal-case tracking-normal">
+                FAST
+              </span>
+            )}
           </h2>
           <button
             onClick={() => void handleLaunchAll()}
@@ -381,7 +407,14 @@ function OrdersTab() {
                     onClick={() => setExpandedId(expandedId === o._id ? null : o._id)}
                     className={`border-b border-neutral-100 cursor-pointer hover:bg-neutral-50 transition-colors ${expandedId === o._id ? 'bg-neutral-50' : ''}`}
                   >
-                    <td className="py-2 pr-3 font-medium">{o.childName}</td>
+                    <td className="py-2 pr-3 font-medium">
+                      {o.childName}
+                      {o.skipQaReviews && (
+                        <span className="ml-1.5 text-[10px] font-semibold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-full">
+                          FAST
+                        </span>
+                      )}
+                    </td>
                     <td className="py-2 pr-3">
                       <span
                         className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_COLORS[o.status] ?? 'bg-neutral-100 text-neutral-700'}`}
@@ -424,8 +457,10 @@ function OrderDetailPanel({ orderId }: { orderId: Id<'bookOrders'> }) {
   const pipelineEvents = useQuery(api.bookPipelineEvents.getOrderEvents, { orderId });
   const retryOrder = useAction(api.admin.bookBatch.retryOrder);
   const cancelOrderAction = useAction(api.admin.bookBatch.cancelOrder);
+  const regeneratePdfAction = useAction(api.admin.bookBatch.regeneratePdf);
   const [retrying, setRetrying] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
   const [retryAgent, setRetryAgent] = useState('');
   const [openArtifacts, setOpenArtifacts] = useState<Set<string>>(new Set());
   const [timelineOpen, setTimelineOpen] = useState(false);
@@ -453,6 +488,18 @@ function OrderDetailPanel({ orderId }: { orderId: Id<'bookOrders'> }) {
       // Error visible in order status
     } finally {
       setCancelling(false);
+    }
+  };
+
+  const handleRegeneratePdf = async () => {
+    setRegenerating(true);
+    try {
+      await regeneratePdfAction({ orderId });
+      toast.success('PDF regeneration started');
+    } catch (err) {
+      toast.error(`PDF regen failed: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setRegenerating(false);
     }
   };
 
@@ -488,6 +535,11 @@ function OrderDetailPanel({ orderId }: { orderId: Id<'bookOrders'> }) {
         )}
         {detail.error && (
           <span className="text-xs text-red-600 max-w-md truncate">{detail.error}</span>
+        )}
+        {detail.skipQaReviews && (
+          <span className="text-xs font-semibold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">
+            FAST
+          </span>
         )}
         <span className="text-xs text-neutral-400">Retries: {detail.retryCount}</span>
       </div>
@@ -678,8 +730,8 @@ function OrderDetailPanel({ orderId }: { orderId: Id<'bookOrders'> }) {
       )}
 
       {/* PDF */}
-      {detail.pdfUrl && (
-        <div>
+      <div className="flex items-center gap-3">
+        {detail.pdfUrl && (
           <a
             href={detail.pdfUrl}
             target="_blank"
@@ -688,8 +740,17 @@ function OrderDetailPanel({ orderId }: { orderId: Id<'bookOrders'> }) {
           >
             Pobierz PDF
           </a>
-        </div>
-      )}
+        )}
+        {detail.storyDraft && (
+          <button
+            onClick={() => void handleRegeneratePdf()}
+            disabled={regenerating || detail.status === 'composing_pdf'}
+            className="rounded-md bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-500 disabled:opacity-40"
+          >
+            {regenerating ? 'Generuję...' : 'Regeneruj PDF'}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

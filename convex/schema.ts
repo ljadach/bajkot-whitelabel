@@ -124,6 +124,9 @@ const applicationTables = {
     outfit: v.string(),
     email: v.optional(v.string()),
 
+    // Fast mode flags (admin batch)
+    skipQaReviews: v.optional(v.boolean()),
+
     // Pipeline status
     status: v.union(
       v.literal('intake'),

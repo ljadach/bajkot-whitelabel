@@ -505,6 +505,19 @@ export const reviewPsych = internalAction({
         throw new Error('Missing artifacts for psych review');
       }
 
+      // Fast mode: skip QA review entirely
+      if (order.skipQaReviews) {
+        console.log('[A4] skipQaReviews=true — auto-PASS, proceeding to A5');
+        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+          orderId,
+          agent: 'A4',
+          event: 'complete',
+          narrative: 'Recenzja psychologiczna pominięta (tryb szybki)',
+        });
+        await ctx.scheduler.runAfter(0, internal.bookAgents.directArt, { orderId });
+        return null;
+      }
+
       const logContext = buildInternalLogContext(ctx, order.clerkUserId);
 
       const review = await startActiveObservation(
@@ -1024,6 +1037,19 @@ export const reviewVisual = internalAction({
         throw new Error('Missing artifacts for visual QA');
       }
 
+      // Fast mode: skip visual QA entirely
+      if (order.skipQaReviews) {
+        console.log('[A8] skipQaReviews=true — auto-PASS, proceeding to A9');
+        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+          orderId,
+          agent: 'A8',
+          event: 'complete',
+          narrative: 'Kontrola wizualna pominięta (tryb szybki)',
+        });
+        await ctx.scheduler.runAfter(0, internal.bookAgents.composePdf, { orderId });
+        return null;
+      }
+
       const logContext = buildInternalLogContext(ctx, order.clerkUserId);
       const plan = parseArtifact<IllustrationPlan>(order.illustrationPlan, 'illustrationPlan');
       const profile = parseArtifact<CharacterProfile>(order.characterProfile, 'characterProfile');
@@ -1191,6 +1217,19 @@ export const reviewFinal = internalAction({
       const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
       if (!order?.storyDraft || !order?.characterProfile || !order?.illustrationPlan) {
         throw new Error('Missing artifacts for final QA');
+      }
+
+      // Fast mode: skip final QA entirely
+      if (order.skipQaReviews) {
+        console.log('[A10] skipQaReviews=true — auto-DELIVER, proceeding to A11');
+        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+          orderId,
+          agent: 'A10',
+          event: 'complete',
+          narrative: 'Kontrola końcowa pominięta (tryb szybki)',
+        });
+        await ctx.scheduler.runAfter(0, internal.bookAgents.deliver, { orderId });
+        return null;
       }
 
       const logContext = buildInternalLogContext(ctx, order.clerkUserId);

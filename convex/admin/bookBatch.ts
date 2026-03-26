@@ -101,6 +101,7 @@ export const listOrders = query({
       currentAgent: v.union(v.string(), v.null()),
       error: v.union(v.string(), v.null()),
       chosenStyle: v.union(v.string(), v.null()),
+      skipQaReviews: v.boolean(),
       createdAt: v.number(),
     }),
   ),
@@ -116,6 +117,7 @@ export const listOrders = query({
       currentAgent: o.currentAgent ?? null,
       error: o.error ?? null,
       chosenStyle: o.chosenStyle ?? null,
+      skipQaReviews: o.skipQaReviews ?? false,
       createdAt: o.createdAt,
     }));
   },
@@ -138,6 +140,7 @@ const batchOrderProfileValidator = v.object({
   outfit: v.string(),
   email: v.optional(v.string()),
   chosenStyle: v.optional(v.union(v.literal('A'), v.literal('B'))),
+  skipQaReviews: v.optional(v.boolean()),
 });
 
 export const createBatchOrder = internalMutation({
@@ -163,6 +166,7 @@ export const createBatchOrder = internalMutation({
       outfit: profile.outfit,
       email: profile.email,
       chosenStyle: profile.chosenStyle ?? 'A',
+      skipQaReviews: profile.skipQaReviews ?? false,
       status: 'intake',
       createdAt: Date.now(),
     });
@@ -281,6 +285,8 @@ export const getOrderDetail = query({
       error: order.error ?? null,
       chosenStyle: order.chosenStyle ?? null,
       retryCount: order.retryCount ?? 0,
+      skipQaReviews: order.skipQaReviews ?? false,
+      llmCallCount: order.llmCallCount ?? null,
       createdAt: order.createdAt,
       updatedAt: order.updatedAt ?? null,
       completedAt: order.completedAt ?? null,
@@ -390,6 +396,32 @@ export const retryOrder = action({
     if (!fn) throw new Error(`No function for agent: ${agent}`);
 
     await ctx.scheduler.runAfter(0, fn, { orderId });
+    return null;
+  },
+});
+
+// ── Regenerate PDF for an existing order ─────────────────────
+
+export const regeneratePdf = action({
+  args: { orderId: v.id('bookOrders') },
+  returns: v.null(),
+  handler: async (ctx, { orderId }) => {
+    const { subject } = await assertAdmin(ctx);
+
+    const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
+    if (!order) throw new Error('Order not found');
+    if (!order.storyDraft) throw new Error('Cannot regenerate PDF — no story draft');
+
+    // Reset to composing_pdf and schedule A9
+    await ctx.runMutation(internal.admin.bookBatch.resetOrderForRetry, {
+      orderId,
+      status: 'composing_pdf',
+      currentAgent: 'A9',
+      actor: subject,
+      fromAgent: 'A9',
+    });
+
+    await ctx.scheduler.runAfter(0, internal.bookAgents.composePdf, { orderId });
     return null;
   },
 });
