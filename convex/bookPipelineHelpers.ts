@@ -8,6 +8,23 @@ import { internal } from './_generated/api';
 import { v } from 'convex/values';
 import { getNarrative } from './bookPipelineEvents';
 
+// ── Debug: list recent orders (internal only) ─────────────
+
+export const listRecentOrders = internalQuery({
+  args: {},
+  returns: v.any(),
+  handler: async (ctx) => {
+    const orders = await ctx.db.query('bookOrders').order('desc').take(5);
+    return orders.map((o) => ({
+      _id: o._id,
+      childName: o.childName,
+      status: o.status,
+      currentAgent: o.currentAgent ?? null,
+      error: o.error ?? null,
+    }));
+  },
+});
+
 // ── Get Order ──────────────────────────────────────────────
 
 export const getOrder = internalQuery({
