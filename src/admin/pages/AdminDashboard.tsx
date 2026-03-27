@@ -130,7 +130,7 @@ export function AdminDashboard() {
             </p>
             {stats.failedOrders > 0 && (
               <Link
-                to="/admin/batch"
+                to="/admin/batch?tab=orders"
                 className="text-xs text-red-600 hover:text-red-500 mt-2 block"
               >
                 View failed orders &rarr;
@@ -144,7 +144,7 @@ export function AdminDashboard() {
         <div className="px-5 py-4 border-b border-neutral-100 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-neutral-700">Recent Orders</h2>
           <Link
-            to="/admin/batch"
+            to="/admin/batch?tab=orders"
             className="text-xs text-neutral-400 hover:text-neutral-600 transition-colors"
           >
             View all &rarr;
@@ -177,7 +177,7 @@ export function AdminDashboard() {
                 >
                   <td className="px-5 py-3">
                     <Link
-                      to="/admin/batch"
+                      to="/admin/batch?tab=orders"
                       className="font-medium text-neutral-700 hover:text-neutral-900"
                     >
                       {order.childName}

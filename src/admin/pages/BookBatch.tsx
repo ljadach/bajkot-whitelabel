@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { useQuery, useAction, useMutation } from 'convex/react';
+import { useSearchParams } from 'react-router';
 import { api } from '../../../convex/_generated/api';
 import {
   validateBatchProfile,
@@ -67,7 +68,12 @@ function downloadJson(content: string, filename: string) {
 // ════════════════════════════════════════════════════════════
 
 export function BookBatch() {
-  const [activeTab, setActiveTab] = useState<Tab>('launch');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlTab = searchParams.get('tab');
+  const activeTab: Tab = urlTab === 'orders' || urlTab === 'prompts' ? urlTab : 'launch';
+
+  const switchTab = (tab: Tab) =>
+    setSearchParams(tab === 'launch' ? {} : { tab }, { replace: true });
 
   return (
     <div className="space-y-6">
@@ -89,7 +95,7 @@ export function BookBatch() {
         ).map(([tab, label]) => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => switchTab(tab)}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === tab
                 ? 'border-neutral-900 text-neutral-900'

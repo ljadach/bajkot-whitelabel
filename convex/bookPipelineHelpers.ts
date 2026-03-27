@@ -3,9 +3,10 @@
  * NO "use node" — this file contains only queries and mutations.
  */
 
-import { internalMutation, internalQuery } from './_generated/server';
+import { internalMutation, internalQuery, type MutationCtx } from './_generated/server';
 import { internal } from './_generated/api';
 import { v } from 'convex/values';
+import { type Id } from './_generated/dataModel';
 import { getNarrative } from './bookPipelineEvents';
 
 // ── Debug: list recent orders (internal only) ─────────────
@@ -304,57 +305,68 @@ export const getIllustrations = internalQuery({
 });
 
 // ── Auto-resolve Style Votes (Cron) ──────────────────────
-// Orders stuck in style_vote for 15+ minutes get auto-resolved to Style A.
+// Orders waiting for style vote for 15+ minutes get auto-resolved to Style A.
+// Also catches orders stuck due to A5/A6 race condition (status art_direction
+// but style vote images ready and no chosenStyle).
 
 const STYLE_VOTE_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
+
+async function autoResolveOrder(ctx: MutationCtx, order: { _id: Id<'bookOrders'> }) {
+  const now = Date.now();
+  console.warn(`[autoResolveStyleVotes] Order ${order._id} — defaulting to Style A`);
+  await ctx.db.insert('bookPipelineEvents', {
+    orderId: order._id,
+    agent: 'A6b',
+    event: 'info',
+    narrative: 'Czas na wybór stylu minął — wybieram automatycznie styl A',
+    timestamp: now,
+  });
+  await ctx.db.patch(order._id, { chosenStyle: 'A', updatedAt: now });
+  await ctx.db.insert('bookPipelineEvents', {
+    orderId: order._id,
+    agent: 'A6b',
+    event: 'complete',
+    narrative: getNarrative('A6b', 'complete'),
+    timestamp: now,
+  });
+  // Reuse existing merge logic (checks both tracks + guards against double-schedule)
+  await ctx.scheduler.runAfter(0, internal.bookPipelineHelpers.checkParallelTracksComplete, {
+    orderId: order._id,
+  });
+}
 
 export const autoResolveStyleVotes = internalMutation({
   args: {},
   returns: v.null(),
   handler: async (ctx) => {
     const cutoff = Date.now() - STYLE_VOTE_TIMEOUT_MS;
-    const stuckOrders = await ctx.db
+
+    // 1. Normal case: orders explicitly waiting for style_vote
+    const voteOrders = await ctx.db
       .query('bookOrders')
       .withIndex('by_status', (q) => q.eq('status', 'style_vote'))
       .take(50);
 
-    for (const order of stuckOrders) {
+    for (const order of voteOrders) {
       const orderTime = order.updatedAt || order.createdAt;
       if (orderTime >= cutoff || order.chosenStyle) continue;
-
-      console.warn(
-        `[autoResolveStyleVotes] Order ${order._id} timed out at style_vote — defaulting to Style A`,
-      );
-      await ctx.db.insert('bookPipelineEvents', {
-        orderId: order._id,
-        agent: 'A6b',
-        event: 'info',
-        narrative: 'Czas na wybór stylu minął — wybieram automatycznie styl A',
-        timestamp: Date.now(),
-      });
-      await ctx.db.patch(order._id, {
-        chosenStyle: 'A',
-        updatedAt: Date.now(),
-      });
-      await ctx.db.insert('bookPipelineEvents', {
-        orderId: order._id,
-        agent: 'A6b',
-        event: 'complete',
-        narrative: getNarrative('A6b', 'complete'),
-        timestamp: Date.now(),
-      });
-      // Re-read to get current illustrationPlan state (may have changed since query snapshot)
-      const fresh = await ctx.db.get(order._id);
-      if (fresh && !!fresh.illustrationPlan && fresh.status !== 'illustrating') {
-        await ctx.db.patch(order._id, {
-          status: 'illustrating',
-          updatedAt: Date.now(),
-        });
-        await ctx.scheduler.runAfter(0, internal.bookAgents.illustrate, {
-          orderId: order._id,
-        });
-      }
+      await autoResolveOrder(ctx, order);
     }
+
+    // 2. Race condition case: A5 overwrote style_vote with art_direction,
+    //    but A6 already generated vote images. Resolve if stuck 15+ min.
+    const artOrders = await ctx.db
+      .query('bookOrders')
+      .withIndex('by_status', (q) => q.eq('status', 'art_direction'))
+      .take(50);
+
+    for (const order of artOrders) {
+      const orderTime = order.updatedAt || order.createdAt;
+      if (orderTime >= cutoff || order.chosenStyle) continue;
+      if (!order.styleVoteImageA || !order.styleVoteImageB) continue;
+      await autoResolveOrder(ctx, order);
+    }
+
     return null;
   },
 });

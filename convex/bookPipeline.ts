@@ -26,6 +26,7 @@ export const startOrder = action({
     skinTone: v.string(),
     outfit: v.string(),
     email: v.optional(v.string()),
+    skipQaReviews: v.optional(v.boolean()),
   },
   returns: v.object({ orderId: v.id('bookOrders') }),
   handler: async (ctx, args): Promise<{ orderId: Id<'bookOrders'> }> => {
@@ -66,6 +67,7 @@ export const startOrder = action({
       skinTone: args.skinTone,
       outfit: args.outfit,
       email: args.email,
+      skipQaReviews: args.skipQaReviews,
     });
 
     // Schedule A0 (intake)
@@ -93,6 +95,7 @@ export const createOrder = internalMutation({
     skinTone: v.string(),
     outfit: v.string(),
     email: v.optional(v.string()),
+    skipQaReviews: v.optional(v.boolean()),
   },
   returns: v.id('bookOrders'),
   handler: async (ctx, args) => {
@@ -111,6 +114,7 @@ export const createOrder = internalMutation({
       skinTone: args.skinTone,
       outfit: args.outfit,
       email: args.email,
+      skipQaReviews: args.skipQaReviews,
       status: 'intake',
       createdAt: Date.now(),
     });
@@ -157,6 +161,7 @@ export const getStyleVoteImages = query({
     imageUrlA: v.union(v.string(), v.null()),
     imageUrlB: v.union(v.string(), v.null()),
     status: v.string(),
+    chosenStyle: v.union(v.string(), v.null()),
   }),
   handler: async (ctx, { orderId }) => {
     const order = await assertOrderOwner(ctx, orderId);
@@ -175,6 +180,7 @@ export const getStyleVoteImages = query({
       imageUrlA,
       imageUrlB,
       status: order.status,
+      chosenStyle: order.chosenStyle ?? null,
     };
   },
 });
@@ -189,7 +195,7 @@ export const submitStyleVote = mutation({
   returns: v.null(),
   handler: async (ctx, { orderId, choice }) => {
     const order = await assertOrderOwner(ctx, orderId);
-    if (order.chosenStyle) throw new Error('Style already chosen');
+    if (order.chosenStyle) return null; // Already chosen (e.g. fast mode) — no-op
     if (!order.styleVoteImageA || !order.styleVoteImageB)
       throw new Error('Style vote images not ready');
 

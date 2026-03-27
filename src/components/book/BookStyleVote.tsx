@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useQuery, useMutation } from 'convex/react';
 import { useTranslation } from 'react-i18next';
@@ -18,6 +18,13 @@ export function BookStyleVote() {
     api.bookPipeline.getStyleVoteImages,
     orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip',
   );
+
+  // Redirect if style already chosen (e.g. fast mode)
+  useEffect(() => {
+    if (images?.chosenStyle && orderId) {
+      void navigate(`/book/${orderId}/progress`, { replace: true });
+    }
+  }, [images?.chosenStyle, orderId, navigate]);
 
   const submitVote = useMutation(api.bookPipeline.submitStyleVote);
 

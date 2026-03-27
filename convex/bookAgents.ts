@@ -633,11 +633,15 @@ export const directArt = internalAction({
   returns: v.null(),
   handler: async (ctx, { orderId }) => {
     try {
-      await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
-        orderId,
-        status: 'art_direction',
-        currentAgent: 'A5',
-      });
+      // Don't overwrite style_vote status — A6 may have set it for user interaction
+      const preOrder = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
+      if (preOrder?.status !== 'style_vote') {
+        await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
+          orderId,
+          status: 'art_direction',
+          currentAgent: 'A5',
+        });
+      }
       await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
         orderId,
         agent: 'A5',
@@ -645,7 +649,7 @@ export const directArt = internalAction({
         narrative: getNarrative('A5', 'start'),
       });
 
-      const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
+      const order = preOrder;
       if (!order?.storyDraft || !order?.characterProfile || !order?.storyBlueprint) {
         throw new Error('Missing artifacts for art direction');
       }

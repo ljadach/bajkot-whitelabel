@@ -34,6 +34,7 @@ interface FormData {
   favoriteToy: string;
   email: string;
   disclaimer: boolean;
+  skipQaReviews: boolean;
 }
 
 const initialForm: FormData = {
@@ -52,6 +53,7 @@ const initialForm: FormData = {
   favoriteToy: '',
   email: '',
   disclaimer: false,
+  skipQaReviews: false,
 };
 
 export function BookOrderForm() {
@@ -146,6 +148,7 @@ export function BookOrderForm() {
         skinTone: form.skinTone,
         outfit: form.outfit,
         email: form.email || undefined,
+        skipQaReviews: form.skipQaReviews || undefined,
       });
       void navigate(`/book/${result.orderId}/progress`);
     } catch (err) {
@@ -504,9 +507,20 @@ export function BookOrderForm() {
             <p className="mt-1 text-xs text-muted">{t('order.emailHint')}</p>
           </div>
 
-          {/* Batch export: style select + copy JSON */}
+          {/* Dev tools: fast mode + batch export */}
           <div className="mt-4 rounded-lg border border-dashed border-neutral-300 bg-neutral-50 p-3">
-            <p className="text-xs font-semibold text-neutral-500 mb-2">Batch export</p>
+            <p className="text-xs font-semibold text-neutral-500 mb-2">Dev tools</p>
+            <label className="flex items-center gap-2 mb-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.skipQaReviews}
+                onChange={(e) => update('skipQaReviews', e.target.checked)}
+                className="shrink-0"
+              />
+              <span className="text-xs text-neutral-600">
+                FAST mode — pomija QA reviews (A4, A8, A10)
+              </span>
+            </label>
             <div className="flex items-center gap-2">
               <select
                 value={chosenStyleExport}
