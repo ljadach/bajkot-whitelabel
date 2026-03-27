@@ -1206,7 +1206,7 @@ export const composePdf = internalAction({
 });
 
 // ════════════════════════════════════════════════════════════
-// A10 — Final QA (Multimodal — text + images, richer checks)
+// A10 — Final QA (programmatic sanity check — no LLM)
 // ════════════════════════════════════════════════════════════
 
 export const reviewFinal = internalAction({
@@ -1244,39 +1244,97 @@ export const reviewFinal = internalAction({
         return null;
       }
 
-      const logContext = buildInternalLogContext(ctx, order.clerkUserId);
+      // ── Programmatic checks ──────────────────────────
+      const issues: string[] = [];
 
-      // Fetch illustration images for multimodal review
+      // 1. Parse artifacts
+      let draft: StoryDraft | null = null;
+      let plan: IllustrationPlan | null = null;
+      try {
+        draft = parseArtifact<StoryDraft>(order.storyDraft, 'storyDraft');
+        parseArtifact<CharacterProfile>(order.characterProfile, 'characterProfile');
+        plan = parseArtifact<IllustrationPlan>(order.illustrationPlan, 'illustrationPlan');
+      } catch {
+        issues.push(
+          'Cannot parse one or more artifacts (storyDraft, characterProfile, illustrationPlan)',
+        );
+      }
+
+      const artifactsPresent = draft !== null && plan !== null;
+
+      // 2. Child's name in story
+      const childName = order.childName;
+      let nameInStory = false;
+      if (draft) {
+        const allText = [draft.title, draft.dedication, ...draft.pages.map((p) => p.text)].join(
+          ' ',
+        );
+        nameInStory = allText.includes(childName);
+        if (!nameInStory) {
+          issues.push(`Child name "${childName}" not found in story text`);
+        }
+      }
+
+      // 3. Dedication
+      const dedicationPresent = !!draft?.dedication?.trim();
+      if (!dedicationPresent) {
+        issues.push('Dedication is empty or missing');
+      }
+
+      // 4. Pages complete — all pages have non-empty text
+      let pagesComplete = false;
+      if (draft) {
+        const emptyPages = draft.pages.filter((p) => !p.text?.trim());
+        pagesComplete = draft.pages.length > 0 && emptyPages.length === 0;
+        if (draft.pages.length === 0) {
+          issues.push('Story has no pages');
+        } else if (emptyPages.length > 0) {
+          issues.push(`${emptyPages.length} page(s) have empty text`);
+        }
+      }
+
+      // 5. Illustrations complete — count matches plan
       const illustrations = await ctx.runQuery(internal.bookPipelineHelpers.getIllustrations, {
         orderId,
       });
-      const images = await fetchIllustrationImages(ctx, illustrations, 'A10');
+      const expectedCount = plan?.illustrations?.length ?? 0;
+      const actualCount = illustrations.length;
+      const illustrationsComplete = expectedCount > 0 && actualCount >= expectedCount;
+      if (expectedCount === 0) {
+        issues.push('Illustration plan has no illustrations');
+      } else if (actualCount < expectedCount) {
+        issues.push(`Expected ${expectedCount} illustrations, got ${actualCount}`);
+      }
 
-      const qa = await startActiveObservation(
-        'bookAgent.reviewFinal',
-        async (span) => {
-          span.update({ orderId, agent: 'A10', imageCount: images.length });
+      // 6. Parent card
+      const parentCardPresent = !!(draft?.parentCard && draft.parentCard.questions?.length > 0);
+      if (!parentCardPresent) {
+        issues.push('Parent card missing or has no questions');
+      }
 
-          const systemPrompt = await getPrompt(ctx, PromptTemplate.BookFinalQa, {
-            STORY_DRAFT: order.storyDraft!,
-            CHARACTER_PROFILE: order.characterProfile!,
-            ILLUSTRATION_PLAN: order.illustrationPlan!,
-          });
+      // ── Build result ─────────────────────────────────
+      const allChecksPassed =
+        artifactsPresent &&
+        nameInStory &&
+        dedicationPresent &&
+        pagesComplete &&
+        illustrationsComplete &&
+        parentCardPresent;
 
-          await checkCallBudget(ctx, orderId);
-          return await chatJsonForStageWithImages<FinalQa>(
-            'book.finalQa',
-            {
-              system: systemPrompt,
-              user: `Perform final QA on this complete book. You have the story text, character profile, illustration plan, and ${images.length} actual illustrations attached. Check personalization, completeness, text-image coherence, and content safety. Return ONLY valid JSON.`,
-              images,
-            },
-            undefined,
-            logContext,
-          );
+      const qa: FinalQa = {
+        status: allChecksPassed ? 'PASS' : 'BLOCK',
+        checks: {
+          artifacts_present: artifactsPresent,
+          name_in_story: nameInStory,
+          dedication_present: dedicationPresent,
+          pages_complete: pagesComplete,
+          illustrations_complete: illustrationsComplete,
+          parent_card_present: parentCardPresent,
         },
-        { asType: 'span' },
-      );
+        issues,
+      };
+
+      console.log(`[A10] Programmatic QA: ${qa.status} (${issues.length} issues)`, issues);
 
       await ctx.runMutation(internal.bookPipelineHelpers.updateOrderArtifact, {
         orderId,
@@ -1284,10 +1342,9 @@ export const reviewFinal = internalAction({
         value: JSON.stringify(qa),
       });
 
-      // Handle recommendation
-      if (qa.recommendation === 'BLOCK') {
-        console.error(`[A10] Final QA BLOCKED order ${orderId}: ${qa.notes}`);
-        const blockMsg = `Final QA blocked: ${qa.notes}`;
+      if (qa.status === 'BLOCK') {
+        const blockMsg = `Final QA blocked: ${issues.join('; ')}`;
+        console.error(`[A10] ${blockMsg}`);
         await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
           orderId,
           agent: 'A10',
@@ -1302,16 +1359,12 @@ export const reviewFinal = internalAction({
           error: blockMsg,
         });
       } else {
-        if (qa.recommendation === 'DELIVER_WITH_FLAG') {
-          console.warn(`[A10] Delivering with flag: ${qa.notes}`);
-        }
         await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
           orderId,
           agent: 'A10',
           event: 'complete',
           narrative: getNarrative('A10', 'complete'),
         });
-        // DELIVER or DELIVER_WITH_FLAG → schedule A11
         await ctx.scheduler.runAfter(0, internal.bookAgents.deliver, { orderId });
       }
     } catch (error) {

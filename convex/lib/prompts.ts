@@ -80,13 +80,7 @@ export const templateSchemas: Record<PromptTemplate, z.ZodType<any>> = {
       MOOD_PALETTE_1: z.string().default('#C9A0DC'),
     })
     .strict(),
-  [PromptTemplate.BookFinalQa]: z
-    .object({
-      STORY_DRAFT: z.string(),
-      CHARACTER_PROFILE: z.string(),
-      ILLUSTRATION_PLAN: z.string(),
-    })
-    .strict(),
+  [PromptTemplate.BookFinalQa]: z.object({}).strict(),
   [PromptTemplate.BookDelivery]: z
     .object({
       CHILD_NAME: z.string().default(''),

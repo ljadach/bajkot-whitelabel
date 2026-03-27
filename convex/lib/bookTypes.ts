@@ -278,33 +278,21 @@ export interface VisualQa {
   confidence: string;
 }
 
-// ── A10: Final QA ────────────────────────────────
+// ── A10: Final QA (programmatic — no LLM) ───────
 
 export interface FinalQaChecks {
-  personalization: {
-    status: string;
-    name_correct: boolean;
-    dedication_present: boolean;
-    issues: string[];
-  };
-  completeness: {
-    status: string;
-    cover: boolean;
-    all_beats: boolean;
-    parent_card: boolean;
-    missing: string[];
-  };
-  text_image_coherence: { status: string; issues: string[] };
-  content_safety: { status: string; issues: string[] };
+  artifacts_present: boolean;
+  name_in_story: boolean;
+  dedication_present: boolean;
+  pages_complete: boolean;
+  illustrations_complete: boolean;
+  parent_card_present: boolean;
 }
 
 export interface FinalQa {
-  status: 'PASS' | 'MINOR_ISSUES' | 'FAIL';
+  status: 'PASS' | 'BLOCK';
   checks: FinalQaChecks;
-  overall_quality_score: number;
-  recommendation: 'DELIVER' | 'DELIVER_WITH_FLAG' | 'BLOCK';
-  notes: string;
-  confidence: string;
+  issues: string[];
 }
 
 // ── Problem Catalog Types ────────────────────────
