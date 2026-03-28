@@ -9,7 +9,7 @@ import { internalMutation, internalQuery, mutation, query } from '../_generated/
 import { v } from 'convex/values';
 import { assertAdmin } from '../lib/roles';
 import { auditLog } from '../lib/adminGuards';
-import { PromptTemplate } from '../lib/prompts/types';
+import { PromptTemplate, normalizeFallback } from '../lib/prompts/types';
 import { bookFallbacks } from '../lib/prompts/bookFallbacks';
 
 // Map PromptTemplate keys to human-readable agent names
@@ -611,7 +611,7 @@ export const seedPrompts = internalMutation({
       await ctx.db.insert('bookPrompts', {
         filename: meta.filename,
         agentName: meta.agent,
-        content: config.fallback,
+        content: normalizeFallback(config.fallback),
         isModified: false,
         updatedAt: Date.now(),
       });
