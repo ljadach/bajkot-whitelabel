@@ -41,14 +41,35 @@ export function BookResult() {
         <p className="text-sm text-muted mb-6">{t('result.description')}</p>
 
         {downloadUrl ? (
-          <a
-            href={downloadUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block rounded-lg bg-success px-8 py-3.5 text-lg font-semibold text-white hover:opacity-90 transition-colors"
-          >
-            {t('result.download')}
-          </a>
+          <div className="flex flex-col items-center gap-3">
+            <a
+              href={downloadUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block rounded-lg bg-success px-8 py-3.5 text-lg font-semibold text-white hover:opacity-90 transition-colors"
+            >
+              {t('result.download')}
+            </a>
+            <Link
+              to={`/book/${orderId}/print`}
+              className="inline-flex items-center gap-2 rounded-lg border-2 border-success/30 bg-emerald-50 px-6 py-2.5 text-sm font-semibold text-success hover:bg-emerald-100 transition-colors"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                />
+              </svg>
+              Wersja do druku
+            </Link>
+          </div>
         ) : (
           <div className="flex items-center justify-center gap-2">
             <div className="w-4 h-4 spinner" />

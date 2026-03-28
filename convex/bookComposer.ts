@@ -1,17 +1,21 @@
 'use node';
 
 /**
- * A9 — Book Composer (PDF generation)
+ * A9 - Book Composer (PDF generation)
  *
- * Generates a children's book PDF from story text + illustrations.
- * Uses PDFKit with NotoSans font for Polish diacritic support.
+ * Generates a children's book PDF as a landscape A4 booklet.
+ * Each printed sheet has 2 book pages side by side.
  *
- * Page layout (16 pages, 595.28pt square ≈ 210mm):
- *   1  — Cover (full-bleed illustration + title overlay)
- *   2  — Dedication
- *   3-14 — 6 beats x 2 pages: illustration full-page + text centered vertically
- *   15 — Parent card (discussion questions + activity)
- *   16 — Back cover (blurb + branding)
+ * Layout (5 PDF pages = 10 book pages):
+ *   Sheet 1: Cover (left) + Dedication (right)
+ *   Sheet 2: Beat 1 (left) + Beat 2 (right)
+ *   Sheet 3: Beat 3 (left) + Beat 4 (right)
+ *   Sheet 4: Beat 5 (left) + Beat 6 (right)
+ *   Sheet 5: Parent card (left) + Back cover (right)
+ *
+ * Each book page: illustration top ~53%, text bottom ~40%
+ * Fonts: NotoSans Regular + Bold (Polish diacritics)
+ * Decorative elements: leaf paths, rounded boxes, color washes
  */
 
 import { internalAction, type ActionCtx } from './_generated/server';
@@ -23,318 +27,242 @@ import type { Id } from './_generated/dataModel';
 import { getNarrative } from './bookPipelineEvents';
 import PDFDocument from 'pdfkit';
 
-// PDFKit's constructor calls initFonts() → font('Helvetica') which tries to
-// load Helvetica.afm from filesystem. On Convex serverless runtime those AFM
-// files don't exist. We skip the default font load — we register NotoSans
-// custom fonts immediately after construction instead.
+// Patch initFonts - Convex runtime has no Helvetica.afm files
 PDFDocument.prototype.initFonts = function (this: any) {
   this._fontFamilies = {};
   this._fontCount = 0;
   this._fontSize = 12;
   this._font = null;
   this._registeredFonts = {};
-  // intentionally skip this.font('Helvetica')
 };
 
-// Page dimensions in points (210mm square)
-const PAGE_SIZE = 595.28;
-const MARGIN = 56.7; // ~20mm
-const CONTENT_WIDTH = PAGE_SIZE - 2 * MARGIN;
+// ── Dimensions (points) ──────────────────────────────────
+// A4 landscape: 297mm x 210mm = 841.89pt x 595.28pt
+const SHEET_W = 841.89;
+const SHEET_H = 595.28;
+const HALF_W = SHEET_W / 2; // ~420.94pt = one book page width
+const PAGE_M = 22.68; // ~8mm margin
+const DIVIDER_X = HALF_W; // vertical center divider
 
-// Full NotoSans (not subset) — latin-ext subset only has diacritics, missing a-z/A-Z
+// Book page content area
+const BPC_W = HALF_W - PAGE_M * 2; // content width per book page
+const BPC_H = SHEET_H - PAGE_M * 2; // content height per book page
+
+// Illustration area: top 53% of content
+const ILL_H = BPC_H * 0.53;
+const ILL_R = 8; // corner radius for illustration frame
+const ILL_GAP = 8; // gap between illustration and text
+
+// Text area: remaining space below illustration
+const TEXT_TOP = PAGE_M + ILL_H + ILL_GAP;
+const TEXT_H = BPC_H - ILL_H - ILL_GAP;
+
+// Font CDN
 const NOTO_SANS_URL =
   'https://cdn.jsdelivr.net/gh/notofonts/notofonts.github.io/fonts/NotoSans/full/ttf/NotoSans-Regular.ttf';
 const NOTO_SANS_BOLD_URL =
   'https://cdn.jsdelivr.net/gh/notofonts/notofonts.github.io/fonts/NotoSans/full/ttf/NotoSans-Bold.ttf';
+
+// ── Colors ───────────────────────────────────────────────
+const C = {
+  brown: '#4e342e',
+  brownLight: '#8d6e63',
+  brownMuted: '#bcaaa4',
+  cream: '#fff8e1',
+  creamDark: '#fff3e0',
+  greenLight: '#e8f5e9',
+  greenMid: '#c8e6c9',
+  greenDark: '#2e7d32',
+  greenLeaf: '#81c784',
+  orange: '#ff9800',
+  orangeDark: '#e65100',
+  orangeLight: '#ffe0b2',
+  pink: '#ef9a9a',
+  white: '#ffffff',
+  nightSky: '#1a237e',
+  nightMid: '#283593',
+};
+
+// ── Font sizes per age bracket ───────────────────────────
+function getFontSize(ageBracket: string) {
+  switch (ageBracket) {
+    case '3-5':
+      return { body: 13, title: 20, small: 10, lineGap: 5 };
+    case '6-8':
+      return { body: 11, title: 18, small: 9, lineGap: 4 };
+    default:
+      return { body: 9.5, title: 16, small: 8, lineGap: 3 };
+  }
+}
+
+// ── Main action ──────────────────────────────────────────
 
 export const generatePdf = internalAction({
   args: { orderId: v.id('bookOrders') },
   returns: v.null(),
   handler: async (ctx, { orderId }) => {
     const log = (msg: string, data?: Record<string, unknown>) => {
-      const entry = `[A9:PDF] ${msg}`;
-      if (data) {
-        console.log(entry, JSON.stringify(data, null, 2));
-      } else {
-        console.log(entry);
-      }
+      console.log(`[A9:PDF] ${msg}`, data ? JSON.stringify(data) : '');
     };
 
     try {
-      log('Starting PDF generation', { orderId });
+      log('Starting PDF generation (landscape A4 booklet)', { orderId });
 
       const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
-      log('Order loaded', {
-        hasOrder: !!order,
-        hasStoryDraft: !!order?.storyDraft,
-        hasCharacterProfile: !!order?.characterProfile,
-        hasStoryBlueprint: !!order?.storyBlueprint,
-        ageBracket: order?.ageBracket,
-        childName: order?.childName,
-      });
       if (!order?.storyDraft || !order?.characterProfile) {
         throw new Error('Missing story draft or character profile');
       }
 
       const draft = parseArtifact<StoryDraft>(order.storyDraft, 'storyDraft');
-      log('Story draft parsed', {
-        title: draft.title,
-        pagesCount: draft.pages?.length,
-        hasDedication: !!draft.dedication,
-        hasParentCard: !!draft.parentCard,
-        hasCoverBlurb: !!draft.coverBlurb,
-      });
-
       const profile = parseArtifact<CharacterProfile>(order.characterProfile, 'characterProfile');
-      log('Character profile parsed', { childName: profile.childName });
-
       const blueprint = order.storyBlueprint
         ? parseArtifact<StoryBlueprint>(order.storyBlueprint, 'storyBlueprint')
         : null;
-      log('Blueprint', { hasBlueprint: !!blueprint, beatsCount: blueprint?.beats?.length });
 
       const illustrations = await ctx.runQuery(internal.bookPipelineHelpers.getIllustrations, {
         orderId,
       });
-      log('Illustrations loaded', {
-        count: illustrations.length,
-        ids: illustrations.map((il: any) => il.illustrationId),
-        storageIds: illustrations.map((il: any) => il.storageId),
+      log('Data loaded', {
+        title: draft.title,
+        pages: draft.pages?.length,
+        illustrations: illustrations.length,
       });
 
-      const fontSize = getFontSize(order.ageBracket);
-      log('Font size config', { ageBracket: order.ageBracket, ...fontSize });
-
-      // Load fonts
-      log('Loading fonts from CDN...', {
-        regularUrl: NOTO_SANS_URL,
-        boldUrl: NOTO_SANS_BOLD_URL,
-      });
-      const fontLoadStart = Date.now();
+      const fs = getFontSize(order.ageBracket);
       const { regular, bold } = await loadFonts();
-      log('Fonts loaded', {
-        regularSize: regular.length,
-        boldSize: bold.length,
-        loadTimeMs: Date.now() - fontLoadStart,
-      });
 
-      // Create square-format PDF
+      // Create landscape A4 PDF
       const doc = new PDFDocument({
-        size: [PAGE_SIZE, PAGE_SIZE],
+        size: [SHEET_W, SHEET_H],
         autoFirstPage: false,
         bufferPages: true,
-        margin: MARGIN,
+        margin: 0,
       });
 
-      // Collect PDF into buffer
       const chunks: Buffer[] = [];
       doc.on('data', (chunk: Buffer) => chunks.push(chunk));
       const pdfDone = new Promise<Buffer>((resolve) => {
         doc.on('end', () => resolve(Buffer.concat(chunks)));
       });
 
-      // Register fonts (NotoSans for Polish diacritics)
-      if (!regular || !bold) {
-        throw new Error('Font loading failed — NotoSans unavailable, retry needed');
-      }
-      log('Registering fonts with PDFKit...');
       doc.registerFont('Body', regular);
       doc.registerFont('Title', bold);
-      // Alias standard PDF fonts → NotoSans so any internal PDFKit code path
-      // that calls font('Helvetica') resolves cleanly instead of loading AFM.
       doc.registerFont('Helvetica', regular);
       doc.registerFont('Helvetica-Bold', bold);
-      doc.font('Body'); // Set default font (initFonts was patched to skip Helvetica)
-      log('Fonts registered successfully');
+      doc.font('Body');
 
-      // ── Page 1: Cover ────────────────────────────
-      log('Building page 1: Cover');
-      doc.addPage({ size: [PAGE_SIZE, PAGE_SIZE], margin: 0 });
+      // Helper to get illustration buffer
+      const getIllBuf = async (id: string): Promise<Buffer | null> => {
+        const ill = illustrations.find((il: any) => il.illustrationId === id);
+        if (!ill) return null;
+        return fetchImageBuffer(ctx, ill.storageId);
+      };
 
-      // Try to embed cover illustration full-bleed
-      const coverIll = illustrations.find((il: any) => il.illustrationId === 'cover');
-      log('Cover illustration', { found: !!coverIll, storageId: coverIll?.storageId });
-      if (coverIll) {
-        const coverBuf = await fetchImageBuffer(ctx, coverIll.storageId);
-        log('Cover image buffer', { fetched: !!coverBuf, size: coverBuf?.length });
-        if (coverBuf) {
-          doc.image(coverBuf, 0, 0, { width: PAGE_SIZE, height: PAGE_SIZE });
+      // Get text for a beat - prefer readAloudVersion for young kids
+      const getBeatText = (pageIndex: number): string => {
+        const page = draft.pages?.[pageIndex];
+        if (!page) return '';
+        if (order.ageBracket === '3-5' && page.readAloudVersion) {
+          return page.readAloudVersion;
         }
-      }
+        return page.text || '';
+      };
 
-      // Title overlay (white box with opacity)
-      const overlayY = PAGE_SIZE * 0.65;
-      const overlayH = PAGE_SIZE * 0.25;
-      doc.save();
-      doc.opacity(0.85);
-      doc.rect(0, overlayY, PAGE_SIZE, overlayH).fill('#FFFFFF');
-      doc.restore();
-      doc.opacity(1);
-      doc.font('Title').fontSize(fontSize.title).fillColor('#333333');
-      doc.text(draft.title || order.childName, MARGIN, overlayY + 20, {
-        width: CONTENT_WIDTH,
-        align: 'center',
-      });
-      doc.font('Body').fontSize(fontSize.small).fillColor('#666666');
-      doc.text('Bajkoterapia', MARGIN, overlayY + overlayH - 30, {
-        width: CONTENT_WIDTH,
-        align: 'center',
-      });
+      const title = draft.title || `Książeczka dla ${order.childName}`;
+      const subtitle = blueprint?.subtitle || '';
+      const dedication = draft.dedication || `Dla ${order.childName}`;
 
-      // ── Page 2: Dedication ───────────────────────
-      log('Building page 2: Dedication');
-      doc.addPage({ size: [PAGE_SIZE, PAGE_SIZE], margin: MARGIN });
-      doc.font('Body').fontSize(fontSize.body).fillColor('#333333');
-      const dedicationText = draft.dedication || `Dla ${order.childName}`;
-      const dedHeight = doc.heightOfString(dedicationText, {
-        width: CONTENT_WIDTH,
-        align: 'center',
-      });
-      const dedY = (PAGE_SIZE - dedHeight) / 2;
-      doc.text(dedicationText, MARGIN, dedY, {
-        width: CONTENT_WIDTH,
-        align: 'center',
+      // ═══════════════════════════════════════════════════
+      // SHEET 1: Cover + Dedication
+      // ═══════════════════════════════════════════════════
+      log('Sheet 1: Cover + Dedication');
+      doc.addPage({ size: [SHEET_W, SHEET_H], margin: 0 });
+
+      // -- LEFT: Cover --
+      await drawCover(doc, {
+        title,
+        subtitle,
+        childName: order.childName,
+        coverBuf: await getIllBuf('cover'),
+        fs,
       });
 
-      // ── Pages 3-14: Story beats ──────────────────
-      log('Building story pages', { pagesCount: draft.pages?.length || 0 });
-      for (let i = 0; i < (draft.pages?.length || 0); i++) {
-        const page = draft.pages[i];
-        if (!page) continue;
+      // -- Divider line (subtle dashed) --
+      drawDivider(doc);
 
-        log(`Story beat ${i + 1}/${draft.pages.length}`, {
-          beatNumber: page.beatNumber,
-          textLength: page.text?.length,
+      // -- RIGHT: Dedication --
+      drawDedication(doc, dedication, fs);
+
+      // ═══════════════════════════════════════════════════
+      // SHEETS 2-4: Beat pages (6 beats, 2 per sheet)
+      // ═══════════════════════════════════════════════════
+      for (let sheetIdx = 0; sheetIdx < 3; sheetIdx++) {
+        const beatA = sheetIdx * 2;
+        const beatB = sheetIdx * 2 + 1;
+        log(`Sheet ${sheetIdx + 2}: Beats ${beatA + 1} & ${beatB + 1}`);
+        doc.addPage({ size: [SHEET_W, SHEET_H], margin: 0 });
+
+        // Left beat page
+        const illBufA = await getIllBuf(`scene_${beatA + 1}`);
+        drawBeatPage(doc, {
+          side: 'left',
+          text: getBeatText(beatA),
+          imgBuf: illBufA,
+          pageNum: beatA + 1,
+          fs,
+          decoVariant: beatA,
         });
 
-        // Illustration page (full-bleed)
-        doc.addPage({ size: [PAGE_SIZE, PAGE_SIZE], margin: 0 });
+        drawDivider(doc);
 
-        const ill = illustrations.find(
-          (il: any) =>
-            il.illustrationId === `scene_${page.beatNumber}` ||
-            il.illustrationId === `scene_${i + 1}`,
-        );
-        log(`Beat ${page.beatNumber} illustration`, {
-          found: !!ill,
-          lookupKeys: [`scene_${page.beatNumber}`, `scene_${i + 1}`],
-          storageId: ill?.storageId,
+        // Right beat page
+        const illBufB = await getIllBuf(`scene_${beatB + 1}`);
+        drawBeatPage(doc, {
+          side: 'right',
+          text: getBeatText(beatB),
+          imgBuf: illBufB,
+          pageNum: beatB + 1,
+          fs,
+          decoVariant: beatB,
         });
-
-        const imgBuf = ill ? await fetchImageBuffer(ctx, ill.storageId) : null;
-        if (imgBuf) {
-          log(`Beat ${page.beatNumber} image embedded`, { size: imgBuf.length });
-          doc.image(imgBuf, 0, 0, { width: PAGE_SIZE, height: PAGE_SIZE });
-        } else {
-          log(`Beat ${page.beatNumber} — no image, using placeholder`);
-          drawPlaceholder(doc, `Scena ${page.beatNumber}`, fontSize.small);
-        }
-
-        // Text page
-        doc.addPage({ size: [PAGE_SIZE, PAGE_SIZE], margin: MARGIN });
-        doc.font('Body').fontSize(fontSize.body).fillColor('#333333');
-        const text = page.text || '';
-        const textHeight = doc.heightOfString(text, { width: CONTENT_WIDTH });
-        const textY = Math.max(MARGIN, (PAGE_SIZE - textHeight) / 2);
-        doc.text(text, MARGIN, textY, { width: CONTENT_WIDTH });
-        log(`Beat ${page.beatNumber} text page done`, { textHeight, textY });
       }
 
-      // ── Page 15: Parent card ─────────────────────
-      log('Building page 15: Parent card');
-      doc.addPage({ size: [PAGE_SIZE, PAGE_SIZE], margin: MARGIN });
+      // ═══════════════════════════════════════════════════
+      // SHEET 5: Parent card + Back cover
+      // ═══════════════════════════════════════════════════
+      log('Sheet 5: Parent card + Back cover');
+      doc.addPage({ size: [SHEET_W, SHEET_H], margin: 0 });
 
-      const parentCard = draft.parentCard;
-      const cardTitle = parentCard?.title || 'Drogi Rodzicu';
-      const cardIntro =
-        parentCard?.introPl ||
-        `Ta bajka została stworzona specjalnie dla ${order.childName}. ` +
-          'Poniżej znajdziesz pytania, które możesz zadać dziecku po przeczytaniu bajki, ' +
-          'aby porozmawiać o uczuciach i doświadczeniach bohatera.';
-
-      doc
-        .font('Title')
-        .fontSize(fontSize.title - 4)
-        .fillColor('#333333');
-      doc.text(cardTitle, MARGIN, MARGIN, {
-        width: CONTENT_WIDTH,
-        align: 'center',
+      drawParentCard(doc, {
+        draft,
+        profile,
+        blueprint,
+        childName: order.childName,
+        fs,
       });
 
-      doc.moveDown(1);
-      doc.font('Body').fontSize(fontSize.small).fillColor('#444444');
-      doc.text(cardIntro, { width: CONTENT_WIDTH });
+      drawDivider(doc);
 
-      // Discussion questions -- prefer LLM-generated, fallback to blueprint
-      let questions: string[];
-      if (parentCard?.questions && parentCard.questions.length > 0) {
-        questions = parentCard.questions.map((q) => `• ${q}`);
-      } else {
-        const name = profile.childName || order.childName;
-        questions = (blueprint?.beats || [])
-          .filter((b) => b.therapeuticGoal)
-          .slice(0, 4)
-          .map(
-            (b) => `• Jak myślisz, co czuł ${name} gdy ${b.summary.toLowerCase().slice(0, 60)}?`,
-          );
-      }
-
-      if (questions.length > 0) {
-        doc.moveDown(1);
-        doc.font('Title').fontSize(fontSize.small + 1);
-        doc.text('Pytania do rozmowy:', { width: CONTENT_WIDTH });
-        doc.moveDown(0.5);
-        doc.font('Body').fontSize(fontSize.small);
-
-        for (const q of questions) {
-          doc.text(q, { width: CONTENT_WIDTH });
-          doc.moveDown(0.3);
-        }
-      }
-
-      // Activity section (trustee parity)
-      if (parentCard?.activityPl) {
-        doc.moveDown(0.8);
-        doc.font('Title').fontSize(fontSize.small + 1);
-        doc.text('Wspólna aktywność:', { width: CONTENT_WIDTH });
-        doc.moveDown(0.5);
-        doc.font('Body').fontSize(fontSize.small);
-        doc.text(parentCard.activityPl, { width: CONTENT_WIDTH });
-      }
-
-      // ── Page 16: Back cover ──────────────────────
-      log('Building page 16: Back cover');
-      doc.addPage({ size: [PAGE_SIZE, PAGE_SIZE], margin: MARGIN });
-      doc.font('Body').fontSize(fontSize.small).fillColor('#666666');
-
-      const blurb = draft.coverBlurb || '';
-      const colophon = `Stworzone z miłością przez Bajkoterapia\n© ${new Date().getFullYear()} Bajkoterapia`;
-      const backText = blurb ? `${blurb}\n\n${colophon}` : `Dla: ${order.childName}\n\n${colophon}`;
-      const backHeight = doc.heightOfString(backText, { width: CONTENT_WIDTH, align: 'center' });
-      const backY = (PAGE_SIZE - backHeight) / 2;
-      doc.text(backText, MARGIN, backY, {
-        width: CONTENT_WIDTH,
-        align: 'center',
+      drawBackCover(doc, {
+        childName: order.childName,
+        blurb: draft.coverBlurb || '',
+        fs,
       });
 
-      // Finalize
-      log('Finalizing PDF document...');
+      // ═══════════════════════════════════════════════════
+      // Finalize & store
+      // ═══════════════════════════════════════════════════
       doc.end();
       const pdfBuffer = await pdfDone;
-      log('PDF buffer ready', {
-        sizeBytes: pdfBuffer.length,
-        sizeKb: Math.round(pdfBuffer.length / 1024),
-      });
+      log('PDF ready', { sizeKb: Math.round(pdfBuffer.length / 1024) });
 
       const pdfBlob = new Blob([new Uint8Array(pdfBuffer)], { type: 'application/pdf' });
       const pdfStorageId = await ctx.storage.store(pdfBlob);
-      log('PDF stored in Convex storage', { pdfStorageId });
 
       await ctx.runMutation(internal.bookPipelineHelpers.updatePdfStorageId, {
         orderId,
         pdfStorageId,
       });
-      log('Order updated with PDF storage ID');
 
       await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
         orderId,
@@ -343,14 +271,12 @@ export const generatePdf = internalAction({
         narrative: getNarrative('A9', 'complete'),
       });
 
-      // Schedule A10 (final QA)
       await ctx.scheduler.runAfter(0, internal.bookAgents.reviewFinal, { orderId });
-      log('PDF generation complete, A10 scheduled');
+      log('Done, A10 scheduled');
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
-      const errStack = error instanceof Error ? error.stack : undefined;
       console.error('[A9:PDF] FAILED:', errMsg);
-      console.error('[A9:PDF] Stack:', errStack);
+      console.error('[A9:PDF] Stack:', error instanceof Error ? error.stack : '');
       await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
         orderId,
         agent: 'A9',
@@ -369,61 +295,560 @@ export const generatePdf = internalAction({
   },
 });
 
-// ── Helpers ────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+// PAGE DRAWING FUNCTIONS
+// ══════════════════════════════════════════════════════════
 
-function getFontSize(ageBracket: string): { body: number; title: number; small: number } {
-  switch (ageBracket) {
-    case '3-5':
-      return { body: 18, title: 28, small: 12 };
-    case '6-8':
-      return { body: 14, title: 24, small: 11 };
-    default:
-      return { body: 12, title: 22, small: 10 };
+// ── Divider ──────────────────────────────────────────────
+function drawDivider(doc: PDFKit.PDFDocument) {
+  doc.save();
+  doc.strokeColor('#e0e0e0').lineWidth(0.5).dash(4, { space: 3 });
+  doc
+    .moveTo(DIVIDER_X, 10)
+    .lineTo(DIVIDER_X, SHEET_H - 10)
+    .stroke();
+  doc.restore();
+  doc.undash();
+}
+
+// ── Cover (left half) ────────────────────────────────────
+interface CoverOpts {
+  title: string;
+  subtitle: string;
+  childName: string;
+  coverBuf: Buffer | null;
+  fs: ReturnType<typeof getFontSize>;
+}
+
+async function drawCover(doc: PDFKit.PDFDocument, opts: CoverOpts) {
+  const { title, subtitle, childName, coverBuf, fs } = opts;
+  const x0 = 0;
+
+  if (coverBuf) {
+    // Full-bleed cover illustration on left half
+    doc.save();
+    doc.rect(x0, 0, HALF_W, SHEET_H).clip();
+    doc.image(coverBuf, x0, 0, { width: HALF_W, height: SHEET_H, cover: [HALF_W, SHEET_H] as any });
+    doc.restore();
+
+    // Gradient overlay at bottom for text legibility
+    const gradTop = SHEET_H * 0.5;
+    for (let i = 0; i < 40; i++) {
+      const y = gradTop + (SHEET_H - gradTop) * (i / 40);
+      const alpha = (i / 40) * 0.88;
+      doc.save();
+      doc.opacity(alpha);
+      doc.rect(x0, y, HALF_W, (SHEET_H - gradTop) / 40 + 1).fill(C.white);
+      doc.restore();
+    }
+    doc.opacity(1);
+  } else {
+    // Fallback: night sky gradient
+    const steps = 20;
+    for (let i = 0; i < steps; i++) {
+      const y = (SHEET_H / steps) * i;
+      const t = i / steps;
+      // Simple dark blue gradient
+      const r = Math.round(26 + t * 20);
+      const g = Math.round(35 + t * 40);
+      const b = Math.round(126 + t * 40);
+      doc.rect(x0, y, HALF_W, SHEET_H / steps + 1).fill(`rgb(${r},${g},${b})`);
+    }
+    // Moon
+    doc.save();
+    doc.circle(HALF_W - 50, 60, 25).fill('#fff9c4');
+    doc.circle(HALF_W - 50, 60, 20).fill('#fff176');
+    doc.restore();
+    // Stars
+    for (let i = 0; i < 30; i++) {
+      const sx = x0 + 15 + Math.random() * (HALF_W - 30);
+      const sy = 15 + Math.random() * (SHEET_H * 0.5);
+      const sr = 0.8 + Math.random() * 1.5;
+      doc.save();
+      doc.opacity(0.3 + Math.random() * 0.5);
+      doc.circle(sx, sy, sr).fill(C.white);
+      doc.restore();
+    }
+    doc.opacity(1);
+  }
+
+  // Title block at bottom of left half
+  const titleY = SHEET_H - 130;
+  doc
+    .font('Title')
+    .fontSize(fs.title + 2)
+    .fillColor(C.brown);
+  doc.text(title, x0 + PAGE_M, titleY, {
+    width: HALF_W - PAGE_M * 2,
+    align: 'center',
+    lineGap: 2,
+  });
+
+  if (subtitle) {
+    doc.font('Body').fontSize(fs.small).fillColor(C.brownLight);
+    doc.text(subtitle, x0 + PAGE_M, doc.y + 4, {
+      width: HALF_W - PAGE_M * 2,
+      align: 'center',
+    });
+  }
+
+  doc
+    .font('Body')
+    .fontSize(fs.small - 1)
+    .fillColor(C.brownMuted);
+  doc.text(`Książeczka dla ${childName}`, x0 + PAGE_M, doc.y + 6, {
+    width: HALF_W - PAGE_M * 2,
+    align: 'center',
+  });
+
+  // Decorative branch at very bottom
+  drawLeaf(doc, x0 + HALF_W / 2 - 20, SHEET_H - 30, 0.5);
+  drawLeaf(doc, x0 + HALF_W / 2 + 10, SHEET_H - 28, 0.5, true);
+}
+
+// ── Dedication (right half) ──────────────────────────────
+function drawDedication(doc: PDFKit.PDFDocument, text: string, fs: ReturnType<typeof getFontSize>) {
+  const x0 = HALF_W;
+
+  // Cream background
+  doc.rect(x0, 0, HALF_W, SHEET_H).fill(C.cream);
+
+  // Corner decorations
+  drawLeaf(doc, x0 + PAGE_M, PAGE_M + 5, 0.3);
+  drawFlower(doc, x0 + HALF_W - PAGE_M - 18, SHEET_H - PAGE_M - 18, 0.3);
+  drawFlower(doc, x0 + HALF_W - PAGE_M - 18, PAGE_M + 5, 0.2);
+
+  // Centered dedication text
+  doc
+    .font('Body')
+    .fontSize(fs.body + 1)
+    .fillColor(C.brown);
+  const dedH = doc.heightOfString(text, { width: BPC_W - 40, align: 'center' });
+  const dedY = (SHEET_H - dedH) / 2;
+  doc.text(text, x0 + PAGE_M + 20, dedY, {
+    width: BPC_W - 40,
+    align: 'center',
+    lineGap: 6,
+    characterSpacing: 0.3,
+  });
+
+  // Heart below dedication
+  drawHeart(doc, x0 + HALF_W / 2 - 6, dedY + dedH + 16, 0.4);
+}
+
+// ── Beat page (one book page within a sheet) ─────────────
+interface BeatOpts {
+  side: 'left' | 'right';
+  text: string;
+  imgBuf: Buffer | null;
+  pageNum: number;
+  fs: ReturnType<typeof getFontSize>;
+  decoVariant: number;
+}
+
+function drawBeatPage(doc: PDFKit.PDFDocument, opts: BeatOpts) {
+  const { side, text, imgBuf, pageNum, fs, decoVariant } = opts;
+  const x0 = side === 'left' ? 0 : HALF_W;
+
+  // White background
+  doc.rect(x0, 0, HALF_W, SHEET_H).fill(C.white);
+
+  // Corner decorations (alternate between leaf and flower)
+  if (decoVariant % 2 === 0) {
+    drawLeaf(doc, x0 + PAGE_M, PAGE_M + 2, 0.2);
+    drawFlower(doc, x0 + HALF_W - PAGE_M - 16, SHEET_H - 40, 0.15);
+  } else {
+    drawFlower(doc, x0 + PAGE_M + 2, PAGE_M + 2, 0.2);
+    drawLeaf(doc, x0 + HALF_W - PAGE_M - 14, SHEET_H - 42, 0.15, true);
+  }
+
+  // Illustration area with rounded frame
+  const illX = x0 + PAGE_M;
+  const illY = PAGE_M;
+  const illW = BPC_W;
+
+  if (imgBuf) {
+    // Clip to rounded rect and draw image
+    doc.save();
+    roundedRect(doc, illX, illY, illW, ILL_H, ILL_R);
+    doc.clip();
+    doc.image(imgBuf, illX, illY, {
+      width: illW,
+      height: ILL_H,
+      cover: [illW, ILL_H] as any,
+    });
+    doc.restore();
+
+    // Subtle border around illustration
+    doc.save();
+    doc.strokeColor('#e0e0e0').lineWidth(0.5);
+    roundedRect(doc, illX, illY, illW, ILL_H, ILL_R);
+    doc.stroke();
+    doc.restore();
+  } else {
+    // Placeholder gradient
+    doc.save();
+    roundedRect(doc, illX, illY, illW, ILL_H, ILL_R);
+    doc.clip();
+    const grad = (doc as any).linearGradient(illX, illY, illX + illW, illY + ILL_H);
+    grad.stop(0, C.greenLight).stop(0.5, C.cream).stop(1, C.orangeLight);
+    doc.rect(illX, illY, illW, ILL_H).fill(grad);
+    doc.restore();
+    // Placeholder label
+    doc.font('Body').fontSize(fs.small).fillColor(C.brownMuted);
+    doc.text(`Ilustracja: Scena ${pageNum}`, illX, illY + ILL_H / 2 - 6, {
+      width: illW,
+      align: 'center',
+    });
+  }
+
+  // Text area
+  if (text) {
+    doc.font('Body').fontSize(fs.body).fillColor(C.brown);
+    doc.text(text, x0 + PAGE_M + 4, TEXT_TOP, {
+      width: BPC_W - 8,
+      align: 'justify',
+      lineGap: fs.lineGap,
+    });
+  }
+
+  // Page number with footprint
+  const footX = x0 + HALF_W / 2;
+  const footY = SHEET_H - PAGE_M - 2;
+  drawFootprint(doc, footX - 10, footY - 6, 0.35);
+  doc.font('Body').fontSize(6.5).fillColor(C.brownMuted);
+  doc.text(String(pageNum), footX, footY - 4, { width: 20, align: 'left' });
+}
+
+// ── Parent card (left half of sheet 5) ───────────────────
+interface ParentOpts {
+  draft: StoryDraft;
+  profile: CharacterProfile;
+  blueprint: StoryBlueprint | null;
+  childName: string;
+  fs: ReturnType<typeof getFontSize>;
+}
+
+function drawParentCard(doc: PDFKit.PDFDocument, opts: ParentOpts) {
+  const { draft, profile, blueprint, childName, fs } = opts;
+  const x0 = 0;
+  const parentCard = draft.parentCard;
+
+  // Warm cream background
+  const grad = (doc as any).linearGradient(x0, 0, x0, SHEET_H);
+  grad.stop(0, C.cream).stop(1, C.creamDark);
+  doc.rect(x0, 0, HALF_W, SHEET_H).fill(grad);
+
+  // Decorations
+  drawLeaf(doc, x0 + HALF_W - PAGE_M - 14, SHEET_H - 35, 0.15, true);
+
+  // Title
+  let curY = PAGE_M + 8;
+  doc.font('Title').fontSize(fs.title).fillColor(C.brown);
+  doc.text('Dla Rodzica', x0 + PAGE_M, curY, {
+    width: BPC_W,
+    align: 'center',
+  });
+  curY = doc.y + 8;
+
+  // Separator line
+  const sepW = 60;
+  doc.save();
+  doc.strokeColor(C.orange).lineWidth(1.5);
+  doc
+    .moveTo(x0 + HALF_W / 2 - sepW / 2, curY)
+    .lineTo(x0 + HALF_W / 2 + sepW / 2, curY)
+    .stroke();
+  doc.restore();
+  curY += 10;
+
+  // Intro text
+  const introText =
+    parentCard?.introPl ||
+    `Ta bajka została stworzona specjalnie dla ${childName}. ` +
+      'Poniżej znajdziesz pytania, które możesz zadać dziecku po przeczytaniu bajki, ' +
+      'aby porozmawiać o uczuciach i doświadczeniach bohatera.';
+
+  doc.font('Body').fontSize(fs.small).fillColor('#6d4c41');
+  doc.text(introText, x0 + PAGE_M + 4, curY, {
+    width: BPC_W - 8,
+    lineGap: 3,
+  });
+  curY = doc.y + 10;
+
+  // Questions
+  let questions: string[];
+  if (parentCard?.questions && parentCard.questions.length > 0) {
+    questions = parentCard.questions;
+  } else {
+    const name = profile.childName || childName;
+    questions = (blueprint?.beats || [])
+      .filter((b) => b.therapeuticGoal)
+      .slice(0, 4)
+      .map(
+        (b) =>
+          `Jak myślisz, co czuł ${name} gdy ${(b.summaryPl || b.summary || '').toLowerCase().slice(0, 60)}?`,
+      );
+  }
+
+  if (questions.length > 0) {
+    doc
+      .font('Title')
+      .fontSize(fs.small + 1)
+      .fillColor(C.brown);
+    doc.text('Pytania do rozmowy:', x0 + PAGE_M + 4, curY, { width: BPC_W - 8 });
+    curY = doc.y + 4;
+
+    doc.font('Body').fontSize(fs.small).fillColor(C.brown);
+    for (let i = 0; i < questions.length; i++) {
+      doc.text(`${i + 1}. ${questions[i]}`, x0 + PAGE_M + 8, curY, {
+        width: BPC_W - 16,
+        lineGap: 2,
+      });
+      curY = doc.y + 3;
+    }
+  }
+
+  // Activity
+  if (parentCard?.activityPl) {
+    curY = doc.y + 8;
+    doc
+      .font('Title')
+      .fontSize(fs.small + 1)
+      .fillColor(C.brown);
+    doc.text('Aktywność:', x0 + PAGE_M + 4, curY, { width: BPC_W - 8 });
+    curY = doc.y + 4;
+    doc.font('Body').fontSize(fs.small).fillColor(C.brown);
+    doc.text(parentCard.activityPl, x0 + PAGE_M + 8, curY, {
+      width: BPC_W - 16,
+      lineGap: 2,
+    });
   }
 }
 
-function drawPlaceholder(doc: PDFKit.PDFDocument, label: string, fontSize: number) {
-  doc.font('Body').fontSize(fontSize).fillColor('#999999');
-  doc.text(`[Ilustracja: ${label}]`, 0, PAGE_SIZE / 2 - fontSize, {
-    width: PAGE_SIZE,
+// ── Back cover (right half of sheet 5) ───────────────────
+interface BackOpts {
+  childName: string;
+  blurb: string;
+  fs: ReturnType<typeof getFontSize>;
+}
+
+function drawBackCover(doc: PDFKit.PDFDocument, opts: BackOpts) {
+  const { childName, blurb, fs } = opts;
+  const x0 = HALF_W;
+
+  // Green gradient background
+  const grad = (doc as any).linearGradient(x0, 0, x0, SHEET_H);
+  grad.stop(0, C.greenLight).stop(1, C.greenMid);
+  doc.rect(x0, 0, HALF_W, SHEET_H).fill(grad);
+
+  // Corner decorations
+  drawLeaf(doc, x0 + PAGE_M, PAGE_M + 5, 0.25);
+  drawLeaf(doc, x0 + HALF_W - PAGE_M - 14, PAGE_M + 5, 0.25, true);
+  drawFlower(doc, x0 + PAGE_M + 5, SHEET_H - 60, 0.15);
+  drawFlower(doc, x0 + HALF_W - PAGE_M - 20, SHEET_H - 60, 0.15);
+
+  // Star
+  drawStar(doc, x0 + HALF_W / 2 - 7, SHEET_H / 2 - 80, 0.5);
+
+  // "Koniec" title
+  doc
+    .font('Title')
+    .fontSize(fs.title + 6)
+    .fillColor(C.brown);
+  doc.text('Koniec', x0 + PAGE_M, SHEET_H / 2 - 50, {
+    width: HALF_W - PAGE_M * 2,
+    align: 'center',
+  });
+
+  // Blurb
+  if (blurb) {
+    doc.font('Body').fontSize(fs.small).fillColor('#5d4037');
+    doc.text(blurb, x0 + PAGE_M + 20, doc.y + 8, {
+      width: HALF_W - PAGE_M * 2 - 40,
+      align: 'center',
+      lineGap: 3,
+    });
+  }
+
+  // "Stworzone z miłością"
+  const loveY = blurb ? doc.y + 14 : SHEET_H / 2 + 10;
+  doc
+    .font('Body')
+    .fontSize(fs.small + 1)
+    .fillColor('#6d4c41');
+  doc.text(`Stworzone z miłością dla ${childName}`, x0 + PAGE_M, loveY, {
+    width: HALF_W - PAGE_M * 2,
+    align: 'center',
+  });
+
+  // Hearts
+  const heartsY = doc.y + 10;
+  const hx = x0 + HALF_W / 2;
+  drawHeart(doc, hx - 22, heartsY, 0.5);
+  drawHeart(doc, hx - 6, heartsY, 0.5);
+  drawHeart(doc, hx + 10, heartsY, 0.5);
+
+  // Branding
+  doc.font('Body').fontSize(6).fillColor(C.brownMuted);
+  doc.text('bajkot.pl', x0 + PAGE_M, SHEET_H - PAGE_M - 10, {
+    width: HALF_W - PAGE_M * 2,
     align: 'center',
   });
 }
 
+// ══════════════════════════════════════════════════════════
+// DECORATIVE ELEMENTS (SVG-like paths via PDFKit)
+// ══════════════════════════════════════════════════════════
+
+function drawLeaf(doc: PDFKit.PDFDocument, x: number, y: number, opacity: number, flip = false) {
+  doc.save();
+  doc.opacity(opacity);
+  if (flip) {
+    doc.translate(x + 14, y);
+    doc.scale(-1, 1);
+    doc.translate(-x, -y);
+  }
+  // Leaf shape
+  doc
+    .path(
+      `M${x + 7} ${y}C${x + 2} ${y + 4} ${x} ${y + 12} ${x} ${y + 17}c0 2 1.5 4 7 4s7-2 7-4c0-5-3-13-7-17z`,
+    )
+    .fill(C.greenLeaf);
+  // Stem
+  doc.save();
+  doc.strokeColor('#4caf50').lineWidth(0.8);
+  doc
+    .moveTo(x + 7, y)
+    .lineTo(x + 7, y + 20)
+    .stroke();
+  doc.restore();
+  doc.restore();
+  doc.opacity(1);
+}
+
+function drawFlower(doc: PDFKit.PDFDocument, x: number, y: number, opacity: number) {
+  doc.save();
+  doc.opacity(opacity);
+  // Petals
+  doc.circle(x + 7, y + 3, 3.5).fill(C.pink);
+  doc.circle(x + 3, y + 9, 3.5).fill(C.pink);
+  doc.circle(x + 11, y + 9, 3.5).fill(C.pink);
+  // Center
+  doc.circle(x + 7, y + 7, 2.5).fill('#fff176');
+  doc.restore();
+  doc.opacity(1);
+}
+
+function drawHeart(doc: PDFKit.PDFDocument, x: number, y: number, opacity: number) {
+  doc.save();
+  doc.opacity(opacity);
+  doc
+    .path(
+      `M${x + 6} ${y + 12}` +
+        `C${x + 6} ${y + 12} ${x} ${y + 8} ${x} ${y + 4.5}` +
+        `C${x} ${y + 2} ${x + 2} ${y} ${x + 4} ${y}` +
+        `C${x + 5.2} ${y} ${x + 6} ${y + 0.8} ${x + 6} ${y + 0.8}` +
+        `C${x + 6} ${y + 0.8} ${x + 6.8} ${y} ${x + 8} ${y}` +
+        `C${x + 10} ${y} ${x + 12} ${y + 2} ${x + 12} ${y + 4.5}` +
+        `C${x + 12} ${y + 8} ${x + 6} ${y + 12} ${x + 6} ${y + 12}z`,
+    )
+    .fill(C.pink);
+  doc.restore();
+  doc.opacity(1);
+}
+
+function drawStar(doc: PDFKit.PDFDocument, x: number, y: number, opacity: number) {
+  doc.save();
+  doc.opacity(opacity);
+  const cx = x + 9,
+    cy = y + 9;
+  const pts: [number, number][] = [];
+  for (let i = 0; i < 5; i++) {
+    const outerAngle = (i * 72 - 90) * (Math.PI / 180);
+    const innerAngle = (i * 72 + 36 - 90) * (Math.PI / 180);
+    pts.push([cx + Math.cos(outerAngle) * 9, cy + Math.sin(outerAngle) * 9]);
+    pts.push([cx + Math.cos(innerAngle) * 4, cy + Math.sin(innerAngle) * 4]);
+  }
+  let path = `M${pts[0][0]} ${pts[0][1]}`;
+  for (let i = 1; i < pts.length; i++) path += `L${pts[i][0]} ${pts[i][1]}`;
+  path += 'z';
+  doc.path(path).fill('#ffe082');
+  doc.restore();
+  doc.opacity(1);
+}
+
+function drawFootprint(doc: PDFKit.PDFDocument, x: number, y: number, opacity: number) {
+  doc.save();
+  doc.opacity(opacity);
+  doc.strokeColor(C.brownLight).lineWidth(1.2).lineCap('round');
+  doc
+    .moveTo(x + 5, y)
+    .lineTo(x + 5, y + 8)
+    .stroke();
+  doc
+    .moveTo(x + 5, y + 8)
+    .lineTo(x + 2, y + 11)
+    .stroke();
+  doc
+    .moveTo(x + 5, y + 8)
+    .lineTo(x + 8, y + 11)
+    .stroke();
+  doc.restore();
+  doc.opacity(1);
+}
+
+function roundedRect(
+  doc: PDFKit.PDFDocument,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+) {
+  doc
+    .moveTo(x + r, y)
+    .lineTo(x + w - r, y)
+    .quadraticCurveTo(x + w, y, x + w, y + r)
+    .lineTo(x + w, y + h - r)
+    .quadraticCurveTo(x + w, y + h, x + w - r, y + h)
+    .lineTo(x + r, y + h)
+    .quadraticCurveTo(x, y + h, x, y + h - r)
+    .lineTo(x, y + r)
+    .quadraticCurveTo(x, y, x + r, y);
+}
+
+// ══════════════════════════════════════════════════════════
+// FONT & IMAGE LOADING
+// ══════════════════════════════════════════════════════════
+
 async function fetchImageBuffer(ctx: ActionCtx, storageId: Id<'_storage'>): Promise<Buffer | null> {
   try {
     const url = await ctx.storage.getUrl(storageId);
-    if (!url) {
-      console.warn(`[A9:PDF] No URL for storageId=${storageId}`);
-      return null;
-    }
-    const start = Date.now();
+    if (!url) return null;
     const res = await fetch(url, { signal: AbortSignal.timeout(30_000) });
-    if (!res.ok) {
-      console.warn(`[A9:PDF] Image fetch failed: storageId=${storageId} → ${res.status}`);
-      return null;
-    }
-    const buf = Buffer.from(await res.arrayBuffer());
-    console.log(
-      `[A9:PDF] Image fetched: storageId=${storageId}, ${buf.length} bytes, ${Date.now() - start}ms`,
-    );
-    return buf;
-  } catch (e) {
-    console.warn(`[A9:PDF] Image fetch error for storageId=${storageId}:`, e);
+    if (!res.ok) return null;
+    const buf = Buffer.from(new Uint8Array(await res.arrayBuffer()));
+    return buf.length > 100 ? buf : null;
+  } catch {
     return null;
   }
 }
 
 async function fetchFont(url: string): Promise<Buffer> {
   console.log(`[A9:PDF] Fetching font: ${url}`);
-  const start = Date.now();
   const res = await fetch(url, { signal: AbortSignal.timeout(30_000) });
   if (!res.ok) {
-    console.error(`[A9:PDF] Font fetch FAILED: ${url} → ${res.status} ${res.statusText}`);
-    throw new Error(`Font fetch failed: ${url} → ${res.status} ${res.statusText}`);
+    throw new Error(`Font fetch failed: ${url} - ${res.status}`);
   }
-  const buf = Buffer.from(await res.arrayBuffer());
-  console.log(`[A9:PDF] Font fetched OK: ${url} — ${buf.length} bytes in ${Date.now() - start}ms`);
+  const buf = Buffer.from(new Uint8Array(await res.arrayBuffer()));
+  // Validate TTF magic bytes
+  const magic = buf.length >= 4 ? buf.subarray(0, 4).toString('hex') : 'empty';
+  const valid = magic === '00010000' || magic === '4f54544f';
+  console.log(`[A9:PDF] Font: ${buf.length} bytes, magic=${magic}, valid=${valid}`);
+  if (buf.length < 50_000) {
+    throw new Error(`Font too small (${buf.length} bytes)`);
+  }
   return buf;
 }
 
