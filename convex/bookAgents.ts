@@ -15,6 +15,7 @@ import { internal } from './_generated/api';
 import { v } from 'convex/values';
 import { chatJsonForStage, chatJsonForStageWithImages } from './lib/llmClient';
 import { applyPlaceholders, PromptTemplate } from './lib/prompts';
+import { bookFallbacks } from './lib/prompts/bookFallbacks';
 import { startActiveObservation } from './lib/langfuse';
 import { buildInternalLogContext } from './lib/actionHelpers';
 import { generateImage } from './lib/geminiImageGen';
@@ -71,9 +72,16 @@ async function getPrompt(
     templateKey: template,
   });
   if (!content) {
-    throw new Error(
-      `Prompt not found in DB for template: ${template}. Run seedPrompts migration first.`,
-    );
+    // Runtime fallback to seed values if DB is empty (e.g. fresh deployment)
+    const fallbackConfig = bookFallbacks[template];
+    if (fallbackConfig?.fallback) {
+      const fallbackContent = Array.isArray(fallbackConfig.fallback)
+        ? fallbackConfig.fallback.join('\n')
+        : fallbackConfig.fallback;
+      console.warn(`[getPrompt] Using fallback for ${template} — DB prompt missing`);
+      return applyPlaceholders(fallbackContent, params, template);
+    }
+    throw new Error(`Prompt not found in DB or fallbacks for template: ${template}.`);
   }
   return applyPlaceholders(content, params, template);
 }
