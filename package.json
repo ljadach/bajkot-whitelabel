@@ -21,7 +21,8 @@
     "test:e2e:ui": "npx playwright test --config=e2e/playwright.config.ts --ui",
     "check:dead-code": "knip",
     "analyze": "SONDA=true react-router build",
-    "prepare": "simple-git-hooks"
+    "prepare": "simple-git-hooks",
+    "cli": "npx tsx cli/index.ts"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged"
@@ -81,6 +82,7 @@
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "autoprefixer": "~10",
+    "commander": "^14.0.3",
     "dotenv": "^17.3.1",
     "eslint": "^9.21.0",
     "eslint-plugin-react-hooks": "^5.1.0",
