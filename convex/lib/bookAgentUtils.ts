@@ -4,6 +4,10 @@
 
 import type { StoryDraft, PsychReview } from './bookTypes';
 
+/** Safety suffix appended to all image generation prompts to avoid harmful content */
+export const IMAGE_SAFETY_SUFFIX =
+  'Do not include: scary imagery, dark horror themes, realistic photography, deformed anatomy, extra fingers or limbs, blurry content, watermarks, text overlays, signatures, adult or violent content.';
+
 /** Normalize LLM output to consistent StoryDraft.pages format */
 export function normalizePages(raw: any): StoryDraft['pages'] {
   if (!Array.isArray(raw.pages) || raw.pages.length === 0) {

@@ -40,7 +40,12 @@ import {
   type VisualQa,
   type FinalQa,
 } from './lib/bookTypes';
-import { normalizePages, applyCorrections, normalizeParentCard } from './lib/bookAgentUtils';
+import {
+  normalizePages,
+  applyCorrections,
+  normalizeParentCard,
+  IMAGE_SAFETY_SUFFIX,
+} from './lib/bookAgentUtils';
 import { getNarrative } from './bookPipelineEvents';
 
 /**
@@ -814,13 +819,13 @@ export const designCharacter = internalAction({
         profile.descriptionEn || profile.physicalDescription || profile.visualPromptBase || '';
 
       // Generate Style A reference image
-      const promptA = `Children's book character design. Character: ${childDesc}, standing in a neutral pose, front view, full body visible, centered composition. Style: ${STYLE_A.style}. ${STYLE_A.modifiers}. Character design reference sheet, well-lit, no text.`;
+      const promptA = `Children's book character design. Character: ${childDesc}, standing in a neutral pose, front view, full body visible, centered composition. Style: ${STYLE_A.style}. ${STYLE_A.modifiers}. Character design reference sheet, well-lit, no text. ${IMAGE_SAFETY_SUFFIX}`;
 
       await checkCallBudget(ctx, orderId);
       const imageA = await generateImage(promptA, { width: 512, height: 512 });
 
       // Generate Style B reference image
-      const promptB = `Children's book character design. Character: ${childDesc}, standing in a neutral pose, front view, full body visible, centered composition. Style: ${STYLE_B.style}. ${STYLE_B.modifiers}. Character design reference sheet, well-lit, no text.`;
+      const promptB = `Children's book character design. Character: ${childDesc}, standing in a neutral pose, front view, full body visible, centered composition. Style: ${STYLE_B.style}. ${STYLE_B.modifiers}. Character design reference sheet, well-lit, no text. ${IMAGE_SAFETY_SUFFIX}`;
 
       await checkCallBudget(ctx, orderId);
       const imageB = await generateImage(promptB, { width: 512, height: 512 });
@@ -982,7 +987,7 @@ export const illustrate = internalAction({
       for (const ill of plan.illustrations) {
         const id = ill.illustrationId;
         const basePrompt = ill.prompt || `Children's book illustration: ${id}`;
-        const fullPrompt = `${consistencyPreamble} Scene: ${basePrompt}. No text in image.`;
+        const fullPrompt = `${consistencyPreamble} Scene: ${basePrompt}. No text in image. ${IMAGE_SAFETY_SUFFIX}`;
 
         const isCover = id === 'cover';
         const width = isCover ? 600 : 900;
