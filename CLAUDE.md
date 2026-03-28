@@ -47,8 +47,18 @@ npm run cli -- <command>          # or: npx tsx cli/index.ts <command>
 | `download <orderId> [-o]`               | PDF download URL. `-o` opens in browser                                          |
 | `watch <orderId>`                       | Poll order progress every 5s until terminal state                                |
 | `presets`                               | List valid keys for problems, appearance, outfits                                |
+| `prompts list`                          | List all pipeline prompts with DB status and version count                       |
+| `prompts get <key>`                     | Show full prompt content by key (e.g. `bookStoryWriter`)                         |
+| `prompts set <key> -f <file>`           | Update prompt in DB from file, with automatic version snapshot                   |
+| `prompts seed`                          | Seed DB with fallback prompts (idempotent, won't overwrite existing)             |
 
-**How it works:** Calls `convex/cli.ts` internal functions via `npx convex run` — no Clerk auth needed. Orders created by CLI use `clerkUserId: "cli-user"`.
+**Global flags:**
+
+| Flag     | What it does                                             |
+| -------- | -------------------------------------------------------- |
+| `--prod` | Run command against production deployment instead of dev |
+
+**How it works:** Calls `convex/cli.ts` internal functions via `npx convex run` — no Clerk auth needed. Orders created by CLI use `clerkUserId: "cli-user"`. Use `--prod` to target production (e.g. `npm run cli -- prompts list --prod`).
 
 **Typical test workflow:**
 
