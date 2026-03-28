@@ -507,21 +507,10 @@ export function BookOrderForm() {
             <p className="mt-1 text-xs text-muted">{t('order.emailHint')}</p>
           </div>
 
-          {/* Dev tools: fast mode + batch export (only visible in dev) */}
+          {/* Dev-only batch export */}
           {import.meta.env.DEV && (
-            <div className="mt-4 rounded-lg border border-dashed border-neutral-300 bg-neutral-50 p-3">
+            <div className="mt-2 rounded-lg border border-dashed border-neutral-300 bg-neutral-50 p-3">
               <p className="text-xs font-semibold text-neutral-500 mb-2">Dev tools</p>
-              <label className="flex items-center gap-2 mb-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={form.skipQaReviews}
-                  onChange={(e) => update('skipQaReviews', e.target.checked)}
-                  className="shrink-0"
-                />
-                <span className="text-xs text-neutral-600">
-                  FAST mode — pomija QA reviews (A4, A8, A10)
-                </span>
-              </label>
               <div className="flex items-center gap-2">
                 <select
                   value={chosenStyleExport}
@@ -550,6 +539,19 @@ export function BookOrderForm() {
               className="mt-0.5 shrink-0"
             />
             <span className="text-xs text-neutral-600">{t('order.disclaimer')}</span>
+          </label>
+
+          {/* Fast mode toggle */}
+          <label className="flex items-center gap-2 mt-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={form.skipQaReviews}
+              onChange={(e) => update('skipQaReviews', e.target.checked)}
+              className="shrink-0"
+            />
+            <span className="text-xs text-neutral-500">
+              <span className="font-semibold text-amber-600">FAST</span> — pomiń recenzje QA
+            </span>
           </label>
         </div>
       )}
