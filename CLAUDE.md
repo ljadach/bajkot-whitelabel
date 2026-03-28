@@ -27,6 +27,40 @@ npm run format            # Format code with Prettier
 
 All changes must pass `npm run lint`.
 
+## CLI Tool (`cli/`)
+
+CLI for testing and debugging the book pipeline without browser/auth. Requires `npx convex dev` running.
+
+```bash
+npm run cli -- <command>          # or: npx tsx cli/index.ts <command>
+```
+
+**Commands:**
+
+| Command                                 | What it does                                                                     |
+| --------------------------------------- | -------------------------------------------------------------------------------- |
+| `order -n <name> [-w]`                  | Create order + start pipeline. `-w` watches progress. Defaults: style A, skip QA |
+| `status [-s <status>]`                  | Pipeline stats + order list. Filter: `-s failed`, `-s completed`                 |
+| `detail <orderId> [--artifacts]`        | Full order info. `--artifacts` dumps raw JSON                                    |
+| `events <orderId>`                      | Pipeline event timeline with time deltas                                         |
+| `logs [-u <userId>] [--full] [--users]` | LLM call logs. `--users` lists users with logs                                   |
+| `download <orderId> [-o]`               | PDF download URL. `-o` opens in browser                                          |
+| `watch <orderId>`                       | Poll order progress every 5s until terminal state                                |
+| `presets`                               | List valid keys for problems, appearance, outfits                                |
+
+**How it works:** Calls `convex/cli.ts` internal functions via `npx convex run` — no Clerk auth needed. Orders created by CLI use `clerkUserId: "cli-user"`.
+
+**Typical test workflow:**
+
+```bash
+npm run cli -- order -n Zosia -w          # create + watch
+npm run cli -- detail <orderId>           # inspect artifacts
+npm run cli -- logs -u cli-user --full    # check LLM prompts
+npm run cli -- download <orderId> -o      # grab PDF
+```
+
+See `cli/README.md` for full option reference.
+
 ## Architecture
 
 ### User Flow
@@ -158,6 +192,8 @@ Never commit secrets or `.env.local` files.
 
 ## Important Paths
 
+- `cli/`: CLI tool for pipeline testing (see CLI Tool section above)
+- `convex/cli.ts`: Internal Convex functions for CLI (no auth)
 - `docs/devlog/`: Development journal (John Carmack .plan style, in Polish)
 - `docs/bajkot-pipeline/`: Pipeline architecture documentation
 - `docs/illustration_guide.md`: Illustration generation guide
