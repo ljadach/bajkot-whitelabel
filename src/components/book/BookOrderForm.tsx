@@ -507,38 +507,40 @@ export function BookOrderForm() {
             <p className="mt-1 text-xs text-muted">{t('order.emailHint')}</p>
           </div>
 
-          {/* Dev tools: fast mode + batch export */}
-          <div className="mt-4 rounded-lg border border-dashed border-neutral-300 bg-neutral-50 p-3">
-            <p className="text-xs font-semibold text-neutral-500 mb-2">Dev tools</p>
-            <label className="flex items-center gap-2 mb-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={form.skipQaReviews}
-                onChange={(e) => update('skipQaReviews', e.target.checked)}
-                className="shrink-0"
-              />
-              <span className="text-xs text-neutral-600">
-                FAST mode — pomija QA reviews (A4, A8, A10)
-              </span>
-            </label>
-            <div className="flex items-center gap-2">
-              <select
-                value={chosenStyleExport}
-                onChange={(e) => setChosenStyleExport(e.target.value as 'A' | 'B')}
-                className="rounded-lg border border-line bg-bg px-2 py-1.5 text-sm"
-              >
-                <option value="A">Styl A (collage)</option>
-                <option value="B">Styl B (akwarela)</option>
-              </select>
-              <button
-                type="button"
-                onClick={copyProfileJson}
-                className="rounded-lg bg-neutral-800 px-3 py-1.5 text-sm font-semibold text-white hover:bg-neutral-700 transition-colors"
-              >
-                {jsonCopied ? 'Skopiowano!' : 'Kopiuj profil JSON'}
-              </button>
+          {/* Dev tools: fast mode + batch export (only visible in dev) */}
+          {import.meta.env.DEV && (
+            <div className="mt-4 rounded-lg border border-dashed border-neutral-300 bg-neutral-50 p-3">
+              <p className="text-xs font-semibold text-neutral-500 mb-2">Dev tools</p>
+              <label className="flex items-center gap-2 mb-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.skipQaReviews}
+                  onChange={(e) => update('skipQaReviews', e.target.checked)}
+                  className="shrink-0"
+                />
+                <span className="text-xs text-neutral-600">
+                  FAST mode — pomija QA reviews (A4, A8, A10)
+                </span>
+              </label>
+              <div className="flex items-center gap-2">
+                <select
+                  value={chosenStyleExport}
+                  onChange={(e) => setChosenStyleExport(e.target.value as 'A' | 'B')}
+                  className="rounded-lg border border-line bg-bg px-2 py-1.5 text-sm"
+                >
+                  <option value="A">Styl A (collage)</option>
+                  <option value="B">Styl B (akwarela)</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={copyProfileJson}
+                  className="rounded-lg bg-neutral-800 px-3 py-1.5 text-sm font-semibold text-white hover:bg-neutral-700 transition-colors"
+                >
+                  {jsonCopied ? 'Skopiowano!' : 'Kopiuj profil JSON'}
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           <label className="flex items-start gap-3 mt-4 rounded-lg bg-amber-50 p-3 cursor-pointer">
             <input

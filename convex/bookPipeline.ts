@@ -34,6 +34,10 @@ export const startOrder = action({
     if (!identity) throw new Error('Not authenticated');
     const clerkUserId = identity.subject;
 
+    // Only admins can skip QA reviews
+    const adminUser = (identity as any).isAdmin === true;
+    const skipQaReviews = adminUser ? args.skipQaReviews : undefined;
+
     // Rate limiting
     await ctx.runMutation(internal.rateLimitMutation.checkAndRecordLLMRateLimit, {
       actionType: 'llm_call',
@@ -67,7 +71,7 @@ export const startOrder = action({
       skinTone: args.skinTone,
       outfit: args.outfit,
       email: args.email,
-      skipQaReviews: args.skipQaReviews,
+      skipQaReviews,
     });
 
     // Schedule A0 (intake)
