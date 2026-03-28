@@ -197,6 +197,32 @@ export const getLlmLogs = internalQuery({
   },
 });
 
+// ── List users who have LLM logs ─────────────────────────────
+
+export const getLlmLogUsers = internalQuery({
+  args: {},
+  returns: v.any(),
+  handler: async (ctx) => {
+    const allLogs = await ctx.db.query('llmLogs').collect();
+    const userMap = new Map<string, { count: number; last: number }>();
+
+    for (const log of allLogs) {
+      if (!log.clerkUserId) continue;
+      const existing = userMap.get(log.clerkUserId);
+      if (existing) {
+        existing.count++;
+        existing.last = Math.max(existing.last, log.timestamp);
+      } else {
+        userMap.set(log.clerkUserId, { count: 1, last: log.timestamp });
+      }
+    }
+
+    return Array.from(userMap.entries())
+      .map(([id, { count, last }]) => ({ clerkUserId: id, count, lastActivity: last }))
+      .sort((a, b) => b.lastActivity - a.lastActivity);
+  },
+});
+
 // ── Get pipeline stats ───────────────────────────────────────
 
 export const getPipelineStats = internalQuery({

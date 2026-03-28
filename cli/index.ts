@@ -32,20 +32,26 @@ function convexRun(fn: string, args?: Record<string, unknown>): string {
 }
 
 function parseResult(raw: string): any {
-  // npx convex run outputs the result after some log lines
-  // Find the last JSON-like line
-  const lines = raw.split('\n');
-  for (let i = lines.length - 1; i >= 0; i--) {
-    const line = lines[i].trim();
-    if (line.startsWith('{') || line.startsWith('[') || line.startsWith('"')) {
-      try {
-        return JSON.parse(line);
-      } catch {
-        // continue searching
-      }
+  // npx convex run outputs multiline JSON — try parsing the whole thing first
+  const trimmed = raw.trim();
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    // Fall through
+  }
+
+  // If raw output has log lines before JSON, find where JSON starts
+  const jsonStart = trimmed.search(/^[\[{"]/m);
+  if (jsonStart > 0) {
+    try {
+      return JSON.parse(trimmed.slice(jsonStart));
+    } catch {
+      // Fall through
     }
   }
-  return raw;
+
+  // Last resort: return as string (e.g. plain ID)
+  return trimmed.replace(/^"|"$/g, '');
 }
 
 function fmt(date: number): string {
@@ -310,7 +316,22 @@ program
   .option('-u, --user <clerkUserId>', 'Clerk user ID', 'cli-user')
   .option('-l, --limit <n>', 'Number of logs', '20')
   .option('--full', 'Show full prompts and responses')
+  .option('--users', 'List users who have LLM logs')
   .action((opts) => {
+    if (opts.users) {
+      const raw = convexRun('cli:getLlmLogUsers');
+      const users = parseResult(raw);
+      if (!Array.isArray(users) || users.length === 0) {
+        console.log('No LLM log users found.');
+        return;
+      }
+      console.log(`\x1b[1m── LLM Log Users (${users.length}) ──\x1b[0m\n`);
+      for (const u of users) {
+        console.log(`  ${u.clerkUserId}  logs:${u.count}  last:${fmt(u.lastActivity)}`);
+      }
+      return;
+    }
+
     const raw = convexRun('cli:getLlmLogs', {
       clerkUserId: opts.user,
       limit: parseInt(opts.limit),
