@@ -19,6 +19,7 @@ export default [
     route('book/:orderId/progress', 'routes/app/book-progress.tsx'),
     route('book/:orderId/vote', 'routes/app/book-vote.tsx'),
     route('book/:orderId/result', 'routes/app/book-result.tsx'),
+    route('book/:orderId/print', 'routes/app/book-print.tsx'),
     route('admin/*', 'routes/app/admin.tsx'),
   ]),
 
