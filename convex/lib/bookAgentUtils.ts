@@ -6,34 +6,19 @@ import type { StoryDraft, PsychReview } from './bookTypes';
 
 /** Normalize LLM output to consistent StoryDraft.pages format */
 export function normalizePages(raw: any): StoryDraft['pages'] {
-  // Resolve the source array from multiple LLM output shapes
-  const source: any[] | undefined =
-    (Array.isArray(raw.pages) && raw.pages.length > 0 && raw.pages) ||
-    (Array.isArray(raw.scenes) && raw.scenes.length > 0 && raw.scenes) ||
-    (Array.isArray(raw.beats) && raw.beats.length > 0 && raw.beats) ||
-    undefined;
-
-  if (source) {
-    return source.map((item: any, i: number) => ({
-      beatNumber: item.beatNumber || item.beat_number || i + 1,
-      text: item.text || item.text_pl || '',
-      readAloudVersion: item.readAloudVersion || item.text_pl || item.text || '',
-    }));
+  if (!Array.isArray(raw.pages) || raw.pages.length === 0) {
+    console.warn(
+      '[normalizePages] Missing or empty pages array in LLM response. Keys:',
+      Object.keys(raw),
+    );
+    return [];
   }
 
-  // Handle story_text as flat array of strings (trustee LLM variant)
-  if (Array.isArray(raw.story_text)) {
-    return raw.story_text.map((text: string, i: number) => {
-      const str = typeof text === 'string' ? text : String(text);
-      return { beatNumber: i + 1, text: str, readAloudVersion: str };
-    });
-  }
-
-  console.warn(
-    '[normalizePages] Could not find pages/scenes in LLM response. Keys:',
-    Object.keys(raw),
-  );
-  return [];
+  return raw.pages.map((item: any, i: number) => ({
+    beatNumber: item.beatNumber || item.beat_number || i + 1,
+    text: item.text || item.text_pl || '',
+    readAloudVersion: item.readAloudVersion || item.text_pl || item.text || '',
+  }));
 }
 
 /**

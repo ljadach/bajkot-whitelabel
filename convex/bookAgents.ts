@@ -721,12 +721,10 @@ Return ONLY valid JSON matching this schema:
             illustrations: rawIlls.map((ill: any, i: number) => {
               const isCover = i === 0;
               return {
-                illustrationId:
-                  ill.illustrationId || ill.id || ill.illustration_id || fallbackId(i),
-                beatRef: ill.beatRef ?? ill.beat_ref ?? ill.scene_ref ?? (isCover ? 0 : i),
-                sceneDescription:
-                  ill.sceneDescription || ill.scene_description || ill.composition || '',
-                prompt: ill.prompt || ill.image_prompt || '',
+                illustrationId: ill.illustrationId || fallbackId(i),
+                beatRef: ill.beatRef ?? (isCover ? 0 : i),
+                sceneDescription: ill.sceneDescription || '',
+                prompt: ill.prompt || '',
                 mood: ill.mood || '',
                 keyElements: ill.keyElements || ill.key_elements || [],
                 width: ill.width || (isCover ? 600 : 900),
