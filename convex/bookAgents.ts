@@ -445,18 +445,12 @@ export const writeStory = internalAction({
             parentCard: normalizeParentCard(raw),
           };
 
-          // Fix: replace [name] / {name} placeholders with actual child name
-          const blueprint = JSON.parse(order.storyBlueprint!);
-          const profileJson = JSON.parse(order.characterProfile!);
-          const childName =
-            blueprint?.title?.split(' ')[0] || profileJson?.child_character?.name || '';
-          if (childName) {
-            const nameRx = /\[name\]|\{name\}/gi;
-            normalized.dedication = normalized.dedication.replace(nameRx, childName);
-            normalized.title = normalized.title.replace(nameRx, childName);
-            if (normalized.coverBlurb) {
-              normalized.coverBlurb = normalized.coverBlurb.replace(nameRx, childName);
-            }
+          // Replace [name] / {name} placeholders with actual child name
+          const nameRx = /\[name\]|\{name\}/gi;
+          normalized.dedication = normalized.dedication.replace(nameRx, order.childName);
+          normalized.title = normalized.title.replace(nameRx, order.childName);
+          if (normalized.coverBlurb) {
+            normalized.coverBlurb = normalized.coverBlurb.replace(nameRx, order.childName);
           }
 
           return normalized;

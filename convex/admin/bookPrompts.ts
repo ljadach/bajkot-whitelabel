@@ -13,7 +13,7 @@ import { PromptTemplate, normalizeFallback } from '../lib/prompts/types';
 import { bookFallbacks } from '../lib/prompts/bookFallbacks';
 
 // Map PromptTemplate keys to human-readable agent names
-const BOOK_PROMPT_META: Record<string, { agent: string; filename: string }> = {
+export const BOOK_PROMPT_META: Record<string, { agent: string; filename: string }> = {
   [PromptTemplate.BookIntake]: { agent: 'A0 — Intake', filename: 'A0_intake' },
   [PromptTemplate.BookChildProfiler]: {
     agent: 'A1 — Child Profiler',
@@ -47,7 +47,7 @@ const VALID_PROMPT_KEYS = new Set(Object.values(PromptTemplate) as string[]);
 
 // ── Helper: get next version number for a prompt key ──────────
 
-async function getNextVersion(
+export async function getNextVersion(
   ctx: { db: { query: (table: 'bookPromptVersions') => any } },
   promptKey: string,
 ): Promise<number> {
@@ -61,7 +61,7 @@ async function getNextVersion(
 
 // ── Helper: save current content as a version snapshot ─────────
 
-async function saveVersionSnapshot(
+export async function saveVersionSnapshot(
   ctx: { db: any },
   promptKey: string,
   content: string,

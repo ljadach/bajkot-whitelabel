@@ -528,11 +528,6 @@ promptsCmd
     const raw = convexRun('cli:getPromptContent', { key });
     const result = parseResult(raw);
 
-    if (result.error) {
-      console.error(`\x1b[31m✗ ${result.error}\x1b[0m`);
-      process.exit(1);
-    }
-
     if (opts.json) {
       console.log(JSON.stringify(result, null, 2));
     } else {
@@ -580,12 +575,6 @@ promptsCmd
       changeNote: opts.message,
     });
     const result = parseResult(raw);
-
-    if (result.error) {
-      console.error(`\x1b[31m✗ ${result.error}\x1b[0m`);
-      process.exit(1);
-    }
-
     console.log(`\x1b[32m✓ ${key} updated (${result.contentLength} chars)\x1b[0m`);
   });
 
