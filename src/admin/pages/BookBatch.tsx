@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { useQuery, useAction, useMutation } from 'convex/react';
+import { useSearchParams } from 'react-router';
 import { api } from '../../../convex/_generated/api';
 import {
   validateBatchProfile,
@@ -11,29 +12,11 @@ import { PROBLEMS } from '../../lib/bookData';
 import type { Id } from '../../../convex/_generated/dataModel';
 import { toast } from 'sonner';
 import { OrderTimeline } from '../../components/book/OrderTimeline';
+import { STATUS_COLORS } from '../statusColors';
 
 type ValidationResult = { index: number; profile: BatchProfile; valid: boolean; errors: string[] };
 
 type Tab = 'launch' | 'orders' | 'prompts';
-
-const STATUS_COLORS: Record<string, string> = {
-  intake: 'bg-blue-100 text-blue-800',
-  profiling: 'bg-blue-100 text-blue-800',
-  story_planning: 'bg-indigo-100 text-indigo-800',
-  story_writing: 'bg-indigo-100 text-indigo-800',
-  psych_review: 'bg-purple-100 text-purple-800',
-  art_direction: 'bg-violet-100 text-violet-800',
-  character_design: 'bg-violet-100 text-violet-800',
-  style_vote: 'bg-amber-100 text-amber-800',
-  illustrating: 'bg-orange-100 text-orange-800',
-  visual_qa: 'bg-orange-100 text-orange-800',
-  composing_pdf: 'bg-teal-100 text-teal-800',
-  final_qa: 'bg-teal-100 text-teal-800',
-  delivering: 'bg-green-100 text-green-800',
-  completed: 'bg-green-200 text-green-900',
-  failed: 'bg-red-100 text-red-800',
-  paused: 'bg-yellow-100 text-yellow-800',
-};
 
 const AGENT_LIST = ['A0', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11'];
 
@@ -67,7 +50,12 @@ function downloadJson(content: string, filename: string) {
 // ════════════════════════════════════════════════════════════
 
 export function BookBatch() {
-  const [activeTab, setActiveTab] = useState<Tab>('launch');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlTab = searchParams.get('tab');
+  const activeTab: Tab = urlTab === 'orders' || urlTab === 'prompts' ? urlTab : 'launch';
+
+  const switchTab = (tab: Tab) =>
+    setSearchParams(tab === 'launch' ? {} : { tab }, { replace: true });
 
   return (
     <div className="space-y-6">
@@ -89,7 +77,7 @@ export function BookBatch() {
         ).map(([tab, label]) => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => switchTab(tab)}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === tab
                 ? 'border-neutral-900 text-neutral-900'

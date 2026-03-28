@@ -1,4 +1,5 @@
-import { lazy, Suspense } from 'react';
+import { lazy } from 'react';
+import { RouteSuspense } from '../../components/RouteSuspense';
 
 const BookResult = lazy(() =>
   import('../../components/book/BookResult').then((m) => ({
@@ -8,14 +9,8 @@ const BookResult = lazy(() =>
 
 export default function BookResultPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex justify-center items-center min-h-[400px]">
-          <div className="w-6 h-6 spinner" />
-        </div>
-      }
-    >
+    <RouteSuspense>
       <BookResult />
-    </Suspense>
+    </RouteSuspense>
   );
 }

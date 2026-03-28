@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useQuery, useMutation } from 'convex/react';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +9,7 @@ export function BookStyleVote() {
   const { t } = useTranslation('book');
   const navigate = useNavigate();
   const { orderId } = useParams<{ orderId: string }>();
+  const votedRef = useRef(false);
 
   const [selected, setSelected] = useState<'A' | 'B' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -18,6 +19,14 @@ export function BookStyleVote() {
     api.bookPipeline.getStyleVoteImages,
     orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip',
   );
+
+  // Redirect if style already chosen (e.g. fast mode, or we just voted)
+  useEffect(() => {
+    if (images?.chosenStyle && orderId && !votedRef.current) {
+      votedRef.current = true;
+      void navigate(`/book/${orderId}/progress`, { replace: true });
+    }
+  }, [images?.chosenStyle, orderId, navigate]);
 
   const submitVote = useMutation(api.bookPipeline.submitStyleVote);
 
@@ -30,7 +39,8 @@ export function BookStyleVote() {
         orderId: orderId as Id<'bookOrders'>,
         choice: selected,
       });
-      void navigate(`/book/${orderId}/progress`);
+      votedRef.current = true;
+      void navigate(`/book/${orderId}/progress`, { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Vote failed');
       setIsSubmitting(false);

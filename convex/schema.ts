@@ -127,6 +127,10 @@ const applicationTables = {
     // Fast mode flags (admin batch)
     skipQaReviews: v.optional(v.boolean()),
 
+    // Parallel track completion (A2-A5 story track, A6-vote image track)
+    storyTrackDone: v.optional(v.boolean()),
+    imageTrackDone: v.optional(v.boolean()),
+
     // Pipeline status
     status: v.union(
       v.literal('intake'),

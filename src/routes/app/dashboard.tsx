@@ -1,4 +1,5 @@
-import { lazy, Suspense } from 'react';
+import { lazy } from 'react';
+import { RouteSuspense } from '../../components/RouteSuspense';
 
 const Dashboard = lazy(() =>
   import('../../components/Dashboard').then((m) => ({ default: m.DashboardPage })),
@@ -6,14 +7,8 @@ const Dashboard = lazy(() =>
 
 export default function DashboardRoute() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex justify-center items-center min-h-[400px]">
-          <div className="w-6 h-6 spinner" />
-        </div>
-      }
-    >
+    <RouteSuspense>
       <Dashboard />
-    </Suspense>
+    </RouteSuspense>
   );
 }

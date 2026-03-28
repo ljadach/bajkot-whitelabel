@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useQuery } from 'convex/react';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +11,7 @@ export function BookProgress() {
   const { t } = useTranslation('book');
   const navigate = useNavigate();
   const { orderId } = useParams<{ orderId: string }>();
+  const redirectedRef = useRef(false);
 
   const progress = useQuery(
     api.bookPipeline.getOrderProgress,
@@ -22,13 +23,16 @@ export function BookProgress() {
     orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip',
   );
 
-  // Auto-redirect on status changes
+  // Auto-redirect: vote page or result page
   useEffect(() => {
-    if (!progress || !orderId) return;
+    if (!progress || !orderId || redirectedRef.current) return;
 
-    if (progress.status === 'style_vote' && progress.hasStyleVoteImages) {
+    // Vote needed: images ready but user hasn't chosen yet
+    if (progress.hasStyleVoteImages && !progress.chosenStyle) {
+      redirectedRef.current = true;
       void navigate(`/book/${orderId}/vote`);
     } else if (progress.status === 'completed') {
+      redirectedRef.current = true;
       void navigate(`/book/${orderId}/result`);
     }
   }, [progress, orderId, navigate]);

@@ -15,6 +15,8 @@ import { internal } from './_generated/api';
 import { v } from 'convex/values';
 import { chatJsonForStage, chatJsonForStageWithImages } from './lib/llmClient';
 import { applyPlaceholders, PromptTemplate } from './lib/prompts';
+import { normalizeFallback } from './lib/prompts/types';
+import { bookFallbacks } from './lib/prompts/bookFallbacks';
 import { startActiveObservation } from './lib/langfuse';
 import { buildInternalLogContext } from './lib/actionHelpers';
 import { generateImage } from './lib/geminiImageGen';
@@ -39,7 +41,12 @@ import {
   type VisualQa,
   type FinalQa,
 } from './lib/bookTypes';
-import { normalizePages, applyCorrections, normalizeParentCard } from './lib/bookAgentUtils';
+import {
+  normalizePages,
+  applyCorrections,
+  normalizeParentCard,
+  IMAGE_SAFETY_SUFFIX,
+} from './lib/bookAgentUtils';
 import { getNarrative } from './bookPipelineEvents';
 
 /**
@@ -71,9 +78,13 @@ async function getPrompt(
     templateKey: template,
   });
   if (!content) {
-    throw new Error(
-      `Prompt not found in DB for template: ${template}. Run seedPrompts migration first.`,
-    );
+    // Runtime fallback to seed values if DB is empty (e.g. fresh deployment)
+    const fallbackConfig = bookFallbacks[template];
+    if (fallbackConfig?.fallback) {
+      console.warn(`[getPrompt] Using fallback for ${template} — DB prompt missing`);
+      return applyPlaceholders(normalizeFallback(fallbackConfig.fallback), params, template);
+    }
+    throw new Error(`Prompt not found in DB or fallbacks for template: ${template}.`);
   }
   return applyPlaceholders(content, params, template);
 }
@@ -633,6 +644,7 @@ export const directArt = internalAction({
   returns: v.null(),
   handler: async (ctx, { orderId }) => {
     try {
+      // State machine in updateOrderStatus guards against overwriting style_vote
       await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
         orderId,
         status: 'art_direction',
@@ -720,12 +732,10 @@ Return ONLY valid JSON matching this schema:
             illustrations: rawIlls.map((ill: any, i: number) => {
               const isCover = i === 0;
               return {
-                illustrationId:
-                  ill.illustrationId || ill.id || ill.illustration_id || fallbackId(i),
-                beatRef: ill.beatRef ?? ill.beat_ref ?? ill.scene_ref ?? (isCover ? 0 : i),
-                sceneDescription:
-                  ill.sceneDescription || ill.scene_description || ill.composition || '',
-                prompt: ill.prompt || ill.image_prompt || '',
+                illustrationId: ill.illustrationId || fallbackId(i),
+                beatRef: ill.beatRef ?? (isCover ? 0 : i),
+                sceneDescription: ill.sceneDescription || '',
+                prompt: ill.prompt || '',
                 mood: ill.mood || '',
                 keyElements: ill.keyElements || ill.key_elements || [],
                 width: ill.width || (isCover ? 600 : 900),
@@ -752,9 +762,10 @@ Return ONLY valid JSON matching this schema:
         narrative: getNarrative('A5', 'complete'),
       });
 
-      // Story track done — check if image track (style vote) is also done
-      await ctx.runMutation(internal.bookPipelineHelpers.checkParallelTracksComplete, {
+      // Mark story track complete + check convergence (atomic)
+      await ctx.runMutation(internal.bookPipelineHelpers.completeTrackAndCheck, {
         orderId,
+        track: 'story',
       });
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
@@ -806,13 +817,13 @@ export const designCharacter = internalAction({
         profile.descriptionEn || profile.physicalDescription || profile.visualPromptBase || '';
 
       // Generate Style A reference image
-      const promptA = `Children's book character design. Character: ${childDesc}, standing in a neutral pose, front view, full body visible, centered composition. Style: ${STYLE_A.style}. ${STYLE_A.modifiers}. Character design reference sheet, well-lit, no text.`;
+      const promptA = `Children's book character design. Character: ${childDesc}, standing in a neutral pose, front view, full body visible, centered composition. Style: ${STYLE_A.style}. ${STYLE_A.modifiers}. Character design reference sheet, well-lit, no text. ${IMAGE_SAFETY_SUFFIX}`;
 
       await checkCallBudget(ctx, orderId);
       const imageA = await generateImage(promptA, { width: 512, height: 512 });
 
       // Generate Style B reference image
-      const promptB = `Children's book character design. Character: ${childDesc}, standing in a neutral pose, front view, full body visible, centered composition. Style: ${STYLE_B.style}. ${STYLE_B.modifiers}. Character design reference sheet, well-lit, no text.`;
+      const promptB = `Children's book character design. Character: ${childDesc}, standing in a neutral pose, front view, full body visible, centered composition. Style: ${STYLE_B.style}. ${STYLE_B.modifiers}. Character design reference sheet, well-lit, no text. ${IMAGE_SAFETY_SUFFIX}`;
 
       await checkCallBudget(ctx, orderId);
       const imageB = await generateImage(promptB, { width: 512, height: 512 });
@@ -844,8 +855,9 @@ export const designCharacter = internalAction({
           event: 'complete',
           narrative: getNarrative('A6b', 'complete'),
         });
-        await ctx.runMutation(internal.bookPipelineHelpers.checkParallelTracksComplete, {
+        await ctx.runMutation(internal.bookPipelineHelpers.completeTrackAndCheck, {
           orderId,
+          track: 'image',
         });
       } else {
         // Regular flow — pause for user vote
@@ -973,7 +985,7 @@ export const illustrate = internalAction({
       for (const ill of plan.illustrations) {
         const id = ill.illustrationId;
         const basePrompt = ill.prompt || `Children's book illustration: ${id}`;
-        const fullPrompt = `${consistencyPreamble} Scene: ${basePrompt}. No text in image.`;
+        const fullPrompt = `${consistencyPreamble} Scene: ${basePrompt}. No text in image. ${IMAGE_SAFETY_SUFFIX}`;
 
         const isCover = id === 'cover';
         const width = isCover ? 600 : 900;

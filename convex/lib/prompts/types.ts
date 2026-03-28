@@ -1,8 +1,13 @@
 export type PromptConfig = {
   name: string;
   type: 'text' | 'chat';
-  fallback: string;
+  fallback: string | string[];
 };
+
+/** Join fallback array into string if needed */
+export function normalizeFallback(fallback: string | string[]): string {
+  return Array.isArray(fallback) ? fallback.join('\n') : fallback;
+}
 
 export enum PromptTemplate {
   // Book Pipeline (A0-A11)
