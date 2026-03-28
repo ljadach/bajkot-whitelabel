@@ -1,20 +1,15 @@
-import { lazy, Suspense } from 'react';
+import { lazy } from 'react';
 import { isRouteErrorResponse, useRouteError, Link } from 'react-router';
+import { RouteSuspense } from '../components/RouteSuspense';
 
 const AuthLayoutInner = lazy(() => import('./auth-layout-inner'));
 
 /** Auth-gated layout — lazy-loads auth checks to avoid SSR issues */
 export default function AuthLayout() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex justify-center items-center min-h-[400px]">
-          <div className="w-6 h-6 spinner" />
-        </div>
-      }
-    >
+    <RouteSuspense>
       <AuthLayoutInner />
-    </Suspense>
+    </RouteSuspense>
   );
 }
 

@@ -1,45 +1,8 @@
 import { Link } from 'react-router';
 import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
-
-const STATUS_COLORS: Record<string, string> = {
-  intake: 'bg-blue-100 text-blue-700',
-  profiling: 'bg-blue-100 text-blue-700',
-  story_planning: 'bg-indigo-100 text-indigo-700',
-  story_writing: 'bg-indigo-100 text-indigo-700',
-  psych_review: 'bg-purple-100 text-purple-700',
-  art_direction: 'bg-violet-100 text-violet-700',
-  character_design: 'bg-violet-100 text-violet-700',
-  style_vote: 'bg-amber-100 text-amber-700',
-  illustrating: 'bg-orange-100 text-orange-700',
-  visual_qa: 'bg-orange-100 text-orange-700',
-  composing_pdf: 'bg-teal-100 text-teal-700',
-  final_qa: 'bg-teal-100 text-teal-700',
-  delivering: 'bg-green-100 text-green-700',
-  completed: 'bg-green-100 text-green-800',
-  failed: 'bg-red-100 text-red-700',
-  paused: 'bg-yellow-100 text-yellow-700',
-};
-
-function timeAgo(timestamp: number): string {
-  const seconds = Math.floor((Date.now() - timestamp) / 1000);
-  if (seconds < 60) return `${seconds}s ago`;
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
-
-function formatDuration(ms: number): string {
-  const seconds = Math.floor(ms / 1000);
-  if (seconds < 60) return `${seconds}s`;
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ${seconds % 60}s`;
-  const hours = Math.floor(minutes / 60);
-  return `${hours}h ${minutes % 60}m`;
-}
+import { STATUS_COLORS } from '../statusColors';
+import { timeAgo, formatDuration } from '../../lib/formatTime';
 
 export function AdminDashboard() {
   const stats = useQuery(api.admin.bookBatch.getPipelineStats);

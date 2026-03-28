@@ -1,4 +1,5 @@
-import { lazy, Suspense } from 'react';
+import { lazy } from 'react';
+import { RouteSuspense } from '../../components/RouteSuspense';
 
 const AdminLayout = lazy(() =>
   import('../../admin/AdminLayout').then((m) => ({ default: m.AdminLayout })),
@@ -6,14 +7,8 @@ const AdminLayout = lazy(() =>
 
 export default function Admin() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex justify-center items-center min-h-[400px]">
-          <div className="w-6 h-6 spinner" />
-        </div>
-      }
-    >
+    <RouteSuspense>
       <AdminLayout />
-    </Suspense>
+    </RouteSuspense>
   );
 }
