@@ -379,6 +379,7 @@ function OrdersTab() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b text-left text-neutral-500">
+                <th className="py-2 pr-3">ID</th>
                 <th className="py-2 pr-3">Dziecko</th>
                 <th className="py-2 pr-3">Status</th>
                 <th className="py-2 pr-3">Agent</th>
@@ -395,6 +396,19 @@ function OrdersTab() {
                     onClick={() => setExpandedId(expandedId === o._id ? null : o._id)}
                     className={`border-b border-neutral-100 cursor-pointer hover:bg-neutral-50 transition-colors ${expandedId === o._id ? 'bg-neutral-50' : ''}`}
                   >
+                    <td className="py-2 pr-3">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void navigator.clipboard.writeText(o._id);
+                        }}
+                        title="Kliknij aby skopiować ID"
+                        className="font-mono text-[11px] text-neutral-400 hover:text-neutral-700 transition-colors cursor-copy"
+                      >
+                        {(o._id as string).slice(-12)}
+                      </button>
+                    </td>
                     <td className="py-2 pr-3 font-medium">
                       {o.childName}
                       {o.skipQaReviews && (
@@ -421,7 +435,7 @@ function OrdersTab() {
                   </tr>
                   {expandedId === o._id && (
                     <tr key={`${o._id}-detail`}>
-                      <td colSpan={6} className="p-0">
+                      <td colSpan={7} className="p-0">
                         <OrderDetailPanel orderId={o._id as Id<'bookOrders'>} />
                       </td>
                     </tr>
