@@ -17,6 +17,7 @@ export const storeLlmLog = internalMutation({
     webSearchSources: v.optional(v.array(v.string())),
     reasoningUsed: v.optional(v.boolean()),
   },
+  returns: v.id('llmLogs'),
   handler: async (ctx, args) => {
     // Keep only last 50 logs per user to avoid bloat
     const existingLogs = await ctx.db
@@ -54,8 +55,9 @@ export const storeLlmLog = internalMutation({
 export const getLlmLogs = query({
   args: {
     limit: v.optional(v.number()),
-    clerkUserId: v.optional(v.string()), // Optional: view another user's logs
+    clerkUserId: v.optional(v.string()),
   },
+  returns: v.array(v.any()),
   handler: async (ctx, args) => {
     // Admin only - debug functionality
     await assertAdmin(ctx);
@@ -77,6 +79,13 @@ export const getLlmLogs = query({
 // Query to get all users who have LLM logs (admin only - for debug user switcher)
 export const getAllLogUsers = query({
   args: {},
+  returns: v.array(
+    v.object({
+      clerkUserId: v.string(),
+      logCount: v.number(),
+      lastActivity: v.number(),
+    }),
+  ),
   handler: async (ctx) => {
     // Admin only - debug functionality
     await assertAdmin(ctx);
@@ -140,6 +149,7 @@ export const getLlmLogById = query({
   args: {
     logId: v.id('llmLogs'),
   },
+  returns: v.union(v.any(), v.null()),
   handler: async (ctx, args) => {
     // Admin only - debug functionality
     await assertAdmin(ctx);
