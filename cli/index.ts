@@ -15,9 +15,12 @@ import { readFileSync, existsSync } from 'fs';
 
 // ── Helpers ─────────────────────────────────────────────────
 
+let useProd = false;
+
 function convexRun(fn: string, args?: Record<string, unknown>): string {
   // Use execFileSync to avoid shell escaping issues with complex JSON content
   const cmdArgs = ['convex', 'run', fn];
+  if (useProd) cmdArgs.push('--prod');
   if (args) cmdArgs.push(JSON.stringify(args));
   try {
     return execFileSync('npx', cmdArgs, {
@@ -84,7 +87,14 @@ const program = new Command();
 program
   .name('bajkot')
   .description('Bajkot pipeline CLI — test & debug tool')
-  .version('1.0.0');
+  .version('1.0.0')
+  .option('--prod', 'Run against production deployment')
+  .hook('preAction', (thisCommand) => {
+    useProd = thisCommand.opts().prod ?? false;
+    if (useProd) {
+      console.log('\x1b[33m⚠ PRODUCTION mode\x1b[0m\n');
+    }
+  });
 
 // ── order ───────────────────────────────────────────────────
 
