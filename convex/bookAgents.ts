@@ -633,15 +633,12 @@ export const directArt = internalAction({
   returns: v.null(),
   handler: async (ctx, { orderId }) => {
     try {
-      // Don't overwrite style_vote status — A6 may have set it for user interaction
-      const preOrder = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
-      if (preOrder?.status !== 'style_vote') {
-        await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
-          orderId,
-          status: 'art_direction',
-          currentAgent: 'A5',
-        });
-      }
+      // State machine in updateOrderStatus guards against overwriting style_vote
+      await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
+        orderId,
+        status: 'art_direction',
+        currentAgent: 'A5',
+      });
       await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
         orderId,
         agent: 'A5',
@@ -649,7 +646,7 @@ export const directArt = internalAction({
         narrative: getNarrative('A5', 'start'),
       });
 
-      const order = preOrder;
+      const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
       if (!order?.storyDraft || !order?.characterProfile || !order?.storyBlueprint) {
         throw new Error('Missing artifacts for art direction');
       }
@@ -756,9 +753,10 @@ Return ONLY valid JSON matching this schema:
         narrative: getNarrative('A5', 'complete'),
       });
 
-      // Story track done — check if image track (style vote) is also done
-      await ctx.runMutation(internal.bookPipelineHelpers.checkParallelTracksComplete, {
+      // Mark story track complete + check convergence (atomic)
+      await ctx.runMutation(internal.bookPipelineHelpers.completeTrackAndCheck, {
         orderId,
+        track: 'story',
       });
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
@@ -848,8 +846,9 @@ export const designCharacter = internalAction({
           event: 'complete',
           narrative: getNarrative('A6b', 'complete'),
         });
-        await ctx.runMutation(internal.bookPipelineHelpers.checkParallelTracksComplete, {
+        await ctx.runMutation(internal.bookPipelineHelpers.completeTrackAndCheck, {
           orderId,
+          track: 'image',
         });
       } else {
         // Regular flow — pause for user vote

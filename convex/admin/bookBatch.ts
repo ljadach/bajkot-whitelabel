@@ -455,11 +455,16 @@ export const resetOrderForRetry = internalMutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
+    const preForkAgents = new Set(['A0', 'A1']);
+    const trackReset = preForkAgents.has(args.fromAgent)
+      ? { storyTrackDone: false, imageTrackDone: false }
+      : {};
     await ctx.db.patch(args.orderId, {
       status: args.status as 'intake',
       currentAgent: args.currentAgent,
       error: '',
       updatedAt: Date.now(),
+      ...trackReset,
     });
     await auditLog(ctx, args.actor, 'bookBatch.retry', args.orderId, {
       fromAgent: args.fromAgent,

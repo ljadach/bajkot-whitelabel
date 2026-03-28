@@ -201,10 +201,12 @@ export const submitStyleVote = mutation({
 
     await ctx.db.patch(orderId, {
       chosenStyle: choice,
+      imageTrackDone: true,
       updatedAt: Date.now(),
     });
 
-    // Check if story track is also done
+    // imageTrackDone set inline above (atomic with chosenStyle).
+    // Actions use completeTrackAndCheck; mutations can patch + schedule directly.
     await ctx.scheduler.runAfter(0, internal.bookPipelineHelpers.checkParallelTracksComplete, {
       orderId,
     });
