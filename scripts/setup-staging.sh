@@ -138,10 +138,10 @@ fi
 # --------------------------------------------------
 step "Step 6: Custom domain (optional)"
 info "In Vercel staging project → Settings → Domains:"
-info "  Add: ${BOLD}staging.bajkot.pl${NC}"
+info "  Add: ${BOLD}staging.bajkoterapia.org${NC}"
 info ""
 info "This requires a CNAME record in your DNS:"
-info "  staging.bajkot.pl → cname.vercel-dns.com"
+info "  staging.bajkoterapia.org → cname.vercel-dns.com"
 echo ""
 
 # --------------------------------------------------
@@ -156,8 +156,8 @@ echo "  Staging: push to 'staging' → Vercel auto-deploys"
 echo "  Prod:    push to 'main'    → Vercel auto-deploys"
 echo ""
 echo "  Workflow:"
-echo "    feature/* ──PR──→ staging ──auto──→ staging.bajkot.pl"
-echo "    staging   ──PR──→ main    ──auto──→ bajkot.pl"
+echo "    feature/* ──PR──→ staging ──auto──→ staging.bajkoterapia.org"
+echo "    staging   ──PR──→ main    ──auto──→ bajkoterapia.org"
 echo ""
 echo "  No CI/CD config needed. Vercel handles everything."
 echo ""

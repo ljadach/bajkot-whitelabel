@@ -1,7 +1,7 @@
 import i18n from 'i18next';
 import type { MetaDescriptor } from 'react-router';
 
-const SITE_URL = 'https://bajkot.pl';
+const SITE_URL = 'https://bajkoterapia.org';
 
 export function buildPageMeta({
   ns,

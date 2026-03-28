@@ -95,19 +95,19 @@ export function FaqPage() {
               '@type': 'ListItem',
               position: 1,
               name: 'Bajkoterapia',
-              item: `https://bajkot.pl/${lang}/`,
+              item: `https://bajkoterapia.org/${lang}/`,
             },
             {
               '@type': 'ListItem',
               position: 2,
               name: t('supportBreadcrumb'),
-              item: `https://bajkot.pl/${lang}/support/faq`,
+              item: `https://bajkoterapia.org/${lang}/support/faq`,
             },
             {
               '@type': 'ListItem',
               position: 3,
               name: t('breadcrumb'),
-              item: `https://bajkot.pl/${lang}/support/faq`,
+              item: `https://bajkoterapia.org/${lang}/support/faq`,
             },
           ],
         }}

@@ -290,7 +290,7 @@ async function sendEmailNotification(lead: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Bajkoterapia <info@bajkot.pl>',
+        from: 'Bajkoterapia <info@bajkoterapia.org>',
         to: ['ljadach@gmail.com', 'cezdmo@gmail.com'],
         subject: `New Lead: ${segmentLabel} - ${lead.organization}`,
         html: generateEmailHtml(lead),

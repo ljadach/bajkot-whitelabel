@@ -41,9 +41,9 @@ export function Layout({ children }: { children: ReactNode }) {
         <meta name="robots" content="index, follow" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Bajkoterapia" />
-        <meta property="og:image" content="https://bajkot.pl/android-chrome-512x512.png" />
+        <meta property="og:image" content="https://bajkoterapia.org/android-chrome-512x512.png" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:image" content="https://bajkot.pl/android-chrome-512x512.png" />
+        <meta name="twitter:image" content="https://bajkoterapia.org/android-chrome-512x512.png" />
         <Meta />
         <Links />
         <script
@@ -53,8 +53,8 @@ export function Layout({ children }: { children: ReactNode }) {
               '@context': 'https://schema.org',
               '@type': 'Organization',
               name: 'Bajkoterapia',
-              url: 'https://bajkot.pl',
-              logo: 'https://bajkot.pl/android-chrome-512x512.png',
+              url: 'https://bajkoterapia.org',
+              logo: 'https://bajkoterapia.org/android-chrome-512x512.png',
               description:
                 'Personalized therapeutic storybooks for children. AI-generated stories that help kids process emotions.',
             }),

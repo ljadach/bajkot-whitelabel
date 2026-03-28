@@ -38,7 +38,7 @@ Dwa oddzielne pliki **PDF**:
 ## 5. Integracja ze stroną (trapdoor flow)
 
 1. Po publikacji — skopiować link do książki w sklepie Amazon
-2. Na bajkot.pl — przycisk **"Kup drukowaną wersję"** (+29 PLN)
+2. Na bajkoterapia.org — przycisk **"Kup drukowaną wersję"** (+29 PLN)
 3. Link kieruje na Amazon
 
 ### Pro Tip: podwójny zarobek
@@ -50,7 +50,7 @@ Zarejestrować się w **Amazon Associates** (program afiliacyjny):
 
 ## Implikacje dla trapdoor flow
 
-Trapdoor w bajkot.pl powinien:
+Trapdoor w bajkoterapia.org powinien:
 
 1. Po wygenerowaniu PDF → upsell "Chcesz drukowaną wersję? +29 PLN"
 2. Zbierać zamówienie (adres, płatność)

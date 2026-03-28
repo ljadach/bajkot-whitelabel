@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Bajkot is a personalized therapeutic storybook platform for children, built with Convex (backend) and React + Vite (frontend). Parents describe their child's situation (fears, challenges, behavioral issues), and the platform generates a custom illustrated story with therapeutic elements — delivered as a beautiful PDF.
 
-**Domain:** bajkot.pl
+**Domain:** bajkoterapia.org
 
 **Convex deployments:**
 
@@ -65,7 +65,7 @@ See `cli/README.md` for full option reference.
 
 ### User Flow
 
-1. **Landing page** (bajkot.pl) → Marketing page in 3 languages (EN/PL/DE)
+1. **Landing page** (bajkoterapia.org) → Marketing page in 3 languages (EN/PL/DE)
 2. **Book Order** (`/book/order`) → Parent fills in child profile + problem description
 3. **Pipeline** → Chain of LLM agents generates story, illustrations, review
 4. **Progress** (`/book/:id/progress`) → Real-time pipeline progress

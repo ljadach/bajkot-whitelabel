@@ -691,7 +691,7 @@ function drawBackCover(doc: PDFKit.PDFDocument, opts: BackOpts) {
 
   // Branding
   doc.font('Body').fontSize(6).fillColor(C.brownMuted);
-  doc.text('bajkot.pl', x0 + PAGE_M, SHEET_H - PAGE_M - 10, {
+  doc.text('bajkoterapia.org', x0 + PAGE_M, SHEET_H - PAGE_M - 10, {
     width: HALF_W - PAGE_M * 2,
     align: 'center',
   });

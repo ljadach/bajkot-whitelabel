@@ -62,4 +62,4 @@ vercel --prod --yes --scope itsgglobal
 
 echo -e "\n${GREEN}✓ Staging deploy complete!${NC}"
 echo "  Convex: coordinated-seahorse-267"
-echo "  Vercel: https://staging.bajkot.pl"
+echo "  Vercel: https://staging.bajkoterapia.org"

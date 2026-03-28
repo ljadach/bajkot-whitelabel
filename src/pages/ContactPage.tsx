@@ -16,10 +16,10 @@ function buildEmail(user: string, domain: string): string {
 }
 
 const CHANNELS = [
-  { key: 'sales' as const, user: 'sales', domain: 'bajkot.pl' },
-  { key: 'support' as const, user: 'cs', domain: 'bajkot.pl' },
-  { key: 'press' as const, user: 'press', domain: 'bajkot.pl' },
-  { key: 'general' as const, user: 'info', domain: 'bajkot.pl' },
+  { key: 'sales' as const, user: 'sales', domain: 'bajkoterapia.org' },
+  { key: 'support' as const, user: 'cs', domain: 'bajkoterapia.org' },
+  { key: 'press' as const, user: 'press', domain: 'bajkoterapia.org' },
+  { key: 'general' as const, user: 'info', domain: 'bajkoterapia.org' },
 ];
 
 /* ─── DirectChannels ─── */
@@ -60,7 +60,7 @@ function SocialLinks() {
       <ul className="space-y-3">
         <li>
           <a
-            href="https://linkedin.com/company/bajkot"
+            href="https://linkedin.com/company/bajkoterapia"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-sm text-neutral-700 hover:text-accent transition-colors"
@@ -73,7 +73,7 @@ function SocialLinks() {
         </li>
         <li>
           <a
-            href="https://instagram.com/bajkot.pl"
+            href="https://instagram.com/bajkoterapia"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-sm text-neutral-700 hover:text-accent transition-colors"
@@ -125,19 +125,19 @@ export function ContactPage() {
               '@type': 'ListItem',
               position: 1,
               name: 'Bajkoterapia',
-              item: `https://bajkot.pl/${lang}/`,
+              item: `https://bajkoterapia.org/${lang}/`,
             },
             {
               '@type': 'ListItem',
               position: 2,
               name: t('aboutBreadcrumb'),
-              item: `https://bajkot.pl/${lang}/about/contact`,
+              item: `https://bajkoterapia.org/${lang}/about/contact`,
             },
             {
               '@type': 'ListItem',
               position: 3,
               name: t('breadcrumb'),
-              item: `https://bajkot.pl/${lang}/about/contact`,
+              item: `https://bajkoterapia.org/${lang}/about/contact`,
             },
           ],
         }}
@@ -147,7 +147,7 @@ export function ContactPage() {
           '@context': 'https://schema.org',
           '@type': 'ContactPage',
           name: t('header.heading'),
-          url: `https://bajkot.pl/${lang}/about/contact`,
+          url: `https://bajkoterapia.org/${lang}/about/contact`,
         }}
       />
       <JsonLd
@@ -155,7 +155,7 @@ export function ContactPage() {
           '@context': 'https://schema.org',
           '@type': 'Organization',
           name: 'Bajkoterapia',
-          url: 'https://bajkot.pl',
+          url: 'https://bajkoterapia.org',
           address: {
             '@type': 'PostalAddress',
             streetAddress: 'Plac Inwalidów 10',
@@ -163,7 +163,10 @@ export function ContactPage() {
             addressLocality: 'Warszawa',
             addressCountry: 'PL',
           },
-          sameAs: ['https://linkedin.com/company/bajkot', 'https://instagram.com/bajkot.pl'],
+          sameAs: [
+            'https://linkedin.com/company/bajkoterapia',
+            'https://instagram.com/bajkoterapia',
+          ],
         }}
       />
 

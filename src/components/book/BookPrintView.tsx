@@ -780,7 +780,7 @@ export function BookPrintView() {
                 margin: '8mm 0 0',
               }}
             >
-              bajkot.pl
+              bajkoterapia.org
             </p>
           </div>
         </div>

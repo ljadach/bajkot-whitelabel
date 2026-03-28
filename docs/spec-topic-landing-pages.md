@@ -6,7 +6,7 @@
 ## Cel
 
 Każdy problem dziecięcy (zasypianie, złość, rozwód, etc.) ma dedykowany landing page pod SEO.
-URL: `bajkot.pl/problem/samodzielne-zasypianie`, `bajkot.pl/problem/napady-zlosci` itd.
+URL: `bajkoterapia.org/problem/samodzielne-zasypianie`, `bajkoterapia.org/problem/napady-zlosci` itd.
 
 Strony są statyczne (SSG) — zero JS runtime, szybkie, indeksowalane przez Google.
 
@@ -264,6 +264,6 @@ CTA:         rounded-full, shadow-xl, hover:-translate-y-1
 1. **Wizard reuse** — czy `TopicWizard` powinien osadzać istniejący `/book/order` form czy być standalone? (Standalone = prostsze SEO, ale duplikacja logiki.)
 2. **Preselect problemu** — na landing page "Samodzielne zasypianie" → Step 3 dropdown powinien mieć preselected "Trudności z zasypianiem"? Prototypy tego nie robią (dropdown identyczny).
 3. **Nowe tematy** — dodanie nowego tematu = 1 obiekt w `topics.ts` (~25 pól). Czy LLM generuje content? Andrzej pisze ręcznie?
-4. **Tłumaczenia** — prototypy są PL-only, ale bajkot.pl ma EN/PL/DE. Czy topic pages też mają być wielojęzyczne?
+4. **Tłumaczenia** — prototypy są PL-only, ale bajkoterapia.org ma EN/PL/DE. Czy topic pages też mają być wielojęzyczne?
 5. **Pricing** — prototypy mówią 39 zł (przekreślone 99 zł). Aktualne?
 6. **Obrazki hero** — Unsplash URLs. Zastąpić własnymi? Unsplash w produkcji = ryzyko rate limit + zależność.

@@ -5,4 +5,4 @@ Allow: /de/
 Disallow: /admin
 Disallow: /book/
 
-Sitemap: https://bajkot.pl/sitemap.xml
+Sitemap: https://bajkoterapia.org/sitemap.xml
