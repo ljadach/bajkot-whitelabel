@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zosia i Strażnik Cienia Latarnik - Książeczka do druku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+@page { size: A4 landscape; margin: 0; }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: #e0e0e0;
+  margin: 0;
+  padding: 20px;
+  color: #4e342e;
+}
+
+.print-controls {
+  position: sticky; top: 0; z-index: 100;
+  background: linear-gradient(135deg, #26a69a, #00897b);
+  color: white; padding: 16px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  border-radius: 8px; margin-bottom: 20px;
+}
+.print-controls h1 { font-family: 'Baloo 2', cursive; font-size: 18px; font-weight: 700; margin: 0; }
+.print-controls p { margin: 4px 0 0; font-size: 13px; opacity: 0.9; }
+.print-btn {
+  background: white; color: #00897b; border: none; border-radius: 8px;
+  padding: 10px 28px; font-size: 15px; font-weight: 700; cursor: pointer;
+  font-family: 'Baloo 2', sans-serif;
+}
+
+.sheet {
+  width: 297mm; height: 210mm;
+  display: flex; position: relative; overflow: hidden;
+  page-break-after: always; break-after: page;
+  background: white; margin: 0 auto 20px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.12);
+}
+.sheet:last-child { page-break-after: auto; break-after: auto; }
+
+.page-divider { width: 0; height: 210mm; border-left: 1px dashed #e0e0e0; }
+
+.book-page {
+  width: 148.5mm; height: 210mm;
+  position: relative; overflow: hidden;
+  padding: 8mm; box-sizing: border-box;
+  display: flex; flex-direction: column;
+}
+
+.ft { font-family: 'Baloo 2', cursive, sans-serif; }
+.fb { font-family: 'Nunito', sans-serif; }
+
+/* === COVER === */
+.pg-cover {
+  padding: 0; justify-content: flex-end;
+  background: linear-gradient(160deg, #1a237e 0%, #283593 30%, #3949ab 60%, #5c6bc0 100%);
+}
+.cover-stars {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  overflow: hidden; pointer-events: none;
+}
+.cover-star {
+  position: absolute; width: 3px; height: 3px;
+  background: #fff; border-radius: 50%; opacity: 0.6;
+}
+.cover-moon {
+  position: absolute; top: 15mm; right: 20mm;
+  width: 40mm; height: 40mm; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff9c4 0%, #fff176 40%, #ffee58 100%);
+  box-shadow: 0 0 30px rgba(255,241,118,0.4), 0 0 60px rgba(255,241,118,0.2);
+}
+.cover-overlay {
+  position: relative; z-index: 1;
+  background: linear-gradient(to top, rgba(26,35,126,0.95) 50%, transparent);
+  padding: 20mm 10mm 10mm; text-align: center;
+}
+.cover-overlay h1 {
+  font-size: 20pt; font-weight: 800; color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3); line-height: 1.2; margin: 0 0 3mm;
+}
+.cover-overlay .subtitle {
+  font-size: 9pt; color: #b3e5fc; font-style: italic; margin: 0 0 5mm;
+}
+.cover-overlay .child-name {
+  font-size: 10pt; color: #fff9c4; font-weight: 600; margin: 0;
+}
+.cover-lantern {
+  position: absolute; bottom: 50mm; left: 50%; transform: translateX(-50%);
+  z-index: 1;
+}
+
+/* === DEDICATION === */
+.pg-dedication {
+  justify-content: center; align-items: center; text-align: center;
+  background: linear-gradient(180deg, #fffde7 0%, #fff8e1 100%);
+}
+
+/* === BEAT PAGE === */
+.pg-beat { background: #fff; }
+.beat-illust {
+  flex: 0 0 53%; border-radius: 10px; overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin: 0 0 3mm;
+}
+.beat-placeholder {
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 6px;
+}
+.beat-text {
+  flex: 1; padding: 2mm 3mm 0;
+  display: flex; align-items: flex-start;
+}
+.beat-text p {
+  font-size: 13pt; line-height: 1.7; color: #4e342e;
+  margin: 0; text-align: justify;
+  hyphens: auto; -webkit-hyphens: auto;
+}
+.page-num {
+  position: absolute; bottom: 4mm; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 3px;
+  font-size: 7pt; color: #bcaaa4; font-weight: 600;
+}
+
+/* === CORNER DECO === */
+.deco { position: absolute; z-index: 0; }
+.deco-tl { top: 4mm; left: 4mm; opacity: 0.25; }
+.deco-br { bottom: 10mm; right: 4mm; opacity: 0.2; }
+.deco-tr { top: 4mm; right: 4mm; opacity: 0.2; }
+.deco-bl { bottom: 10mm; left: 4mm; opacity: 0.2; }
+
+/* === PARENT CARD === */
+.pg-parent {
+  background: linear-gradient(180deg, #fff8e1 0%, #fff3e0 100%);
+}
+.parent-title { font-size: 18pt; font-weight: 700; color: #4e342e; text-align: center; margin: 0 0 4mm; }
+.parent-section { font-size: 10pt; font-weight: 700; color: #4e342e; margin: 3mm 0 2mm; }
+.parent-text { font-size: 8.5pt; color: #5d4037; line-height: 1.6; }
+.parent-text li { margin-bottom: 1.5mm; }
+
+/* === BACK COVER === */
+.pg-back {
+  background: linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 100%);
+  justify-content: center; align-items: center; text-align: center;
+}
+.back-title { font-size: 24pt; font-weight: 800; color: #4e342e; margin: 0 0 4mm; }
+.back-blurb {
+  font-size: 8.5pt; color: #5d4037; font-style: italic;
+  max-width: 100mm; line-height: 1.6; margin: 0 0 6mm;
+}
+.back-child { font-size: 10pt; color: #6d4c41; font-weight: 600; margin: 0 0 3mm; }
+.back-hearts { font-size: 18pt; margin: 4mm 0; letter-spacing: 4px; }
+.back-brand { font-size: 7pt; color: #a1887f; margin-top: 8mm; }
+
+@media print {
+  html, body { margin: 0 !important; padding: 0 !important; background: none !important; }
+  .print-controls { display: none !important; }
+  .sheet { box-shadow: none !important; margin: 0 !important; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="print-controls">
+  <div>
+    <h1>Zosia i Strażnik Cienia Latarnik</h1>
+    <p>Ustaw drukarkę na A4 poziomo, bez marginesów. 5 arkuszy.</p>
+  </div>
+  <button class="print-btn" onclick="window.print()">Drukuj książeczkę</button>
+</div>
+
+<!-- INLINE SVG DECORATIONS -->
+<svg style="display:none">
+  <defs>
+    <symbol id="leaf" viewBox="0 0 22 28"><path d="M11 2C6 6 2 14 2 20c0 3 2 6 9 6 7 0 9-3 9-6 0-6-4-14-9-18z" fill="#81c784" opacity="0.7"/><path d="M11 2v24" stroke="#4caf50" stroke-width="1.2"/></symbol>
+    <symbol id="branch" viewBox="0 0 36 24"><path d="M2 20C8 18 14 10 18 6" stroke="#8d6e63" stroke-width="1.5" stroke-linecap="round" fill="none"/><ellipse cx="18" cy="5" rx="4" ry="6" fill="#a5d6a7" opacity="0.7"/><path d="M10 16C14 14 20 12 26 14" stroke="#8d6e63" stroke-width="1.2" stroke-linecap="round" fill="none"/><ellipse cx="27" cy="13" rx="3.5" ry="5" fill="#81c784" opacity="0.6"/><ellipse cx="6" cy="19" rx="3" ry="4.5" fill="#c8e6c9" opacity="0.7"/></symbol>
+    <symbol id="cloud" viewBox="0 0 44 26"><ellipse cx="16" cy="16" rx="12" ry="8" fill="#eceff1" opacity="0.5"/><ellipse cx="28" cy="14" rx="10" ry="7" fill="#eceff1" opacity="0.4"/><ellipse cx="22" cy="10" rx="9" ry="7" fill="#f5f5f5" opacity="0.5"/></symbol>
+    <symbol id="flower" viewBox="0 0 22 22"><circle cx="11" cy="7" r="4" fill="#f48fb1" opacity="0.6"/><circle cx="7" cy="13" r="4" fill="#f48fb1" opacity="0.5"/><circle cx="15" cy="13" r="4" fill="#f48fb1" opacity="0.5"/><circle cx="11" cy="11" r="3" fill="#fff176" opacity="0.8"/></symbol>
+    <symbol id="heart" viewBox="0 0 18 16"><path d="M9 14s-7-4.35-7-8.5C2 3.02 4.02 1 6.5 1 7.9 1 9 1.82 9 1.82S10.1 1 11.5 1C13.98 1 16 3.02 16 5.5 16 9.65 9 14 9 14z" fill="#ef9a9a" opacity="0.7"/></symbol>
+    <symbol id="star" viewBox="0 0 18 18"><path d="M9 1l2.47 5.01L17 6.88l-3.97 3.87.94 5.46L9 13.64l-4.97 2.57.94-5.46L1 6.88l5.53-.87L9 1z" fill="#ffe082" opacity="0.7"/></symbol>
+    <symbol id="footprint" viewBox="0 0 14 14"><path d="M7 2v6M7 8L4 11M7 8l3 3" stroke="#8d6e63" stroke-width="1.5" stroke-linecap="round" fill="none"/></symbol>
+    <symbol id="lantern" viewBox="0 0 60 80">
+      <rect x="22" y="0" width="16" height="6" rx="2" fill="#ffb300"/>
+      <rect x="26" y="6" width="8" height="4" fill="#ffa000"/>
+      <path d="M18 10 Q18 10 15 40 Q15 50 30 50 Q45 50 45 40 Q42 10 42 10Z" fill="#fff9c4" opacity="0.8" stroke="#ffc107" stroke-width="1.5"/>
+      <ellipse cx="30" cy="30" rx="8" ry="12" fill="#ffecb3" opacity="0.6"/>
+      <circle cx="30" cy="28" r="4" fill="#fff" opacity="0.5"/>
+      <path d="M22 50 L18 55 Q15 58 20 58 L40 58 Q45 58 42 55 L38 50" fill="#ffb300"/>
+      <line x1="30" y1="58" x2="30" y2="75" stroke="#8d6e63" stroke-width="3" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- SHEET 1: Cover + Dedication -->
+<div class="sheet">
+  <!-- COVER -->
+  <div class="book-page pg-cover">
+    <div class="cover-stars" id="starField"></div>
+    <div class="cover-moon"></div>
+    <div class="cover-lantern">
+      <svg width="45" height="60"><use href="#lantern"/></svg>
+    </div>
+    <div class="cover-overlay">
+      <h1 class="ft">Zosia i Strażnik<br>Cienia Latarnik</h1>
+      <p class="subtitle fb">Bajka terapeutyczna o lęku przed ciemnością</p>
+      <p class="child-name fb">Książeczka dla Zosi</p>
+    </div>
+  </div>
+
+  <div class="page-divider"></div>
+
+  <!-- DEDICATION -->
+  <div class="book-page pg-dedication">
+    <div class="deco deco-tl"><svg width="22" height="28"><use href="#leaf"/></svg></div>
+    <div class="deco deco-br"><svg width="22" height="22"><use href="#flower"/></svg></div>
+    <div class="deco deco-tr" style="opacity:0.2"><svg width="22" height="22"><use href="#flower"/></svg></div>
+    <div style="padding: 0 12mm; max-width: 120mm;">
+      <p class="fb" style="font-size:13pt; font-style:italic; color:#5d4037; line-height:1.8; font-weight:600;">
+        Dla Zosi - najodważniejszej dziewczynki pod słońcem i w cieniu!
+      </p>
+    </div>
+    <div style="margin-top:12px; opacity:0.4;"><svg width="18" height="16"><use href="#heart"/></svg></div>
+  </div>
+</div>
+
+<!-- SHEET 2: Beat 1 + Beat 2 -->
+<div class="sheet">
+  <!-- BEAT 1: Ekspozycja -->
+  <div class="book-page pg-beat">
+    <div class="deco deco-tl"><svg width="22" height="28"><use href="#leaf"/></svg></div>
+    <div class="deco deco-br"><svg width="22" height="22"><use href="#flower"/></svg></div>
+    <div class="beat-illust" style="background: linear-gradient(135deg, #fff9c4 0%, #fff3e0 50%, #ffe0b2 100%);">
+      <div class="beat-placeholder">
+        <span style="font-size:56px">🏠</span>
+        <span style="font-size:28px">☀️</span>
+        <span class="fb" style="font-size:9px; color:#8d6e63; opacity:0.5">Pokój Zosi w sloncu</span>
+      </div>
+    </div>
+    <div class="beat-text">
+      <p>Zosia bardzo lubiła swój pokój. Był pełen kolorowych zabawek. Słońce wpadało przez okno. Rozjaśniało każdy kąt. Zosia miała na sobie żółtą sukienkę w motyle. Czuła się w niej lekko jak piórko. Cały dzień minął jej wesoło. Wieczorem mama czytała jej bajkę. Zosia wtulała się w miękki kocyk. Było jej ciepło i bezpiecznie. Czuła się bardzo kochana.</p>
+    </div>
+    <div class="page-num"><svg width="14" height="14"><use href="#footprint"/></svg> 1</div>
+  </div>
+
+  <div class="page-divider"></div>
+
+  <!-- BEAT 2: Inciting incident -->
+  <div class="book-page pg-beat">
+    <div class="deco deco-tr"><svg width="44" height="26"><use href="#cloud"/></svg></div>
+    <div class="deco deco-bl"><svg width="22" height="28"><use href="#leaf"/></svg></div>
+    <div class="beat-illust" style="background: linear-gradient(135deg, #37474f 0%, #263238 50%, #1a237e 100%);">
+      <div class="beat-placeholder">
+        <span style="font-size:56px">🌙</span>
+        <span style="font-size:28px">😰</span>
+        <span class="fb" style="font-size:9px; color:#b0bec5; opacity:0.6">Ciemnosc w pokoju</span>
+      </div>
+    </div>
+    <div class="beat-text">
+      <p>Mama pocałowała Zosię na dobranoc. Potem zgasiła światło. Pokój stał się nagle obcy. Ciemność otoczyła Zosię ze wszystkich stron. Serduszko Zosi zaczęło mocno bić. Bum-bum, bum-bum. Widziała dziwne kształty. Słyszała też szmery. Zosia poczuła strach. Nie wiedziała, co kryło się w mroku. Brak kontroli bardzo ją niepokoił. Ciemność była duża i dziwna.</p>
+    </div>
+    <div class="page-num"><svg width="14" height="14"><use href="#footprint"/></svg> 2</div>
+  </div>
+</div>
+
+<!-- SHEET 3: Beat 3 + Beat 4 -->
+<div class="sheet">
+  <!-- BEAT 3: Hamartia -->
+  <div class="book-page pg-beat">
+    <div class="deco deco-tl"><svg width="36" height="24"><use href="#branch"/></svg></div>
+    <div class="deco deco-br"><svg width="44" height="26"><use href="#cloud"/></svg></div>
+    <div class="beat-illust" style="background: linear-gradient(135deg, #311b92 0%, #1a237e 50%, #0d1440 100%);">
+      <div class="beat-placeholder">
+        <span style="font-size:56px">😖</span>
+        <span style="font-size:28px">🫣</span>
+        <span class="fb" style="font-size:9px; color:#9fa8da; opacity:0.6">Zosia pod koldra</span>
+      </div>
+    </div>
+    <div class="beat-text">
+      <p>Zosia mocno zacisnęła oczy. Chciała odgonić straszne cienie. Potem naciągnęła kołdrę. Aż po sam brodę. Zakryła nawet głowę. Ale to nic nie dało! Nadal czuła ciemność dookoła. Jej wyobraźnia podsuwała jej nowe obrazy. Cienie wydawały się poruszać. Zosia czuła się jeszcze bardziej sama. Bezradna w swoim łóżku. Chciała, żeby wróciło światło.</p>
+    </div>
+    <div class="page-num"><svg width="14" height="14"><use href="#footprint"/></svg> 3</div>
+  </div>
+
+  <div class="page-divider"></div>
+
+  <!-- BEAT 4: Peripeteia -->
+  <div class="book-page pg-beat">
+    <div class="deco deco-tl"><svg width="22" height="22"><use href="#flower"/></svg></div>
+    <div class="deco deco-br"><svg width="36" height="24"><use href="#branch"/></svg></div>
+    <div class="beat-illust" style="background: linear-gradient(135deg, #1a237e 0%, #283593 30%, #3949ab 60%, #fff9c4 100%);">
+      <div class="beat-placeholder">
+        <span style="font-size:56px">🔦</span>
+        <span style="font-size:28px">✨</span>
+        <span class="fb" style="font-size:9px; color:#c5cae9; opacity:0.6">Straznik Cienia pojawia sie</span>
+      </div>
+    </div>
+    <div class="beat-text">
+      <p>Nagle pojawiło się światełko. Było ciepłe i delikatne. Tuż obok łóżka Zosi. To był Strażnik Cienia Latarnik! Był mały i świecił łagodnie. Miał duże, łagodne oczy. Uśmiechał się przyjaźnie. "Witaj, Zosiu" - szepnął miękko. "Ciemność wydaje ci się straszna. Ale wiesz co? Ciemność to tylko płótno. Na nim światło maluje obrazy. Co by było, gdybyśmy się z nią pobawiły?"</p>
+    </div>
+    <div class="page-num"><svg width="14" height="14"><use href="#footprint"/></svg> 4</div>
+  </div>
+</div>
+
+<!-- SHEET 4: Beat 5 + Beat 6 -->
+<div class="sheet">
+  <!-- BEAT 5: Triumph -->
+  <div class="book-page pg-beat">
+    <div class="deco deco-tl"><svg width="22" height="28"><use href="#leaf"/></svg></div>
+    <div class="deco deco-br"><svg width="22" height="22"><use href="#flower"/></svg></div>
+    <div class="beat-illust" style="background: linear-gradient(135deg, #283593 0%, #3f51b5 40%, #fff9c4 80%, #ffecb3 100%);">
+      <div class="beat-placeholder">
+        <span style="font-size:56px">🐰</span>
+        <span style="font-size:28px">🦒</span>
+        <span class="fb" style="font-size:9px; color:#9fa8da; opacity:0.6">Cienie zamieniaja sie w zwierzeta</span>
+      </div>
+    </div>
+    <div class="beat-text">
+      <p>Zosia, z pomocą Strażnika Cienia Latarnika, wzięła latarkę. "Spróbujmy!" - zachęcił Strażnik. Zosia powoli skierowała światło na ścianę. Zamiast potwora, cień zmienił się nagle! Była to długa szyja żyrafy! Zosia cichutko zachichotała. Z cienia szafy wyłonił się królik. Miał długie uszy. Królik był bardzo przyjazny. Zosia uśmiechnęła się szeroko. Strach odszedł. Ciemność nie była już straszna.</p>
+    </div>
+    <div class="page-num"><svg width="14" height="14"><use href="#footprint"/></svg> 5</div>
+  </div>
+
+  <div class="page-divider"></div>
+
+  <!-- BEAT 6: Catharsis -->
+  <div class="book-page pg-beat">
+    <div class="deco deco-tr"><svg width="44" height="26"><use href="#cloud"/></svg></div>
+    <div class="deco deco-bl"><svg width="36" height="24"><use href="#branch"/></svg></div>
+    <div class="beat-illust" style="background: linear-gradient(135deg, #1a237e 0%, #283593 40%, #3949ab 70%, #5c6bc0 100%);">
+      <div class="beat-placeholder">
+        <span style="font-size:56px">😊</span>
+        <span style="font-size:28px">💤</span>
+        <span class="fb" style="font-size:9px; color:#9fa8da; opacity:0.6">Zosia zasypia spokojnie</span>
+      </div>
+    </div>
+    <div class="beat-text">
+      <p>Zosia była zmęczona, ale szczęśliwa. Położyła latarkę obok łóżka. Strażnik Cienia Latarnik mrugnął do niej. Potem powoli zniknął. Zostawił tylko delikatny blask. Zosia wtuliła się w kołdrę. Czuła się bezpiecznie. Wiedziała, że ciemność nadal tu jest. Ale to nie była już ta sama ciemność. To była ciemność, która czekała. Czekała, by opowiedzieć nowe historie. Zosia zamknęła oczy. Na jej twarzy pojawił się spokojny uśmiech.</p>
+    </div>
+    <div class="page-num"><svg width="14" height="14"><use href="#footprint"/></svg> 6</div>
+  </div>
+</div>
+
+<!-- SHEET 5: Parent Card + Back Cover -->
+<div class="sheet">
+  <!-- PARENT CARD -->
+  <div class="book-page pg-parent">
+    <div class="deco deco-tr" style="opacity:0.15"><svg width="44" height="26"><use href="#cloud"/></svg></div>
+    <div class="deco deco-bl" style="opacity:0.2"><svg width="36" height="24"><use href="#branch"/></svg></div>
+
+    <h2 class="ft parent-title">Dla Rodzica</h2>
+
+    <p class="fb parent-text" style="font-style:italic; font-size:8pt; color:#6d4c41; margin-bottom:3mm;">
+      Ta bajka została stworzona specjalnie dla Zosi, aby pomóc jej oswoić lęk przed ciemnością. Ciemność nie jest wrogiem - to płótno, na którym wyobraźnia maluje obrazy. Latarka daje dziecku poczucie kontroli.
+    </p>
+
+    <p class="ft parent-section">Pytania do rozmowy:</p>
+    <ol class="fb parent-text" style="padding-left:5mm;">
+      <li>Jak myślisz, co czuła Zosia gdy mama zgasiła światło? Czy ty też czasem tak się czujesz?</li>
+      <li>Gdybyś miał/a swojego Strażnika Cienia, jak by wyglądał?</li>
+      <li>Jakie zwierzęta ty widzisz w cieniach na ścianie? Może spróbujemy razem?</li>
+      <li>Zosia odkryła, że ciemność to płótno do malowania cieniami. Co jeszcze możemy robić w ciemności?</li>
+      <li>Czy masz w domu latarkę? Gdzie ją trzymasz na noc?</li>
+    </ol>
+
+    <p class="ft parent-section">Aktywność:</p>
+    <p class="fb parent-text">
+      <strong>Teatr cieni:</strong> Weźcie latarkę i zgaście światło w pokoju. Pokaż dziecku jak robić cienie zwierząt na ścianie - królika (dwa palce), ptaka (skrzyżowane dłonie), psa. Niech dziecko samo próbuje! Celem jest zamiana ciemności z "strasznej" w "zabawną".
+    </p>
+  </div>
+
+  <div class="page-divider"></div>
+
+  <!-- BACK COVER -->
+  <div class="book-page pg-back">
+    <div class="deco deco-tl"><svg width="22" height="28"><use href="#leaf"/></svg></div>
+    <div class="deco deco-tr" style="transform:scaleX(-1)"><svg width="22" height="28"><use href="#leaf"/></svg></div>
+    <div class="deco deco-bl"><svg width="22" height="22"><use href="#flower"/></svg></div>
+    <div class="deco deco-br"><svg width="22" height="22"><use href="#flower"/></svg></div>
+
+    <svg width="18" height="18" style="margin-bottom:6mm"><use href="#star"/></svg>
+    <h2 class="ft back-title">Koniec</h2>
+    <p class="fb back-blurb">
+      Ciemność to tylko płótno, na którym światło maluje obrazy. A Zosia ma swoją latarkę - i swoją odwagę.
+    </p>
+    <p class="fb back-child">Stworzone z miłością dla Zosi</p>
+    <div class="back-hearts">
+      <svg width="18" height="16" style="display:inline"><use href="#heart"/></svg>
+      <svg width="18" height="16" style="display:inline"><use href="#heart"/></svg>
+      <svg width="18" height="16" style="display:inline"><use href="#heart"/></svg>
+    </div>
+    <p class="fb back-brand">bajkot.pl</p>
+  </div>
+</div>
+
+<script>
+// Generate random stars on cover
+const field = document.getElementById('starField');
+for (let i = 0; i < 60; i++) {
+  const star = document.createElement('div');
+  star.className = 'cover-star';
+  star.style.left = Math.random() * 100 + '%';
+  star.style.top = Math.random() * 70 + '%';
+  star.style.width = (1 + Math.random() * 3) + 'px';
+  star.style.height = star.style.width;
+  star.style.opacity = (0.3 + Math.random() * 0.7).toString();
+  field.appendChild(star);
+}
+</script>
+</body>
+</html>

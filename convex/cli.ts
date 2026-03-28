@@ -277,3 +277,130 @@ export const getDownloadUrl = internalQuery({
     return await ctx.storage.getUrl(order.pdfStorageId);
   },
 });
+
+// ── Prompt management (no auth) ─────────────────────────────
+
+const PROMPT_META: Record<string, { agent: string; filename: string }> = {
+  bookIntake: { agent: 'A0 — Intake', filename: 'A0_intake' },
+  bookChildProfiler: { agent: 'A1 — Child Profiler', filename: 'A1_child_profiler' },
+  bookStoryArchitect: { agent: 'A2 — Story Architect', filename: 'A2_story_architect' },
+  bookStoryWriter: { agent: 'A3 — Story Writer', filename: 'A3_story_writer' },
+  bookPsychReviewer: { agent: 'A4 — Psych Reviewer', filename: 'A4_psych_reviewer' },
+  bookArtDirector: { agent: 'A5 — Art Director', filename: 'A5_art_director' },
+  bookCharacterDesigner: { agent: 'A6 — Character Designer', filename: 'A6_character_designer' },
+  bookStyleVote: { agent: 'A6b — Style Vote', filename: 'A6b_style_vote' },
+  bookIllustrator: { agent: 'A7 — Illustrator', filename: 'A7_illustrator' },
+  bookVisualQa: { agent: 'A8 — Visual QA', filename: 'A8_visual_qa' },
+  bookComposer: { agent: 'A9 — Composer', filename: 'A9_composer' },
+  bookFinalQa: { agent: 'A10 — Final QA', filename: 'A10_final_qa' },
+  bookDelivery: { agent: 'A11 — Delivery', filename: 'A11_delivery' },
+  bookPipelineIndex: { agent: 'Index', filename: 'index' },
+};
+
+export const listPrompts = internalQuery({
+  args: {},
+  returns: v.any(),
+  handler: async (ctx) => {
+    const results = [];
+    for (const [key, meta] of Object.entries(PROMPT_META)) {
+      const entry = await ctx.db
+        .query('bookPrompts')
+        .withIndex('by_filename', (q) => q.eq('filename', meta.filename))
+        .first();
+
+      const versions = await ctx.db
+        .query('bookPromptVersions')
+        .withIndex('by_prompt_key', (q) => q.eq('promptKey', key))
+        .collect();
+
+      results.push({
+        key,
+        agent: meta.agent,
+        filename: meta.filename,
+        inDb: !!entry,
+        modified: entry?.isModified ?? false,
+        contentLength: entry?.content?.length ?? 0,
+        versions: versions.length,
+        updatedAt: entry?.updatedAt ?? null,
+      });
+    }
+    return results;
+  },
+});
+
+export const getPromptContent = internalQuery({
+  args: { key: v.string() },
+  returns: v.any(),
+  handler: async (ctx, { key }) => {
+    const meta = PROMPT_META[key];
+    if (!meta)
+      return { error: `Unknown key: ${key}. Valid keys: ${Object.keys(PROMPT_META).join(', ')}` };
+
+    const entry = await ctx.db
+      .query('bookPrompts')
+      .withIndex('by_filename', (q) => q.eq('filename', meta.filename))
+      .first();
+
+    return {
+      key,
+      agent: meta.agent,
+      filename: meta.filename,
+      source: entry ? (entry.isModified ? 'db (modified)' : 'db (seeded)') : 'fallback only',
+      content: entry?.content ?? null,
+      updatedAt: entry?.updatedAt ?? null,
+    };
+  },
+});
+
+export const setPromptContent = internalMutation({
+  args: {
+    key: v.string(),
+    content: v.string(),
+    changeNote: v.optional(v.string()),
+  },
+  returns: v.any(),
+  handler: async (ctx, { key, content, changeNote }) => {
+    const meta = PROMPT_META[key];
+    if (!meta) return { error: `Unknown key: ${key}` };
+
+    const existing = await ctx.db
+      .query('bookPrompts')
+      .withIndex('by_filename', (q) => q.eq('filename', meta.filename))
+      .first();
+
+    // Save version snapshot before overwriting
+    if (existing) {
+      const latestVer = await ctx.db
+        .query('bookPromptVersions')
+        .withIndex('by_prompt_key_version', (q: any) => q.eq('promptKey', key))
+        .order('desc')
+        .first();
+      const nextVersion = latestVer ? latestVer.version + 1 : 1;
+
+      await ctx.db.insert('bookPromptVersions', {
+        promptKey: key,
+        content: existing.content,
+        version: nextVersion,
+        editedBy: 'cli-user',
+        editedAt: Date.now(),
+        changeNote: changeNote ?? 'CLI update',
+      });
+
+      await ctx.db.patch(existing._id, {
+        content,
+        isModified: true,
+        updatedAt: Date.now(),
+      });
+    } else {
+      await ctx.db.insert('bookPrompts', {
+        filename: meta.filename,
+        agentName: meta.agent,
+        content,
+        isModified: true,
+        updatedAt: Date.now(),
+      });
+    }
+
+    return { ok: true, key, contentLength: content.length };
+  },
+});

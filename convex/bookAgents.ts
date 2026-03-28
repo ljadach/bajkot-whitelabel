@@ -445,6 +445,20 @@ export const writeStory = internalAction({
             parentCard: normalizeParentCard(raw),
           };
 
+          // Fix: replace [name] / {name} placeholders with actual child name
+          const blueprint = JSON.parse(order.storyBlueprint!);
+          const profileJson = JSON.parse(order.characterProfile!);
+          const childName =
+            blueprint?.title?.split(' ')[0] || profileJson?.child_character?.name || '';
+          if (childName) {
+            const nameRx = /\[name\]|\{name\}/gi;
+            normalized.dedication = normalized.dedication.replace(nameRx, childName);
+            normalized.title = normalized.title.replace(nameRx, childName);
+            if (normalized.coverBlurb) {
+              normalized.coverBlurb = normalized.coverBlurb.replace(nameRx, childName);
+            }
+          }
+
           return normalized;
         },
         { asType: 'span' },
@@ -689,18 +703,24 @@ export const directArt = internalAction({
 
           const userMessage = `Design all 7 illustration prompts (cover + scene_1 through scene_6).
 
+IMPORTANT: ALL fields must be filled with meaningful content. Do NOT leave any field empty.
+- "styleGuide": Describe the overall visual approach (mood, palette, composition principles)
+- "characterConsistencyNotes": Specific notes for keeping the child character recognizable across all 7 images (hair, eyes, outfit, proportions)
+- "sceneDescription": Brief description of what is depicted (1-2 sentences)
+- "keyElements": Array of 3-5 key visual elements that MUST appear in this illustration
+
 Return ONLY valid JSON matching this schema:
 {
-  "styleGuide": "description of the visual style",
-  "characterConsistencyNotes": "notes for keeping character consistent",
+  "styleGuide": "2-3 sentences describing the visual approach and palette for this book",
+  "characterConsistencyNotes": "2-3 sentences about how to keep the child recognizable",
   "illustrations": [
     {
       "illustrationId": "cover",
       "beatRef": 0,
-      "sceneDescription": "...",
+      "sceneDescription": "Brief description of what is shown",
       "prompt": "THE FULL 80-150 word image generation prompt in English",
-      "mood": "...",
-      "keyElements": ["element1", "element2"],
+      "mood": "emotional tone of this scene",
+      "keyElements": ["element1", "element2", "element3"],
       "width": 600,
       "height": 900
     },

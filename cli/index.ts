@@ -10,15 +10,17 @@
  */
 
 import { Command } from 'commander';
-import { execSync } from 'child_process';
+import { execSync, execFileSync } from 'child_process';
+import { readFileSync, existsSync } from 'fs';
 
 // ── Helpers ─────────────────────────────────────────────────
 
 function convexRun(fn: string, args?: Record<string, unknown>): string {
-  const argsStr = args ? ` '${JSON.stringify(args)}'` : '';
-  const cmd = `npx convex run ${fn}${argsStr}`;
+  // Use execFileSync to avoid shell escaping issues with complex JSON content
+  const cmdArgs = ['convex', 'run', fn];
+  if (args) cmdArgs.push(JSON.stringify(args));
   try {
-    return execSync(cmd, {
+    return execFileSync('npx', cmdArgs, {
       cwd: process.cwd(),
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
@@ -478,6 +480,123 @@ program
 
     console.log(`\n\x1b[1m── Genders ──\x1b[0m`);
     for (const k of ['boy', 'girl']) console.log(`  ${k}`);
+  });
+
+// ── prompts ────────────────────────────────────────────────
+
+const promptsCmd = program
+  .command('prompts')
+  .description('Manage pipeline prompts (list, get, set, seed)');
+
+promptsCmd
+  .command('list')
+  .description('List all pipeline prompts and their DB status')
+  .action(() => {
+    const raw = convexRun('cli:listPrompts');
+    const prompts = parseResult(raw);
+
+    if (!Array.isArray(prompts) || prompts.length === 0) {
+      console.log('No prompts found.');
+      return;
+    }
+
+    console.log(`\x1b[1m── Pipeline Prompts (${prompts.length}) ──\x1b[0m\n`);
+    console.log(
+      `${'Key'.padEnd(25)} ${'Agent'.padEnd(25)} ${'Source'.padEnd(16)} ${'Size'.padEnd(8)} ${'Vers'.padEnd(5)}`,
+    );
+    console.log('─'.repeat(85));
+
+    for (const p of prompts) {
+      const source = p.inDb
+        ? p.modified
+          ? '\x1b[33mdb (modified)\x1b[0m'
+          : '\x1b[32mdb (seeded)\x1b[0m'
+        : '\x1b[90mfallback\x1b[0m';
+      const size = p.contentLength > 0 ? `${Math.round(p.contentLength / 1024)}KB` : '—';
+      console.log(
+        `${p.key.padEnd(25)} ${p.agent.padEnd(25)} ${source.padEnd(27)} ${size.padEnd(8)} ${String(p.versions).padEnd(5)}`,
+      );
+    }
+  });
+
+promptsCmd
+  .command('get')
+  .description('Get full prompt content by key')
+  .argument('<key>', 'Prompt key (e.g. bookStoryWriter)')
+  .option('--json', 'Output as JSON')
+  .action((key, opts) => {
+    const raw = convexRun('cli:getPromptContent', { key });
+    const result = parseResult(raw);
+
+    if (result.error) {
+      console.error(`\x1b[31m✗ ${result.error}\x1b[0m`);
+      process.exit(1);
+    }
+
+    if (opts.json) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      console.log(`\x1b[1m── ${result.agent} (${result.key}) ──\x1b[0m`);
+      console.log(`Source: ${result.source}`);
+      if (result.updatedAt) console.log(`Updated: ${fmt(result.updatedAt)}`);
+      console.log('');
+      if (result.content) {
+        console.log(result.content);
+      } else {
+        console.log('\x1b[90m(no content in DB — using fallback)\x1b[0m');
+      }
+    }
+  });
+
+promptsCmd
+  .command('set')
+  .description('Update prompt content from file or stdin')
+  .argument('<key>', 'Prompt key (e.g. bookStoryWriter)')
+  .option('-f, --file <path>', 'Read content from file')
+  .option('-m, --message <note>', 'Change note', 'CLI update')
+  .action((key, opts) => {
+    let content: string;
+
+    if (opts.file) {
+      if (!existsSync(opts.file)) {
+        console.error(`\x1b[31m✗ File not found: ${opts.file}\x1b[0m`);
+        process.exit(1);
+      }
+      content = readFileSync(opts.file, 'utf-8');
+    } else {
+      // Read from stdin
+      content = readFileSync(0, 'utf-8');
+    }
+
+    if (!content.trim()) {
+      console.error('\x1b[31m✗ Empty content\x1b[0m');
+      process.exit(1);
+    }
+
+    console.log(`\x1b[36m⟳ Updating ${key} (${content.length} chars)...\x1b[0m`);
+    const raw = convexRun('cli:setPromptContent', {
+      key,
+      content,
+      changeNote: opts.message,
+    });
+    const result = parseResult(raw);
+
+    if (result.error) {
+      console.error(`\x1b[31m✗ ${result.error}\x1b[0m`);
+      process.exit(1);
+    }
+
+    console.log(`\x1b[32m✓ ${key} updated (${result.contentLength} chars)\x1b[0m`);
+  });
+
+promptsCmd
+  .command('seed')
+  .description('Seed DB with fallback prompts (idempotent)')
+  .action(() => {
+    console.log('\x1b[36m⟳ Seeding prompts from fallbacks...\x1b[0m');
+    const raw = convexRun('admin/bookPrompts:seedPrompts');
+    const count = parseResult(raw);
+    console.log(`\x1b[32m✓ Seeded ${count} new prompts\x1b[0m`);
   });
 
 // ── Run ─────────────────────────────────────────────────────
