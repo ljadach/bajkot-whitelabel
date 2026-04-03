@@ -1,16 +1,19 @@
 import { type RouteConfig, route, layout, index } from '@react-router/dev/routes';
 
 export default [
-  // Root "/" → language redirect
-  index('routes/language-redirect.tsx'),
+  // Public marketing routes (Polish, root level)
+  index('routes/home.tsx', { id: 'home' }),
+  route('about/contact', 'routes/contact.tsx', { id: 'contact' }),
+  route('support/faq', 'routes/faq.tsx', { id: 'faq' }),
+  route('problem/:slug', 'routes/topic.tsx', { id: 'topic' }),
 
-  // Polish-only public routes
-  route('pl', 'routes/lang-layout.tsx', { id: 'lang-pl' }, [
-    index('routes/home.tsx', { id: 'pl-home' }),
-    route('about/contact', 'routes/contact.tsx', { id: 'pl-contact' }),
-    route('support/faq', 'routes/faq.tsx', { id: 'pl-faq' }),
-    route('*', 'routes/lang-catchall.tsx', { id: 'pl-catchall' }),
-  ]),
+  // Landing book flow (no auth, token-gated via Convex)
+  route('landing/book/:orderId/progress', 'routes/landing-book-progress.tsx'),
+  route('landing/book/:orderId/vote', 'routes/landing-book-vote.tsx'),
+  route('landing/book/:orderId/result', 'routes/landing-book-result.tsx'),
+
+  // Legacy /pl/* → redirect to root (backwards compat for indexed URLs)
+  route('pl/*', 'routes/pl-redirect.tsx', { id: 'pl-redirect' }),
 
   // Auth-gated app routes
   layout('routes/auth-layout.tsx', [

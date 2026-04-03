@@ -75,22 +75,40 @@ See `cli/README.md` for full option reference.
 
 ### User Flow
 
-1. **Landing page** (bajkoterapia.org) → Marketing page in 3 languages (EN/PL/DE)
-2. **Book Order** (`/book/order`) → Parent fills in child profile + problem description
+There are two user flows: authenticated (via Clerk) and landing (token-gated, no login).
+
+**Authenticated flow** (existing, for logged-in users):
+
+1. **Home** (`/`) → Marketing page with topic grid
+2. **Book Order** (`/book/order`) → Parent fills in child profile + problem description (requires Clerk auth)
 3. **Pipeline** → Chain of LLM agents generates story, illustrations, review
 4. **Progress** (`/book/:id/progress`) → Real-time pipeline progress
 5. **Style Vote** (`/book/:id/vote`) → Parent picks illustration style
 6. **Result** (`/book/:id/result`) → Final PDF download
 
+**Landing flow** (public, token-gated):
+
+1. **Home** (`/?token=<ACCESS_TOKEN>`) → Token saved to localStorage
+2. **Topic page** (`/problem/:slug`) → SEO landing page per child problem (15 topics, SSG prerendered)
+3. **Wizard** → Inline 4-step form on topic page, submits order via `startLandingOrder` (Convex action, validates token)
+4. **Progress** (`/landing/book/:id/progress`) → Real-time progress (no auth, checks `clerkUserId === 'landing-user'`)
+5. **Style Vote** (`/landing/book/:id/vote`) → Pick illustration style
+6. **Result** (`/landing/book/:id/result`) → PDF download
+
+**Access token:** The landing flow requires `LANDING_ACCESS_TOKEN` env var set in Convex. Users must visit any page with `?token=<value>` to activate. Token persists in localStorage (`bajkot_access_token`). Without a valid token, the wizard submit is blocked.
+
 ### Frontend (`src/`)
 
 - `root.tsx`: React Router v7 entry with SSR support
-- `routes/`: File-based routing (lang-layout, auth-layout, book routes)
+- `routes/`: Route definitions (public marketing, landing book flow, auth-gated app routes)
 - `pages/`: Public pages (HomePage, FaqPage, ContactPage)
-- `components/book/`: Book order form, progress, vote, result
-- `components/landing/`: Landing page sections (Hero, ValueProps, FAQ, CTA, Testimonial, Pitch)
+- `components/book/`: Book order form, progress, vote, result (auth + landing variants)
+- `components/topic-landing/`: Topic landing page components (TopicNav, TopicHero, TopicPain, TopicScience, TopicWizard, TopicFooter, TopicLayout)
+- `components/landing/`: Legacy landing page sections (Hero, ValueProps, FAQ, CTA, Testimonial, Pitch)
+- `data/topics.ts`: 15 topic definitions with SEO content, extracted from HTML prototypes
+- `hooks/useAccessToken.ts`: Token capture from URL + localStorage persistence
 - `lib/`: Client utilities (i18n, telemetry, routeMeta)
-- `locales/`: Translation files (en/, pl/, de/) — namespaces: common, app, cookies, contact, faq, book
+- `locales/`: Translation files (pl/) — namespaces: common, app, cookies, contact, faq, book
 
 ### Backend (`convex/`)
 
@@ -188,6 +206,7 @@ Pipeline processes orders through agents A0–A11:
 - `GOOGLE_GENERATIVE_AI_API_KEY` — Gemini API key (image generation + LLM)
 - `LANGFUSE_SECRET_KEY`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_BASE_URL` (optional)
 - `ALLOWED_ORIGIN` — CORS origin (required in production)
+- `LANDING_ACCESS_TOKEN` — Token for landing page order flow (validates `?token=` param, blocks unauthorized book generation)
 
 Never commit secrets or `.env.local` files.
 
@@ -204,6 +223,10 @@ Never commit secrets or `.env.local` files.
 
 - `cli/`: CLI tool for pipeline testing (see CLI Tool section above)
 - `convex/cli.ts`: Internal Convex functions for CLI (no auth)
+- `src/data/topics.ts`: 15 topic landing page definitions (typed, extracted from HTML prototypes)
+- `src/components/topic-landing/`: Topic landing page component kit
+- `docs/prototypes/`: 15 HTML prototypes from Andrzej (source for topic data)
+- `docs/spec-topic-landing-pages.md`: Architecture spec for topic pages
 - `docs/devlog/`: Development journal (John Carmack .plan style, in Polish)
 - `docs/bajkot-pipeline/`: Pipeline architecture documentation
 - `docs/illustration_guide.md`: Illustration generation guide

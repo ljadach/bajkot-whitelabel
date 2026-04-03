@@ -14,7 +14,7 @@ export function buildPageMeta({
 
   const title = t('meta.title');
   const description = t('meta.description');
-  const canonicalUrl = `${SITE_URL}/pl${routePath}`;
+  const canonicalUrl = `${SITE_URL}${routePath}`;
 
   return [
     { title },

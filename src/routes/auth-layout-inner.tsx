@@ -30,7 +30,7 @@ export default function AuthLayoutInner() {
         <AuthenticatedContent />
       </Authenticated>
       <Unauthenticated>
-        <Navigate to="/pl/" replace />
+        <Navigate to="/" replace />
       </Unauthenticated>
     </>
   );
