@@ -259,10 +259,12 @@ export const startLandingOrder = action({
   },
   returns: v.object({ orderId: v.id('bookOrders') }),
   handler: async (ctx, args): Promise<{ orderId: Id<'bookOrders'> }> => {
-    const expectedToken = process.env.LANDING_ACCESS_TOKEN;
-    if (!expectedToken || args.accessToken !== expectedToken) {
-      throw new Error('Invalid access token');
-    }
+    // Access token gate disabled — kept for future re-enable
+    // const expectedToken = process.env.LANDING_ACCESS_TOKEN;
+    // if (!expectedToken || args.accessToken !== expectedToken) {
+    //   throw new Error('Invalid access token');
+    // }
+    void args.accessToken;
 
     validateOrderInput(args);
 

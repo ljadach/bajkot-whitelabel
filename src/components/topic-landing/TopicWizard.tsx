@@ -2,6 +2,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
+// hasAccessToken kept in import for future re-enable of token gate
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { captureTokenFromUrl, getAccessToken, hasAccessToken } from '../../hooks/useAccessToken';
 import { HAIR_COLORS, HAIR_STYLES, EYE_COLORS, SKIN_TONES, OUTFITS } from '../../lib/bookData';
 import type { Topic } from '../../data/topics';
@@ -99,10 +101,11 @@ export function TopicWizard({ topic }: { topic: Topic }) {
   );
 
   const handleSubmit = useCallback(async () => {
-    if (!hasAccessToken()) {
-      setError('Brak tokenu dostępu. Wejdź na stronę z poprawnym linkiem.');
-      return;
-    }
+    // Access token gate disabled — kept for future re-enable
+    // if (!hasAccessToken()) {
+    //   setError('Brak tokenu dostępu. Wejdź na stronę z poprawnym linkiem.');
+    //   return;
+    // }
     if (!form.email || !form.email.includes('@')) {
       setError('Podaj poprawny adres e-mail.');
       return;
@@ -121,7 +124,7 @@ export function TopicWizard({ topic }: { topic: Topic }) {
 
     try {
       const { orderId } = await startLandingOrder({
-        accessToken: getAccessToken()!,
+        accessToken: getAccessToken() ?? '',
         childName: form.childName.trim(),
         ageBracket: form.age as '3-5' | '6-8',
         gender: form.gender as 'boy' | 'girl',
