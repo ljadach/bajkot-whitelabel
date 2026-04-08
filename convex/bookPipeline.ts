@@ -7,7 +7,23 @@ import { action, internalMutation, mutation, query } from './_generated/server';
 import { internal } from './_generated/api';
 import { v } from 'convex/values';
 import { Id } from './_generated/dataModel';
-import { assertOrderOwner } from './lib/roles';
+import { assertOrderOwner, assertLandingOrder, LANDING_USER_ID } from './lib/roles';
+
+function validateOrderInput(args: {
+  childName: string;
+  problemDetail?: string;
+  favoriteToy?: string;
+}) {
+  if (args.childName.length < 2 || args.childName.length > 30) {
+    throw new Error('childName must be 2-30 characters');
+  }
+  if (args.problemDetail && args.problemDetail.length > 500) {
+    throw new Error('problemDetail must be max 500 characters');
+  }
+  if (args.favoriteToy && args.favoriteToy.length > 100) {
+    throw new Error('favoriteToy must be max 100 characters');
+  }
+}
 
 // ── Start a new book order ─────────────────────────────────
 
@@ -44,16 +60,7 @@ export const startOrder = action({
       clerkUserId,
     });
 
-    // Validate input lengths
-    if (args.childName.length < 2 || args.childName.length > 30) {
-      throw new Error('childName must be 2-30 characters');
-    }
-    if (args.problemDetail && args.problemDetail.length > 500) {
-      throw new Error('problemDetail must be max 500 characters');
-    }
-    if (args.favoriteToy && args.favoriteToy.length > 100) {
-      throw new Error('favoriteToy must be max 100 characters');
-    }
+    validateOrderInput(args);
 
     // Create order in DB
     const orderId: Id<'bookOrders'> = await ctx.runMutation(internal.bookPipeline.createOrder, {
@@ -228,6 +235,169 @@ export const getDownloadUrl = query({
     const order = await assertOrderOwner(ctx, orderId);
     if (!order.pdfStorageId) return null;
     return await ctx.storage.getUrl(order.pdfStorageId);
+  },
+});
+
+// ── Landing page order (no auth, token-gated) ───────────────
+
+export const startLandingOrder = action({
+  args: {
+    accessToken: v.string(),
+    childName: v.string(),
+    ageBracket: v.union(v.literal('3-5'), v.literal('6-8'), v.literal('9+')),
+    gender: v.union(v.literal('boy'), v.literal('girl')),
+    problemId: v.string(),
+    problemDetail: v.optional(v.string()),
+    favoriteToy: v.optional(v.string()),
+    glasses: v.boolean(),
+    hairColor: v.string(),
+    hairStyle: v.string(),
+    eyeColor: v.string(),
+    skinTone: v.string(),
+    outfit: v.string(),
+    email: v.optional(v.string()),
+  },
+  returns: v.object({ orderId: v.id('bookOrders') }),
+  handler: async (ctx, args): Promise<{ orderId: Id<'bookOrders'> }> => {
+    // Access token gate disabled — kept for future re-enable
+    // const expectedToken = process.env.LANDING_ACCESS_TOKEN;
+    // if (!expectedToken || args.accessToken !== expectedToken) {
+    //   throw new Error('Invalid access token');
+    // }
+    void args.accessToken;
+
+    validateOrderInput(args);
+
+    const orderId: Id<'bookOrders'> = await ctx.runMutation(internal.bookPipeline.createOrder, {
+      clerkUserId: LANDING_USER_ID,
+      childName: args.childName,
+      ageBracket: args.ageBracket,
+      gender: args.gender,
+      problemId: args.problemId,
+      problemDetail: args.problemDetail,
+      favoriteToy: args.favoriteToy,
+      glasses: args.glasses,
+      hairColor: args.hairColor,
+      hairStyle: args.hairStyle,
+      eyeColor: args.eyeColor,
+      skinTone: args.skinTone,
+      outfit: args.outfit,
+      email: args.email,
+    });
+
+    await ctx.scheduler.runAfter(0, internal.bookAgents.intake, { orderId });
+    return { orderId };
+  },
+});
+
+export const getLandingOrderProgress = query({
+  args: { orderId: v.id('bookOrders') },
+  returns: v.object({
+    status: v.string(),
+    currentAgent: v.union(v.string(), v.null()),
+    error: v.union(v.string(), v.null()),
+    createdAt: v.number(),
+    updatedAt: v.union(v.number(), v.null()),
+    completedAt: v.union(v.number(), v.null()),
+    hasStyleVoteImages: v.boolean(),
+    chosenStyle: v.union(v.string(), v.null()),
+    hasPdf: v.boolean(),
+  }),
+  handler: async (ctx, { orderId }) => {
+    const order = await assertLandingOrder(ctx, orderId);
+
+    return {
+      status: order.status,
+      currentAgent: order.currentAgent ?? null,
+      error: order.error ?? null,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt ?? null,
+      completedAt: order.completedAt ?? null,
+      hasStyleVoteImages: !!(order.styleVoteImageA && order.styleVoteImageB),
+      chosenStyle: order.chosenStyle ?? null,
+      hasPdf: !!order.pdfStorageId,
+    };
+  },
+});
+
+export const getLandingOrderEvents = query({
+  args: { orderId: v.id('bookOrders') },
+  returns: v.array(
+    v.object({
+      _id: v.id('bookPipelineEvents'),
+      _creationTime: v.number(),
+      orderId: v.id('bookOrders'),
+      agent: v.string(),
+      event: v.string(),
+      narrative: v.string(),
+      details: v.optional(v.string()),
+      timestamp: v.number(),
+    }),
+  ),
+  handler: async (ctx, { orderId }) => {
+    const order = await assertLandingOrder(ctx, orderId);
+
+    const events = await ctx.db
+      .query('bookPipelineEvents')
+      .withIndex('by_order', (q) => q.eq('orderId', orderId))
+      .collect();
+    events.sort((a, b) => a.timestamp - b.timestamp);
+    return events;
+  },
+});
+
+export const getLandingDownloadUrl = query({
+  args: { orderId: v.id('bookOrders') },
+  returns: v.union(v.string(), v.null()),
+  handler: async (ctx, { orderId }) => {
+    const order = await assertLandingOrder(ctx, orderId);
+    if (!order.pdfStorageId) return null;
+    return await ctx.storage.getUrl(order.pdfStorageId);
+  },
+});
+
+export const submitLandingStyleVote = mutation({
+  args: {
+    orderId: v.id('bookOrders'),
+    choice: v.union(v.literal('A'), v.literal('B')),
+  },
+  returns: v.null(),
+  handler: async (ctx, { orderId, choice }) => {
+    const order = await assertLandingOrder(ctx, orderId);
+    if (order.chosenStyle) return null;
+    if (!order.styleVoteImageA || !order.styleVoteImageB)
+      throw new Error('Style vote images not ready');
+
+    await ctx.db.patch(orderId, {
+      chosenStyle: choice,
+      imageTrackDone: true,
+      updatedAt: Date.now(),
+    });
+
+    await ctx.scheduler.runAfter(0, internal.bookPipelineHelpers.checkParallelTracksComplete, {
+      orderId,
+    });
+    return null;
+  },
+});
+
+export const getLandingStyleVoteImages = query({
+  args: { orderId: v.id('bookOrders') },
+  returns: v.object({
+    imageUrlA: v.union(v.string(), v.null()),
+    imageUrlB: v.union(v.string(), v.null()),
+    status: v.string(),
+    chosenStyle: v.union(v.string(), v.null()),
+  }),
+  handler: async (ctx, { orderId }) => {
+    const order = await assertLandingOrder(ctx, orderId);
+
+    let imageUrlA: string | null = null;
+    let imageUrlB: string | null = null;
+    if (order.styleVoteImageA) imageUrlA = await ctx.storage.getUrl(order.styleVoteImageA);
+    if (order.styleVoteImageB) imageUrlB = await ctx.storage.getUrl(order.styleVoteImageB);
+
+    return { imageUrlA, imageUrlB, status: order.status, chosenStyle: order.chosenStyle ?? null };
   },
 });
 

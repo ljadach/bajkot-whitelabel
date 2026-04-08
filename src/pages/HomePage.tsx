@@ -1,36 +1,25 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation } from 'react-router';
-import { SignIn } from '@clerk/clerk-react';
-import { useLangFromUrl } from '../hooks/useLangFromUrl';
-import { PageShell } from '../components/layout/PageShell';
+import { Link } from 'react-router';
 import { JsonLd } from '../components/JsonLd';
+import { TopicNav } from '../components/topic-landing/TopicNav';
+import { TopicFooter } from '../components/topic-landing/TopicFooter';
 import { getPageFaqItems, type FaqItemData } from '../lib/faqHelpers';
+import { TOPICS } from '../data/topics';
 
 export function HomePage() {
   const { t } = useTranslation('app');
-  const lang = useLangFromUrl();
   const [openFaq, setOpenFaq] = useState<string | null>(null);
-  const location = useLocation();
-  const [showSignIn, setShowSignIn] = useState(
-    !!(location.state as { showSignIn?: boolean } | null)?.showSignIn,
-  );
-  const topRef = useRef<HTMLDivElement>(null);
-
-  const scrollToTop = () => {
-    topRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const toggleFaq = (id: string) => {
-    setOpenFaq(openFaq === id ? null : id);
-  };
 
   const { t: tFaq } = useTranslation('faq');
   const allFaqItems = tFaq('items', { returnObjects: true }) as Record<string, FaqItemData>;
   const faqItems = getPageFaqItems(allFaqItems, 'home');
 
   return (
-    <PageShell>
+    <div
+      className="min-h-screen antialiased selection:bg-magic-400 selection:text-white"
+      style={{ fontFamily: "'Nunito', sans-serif", backgroundColor: '#FAFAFA', color: '#334155' }}
+    >
       <JsonLd
         data={{
           '@context': 'https://schema.org',
@@ -42,365 +31,260 @@ export function HomePage() {
           })),
         }}
       />
-      {/* Top anchor for scroll */}
-      <div ref={topRef} />
 
-      {/* Split Hero Section */}
-      <section className="hero-section w-full">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 w-full">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Left - Value Proposition */}
-            <div>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 mb-4 text-xs font-semibold uppercase tracking-wide rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 ring-1 ring-emerald-100">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                {t('hero.betaBadge')}
-              </span>
-              <h1 className="hero-headline text-3xl sm:text-4xl lg:text-5xl mb-6">
-                {t('hero.headline')}
-              </h1>
-              <p className="hero-subheader text-lg sm:text-xl">{t('hero.description')}</p>
-            </div>
+      <TopicNav />
 
-            {/* Right - Sign In / Get Started */}
-            <div className="flex justify-center lg:justify-end">
-              {showSignIn ? (
-                <div>
-                  <SignIn routing="hash" />
-                  <p className="text-fine-print text-center mt-4 px-4 max-w-xs mx-auto">
-                    {t('emailNote.text')}
-                  </p>
-                </div>
-              ) : (
-                <div className="cta-anchor text-center lg:text-left">
-                  <button onClick={() => setShowSignIn(true)} className="btn-cta text-lg">
-                    {t('hero.getStarted')}
-                  </button>
-                  <p className="text-fine-print mt-4 max-w-xs">{t('emailNote.text')}</p>
-                </div>
-              )}
-            </div>
+      {/* Hero */}
+      <header className="pt-32 pb-20 px-6 relative overflow-hidden bg-gradient-to-br from-calm-50 to-white">
+        <div className="max-w-6xl mx-auto text-center relative z-10">
+          <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm border border-calm-100 text-calm-800 text-sm font-bold mb-6">
+            <i className="fa-solid fa-star text-magic-500" />
+            {t('hero.betaBadge')}
           </div>
-        </div>
-      </section>
-
-      {/* Learning Experience Section */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 section-spacing">
-        <div className="text-center mb-12">
-          <h2 className="text-2xl sm:text-3xl font-semibold text-neutral-900 mb-4">
-            {t('learningExperience.title')}
-          </h2>
-          <p className="text-neutral-500 max-w-2xl mx-auto">
-            {t('learningExperience.subtitlePrefix')}{' '}
-            <strong className="text-neutral-700">{t('learningExperience.subtitleBold')}</strong>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-calm-900 leading-tight max-w-4xl mx-auto mb-6">
+            {t('hero.headline')}
+          </h1>
+          <p className="text-lg md:text-xl text-gray-600 font-medium leading-relaxed max-w-2xl mx-auto mb-8">
+            {t('hero.description')}
+          </p>
+          <a
+            href="#tematy"
+            className="inline-flex items-center bg-magic-500 hover:bg-magic-600 text-white px-8 py-4 rounded-full font-extrabold text-lg shadow-xl shadow-magic-500/30 transition transform hover:-translate-y-1"
+          >
+            <i className="fa-solid fa-wand-magic-sparkles mr-2" />
+            {t('hero.getStarted')}
+          </a>
+          <p className="text-sm text-gray-500 font-semibold mt-4">
+            <i className="fa-regular fa-clock text-calm-500 mr-1" />
+            Gotowa do czytania w 15 minut
           </p>
         </div>
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="process-card">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="number-indicator-outlined">1</div>
-              <h3 className="text-lg font-bold text-neutral-900">
+      </header>
+
+      {/* Topics Grid */}
+      <section id="tematy" className="py-24 px-6 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <span className="text-magic-500 font-bold uppercase tracking-widest text-sm mb-2 block">
+              Wybierz temat
+            </span>
+            <h2 className="text-3xl md:text-4xl font-black text-calm-900 mb-4">
+              Z jakim wyzwaniem mierzy się Twoje dziecko?
+            </h2>
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+              Wybierz temat — stworzymy spersonalizowaną bajkę terapeutyczną, która pomoże Twojemu
+              dziecku.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {TOPICS.map((topic) => (
+              <Link
+                key={topic.slug}
+                to={`/problem/${topic.slug}`}
+                className="group bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all flex items-start gap-4 no-underline"
+              >
+                <div className="shrink-0 w-12 h-12 rounded-2xl bg-calm-50 flex items-center justify-center text-calm-500 text-lg group-hover:bg-calm-100 transition-colors">
+                  <i className={topic.scienceCards[0].icon} />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-bold text-calm-900 text-sm leading-snug mb-1 group-hover:text-calm-500 transition-colors">
+                    {topic.headline.replace(/,?\s*gdy$/, '')}
+                  </h3>
+                  <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">
+                    {topic.metaDescription}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-24 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-black text-calm-900 mb-4">
+              {t('learningExperience.title')}
+            </h2>
+            <p className="text-gray-600 text-lg">
+              {t('learningExperience.subtitlePrefix')}{' '}
+              <strong className="text-calm-900">{t('learningExperience.subtitleBold')}</strong>
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
+              <div className="w-12 h-12 bg-magic-500 rounded-2xl flex items-center justify-center text-white text-xl font-black mb-5">
+                1
+              </div>
+              <h3 className="text-xl font-bold text-calm-900 mb-3">
                 {t('learningExperience.step1.title')}
               </h3>
+              <p className="text-gray-600 leading-relaxed">
+                {t('learningExperience.step1.description')}
+              </p>
             </div>
-            <p className="text-neutral-500 leading-relaxed">
-              {t('learningExperience.step1.description')}
-            </p>
-          </div>
-          <div className="process-card">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="number-indicator-outlined">2</div>
-              <h3 className="text-lg font-bold text-neutral-900">
+            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
+              <div className="w-12 h-12 bg-calm-500 rounded-2xl flex items-center justify-center text-white text-xl font-black mb-5">
+                2
+              </div>
+              <h3 className="text-xl font-bold text-calm-900 mb-3">
                 {t('learningExperience.step2.title')}
               </h3>
+              <p className="text-gray-600 leading-relaxed">
+                {t('learningExperience.step2.description')}
+              </p>
             </div>
-            <p className="text-neutral-500 leading-relaxed">
-              {t('learningExperience.step2.description')}
-            </p>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="section-alt section-spacing">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-4">
-              {t('features.title')}
+      {/* Features / Why */}
+      <section className="py-24 bg-calm-900 text-white px-6 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
+          <i className="fa-solid fa-book-open text-9xl absolute -top-10 -left-10 text-white" />
+          <i className="fa-solid fa-heart text-9xl absolute bottom-10 right-10 text-white" />
+        </div>
+        <div className="max-w-6xl mx-auto relative z-10">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <span className="text-magic-400 font-bold uppercase tracking-widest text-sm mb-2 block">
+              Dlaczego Bajkoterapia?
+            </span>
+            <h2 className="text-3xl md:text-4xl font-black mb-6">{t('features.title')}</h2>
+            <p className="text-calm-100 text-lg">{t('features.subtitle')}</p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-8">
+            {[
+              { key: 'promptFrameworks', icon: 'fa-solid fa-child' },
+              { key: 'featureDiscovery', icon: 'fa-solid fa-brain' },
+              { key: 'toolMatching', icon: 'fa-solid fa-palette' },
+              { key: 'roleShortcuts', icon: 'fa-solid fa-comments' },
+            ].map((feature, i) => (
+              <div
+                key={feature.key}
+                className="bg-calm-800/50 p-8 rounded-3xl border border-calm-700 hover:bg-calm-800 transition"
+              >
+                <div
+                  className={`w-14 h-14 ${i % 2 === 0 ? 'bg-magic-500' : 'bg-calm-500'} rounded-2xl flex items-center justify-center text-white text-2xl mb-6 shadow-lg`}
+                >
+                  <i className={feature.icon} />
+                </div>
+                <h3 className="text-xl font-bold mb-3">{t(`features.${feature.key}.title`)}</h3>
+                <p className="text-calm-200 leading-relaxed">
+                  {t(`features.${feature.key}.description`)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* What You Get */}
+      <section className="py-24 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-black text-calm-900 mb-4">
+              {t('curriculum.title')}
             </h2>
-            <p className="text-neutral-500 max-w-2xl mx-auto">{t('features.subtitle')}</p>
+            <p className="text-lg font-bold text-calm-800 mb-2">{t('curriculum.subtitle')}</p>
+            <p className="text-gray-600 max-w-2xl mx-auto">{t('curriculum.description')}</p>
           </div>
-          <div className="grid sm:grid-cols-2 gap-6">
-            <div className="feature-card">
-              <div className="feature-icon-box mb-4">
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                  />
-                </svg>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { key: 'evolving', icon: 'fa-solid fa-book-open' },
+              { key: 'adaptive', icon: 'fa-solid fa-images' },
+              { key: 'feedback', icon: 'fa-solid fa-comments' },
+            ].map((item) => (
+              <div key={item.key} className="text-center">
+                <div className="w-16 h-16 bg-calm-50 text-calm-500 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4 shadow-sm">
+                  <i className={item.icon} />
+                </div>
+                <h3 className="font-bold text-calm-900 mb-2">
+                  {t(`curriculum.${item.key}.title`)}
+                </h3>
+                <p className="text-sm text-gray-500 leading-relaxed">
+                  {t(`curriculum.${item.key}.description`)}
+                </p>
               </div>
-              <h3 className="text-lg font-bold text-neutral-900 mb-2">
-                {t('features.promptFrameworks.title')}
-              </h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">
-                {t('features.promptFrameworks.description')}
-              </p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon-box mb-4">
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-bold text-neutral-900 mb-2">
-                {t('features.featureDiscovery.title')}
-              </h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">
-                {t('features.featureDiscovery.description')}
-              </p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon-box mb-4">
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-bold text-neutral-900 mb-2">
-                {t('features.toolMatching.title')}
-              </h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">
-                {t('features.toolMatching.description')}
-              </p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon-box mb-4">
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-bold text-neutral-900 mb-2">
-                {t('features.roleShortcuts.title')}
-              </h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">
-                {t('features.roleShortcuts.description')}
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Curriculum Section */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 section-spacing">
-        <div className="text-center mb-4">
-          <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
-            {t('curriculum.title')}
-          </h2>
-          <p className="text-lg font-semibold text-neutral-700 mb-2">{t('curriculum.subtitle')}</p>
-          <p className="text-neutral-500 max-w-2xl mx-auto">{t('curriculum.description')}</p>
-        </div>
-        <div className="grid md:grid-cols-3 gap-6 mt-10">
-          <div className="text-center">
-            <div className="curriculum-icon mb-4">
-              <svg
-                className="w-7 h-7"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-            </div>
-            <h3 className="font-bold text-neutral-900 mb-2">{t('curriculum.evolving.title')}</h3>
-            <p className="text-sm text-neutral-500 leading-relaxed">
-              {t('curriculum.evolving.description')}
-            </p>
-          </div>
-          <div className="text-center">
-            <div className="curriculum-icon mb-4">
-              <svg
-                className="w-7 h-7"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                />
-              </svg>
-            </div>
-            <h3 className="font-bold text-neutral-900 mb-2">{t('curriculum.adaptive.title')}</h3>
-            <p className="text-sm text-neutral-500 leading-relaxed">
-              {t('curriculum.adaptive.description')}
-            </p>
-          </div>
-          <div className="text-center">
-            <div className="curriculum-icon mb-4">
-              <svg
-                className="w-7 h-7"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                />
-              </svg>
-            </div>
-            <h3 className="font-bold text-neutral-900 mb-2">{t('curriculum.feedback.title')}</h3>
-            <p className="text-sm text-neutral-500 leading-relaxed">
-              {t('curriculum.feedback.description')}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="testimonials-section section-spacing">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+      {/* Testimonials */}
+      <section className="py-24 bg-calm-900 px-6">
+        <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <p className="text-neutral-400 text-sm font-medium uppercase tracking-wider mb-2">
+            <p className="text-magic-400 text-sm font-bold uppercase tracking-widest mb-2">
               {t('testimonials.title')}
             </p>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white">
+            <h2 className="text-2xl sm:text-3xl font-black text-white">
               {t('testimonials.subtitle')}
             </h2>
           </div>
           <div className="grid md:grid-cols-2 gap-8">
-            <div className="testimonial-card">
-              <svg
-                className="w-5 h-5 text-neutral-500 mb-4"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-              </svg>
-              <p className="text-neutral-300 mb-4 leading-relaxed">
-                {t('testimonials.quote1.text')}
-              </p>
-              <p className="text-sm text-neutral-500 font-medium">
-                — {t('testimonials.quote1.author')}
-              </p>
-            </div>
-            <div className="testimonial-card">
-              <svg
-                className="w-5 h-5 text-neutral-500 mb-4"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-              </svg>
-              <p className="text-neutral-300 mb-4 leading-relaxed">
-                {t('testimonials.quote2.text')}
-              </p>
-              <p className="text-sm text-neutral-500 font-medium">
-                — {t('testimonials.quote2.author')}
-              </p>
-            </div>
+            {(['quote1', 'quote2'] as const).map((q) => (
+              <div key={q} className="bg-calm-800/50 p-8 rounded-3xl border border-calm-700">
+                <i className="fa-solid fa-quote-left text-calm-500/30 text-3xl mb-4 block" />
+                <p className="text-calm-100 mb-4 leading-relaxed">{t(`testimonials.${q}.text`)}</p>
+                <p className="text-sm text-calm-200/60 font-bold">
+                  — {t(`testimonials.${q}.author`)}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="max-w-3xl mx-auto px-4 sm:px-6 section-spacing">
-        <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 text-center mb-10">
-          {tFaq('sectionTitle')}
-        </h2>
-        <div className="space-y-3">
-          {faqItems.map((item) => (
-            <div key={item.id} className="faq-card">
-              <button
-                onClick={() => toggleFaq(item.id)}
-                className="w-full flex items-center justify-between p-5 text-left bg-white hover:bg-neutral-50 transition-colors"
+      {/* FAQ */}
+      <section className="py-24 px-6 bg-white">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-black text-calm-900 text-center mb-12">
+            {tFaq('sectionTitle')}
+          </h2>
+          <div className="space-y-3">
+            {faqItems.map((item) => (
+              <div
+                key={item.id}
+                className="bg-calm-50/50 rounded-2xl border border-calm-100 overflow-hidden"
               >
-                <span className="font-semibold text-neutral-900">{item.question}</span>
-                <svg
-                  className={`w-5 h-5 text-neutral-400 transition-transform flex-shrink-0 ml-4 ${openFaq === item.id ? 'rotate-180' : ''}`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
+                <button
+                  onClick={() => setOpenFaq(openFaq === item.id ? null : item.id)}
+                  className="w-full flex items-center justify-between p-5 text-left hover:bg-calm-50 transition-colors"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              {openFaq === item.id && (
-                <div className="px-5 pb-5 bg-white">
-                  <p className="text-neutral-500 leading-relaxed">{item.answer}</p>
-                </div>
-              )}
-            </div>
-          ))}
+                  <span className="font-bold text-calm-900">{item.question}</span>
+                  <i
+                    className={`fa-solid fa-chevron-down text-calm-500 transition-transform ${openFaq === item.id ? 'rotate-180' : ''}`}
+                  />
+                </button>
+                {openFaq === item.id && (
+                  <div className="px-5 pb-5">
+                    <p className="text-gray-600 leading-relaxed">{item.answer}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="bg-neutral-900 section-spacing">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">{t('cta.title')}</h2>
-          <p className="text-neutral-400 mb-8 max-w-xl mx-auto">{t('cta.subtitle')}</p>
-          <button onClick={scrollToTop} className="btn-cta text-lg">
+      {/* CTA */}
+      <section className="py-24 bg-gradient-to-br from-calm-900 to-calm-800 px-6">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-black text-white mb-4">{t('cta.title')}</h2>
+          <p className="text-calm-200 mb-8 text-lg max-w-xl mx-auto">{t('cta.subtitle')}</p>
+          <a
+            href="#tematy"
+            className="inline-flex items-center bg-magic-500 hover:bg-magic-600 text-white px-8 py-4 rounded-full font-extrabold text-lg shadow-xl shadow-magic-500/30 transition transform hover:-translate-y-1"
+          >
+            <i className="fa-solid fa-wand-magic-sparkles mr-2" />
             {t('cta.button')}
-            <svg
-              className="w-5 h-5 ml-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-            </svg>
-          </button>
-          <p className="text-fine-print mt-6 text-neutral-500">{t('cta.privacy')}</p>
+          </a>
+          <p className="text-sm text-calm-200/50 mt-6">{t('cta.privacy')}</p>
         </div>
       </section>
-    </PageShell>
+
+      <TopicFooter />
+    </div>
   );
 }

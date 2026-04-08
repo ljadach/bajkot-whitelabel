@@ -12,9 +12,11 @@ import { Toaster } from 'sonner';
 import './index.css';
 import './lib/i18n';
 
+import { useEffect } from 'react';
 import { Header } from './components/Header';
 import { ClientOnly } from './components/ClientOnly';
 import { useLangFromUrl } from './hooks/useLangFromUrl';
+import { captureTokenFromUrl } from './hooks/useAccessToken';
 
 const LazyClientUtilities = lazy(() =>
   import('./components/ClientAppShell').then((m) => ({ default: m.ClientUtilities })),
@@ -31,8 +33,12 @@ export function Layout({ children }: { children: ReactNode }) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Special+Elite&display=swap"
           rel="stylesheet"
+        />
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         />
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -71,6 +77,8 @@ export function Layout({ children }: { children: ReactNode }) {
 }
 
 export default function Root() {
+  useEffect(() => captureTokenFromUrl(), []);
+
   return (
     <div className="h-screen flex flex-col bg-white">
       <Header />

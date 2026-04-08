@@ -102,6 +102,8 @@ export async function assertAdmin(ctx: AnyCtx): Promise<{ subject: string }> {
 
 type DbCtx = GenericQueryCtx<DataModel> | GenericMutationCtx<DataModel>;
 
+export const LANDING_USER_ID = 'landing-user' as const;
+
 /**
  * Assert the current user owns the given bookOrder.
  * Returns the order document for further use.
@@ -112,5 +114,16 @@ export async function assertOrderOwner(ctx: DbCtx, orderId: Id<'bookOrders'>) {
   const order = await ctx.db.get(orderId);
   if (!order) throw new Error('Order not found');
   if (order.clerkUserId !== identity.subject) throw new Error('Not authorized');
+  return order;
+}
+
+/**
+ * Assert the order is a landing-page order (no auth, clerkUserId === LANDING_USER_ID).
+ * Returns the order document for further use.
+ */
+export async function assertLandingOrder(ctx: DbCtx, orderId: Id<'bookOrders'>) {
+  const order = await ctx.db.get(orderId);
+  if (!order) throw new Error('Order not found');
+  if (order.clerkUserId !== LANDING_USER_ID) throw new Error('Not a landing order');
   return order;
 }

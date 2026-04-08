@@ -26,6 +26,22 @@ export default {
           dark: '#cc4a1a',
         },
         success: '#16a34a',
+        // Topic landing page palette (calm blue + magic gold)
+        calm: {
+          50: '#f0f9ff',
+          100: '#e0f2fe',
+          200: '#bae6fd',
+          500: '#0ea5e9',
+          700: '#0369a1',
+          800: '#075985',
+          900: '#0c4a6e',
+        },
+        magic: {
+          100: '#fef3c7',
+          400: '#fbbf24',
+          500: '#f59e0b',
+          600: '#d97706',
+        },
         // Legacy compatibility
         primary: '#ff6b35',
         'primary-hover': '#e55a2b',
