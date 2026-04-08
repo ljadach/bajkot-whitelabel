@@ -142,6 +142,38 @@ export const PROBLEMS: Record<string, ProblemDefinition> = {
       'Magiczna walizka wspomnień, która otwiera portale do nowych przygód. Żółwik Domek.',
     category: 'change',
   },
+  parents_divorce: {
+    title_pl: 'Rozwód lub rozstanie rodziców',
+    context_pl:
+      'Dziecko mierzy się z rozpadem rodziny i często bierze winę na siebie. Pokaż, że miłość rodziców do dziecka nie kończy się z rozstaniem, a dwa domy mogą być źródłem podwójnej troski, nie podziału.',
+    metaphor_pl:
+      'Drzewo o jednym pniu i dwóch koronach — choć gałęzie rosną w różne strony, korzenie wciąż karmią ten sam liść. Wróżka Dwóch Gniazd.',
+    category: 'change',
+  },
+  tooth_brushing: {
+    title_pl: 'Opór przed myciem zębów',
+    context_pl:
+      'Dziecko traktuje mycie zębów jako narzuconą walkę. Pokaż szczoteczkę jako narzędzie misji, a mikroby jako oswojonych przeciwników, których odgania się z radością, nie ze strachu.',
+    metaphor_pl:
+      'Szczoteczka to magiczna miotełka rycerza Białego Uśmiechu, która zamienia ząbki w lśniące perły. Smok Bąbelek.',
+    category: 'routine',
+  },
+  sensory_sensitivity: {
+    title_pl: 'Nadwrażliwość sensoryczna',
+    context_pl:
+      'Dziecko jest przeciążone bodźcami — głośne dźwięki, tłumy, faktury wywołują panikę. Pokaż, że jego zmysły są jak superczułe radary, które można nauczyć się ściszać i strojić, a nie wyłączać.',
+    metaphor_pl:
+      'Wewnętrzne pokrętło głośności i magiczne słuchawki ciszy, które oddają dziecku kontrolę nad światem. Lis Wyciszek.',
+    category: 'emotions',
+  },
+  general_resilience: {
+    title_pl: 'Ogólne wsparcie emocjonalne',
+    context_pl:
+      'Dziecko mierzy się z codziennymi trudnościami, które rodzic chce wesprzeć opowieścią. Pokaż uniwersalną podróż bohatera — odkrycie własnej siły, mądrego przewodnika i odwagi, by spróbować jeszcze raz.',
+    metaphor_pl:
+      'Kompas serca, który zawsze wskazuje drogę do wewnętrznej siły dziecka. Ćmik Iskra.',
+    category: 'emotions',
+  },
 };
 
 // ── Appearance Maps ──────────────────────────────

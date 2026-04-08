@@ -86,7 +86,7 @@ export const TOPICS: Topic[] = [
   // ---------------------------------------------------------------------------
   {
     slug: 'bajkoterapia-ogolna',
-    problemId: null,
+    problemId: 'general_resilience',
     title: 'Bajkoterapia – Spersonalizowana Bajka Terapeutyczna dla Dziecka',
     metaDescription:
       'Każde dziecko ma swoje wyzwania. Bajkoterapia dopasowuje historię do konkretnego imienia, wyglądu i problemu Twojego malucha.',
@@ -285,7 +285,7 @@ export const TOPICS: Topic[] = [
   // ---------------------------------------------------------------------------
   {
     slug: 'mycie-zebow',
-    problemId: null,
+    problemId: 'tooth_brushing',
     title: 'Bajkoterapia – Dziecko Nie Chce Myć Zębów | Higiena Jamy Ustnej',
     metaDescription:
       'Ucieczki, płacz, zaciśnięte usta – bajkoterapia zamienia szczoteczkę w magiczne narzędzie i mycie zębów w ekscytującą misję.',
@@ -335,7 +335,7 @@ export const TOPICS: Topic[] = [
   // ---------------------------------------------------------------------------
   {
     slug: 'nadwrazliwosc-sensoryczna',
-    problemId: null,
+    problemId: 'sensory_sensitivity',
     title: 'Bajkoterapia – Nadwrażliwość Sensoryczna u Dziecka',
     metaDescription:
       'Twoje dziecko zatyka uszy, boi się głośnych dźwięków lub tłumów? Bajkoterapia uczy malucha rozumieć swoje zmysły.',
@@ -537,7 +537,7 @@ export const TOPICS: Topic[] = [
   // ---------------------------------------------------------------------------
   {
     slug: 'rozwod-rodzicow',
-    problemId: null,
+    problemId: 'parents_divorce',
     title: 'Bajkoterapia – Jak Pomóc Dziecku Przeżyć Rozwód Rodziców',
     metaDescription:
       'Rozwód to trudny czas – szczególnie dla dzieci. Bajkoterapia daje dziecku słowa, bezpieczeństwo i nadzieję.',

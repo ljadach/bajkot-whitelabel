@@ -19,6 +19,10 @@ export const PROBLEMS = {
   screen_addiction: { title_pl: 'Nadmierne przywiazanie do ekranow', category: 'routine' },
   new_sibling: { title_pl: 'Nowe rodzenstwo w rodzinie', category: 'change' },
   moving_house: { title_pl: 'Przeprowadzka', category: 'change' },
+  parents_divorce: { title_pl: 'Rozwod lub rozstanie rodzicow', category: 'change' },
+  tooth_brushing: { title_pl: 'Opor przed myciem zebow', category: 'routine' },
+  sensory_sensitivity: { title_pl: 'Nadwrazliwosc sensoryczna', category: 'emotions' },
+  general_resilience: { title_pl: 'Ogolne wsparcie emocjonalne', category: 'emotions' },
 } as const;
 
 export type ProblemId = keyof typeof PROBLEMS;
