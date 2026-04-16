@@ -46,6 +46,7 @@ npm run cli -- <command>          # or: npx tsx cli/index.ts <command>
 | `logs [-u <userId>] [--full] [--users]` | LLM call logs. `--users` lists users with logs                                   |
 | `download <orderId> [-o]`               | PDF download URL. `-o` opens in browser                                          |
 | `watch <orderId>`                       | Poll order progress every 5s until terminal state                                |
+| `retry <orderId> [-w]`                  | Restart a failed order from its `currentAgent`. `-w` watches after retry         |
 | `presets`                               | List valid keys for problems, appearance, outfits                                |
 | `prompts list`                          | List all pipeline prompts with DB status and version count                       |
 | `prompts get <key>`                     | Show full prompt content by key (e.g. `bookStoryWriter`)                         |
@@ -59,6 +60,8 @@ npm run cli -- <command>          # or: npx tsx cli/index.ts <command>
 | `--prod` | Run command against production deployment instead of dev |
 
 **How it works:** Calls `convex/cli.ts` internal functions via `npx convex run` — no Clerk auth needed. Orders created by CLI use `clerkUserId: "cli-user"`. Use `--prod` to target production (e.g. `npm run cli -- prompts list --prod`).
+
+**Short IDs:** `detail`, `events`, `download`, `watch`, and `retry` accept either the full Convex doc ID or the 12-char suffix shown in `status` output (resolved via `cli:resolveOrderId`).
 
 **Typical test workflow:**
 
