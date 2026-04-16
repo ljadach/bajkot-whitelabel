@@ -81,6 +81,23 @@ function colorStatus(status: string): string {
   return `${color}${status}\x1b[0m`;
 }
 
+/**
+ * Resolve a short (suffix) or full order ID to a full Convex document ID.
+ * Short IDs are the last 12 characters displayed in `status` output.
+ */
+function resolveId(idOrSuffix: string): string {
+  // If it looks like a full Convex ID (32+ chars), use as-is
+  if (idOrSuffix.length >= 30) return idOrSuffix;
+  // Otherwise resolve suffix via backend
+  const raw = convexRun('cli:resolveOrderId', { suffix: idOrSuffix });
+  const resolved = parseResult(raw);
+  if (!resolved) {
+    console.error(`\x1b[31m✗ No order found matching suffix "${idOrSuffix}"\x1b[0m`);
+    process.exit(1);
+  }
+  return resolved;
+}
+
 // ── Program ─────────────────────────────────────────────────
 
 const program = new Command();
@@ -214,7 +231,8 @@ program
   .description('Show full order detail with artifacts')
   .argument('<orderId>', 'Order ID')
   .option('--artifacts', 'Show raw JSON artifacts')
-  .action((orderId, opts) => {
+  .action((rawId, opts) => {
+    const orderId = resolveId(rawId);
     const raw = convexRun('cli:getOrderDetail', { orderId });
     const o = parseResult(raw);
 
@@ -288,8 +306,9 @@ program
 program
   .command('events')
   .description('Show pipeline event timeline for an order')
-  .argument('<orderId>', 'Order ID')
-  .action((orderId) => {
+  .argument('<orderId>', 'Order ID (full or short suffix)')
+  .action((rawId) => {
+    const orderId = resolveId(rawId);
     const raw = convexRun('cli:getOrderEvents', { orderId });
     const events = parseResult(raw);
 
@@ -383,9 +402,10 @@ program
 program
   .command('download')
   .description('Get PDF download URL for a completed order')
-  .argument('<orderId>', 'Order ID')
+  .argument('<orderId>', 'Order ID (full or short suffix)')
   .option('-o, --open', 'Open URL in browser')
-  .action((orderId, opts) => {
+  .action((rawId, opts) => {
+    const orderId = resolveId(rawId);
     const raw = convexRun('cli:getDownloadUrl', { orderId });
     const url = parseResult(raw);
 
@@ -406,8 +426,9 @@ program
 program
   .command('watch')
   .description('Watch order progress in real-time (polls every 5s)')
-  .argument('<orderId>', 'Order ID')
-  .action(async (orderId) => {
+  .argument('<orderId>', 'Order ID (full or short suffix)')
+  .action(async (rawId) => {
+    const orderId = resolveId(rawId);
     await watchOrder(orderId);
   });
 
@@ -449,6 +470,24 @@ async function watchOrder(orderId: string) {
     await new Promise((r) => setTimeout(r, 5000));
   }
 }
+
+// ── retry ──────────────────────────────────────────────────
+
+program
+  .command('retry')
+  .description('Retry a failed order from its last agent')
+  .argument('<orderId>', 'Order ID (full or short suffix)')
+  .option('-w, --watch', 'Watch pipeline progress after retrying')
+  .action(async (rawId, opts) => {
+    const orderId = resolveId(rawId);
+    const raw = convexRun('cli:retryOrder', { orderId });
+    const result = parseResult(raw);
+    console.log(`\x1b[32m✓ ${result}\x1b[0m`);
+
+    if (opts.watch) {
+      await watchOrder(orderId);
+    }
+  });
 
 // ── presets ──────────────────────────────────────────────────
 

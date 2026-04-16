@@ -64,6 +64,59 @@ export const startPipeline = internalAction({
   },
 });
 
+// ── Retry failed order from its current agent ───────────────
+
+export const retryOrder = internalAction({
+  args: { orderId: v.id('bookOrders') },
+  returns: v.string(),
+  handler: async (ctx, { orderId }): Promise<string> => {
+    const agentFunctions: Record<string, any> = {
+      A0: internal.bookAgents.intake,
+      A1: internal.bookAgents.profileChild,
+      A2: internal.bookAgents.planStory,
+      A3: internal.bookAgents.writeStory,
+      A4: internal.bookAgents.reviewPsych,
+      A5: internal.bookAgents.directArt,
+      A6: internal.bookAgents.designCharacter,
+      A7: internal.bookAgents.illustrate,
+      A8: internal.bookAgents.reviewVisual,
+      A9: internal.bookAgents.composePdf,
+      A10: internal.bookAgents.reviewFinal,
+      A11: internal.bookAgents.deliver,
+    };
+
+    const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
+    if (!order) throw new Error('Order not found');
+    if (order.status !== 'failed') throw new Error(`Order is not failed (status: ${order.status})`);
+    const agent: string = order.currentAgent ?? '';
+    if (!agent) throw new Error('No currentAgent on failed order');
+    const fn = agentFunctions[agent];
+    if (!fn) throw new Error(`Unknown agent: ${agent}`);
+
+    // Clear error and schedule agent
+    await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
+      orderId,
+      status: 'intake', // state machine allows failed→anything
+      currentAgent: agent,
+      error: '',
+    });
+    await ctx.scheduler.runAfter(0, fn, { orderId });
+    return `Retrying from agent ${agent}`;
+  },
+});
+
+// ── Resolve short ID suffix to full order ID ────────────────
+
+export const resolveOrderId = internalQuery({
+  args: { suffix: v.string() },
+  returns: v.union(v.id('bookOrders'), v.null()),
+  handler: async (ctx, { suffix }) => {
+    const orders = await ctx.db.query('bookOrders').order('desc').take(200);
+    const match = orders.find((o) => (o._id as string).endsWith(suffix));
+    return match?._id ?? null;
+  },
+});
+
 // ── List orders (no auth) ────────────────────────────────────
 
 export const listOrders = internalQuery({
