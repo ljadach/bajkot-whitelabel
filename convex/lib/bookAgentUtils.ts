@@ -3,26 +3,18 @@
  */
 
 import type { StoryDraft, PsychReview } from './bookTypes';
+import { normalizePagesV2 } from './bookAgentUtilsV2';
 
 /** Safety suffix appended to all image generation prompts to avoid harmful content */
 export const IMAGE_SAFETY_SUFFIX =
   'Do not include: scary imagery, dark horror themes, realistic photography, deformed anatomy, extra fingers or limbs, blurry content, watermarks, text overlays, signatures, adult or violent content.';
 
-/** Normalize LLM output to consistent StoryDraft.pages format */
+/**
+ * Normalize LLM output to StoryDraft.pages.
+ * Delegates to V2 so new A3 beats-schema, legacy pages/scenes/story_text all work.
+ */
 export function normalizePages(raw: any): StoryDraft['pages'] {
-  if (!Array.isArray(raw.pages) || raw.pages.length === 0) {
-    console.warn(
-      '[normalizePages] Missing or empty pages array in LLM response. Keys:',
-      Object.keys(raw),
-    );
-    return [];
-  }
-
-  return raw.pages.map((item: any, i: number) => ({
-    beatNumber: item.beatNumber || item.beat_number || i + 1,
-    text: item.text || item.text_pl || '',
-    readAloudVersion: item.readAloudVersion || item.text_pl || item.text || '',
-  }));
+  return normalizePagesV2(raw);
 }
 
 /**

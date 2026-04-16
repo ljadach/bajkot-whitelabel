@@ -110,6 +110,15 @@ export interface CharacterProfile {
   characterReferencePrompt?: string;
 }
 
+// ── A2: Illustration plan entry (in blueprint) ──────
+
+export interface BlueprintIllustrationEntry {
+  id: string; // e.g. "cover", "scene_1.1", "scene_4a.2", "mood_closing"
+  beat_ref: string | null; // "1", "2", "4a", etc. null for cover/mood_*
+  category: 'cover' | 'scene' | 'mood';
+  description_pl: string;
+}
+
 // ── A2: Story Blueprint ──────────────────────────
 
 export interface StoryBeat {
@@ -152,14 +161,20 @@ export interface StoryBlueprint {
     beatRef: number;
     illustrationId: string;
   }>;
+  // 2026-04-16 refactor: per-bracket illustration plan driving A5 and A9.
+  illustrationPlan?: BlueprintIllustrationEntry[];
 }
 
 // ── A3: Story Draft ──────────────────────────────
 
 export interface StoryPage {
   beatNumber: number;
+  /** String beat id from A2 schema (e.g. "1", "4a", "4b"). Preferred over beatNumber. */
+  beatId?: string;
   text: string;
   readAloudVersion: string;
+  /** Actual word count reported by A3 (optional, for QA). */
+  wordCount?: number;
 }
 
 export interface ParentCard {
@@ -171,6 +186,10 @@ export interface ParentCard {
 
 export interface StoryDraft {
   title: string;
+  /**
+   * Dedication text. Post-2026-04-16: no longer produced by A3 — supplied by
+   * the parent via UI during illustration rendering. May be empty on fresh drafts.
+   */
   dedication: string;
   pages: StoryPage[];
   wordCount: number;
@@ -225,21 +244,45 @@ export interface PsychReview {
 
 // ── A5: Illustration Plan ────────────────────────
 
+/**
+ * One illustration spec. 2026-04-16 refactor fields are first — legacy aliases
+ * retained for unmigrated orders & callers that still read the old shape.
+ */
 export interface IllustrationSpec {
-  illustrationId: string; // "cover", "scene_1" .. "scene_6"
-  beatRef: number;
-  sceneDescription: string;
-  prompt: string;
+  /** Stable id. 2026-04-16: string (e.g. "cover", "scene_1.1", "scene_4a.2"). */
+  id: string;
+  /** Beat reference. 2026-04-16: string ("1" | "4a" | "4b") or null for cover/mood_*. */
+  beatRef: string | number | null;
+  category: 'cover' | 'scene' | 'mood';
+  aspectRatio: string; // "2:3" (cover) | "3:2" (scene/mood)
+  composition: string;
   mood: string;
-  keyElements: string[];
-  width: number;
-  height: number;
+  illustrationPrompt: string;
+  negativePrompt: string;
+  visualAnchorVisible: boolean;
+  charactersPresent: string[];
+  // Derived/legacy fields (kept for back-compat with older artifacts & downstream code)
+  width?: number;
+  height?: number;
+  /** Alias for `id` — legacy callers. */
+  illustrationId?: string;
+  /** Alias for `illustrationPrompt` — legacy callers. */
+  prompt?: string;
+  /** Legacy: short description, superseded by composition. */
+  sceneDescription?: string;
+  /** Legacy: free-form elements list. */
+  keyElements?: string[];
 }
 
 export interface IllustrationPlan {
   styleGuide: string;
   characterConsistencyNotes: string;
   illustrations: IllustrationSpec[];
+  /** 2026-04-16: top-level summary fields from A5 output. */
+  totalIllustrations?: number;
+  characterDescriptionEn?: string;
+  guideDescriptionEn?: string;
+  visualAnchor?: string;
 }
 
 // ── A6: Style Definition ─────────────────────────

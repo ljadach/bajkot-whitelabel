@@ -64,6 +64,11 @@ export const templateSchemas: Record<PromptTemplate, z.ZodType<any>> = {
       ILLUSTRATION_PROMPT: z.string().default(''),
       VISUAL_ANCHOR: z.string().default(''),
       ASPECT_RATIO: z.string().default(''),
+      // 2026-04-16 refactor: per-image call placeholders from A5
+      COMPOSITION: z.string().default(''),
+      MOOD: z.string().default(''),
+      NEGATIVE_PROMPT: z.string().default(''),
+      ILLUSTRATION_CATEGORY: z.string().default('scene'),
     })
     .strict(),
   [PromptTemplate.BookVisualQa]: z

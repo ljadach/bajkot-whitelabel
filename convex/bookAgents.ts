@@ -41,12 +41,13 @@ import {
   type VisualQa,
   type FinalQa,
 } from './lib/bookTypes';
+import { applyCorrections, IMAGE_SAFETY_SUFFIX } from './lib/bookAgentUtils';
 import {
-  normalizePages,
-  applyCorrections,
-  normalizeParentCard,
-  IMAGE_SAFETY_SUFFIX,
-} from './lib/bookAgentUtils';
+  normalizeStoryDraftV2,
+  normalizeIllustrationPlan,
+  derivePixelSize,
+} from './lib/bookAgentUtilsV2';
+import { resolveAgeBracket } from './lib/ageBracket';
 import { getNarrative } from './bookPipelineEvents';
 
 /**
@@ -400,32 +401,15 @@ export const writeStory = internalAction({
             CHARACTER_PROFILE: order.characterProfile!,
           });
 
-          const jsonSchema = `Return ONLY valid JSON matching this EXACT schema:
-{
-  "title": "string",
-  "dedication": "string",
-  "coverBlurb": "1-2 sentence back cover blurb in Polish",
-  "pages": [
-    { "beatNumber": 1, "text": "Polish prose for beat 1", "readAloudVersion": "simplified version" },
-    { "beatNumber": 2, "text": "...", "readAloudVersion": "..." },
-    { "beatNumber": 3, "text": "...", "readAloudVersion": "..." },
-    { "beatNumber": 4, "text": "...", "readAloudVersion": "..." },
-    { "beatNumber": 5, "text": "...", "readAloudVersion": "..." },
-    { "beatNumber": 6, "text": "...", "readAloudVersion": "..." }
-  ],
-  "parentCard": {
-    "title": "Drogi Rodzicu",
-    "introPl": "2-3 warm sentences explaining the therapeutic purpose of this story",
-    "questions": ["Q1: identify with emotion", "Q2: reflect on solution", "Q3: personal transfer"],
-    "activityPl": "Fun parent-child activity based on the story's strategy (3-4 sentences, frame as play)"
-  },
-  "wordCount": 780
-}`;
-
-          let userMessage = `Write the complete story.\n\n${jsonSchema}`;
-          if (corrections) {
-            userMessage = `Write the complete story, applying these corrections from the psych reviewer:\n\n${corrections}\n\n${jsonSchema}`;
-          }
+          // 2026-04-16 refactor: A3 prompt defines the output schema itself
+          // (`{beats: [{beat_id, text_pl, word_count}]}`). No hardcoded schema
+          // in the user message — it would conflict with the prompt and lead
+          // to LLM producing mixed shapes. Normalizer tolerates both shapes.
+          const baseInstruction =
+            'Write the complete story in Polish. Output ONLY valid JSON matching the schema defined in your system prompt.';
+          const userMessage = corrections
+            ? `${baseInstruction}\n\nApply these corrections from the psych reviewer:\n${corrections}`
+            : baseInstruction;
 
           await checkCallBudget(ctx, orderId);
           const raw = await chatJsonForStage<any>(
@@ -435,25 +419,7 @@ export const writeStory = internalAction({
             logContext,
           );
 
-          // Normalize: handle LLM output variations
-          const normalized: StoryDraft = {
-            title: raw.title || '',
-            dedication: raw.dedication || '',
-            pages: normalizePages(raw),
-            wordCount: raw.wordCount || raw.total_word_count || 0,
-            coverBlurb: raw.coverBlurb || raw.cover_blurb || '',
-            parentCard: normalizeParentCard(raw),
-          };
-
-          // Replace [name] / {name} placeholders with actual child name
-          const nameRx = /\[name\]|\{name\}/gi;
-          normalized.dedication = normalized.dedication.replace(nameRx, order.childName);
-          normalized.title = normalized.title.replace(nameRx, order.childName);
-          if (normalized.coverBlurb) {
-            normalized.coverBlurb = normalized.coverBlurb.replace(nameRx, order.childName);
-          }
-
-          return normalized;
+          return normalizeStoryDraftV2(raw, order.childName);
         },
         { asType: 'span' },
       );
@@ -699,37 +665,12 @@ export const directArt = internalAction({
               'lighting/mood, and camera angle. No references to ink, watercolor, collage, etc.',
           });
 
-          const userMessage = `Design all 7 illustration prompts (cover + scene_1 through scene_6).
-
-IMPORTANT: ALL fields must be filled with meaningful content. Do NOT leave any field empty.
-- "styleGuide": Describe the overall visual approach (mood, palette, composition principles)
-- "characterConsistencyNotes": Specific notes for keeping the child character recognizable across all 7 images (hair, eyes, outfit, proportions)
-- "sceneDescription": Brief description of what is depicted (1-2 sentences)
-- "keyElements": Array of 3-5 key visual elements that MUST appear in this illustration
-
-Return ONLY valid JSON matching this schema:
-{
-  "styleGuide": "2-3 sentences describing the visual approach and palette for this book",
-  "characterConsistencyNotes": "2-3 sentences about how to keep the child recognizable",
-  "illustrations": [
-    {
-      "illustrationId": "cover",
-      "beatRef": 0,
-      "sceneDescription": "Brief description of what is shown",
-      "prompt": "THE FULL 80-150 word image generation prompt in English",
-      "mood": "emotional tone of this scene",
-      "keyElements": ["element1", "element2", "element3"],
-      "width": 600,
-      "height": 900
-    },
-    { "illustrationId": "scene_1", "beatRef": 1, ... },
-    { "illustrationId": "scene_2", "beatRef": 2, ... },
-    { "illustrationId": "scene_3", "beatRef": 3, ... },
-    { "illustrationId": "scene_4", "beatRef": 4, ... },
-    { "illustrationId": "scene_5", "beatRef": 5, ... },
-    { "illustrationId": "scene_6", "beatRef": 6, ... }
-  ]
-}`;
+          // 2026-04-16 refactor: A5 prompt defines output contract itself —
+          // 12/13/15 illustrations by age, new snake_case schema with
+          // negative_prompt / composition / characters_present etc.
+          // No hardcoded schema here; normalizer is tolerant.
+          const userMessage =
+            'Design every illustration for this story. Output ONLY valid JSON matching the schema in your system prompt. Be thorough — negative_prompt and composition are safety-critical.';
 
           await checkCallBudget(ctx, orderId);
           const raw = await chatJsonForStage<any>(
@@ -739,30 +680,7 @@ Return ONLY valid JSON matching this schema:
             logContext,
           );
 
-          // Normalize LLM output (handles camelCase/snake_case variants)
-          const rawIlls: any[] = raw.illustrations || [];
-          const fallbackId = (i: number): string => (i === 0 ? 'cover' : `scene_${i}`);
-
-          const normalized: IllustrationPlan = {
-            styleGuide: raw.styleGuide || raw.style_guide || '',
-            characterConsistencyNotes:
-              raw.characterConsistencyNotes || raw.character_consistency_notes || '',
-            illustrations: rawIlls.map((ill: any, i: number) => {
-              const isCover = i === 0;
-              return {
-                illustrationId: ill.illustrationId || fallbackId(i),
-                beatRef: ill.beatRef ?? (isCover ? 0 : i),
-                sceneDescription: ill.sceneDescription || '',
-                prompt: ill.prompt || '',
-                mood: ill.mood || '',
-                keyElements: ill.keyElements || ill.key_elements || [],
-                width: ill.width || (isCover ? 600 : 900),
-                height: ill.height || (isCover ? 900 : 600),
-              };
-            }),
-          };
-
-          return normalized;
+          return normalizeIllustrationPlan(raw);
         },
         { asType: 'span' },
       );
@@ -999,20 +917,46 @@ export const illustrate = internalAction({
         .filter(Boolean)
         .join(' ');
 
-      // Generate each illustration sequentially (rate limiting)
+      // Generate each illustration sequentially (rate limiting).
+      // 2026-04-16 refactor: front-load composition + mood per A7 template,
+      // append negative_prompt and safety suffix. Use per-illustration
+      // aspect_ratio to derive pixel dims (2:3 cover, 3:2 scene/mood).
       for (const ill of plan.illustrations) {
-        const id = ill.illustrationId;
-        const basePrompt = ill.prompt || `Children's book illustration: ${id}`;
-        const fullPrompt = `${consistencyPreamble} Scene: ${basePrompt}. No text in image. ${IMAGE_SAFETY_SUFFIX}`;
+        const id = ill.id;
+        const aspectRatio = ill.aspectRatio || (id === 'cover' ? '2:3' : '3:2');
+        const [width, height] = derivePixelSize(aspectRatio);
 
-        const isCover = id === 'cover';
-        const width = isCover ? 600 : 900;
-        const height = isCover ? 900 : 600;
+        const basePrompt =
+          ill.illustrationPrompt || ill.prompt || `Children's book illustration: ${id}`;
+        const compositionLine = ill.composition ? `${ill.composition}.` : '';
+        const moodLine = ill.mood ? `${ill.mood}.` : '';
+        const negativeLine = ill.negativePrompt ? `Avoid: ${ill.negativePrompt}.` : '';
+
+        // For mood illustrations, skip the character preamble — A5 marks these
+        // as character-less (`characters_present: []`) and they should render
+        // as atmospheric backdrops.
+        const preamble = ill.category === 'mood' ? styleLine : consistencyPreamble;
+
+        const fullPrompt = [
+          preamble,
+          compositionLine,
+          moodLine,
+          basePrompt,
+          'No text in image.',
+          negativeLine,
+          IMAGE_SAFETY_SUFFIX,
+        ]
+          .filter(Boolean)
+          .join(' ');
 
         await checkCallBudget(ctx, orderId);
         const imageData = await generateImage(fullPrompt, { width, height });
         const storageId = await storeImageOrPlaceholder(ctx, imageData);
 
+        // NOTE: sceneRef is legacy (v.number()), incompatible with new string
+        // beat_ref values like "4a"/"4b". Omit to avoid a schema migration —
+        // A9 composer is now driven by the deterministic page sequence, not
+        // sceneRef lookups.
         await ctx.runMutation(internal.bookPipelineHelpers.saveIllustration, {
           orderId,
           illustrationId: id,
@@ -1020,7 +964,6 @@ export const illustrate = internalAction({
           prompt: fullPrompt,
           width,
           height,
-          sceneRef: ill.beatRef || undefined,
         });
       }
 
@@ -1305,10 +1248,12 @@ export const reviewFinal = internalAction({
         }
       }
 
-      // 3. Dedication
-      const dedicationPresent = !!draft?.dedication?.trim();
+      // 3. Dedication — 2026-04-16: may come from order.parentDedication (UI input)
+      // instead of draft.dedication (old A3 output). Absence is a warning,
+      // not a hard block, because some flows may skip the UI step.
+      const dedicationPresent = !!order.parentDedication?.trim() || !!draft?.dedication?.trim();
       if (!dedicationPresent) {
-        issues.push('Dedication is empty or missing');
+        issues.push('Dedication is empty (parent did not supply one)');
       }
 
       // 4. Pages complete — all pages have non-empty text
@@ -1343,13 +1288,12 @@ export const reviewFinal = internalAction({
       }
 
       // ── Build result ─────────────────────────────────
+      // 2026-04-16: dedicationPresent and parentCardPresent are warnings, not
+      // hard blocks. Parent dedication may be missing if UI step skipped; parent
+      // card content now comes from A2 blueprint so an empty draft.parentCard
+      // is normal. A9 composer handles both gracefully.
       const allChecksPassed =
-        artifactsPresent &&
-        nameInStory &&
-        dedicationPresent &&
-        pagesComplete &&
-        illustrationsComplete &&
-        parentCardPresent;
+        artifactsPresent && nameInStory && pagesComplete && illustrationsComplete;
 
       const qa: FinalQa = {
         status: allChecksPassed ? 'PASS' : 'BLOCK',

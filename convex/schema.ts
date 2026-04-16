@@ -111,6 +111,11 @@ const applicationTables = {
 
     // Order form data
     childName: v.string(),
+    // 2026-04-16 refactor: ageNumber is the concrete age (3-16). When present,
+    // it's the source of truth; ageBracket is derived via toAgeBracket().
+    // ageBracket is retained as a required field for backward compat with
+    // in-flight orders and admin tooling that reads it directly.
+    ageNumber: v.optional(v.number()),
     ageBracket: v.union(v.literal('3-5'), v.literal('6-8'), v.literal('9+')),
     gender: v.union(v.literal('boy'), v.literal('girl')),
     problemId: v.string(),
@@ -170,6 +175,11 @@ const applicationTables = {
     styleVoteImageA: v.optional(v.id('_storage')),
     styleVoteImageB: v.optional(v.id('_storage')),
     chosenStyle: v.optional(v.union(v.literal('A'), v.literal('B'))),
+
+    // 2026-04-16 refactor: dedication is now entered by the parent via UI
+    // while illustrations are generating. Stored here so A9 composer and
+    // A10 final QA can read it without round-tripping through storyDraft.
+    parentDedication: v.optional(v.string()),
 
     // Final output
     pdfStorageId: v.optional(v.id('_storage')),
