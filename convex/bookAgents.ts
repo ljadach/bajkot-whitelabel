@@ -681,10 +681,14 @@ export const directArt = internalAction({
           // Art style is intentionally NOT baked into A5 prompts.
           // A7 (illustrate) prepends the user's chosen style (A or B) at generation time.
           // If A5 bakes style into ill.prompt, it conflicts with the chosen style in A7.
+          // Send blueprint scene summaries instead of full story draft to avoid
+          // triggering Google's content filter on sensitive therapeutic topics
+          // (e.g. potty training text about children). Blueprint already contains
+          // visual_direction and summary_en for each beat — sufficient for art planning.
           const systemPrompt = await getPrompt(ctx, PromptTemplate.BookArtDirector, {
             CHARACTER_PROFILE: order.characterProfile!,
             STORY_BLUEPRINT: order.storyBlueprint!,
-            STORY_DRAFT: order.storyDraft!,
+            STORY_DRAFT: '[See blueprint beat summaries and visual_direction fields above]',
             ART_STYLE:
               'NEUTRAL — do NOT include any art style directives in your prompts. ' +
               'Describe scenes, characters, environments, composition, and mood ONLY. ' +
