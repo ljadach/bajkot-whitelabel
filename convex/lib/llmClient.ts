@@ -28,10 +28,25 @@ async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/** Build Google reasoning provider options. Enabled when stage allows it. */
+/**
+ * Safety settings for Google AI. Therapeutic children's stories (e.g. potty training,
+ * fears) can trigger overly sensitive default filters. We use BLOCK_ONLY_HIGH to
+ * allow safe educational content while still blocking genuinely harmful material.
+ */
+const GOOGLE_SAFETY_SETTINGS = [
+  { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT' as const, threshold: 'BLOCK_ONLY_HIGH' as const },
+  { category: 'HARM_CATEGORY_DANGEROUS_CONTENT' as const, threshold: 'BLOCK_ONLY_HIGH' as const },
+  { category: 'HARM_CATEGORY_HARASSMENT' as const, threshold: 'BLOCK_ONLY_HIGH' as const },
+  { category: 'HARM_CATEGORY_HATE_SPEECH' as const, threshold: 'BLOCK_ONLY_HIGH' as const },
+];
+
+/** Build Google provider options (reasoning + safety). */
 function buildProviderOptions(reasoning: boolean | undefined) {
-  if (reasoning === false) return undefined;
-  return { google: { reasoning: { enabled: true } } };
+  const base: Record<string, any> = { safetySettings: GOOGLE_SAFETY_SETTINGS };
+  if (reasoning !== false) {
+    base.reasoning = { enabled: true };
+  }
+  return { google: base } as any;
 }
 
 export interface ChatJsonParams {
@@ -154,12 +169,18 @@ export async function chatJsonWithRetries<T = any>(
           await storeLog(JSON.stringify(parsed, null, 2));
 
           return parsed;
-        } catch (error) {
+        } catch (error: any) {
           lastErr = error;
           span.update({ error: error instanceof Error ? error.message : String(error) });
           if (error instanceof SyntaxError && rawText) {
             console.warn(
               `[${action}] JSON parse failed (attempt ${attempt + 1}/${retries}), raw: ${rawText.slice(0, 500)}`,
+            );
+          }
+          // Log API-level errors with status code and response body
+          if (error?.statusCode || error?.responseBody) {
+            console.warn(
+              `[${action}] API error (attempt ${attempt + 1}/${retries}): status=${error.statusCode}, body=${(error.responseBody ?? '').slice(0, 500)}`,
             );
           }
           if (attempt < retries - 1) {
@@ -170,16 +191,25 @@ export async function chatJsonWithRetries<T = any>(
         }
       }
 
-      const errMsg = lastErr instanceof Error ? lastErr.message : String(lastErr);
+      // Build a richer error message for API errors (includes status code + response body)
+      const baseMsg = lastErr instanceof Error ? lastErr.message : String(lastErr);
+      const statusCode = lastErr?.statusCode;
+      const responseBody = lastErr?.responseBody;
+      const causeMsg = lastErr?.cause instanceof Error ? lastErr.cause.message : '';
+      const parts = [baseMsg];
+      if (statusCode) parts.push(`HTTP ${statusCode}`);
+      if (causeMsg) parts.push(`cause: ${causeMsg}`);
+      if (responseBody) parts.push(`body: ${String(responseBody).slice(0, 300)}`);
+      const errMsg = parts.join(' | ');
+
       if (fallback !== undefined) {
         console.warn(`[${action}] All retries exhausted, using fallback. Last error: ${errMsg}`);
         await storeLog(JSON.stringify(fallback, null, 2) + '\n\n[FALLBACK USED]', errMsg);
         return fallback;
       }
 
-      await storeLog(undefined, lastErr instanceof Error ? lastErr.message : String(lastErr));
-      // @ts-ignore
-      throw lastErr || new Error('LLM call failed');
+      await storeLog(undefined, errMsg);
+      throw new Error(errMsg);
     },
     { asType: 'generation' },
   );
