@@ -4,12 +4,14 @@ import { Link } from 'react-router';
 import { JsonLd } from '../components/JsonLd';
 import { TopicNav } from '../components/topic-landing/TopicNav';
 import { TopicFooter } from '../components/topic-landing/TopicFooter';
+import { SignInModal } from '../components/SignInModal';
 import { getPageFaqItems, type FaqItemData } from '../lib/faqHelpers';
 import { TOPICS } from '../data/topics';
 
 export function HomePage() {
   const { t } = useTranslation('app');
   const [openFaq, setOpenFaq] = useState<string | null>(null);
+  const [showSignIn, setShowSignIn] = useState(false);
 
   const { t: tFaq } = useTranslation('faq');
   const allFaqItems = tFaq('items', { returnObjects: true }) as Record<string, FaqItemData>;
@@ -47,13 +49,23 @@ export function HomePage() {
           <p className="text-lg md:text-xl text-gray-600 font-medium leading-relaxed max-w-2xl mx-auto mb-8">
             {t('hero.description')}
           </p>
-          <a
-            href="#tematy"
-            className="inline-flex items-center bg-magic-500 hover:bg-magic-600 text-white px-8 py-4 rounded-full font-extrabold text-lg shadow-xl shadow-magic-500/30 transition transform hover:-translate-y-1"
-          >
-            <i className="fa-solid fa-wand-magic-sparkles mr-2" />
-            {t('hero.getStarted')}
-          </a>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <a
+              href="#tematy"
+              className="inline-flex items-center bg-magic-500 hover:bg-magic-600 text-white px-8 py-4 rounded-full font-extrabold text-lg shadow-xl shadow-magic-500/30 transition transform hover:-translate-y-1"
+            >
+              <i className="fa-solid fa-wand-magic-sparkles mr-2" />
+              {t('hero.getStarted')}
+            </a>
+            <button
+              type="button"
+              onClick={() => setShowSignIn(true)}
+              className="inline-flex items-center bg-white hover:bg-calm-50 text-calm-900 border border-calm-200 px-8 py-4 rounded-full font-extrabold text-lg shadow-sm transition transform hover:-translate-y-1"
+            >
+              <i className="fa-regular fa-user mr-2" />
+              Zaloguj się
+            </button>
+          </div>
           <p className="text-sm text-gray-500 font-semibold mt-4">
             <i className="fa-regular fa-clock text-calm-500 mr-1" />
             Gotowa do czytania w 15 minut
@@ -285,6 +297,7 @@ export function HomePage() {
       </section>
 
       <TopicFooter />
+      {showSignIn && <SignInModal onClose={() => setShowSignIn(false)} />}
     </div>
   );
 }
