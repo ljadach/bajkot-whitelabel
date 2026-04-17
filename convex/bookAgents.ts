@@ -908,9 +908,21 @@ export const illustrate = internalAction({
 
       // Build consistency preamble (trustee-parity: include guide + visual anchor)
       const styleLine = `${chosenStyle.style}. ${chosenStyle.modifiers}.`;
-      const childDesc =
-        profile.descriptionEn || profile.physicalDescription || profile.visualPromptBase || '';
-      const childLine = childDesc ? `Main character (appears in EVERY image): ${childDesc}.` : '';
+      // Deterministic child portrait from order fields — same source as A6 so
+      // the style-vote reference and every in-book illustration show the same
+      // child, regardless of what A1 wrote into characterProfile.
+      const childDesc = buildChildPortrait({
+        gender: order.gender,
+        ageBracket: order.ageBracket,
+        ageNumber: order.ageNumber,
+        hairColor: order.hairColor,
+        hairStyle: order.hairStyle,
+        eyeColor: order.eyeColor,
+        skinTone: order.skinTone,
+        outfit: order.outfit,
+        glasses: order.glasses,
+      });
+      const childLine = `Main character (appears in EVERY image): ${childDesc}. A realistic human child — not a monster, not a creature, not a plant.`;
       const guideLine = profile.guideCharacter?.descriptionEn
         ? `Guide character: ${profile.guideCharacter.descriptionEn}.`
         : '';
