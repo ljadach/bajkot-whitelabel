@@ -226,6 +226,54 @@ export const submitStyleVote = mutation({
   },
 });
 
+// ── Submit parent dedication (after style vote, before composer) ───
+
+const DEDICATION_MAX = 200;
+
+function normalizeDedication(raw: string): string {
+  const trimmed = raw.trim();
+  if (trimmed.length === 0) throw new Error('Dedykacja nie może być pusta');
+  if (trimmed.length > DEDICATION_MAX)
+    throw new Error(`Dedykacja może mieć maksymalnie ${DEDICATION_MAX} znaków`);
+  return trimmed;
+}
+
+function assertDedicationWindow(order: {
+  chosenStyle?: 'A' | 'B' | null;
+  pdfStorageId?: Id<'_storage'>;
+}) {
+  if (!order.chosenStyle) throw new Error('Najpierw wybierz styl ilustracji');
+  if (order.pdfStorageId) throw new Error('Bajka już została złożona');
+}
+
+export const submitParentDedication = mutation({
+  args: { orderId: v.id('bookOrders'), dedication: v.string() },
+  returns: v.null(),
+  handler: async (ctx, { orderId, dedication }) => {
+    const order = await assertOrderOwner(ctx, orderId);
+    assertDedicationWindow(order);
+    await ctx.db.patch(orderId, {
+      parentDedication: normalizeDedication(dedication),
+      updatedAt: Date.now(),
+    });
+    return null;
+  },
+});
+
+export const submitLandingParentDedication = mutation({
+  args: { orderId: v.id('bookOrders'), dedication: v.string() },
+  returns: v.null(),
+  handler: async (ctx, { orderId, dedication }) => {
+    const order = await assertLandingOrder(ctx, orderId);
+    assertDedicationWindow(order);
+    await ctx.db.patch(orderId, {
+      parentDedication: normalizeDedication(dedication),
+      updatedAt: Date.now(),
+    });
+    return null;
+  },
+});
+
 // ── Get download URL ───────────────────────────────────────
 
 export const getDownloadUrl = query({

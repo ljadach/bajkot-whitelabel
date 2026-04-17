@@ -1,26 +1,36 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
+import { DedicationForm } from './DedicationForm';
 
 export function LandingBookVote() {
   const navigate = useNavigate();
   const { orderId } = useParams<{ orderId: string }>();
   const submitVote = useMutation(api.bookPipeline.submitLandingStyleVote);
+  const submitDedication = useMutation(api.bookPipeline.submitLandingParentDedication);
   const redirectedRef = useRef(false);
+  const [phase, setPhase] = useState<'vote' | 'dedication'>('vote');
 
   const data = useQuery(
     api.bookPipeline.getLandingStyleVoteImages,
     orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip',
   );
 
+  const goToProgress = () => {
+    redirectedRef.current = true;
+    void navigate(`/landing/book/${orderId}/progress`);
+  };
+
+  // If style was already chosen server-side (reopen), skip dedication —
+  // we only prompt for it immediately after the user casts a vote.
   useEffect(() => {
-    if (data?.chosenStyle && orderId && !redirectedRef.current) {
-      redirectedRef.current = true;
-      void navigate(`/landing/book/${orderId}/progress`);
+    if (data?.chosenStyle && orderId && !redirectedRef.current && phase === 'vote') {
+      goToProgress();
     }
-  }, [data, orderId, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, orderId, phase]);
 
   if (!orderId || !data) {
     return (
@@ -30,11 +40,23 @@ export function LandingBookVote() {
     );
   }
 
+  if (phase === 'dedication') {
+    return (
+      <DedicationForm
+        onSubmit={async (dedication) => {
+          await submitDedication({ orderId: orderId as Id<'bookOrders'>, dedication });
+          goToProgress();
+        }}
+        onSkip={goToProgress}
+      />
+    );
+  }
+
   if (data.chosenStyle) return null;
 
   const handleVote = async (choice: 'A' | 'B') => {
     await submitVote({ orderId: orderId as Id<'bookOrders'>, choice });
-    void navigate(`/landing/book/${orderId}/progress`);
+    setPhase('dedication');
   };
 
   return (

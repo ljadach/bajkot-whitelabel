@@ -73,6 +73,14 @@
     "confirming": "Wysylam...",
     "chooseFirst": "Najpierw wybierz styl"
   },
+  "dedication": {
+    "heading": "Dodaj dedykację",
+    "description": "Masz chwilę? Wpisz kilka słów od siebie. Pojawią się na drugiej stronie książki zamiast domyślnego „Dla [imię]”.",
+    "placeholder": "np. Dla mojej kochanej Zosi — żebyś zawsze wiedziała, że jesteś odważna. Mama i Tata",
+    "submit": "Zapisz dedykację",
+    "skip": "Pomiń",
+    "saving": "Zapisuję..."
+  },
   "result": {
     "heading": "Bajka gotowa!",
     "description": "Twoja personalizowana bajka terapeutyczna zostala wygenerowana.",

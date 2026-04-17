@@ -4,6 +4,7 @@ import { useQuery, useMutation } from 'convex/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
+import { DedicationForm } from './DedicationForm';
 
 export function BookStyleVote() {
   const { t } = useTranslation('book');
@@ -14,21 +15,29 @@ export function BookStyleVote() {
   const [selected, setSelected] = useState<'A' | 'B' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [phase, setPhase] = useState<'vote' | 'dedication'>('vote');
 
   const images = useQuery(
     api.bookPipeline.getStyleVoteImages,
     orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip',
   );
 
-  // Redirect if style already chosen (e.g. fast mode, or we just voted)
+  const goToProgress = () => {
+    votedRef.current = true;
+    void navigate(`/book/${orderId}/progress`, { replace: true });
+  };
+
+  // If style was already chosen server-side (fast mode / reopen), skip the
+  // dedication step — we only prompt for dedication immediately after a vote.
   useEffect(() => {
-    if (images?.chosenStyle && orderId && !votedRef.current) {
-      votedRef.current = true;
-      void navigate(`/book/${orderId}/progress`, { replace: true });
+    if (images?.chosenStyle && orderId && !votedRef.current && phase === 'vote') {
+      goToProgress();
     }
-  }, [images?.chosenStyle, orderId, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [images?.chosenStyle, orderId, phase]);
 
   const submitVote = useMutation(api.bookPipeline.submitStyleVote);
+  const submitDedication = useMutation(api.bookPipeline.submitParentDedication);
 
   const handleVote = async () => {
     if (!selected || !orderId || isSubmitting) return;
@@ -39,12 +48,18 @@ export function BookStyleVote() {
         orderId: orderId as Id<'bookOrders'>,
         choice: selected,
       });
-      votedRef.current = true;
-      void navigate(`/book/${orderId}/progress`, { replace: true });
+      setPhase('dedication');
+      setIsSubmitting(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Vote failed');
       setIsSubmitting(false);
     }
+  };
+
+  const handleDedicationSubmit = async (dedication: string) => {
+    if (!orderId) return;
+    await submitDedication({ orderId: orderId as Id<'bookOrders'>, dedication });
+    goToProgress();
   };
 
   if (!orderId) {
@@ -61,6 +76,10 @@ export function BookStyleVote() {
         <div className="w-6 h-6 spinner" />
       </div>
     );
+  }
+
+  if (phase === 'dedication') {
+    return <DedicationForm onSubmit={handleDedicationSubmit} onSkip={goToProgress} />;
   }
 
   return (
