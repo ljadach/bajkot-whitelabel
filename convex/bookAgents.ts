@@ -42,11 +42,7 @@ import {
   type FinalQa,
 } from './lib/bookTypes';
 import { applyCorrections, IMAGE_SAFETY_SUFFIX } from './lib/bookAgentUtils';
-import {
-  normalizeStoryDraftV2,
-  normalizeIllustrationPlan,
-  derivePixelSize,
-} from './lib/bookAgentUtilsV2';
+import { normalizeStoryDraftV2, normalizeIllustrationPlan } from './lib/bookAgentUtilsV2';
 import { resolveAgeBracket } from './lib/ageBracket';
 import { getNarrative } from './bookPipelineEvents';
 
@@ -401,10 +397,8 @@ export const writeStory = internalAction({
             CHARACTER_PROFILE: order.characterProfile!,
           });
 
-          // 2026-04-16 refactor: A3 prompt defines the output schema itself
-          // (`{beats: [{beat_id, text_pl, word_count}]}`). No hardcoded schema
-          // in the user message — it would conflict with the prompt and lead
-          // to LLM producing mixed shapes. Normalizer tolerates both shapes.
+          // A3 prompt owns the schema contract — a hardcoded JSON schema in the
+          // user message would conflict and produce mixed shapes.
           const baseInstruction =
             'Write the complete story in Polish. Output ONLY valid JSON matching the schema defined in your system prompt.';
           const userMessage = corrections
@@ -665,10 +659,8 @@ export const directArt = internalAction({
               'lighting/mood, and camera angle. No references to ink, watercolor, collage, etc.',
           });
 
-          // 2026-04-16 refactor: A5 prompt defines output contract itself —
-          // 12/13/15 illustrations by age, new snake_case schema with
-          // negative_prompt / composition / characters_present etc.
-          // No hardcoded schema here; normalizer is tolerant.
+          // A5 prompt owns the schema contract — 12/13/15 illustrations with
+          // negative_prompt / composition / characters_present keyed by age bracket.
           const userMessage =
             'Design every illustration for this story. Output ONLY valid JSON matching the schema in your system prompt. Be thorough — negative_prompt and composition are safety-critical.';
 
@@ -917,24 +909,20 @@ export const illustrate = internalAction({
         .filter(Boolean)
         .join(' ');
 
-      // Generate each illustration sequentially (rate limiting).
-      // 2026-04-16 refactor: front-load composition + mood per A7 template,
-      // append negative_prompt and safety suffix. Use per-illustration
-      // aspect_ratio to derive pixel dims (2:3 cover, 3:2 scene/mood).
+      // Sequential generation is mandatory — each call goes through the per-order
+      // LLM budget counter, and Gemini image gen is rate-limited per project.
       for (const ill of plan.illustrations) {
         const id = ill.id;
-        const aspectRatio = ill.aspectRatio || (id === 'cover' ? '2:3' : '3:2');
-        const [width, height] = derivePixelSize(aspectRatio);
+        const width = ill.width ?? 900;
+        const height = ill.height ?? 900;
 
-        const basePrompt =
-          ill.illustrationPrompt || ill.prompt || `Children's book illustration: ${id}`;
+        const basePrompt = ill.illustrationPrompt || `Children's book illustration: ${id}`;
         const compositionLine = ill.composition ? `${ill.composition}.` : '';
         const moodLine = ill.mood ? `${ill.mood}.` : '';
         const negativeLine = ill.negativePrompt ? `Avoid: ${ill.negativePrompt}.` : '';
 
-        // For mood illustrations, skip the character preamble — A5 marks these
-        // as character-less (`characters_present: []`) and they should render
-        // as atmospheric backdrops.
+        // Mood illustrations skip the character preamble — they're atmospheric
+        // backdrops keyed to mood_palette, no child/guide figure.
         const preamble = ill.category === 'mood' ? styleLine : consistencyPreamble;
 
         const fullPrompt = [
@@ -1248,9 +1236,9 @@ export const reviewFinal = internalAction({
         }
       }
 
-      // 3. Dedication — 2026-04-16: may come from order.parentDedication (UI input)
-      // instead of draft.dedication (old A3 output). Absence is a warning,
-      // not a hard block, because some flows may skip the UI step.
+      // Dedication may come from order.parentDedication (UI input) instead of
+      // draft.dedication. Absent dedication is a warning, not a block — some
+      // flows skip the UI step.
       const dedicationPresent = !!order.parentDedication?.trim() || !!draft?.dedication?.trim();
       if (!dedicationPresent) {
         issues.push('Dedication is empty (parent did not supply one)');
@@ -1287,11 +1275,8 @@ export const reviewFinal = internalAction({
         issues.push('Parent card missing or has no questions');
       }
 
-      // ── Build result ─────────────────────────────────
-      // 2026-04-16: dedicationPresent and parentCardPresent are warnings, not
-      // hard blocks. Parent dedication may be missing if UI step skipped; parent
-      // card content now comes from A2 blueprint so an empty draft.parentCard
-      // is normal. A9 composer handles both gracefully.
+      // Dedication and parent card are warnings, not hard blocks. Parent card
+      // content may come from A2 blueprint; dedication may come from UI input.
       const allChecksPassed =
         artifactsPresent && nameInStory && pagesComplete && illustrationsComplete;
 

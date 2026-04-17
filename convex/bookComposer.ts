@@ -146,14 +146,21 @@ export const generatePdf = internalAction({
         }
       }
 
-      // Pre-split double-illustration beats so we do it once
+      // Only beats rendered via textPart need splitting. Compute on first read.
+      const beatsNeedingSplit = new Set<string>();
+      for (const p of pageSequence) {
+        if (p.kind === 'text' && p.textPart && p.beatId) beatsNeedingSplit.add(p.beatId);
+      }
       const beatTextPartsById = new Map<string, [string, string]>();
-      for (const [key, text] of beatTextById) {
-        beatTextPartsById.set(key, splitBeatText(text));
+      for (const beatId of beatsNeedingSplit) {
+        beatTextPartsById.set(beatId, splitBeatText(beatTextById.get(beatId) ?? ''));
       }
 
+      const illsById = new Map<string, (typeof illustrations)[number]>(
+        illustrations.map((i: any) => [i.illustrationId as string, i] as const),
+      );
       const getIllBuf = async (id: string): Promise<Buffer | null> => {
-        const ill = illustrations.find((i: any) => i.illustrationId === id);
+        const ill = illsById.get(id);
         if (!ill) return null;
         return fetchImageBuffer(ctx, ill.storageId);
       };
@@ -165,24 +172,23 @@ export const generatePdf = internalAction({
         draft.dedication?.trim() ||
         `Dla ${order.childName}`;
 
-      // ── Render each page per sequence ─────────────────
+      const renderCtx: RenderCtx = {
+        fs,
+        bracket,
+        title,
+        subtitle,
+        childName: order.childName,
+        dedication,
+        beatTextById,
+        beatTextPartsById,
+        draft,
+        blueprint,
+        profile,
+        getIllBuf,
+      };
       for (const spec of pageSequence) {
         doc.addPage({ size: [PAGE_W, PAGE_H], margin: 0 });
-        await renderPage(doc, spec, {
-          ctx,
-          fs,
-          bracket,
-          title,
-          subtitle,
-          childName: order.childName,
-          dedication,
-          beatTextById,
-          beatTextPartsById,
-          draft,
-          blueprint,
-          profile,
-          getIllBuf,
-        });
+        await renderPage(doc, spec, renderCtx);
       }
 
       doc.end();
@@ -233,7 +239,6 @@ export const generatePdf = internalAction({
 // ════════════════════════════════════════════════════════
 
 interface RenderCtx {
-  ctx: ActionCtx;
   fs: ReturnType<typeof fontSizesFor>;
   bracket: AgeBracket;
   title: string;
@@ -421,11 +426,16 @@ function drawTextPage(doc: PDFKit.PDFDocument, spec: PageSpec, r: RenderCtx) {
     text = `${text}\n\n*Koniec*`;
   }
 
+  // Constrain height so overflow is clipped (ellipsis) — we never want PDFKit
+  // to auto-insert a fresh page mid-sequence and corrupt the deterministic layout.
+  const textBoxH = PAGE_H - (MARGIN + 20) - 24;
   doc.font('Body').fontSize(r.fs.body).fillColor(C.textPrimary);
   doc.text(text, MARGIN, MARGIN + 20, {
     width: PAGE_W - MARGIN * 2,
+    height: textBoxH,
     align: 'justify',
     lineGap: r.fs.lineGap,
+    ellipsis: true,
   });
 
   // Page number at bottom center
@@ -435,7 +445,9 @@ function drawTextPage(doc: PDFKit.PDFDocument, spec: PageSpec, r: RenderCtx) {
     .fillColor(C.brownMuted);
   doc.text(String(spec.pageNumber), MARGIN, PAGE_H - MARGIN + 4, {
     width: PAGE_W - MARGIN * 2,
+    height: 14,
     align: 'center',
+    lineBreak: false,
   });
 }
 
@@ -471,7 +483,9 @@ function drawParentCardPage(doc: PDFKit.PDFDocument, r: RenderCtx) {
     .fillColor(C.textPrimary);
   doc.text(intro, MARGIN + 4, y, {
     width: PAGE_W - (MARGIN + 4) * 2,
+    height: Math.max(0, PAGE_H - y - MARGIN - 20),
     lineGap: 3,
+    ellipsis: true,
   });
   y = doc.y + 14;
 
@@ -493,9 +507,13 @@ function drawParentCardPage(doc: PDFKit.PDFDocument, r: RenderCtx) {
       .fontSize(r.fs.small + 1)
       .fillColor(C.textPrimary);
     for (let i = 0; i < questions.length; i++) {
+      const availH = Math.max(0, PAGE_H - y - MARGIN - 20);
+      if (availH < 20) break; // run out of room
       doc.text(`${i + 1}. ${questions[i]}`, MARGIN + 8, y, {
         width: PAGE_W - (MARGIN + 8) * 2,
+        height: availH,
         lineGap: 2,
+        ellipsis: true,
       });
       y = doc.y + 4;
     }
@@ -517,7 +535,9 @@ function drawParentCardPage(doc: PDFKit.PDFDocument, r: RenderCtx) {
       .fillColor(C.textPrimary);
     doc.text(activity, MARGIN + 8, y, {
       width: PAGE_W - (MARGIN + 8) * 2,
+      height: Math.max(0, PAGE_H - y - MARGIN),
       lineGap: 2,
+      ellipsis: true,
     });
   }
 }
@@ -591,10 +611,16 @@ async function fetchFont(url: string): Promise<Buffer> {
   return buf;
 }
 
+// Cache TTFs across invocations in the same Convex container — a warm instance
+// reuses them across many PDFs, saving ~800ms and 1-2 MB of downloads per call.
+let fontCache: { regular: Buffer; bold: Buffer } | null = null;
+
 async function loadFonts(): Promise<{ regular: Buffer; bold: Buffer }> {
+  if (fontCache) return fontCache;
   const [regular, bold] = await Promise.all([
     fetchFont(NOTO_SANS_URL),
     fetchFont(NOTO_SANS_BOLD_URL),
   ]);
-  return { regular, bold };
+  fontCache = { regular, bold };
+  return fontCache;
 }

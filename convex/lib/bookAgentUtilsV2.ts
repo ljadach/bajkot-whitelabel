@@ -13,6 +13,14 @@
 
 import type { StoryDraft, StoryPage, IllustrationPlan, IllustrationSpec } from './bookTypes';
 
+/** Return the first candidate that is a non-empty string, else the fallback. */
+function firstString(candidates: unknown[], fallback = ''): string {
+  for (const c of candidates) {
+    if (typeof c === 'string' && c.length > 0) return c;
+  }
+  return fallback;
+}
+
 // ── A3: Story draft ──────────────────────────────────────
 
 /**
@@ -124,76 +132,48 @@ export function normalizeStoryDraftV2(raw: any, childName: string): StoryDraft {
 
 // ── A5: Illustration plan ────────────────────────────────
 
-/**
- * Normalize a single A5 illustration entry, preserving all NEW fields.
- *
- * `beatRef` is kept as-is if string|null; if LEGACY format sent a number we
- * preserve that. Callers that need a string should run `String(beatRef)`.
- */
+/** Normalize a single A5 illustration entry, preserving all new fields. */
 export function normalizeIllustrationSpec(ill: any, index: number): IllustrationSpec {
-  const id: string =
-    typeof ill?.id === 'string'
-      ? ill.id
-      : typeof ill?.illustrationId === 'string'
-        ? ill.illustrationId
-        : `illustration_${index}`;
+  const id = firstString([ill?.id, ill?.illustrationId], `illustration_${index}`);
 
-  // beat_ref: prefer string/null (NEW); fall back to number (LEGACY)
   const rawBeatRef = ill?.beat_ref !== undefined ? ill.beat_ref : ill?.beatRef;
-  const beatRef: string | number | null =
-    rawBeatRef === null
-      ? null
-      : typeof rawBeatRef === 'string'
-        ? rawBeatRef
-        : typeof rawBeatRef === 'number'
-          ? rawBeatRef
-          : null;
+  let beatRef: string | null;
+  if (rawBeatRef === null || rawBeatRef === undefined) beatRef = null;
+  else if (typeof rawBeatRef === 'string') beatRef = rawBeatRef;
+  else if (typeof rawBeatRef === 'number') beatRef = String(rawBeatRef);
+  else beatRef = null;
 
-  const category: IllustrationSpec['category'] =
-    ill?.category === 'cover' || ill?.category === 'scene' || ill?.category === 'mood'
-      ? ill.category
-      : id === 'cover'
-        ? 'cover'
-        : id.startsWith('mood_')
-          ? 'mood'
-          : 'scene';
+  let category: IllustrationSpec['category'];
+  if (ill?.category === 'cover' || ill?.category === 'scene' || ill?.category === 'mood') {
+    category = ill.category;
+  } else if (id === 'cover') {
+    category = 'cover';
+  } else if (id.startsWith('mood_')) {
+    category = 'mood';
+  } else {
+    category = 'scene';
+  }
 
-  const aspectRatio: string =
-    typeof ill?.aspect_ratio === 'string'
-      ? ill.aspect_ratio
-      : typeof ill?.aspectRatio === 'string'
-        ? ill.aspectRatio
-        : category === 'cover'
-          ? '2:3'
-          : '3:2';
+  const aspectRatio = firstString(
+    [ill?.aspect_ratio, ill?.aspectRatio],
+    category === 'cover' ? '2:3' : '3:2',
+  );
 
-  const composition: string =
-    typeof ill?.composition === 'string' ? ill.composition : (ill?.sceneDescription ?? '');
+  const composition = firstString([ill?.composition, ill?.sceneDescription]);
+  const mood = firstString([ill?.mood]);
+  const illustrationPrompt = firstString([
+    ill?.illustration_prompt,
+    ill?.illustrationPrompt,
+    ill?.prompt,
+  ]);
+  const negativePrompt = firstString([ill?.negative_prompt, ill?.negativePrompt]);
 
-  const mood: string = typeof ill?.mood === 'string' ? ill.mood : '';
-
-  const illustrationPrompt: string =
-    typeof ill?.illustration_prompt === 'string'
-      ? ill.illustration_prompt
-      : typeof ill?.illustrationPrompt === 'string'
-        ? ill.illustrationPrompt
-        : typeof ill?.prompt === 'string'
-          ? ill.prompt
-          : '';
-
-  const negativePrompt: string =
-    typeof ill?.negative_prompt === 'string'
-      ? ill.negative_prompt
-      : typeof ill?.negativePrompt === 'string'
-        ? ill.negativePrompt
-        : '';
-
-  const visualAnchorVisible: boolean =
-    typeof ill?.visual_anchor_visible === 'boolean'
-      ? ill.visual_anchor_visible
-      : typeof ill?.visualAnchorVisible === 'boolean'
-        ? ill.visualAnchorVisible
-        : category !== 'mood';
+  let visualAnchorVisible: boolean;
+  if (typeof ill?.visual_anchor_visible === 'boolean')
+    visualAnchorVisible = ill.visual_anchor_visible;
+  else if (typeof ill?.visualAnchorVisible === 'boolean')
+    visualAnchorVisible = ill.visualAnchorVisible;
+  else visualAnchorVisible = category !== 'mood';
 
   const charactersPresent: string[] = Array.isArray(ill?.characters_present)
     ? ill.characters_present
@@ -201,8 +181,10 @@ export function normalizeIllustrationSpec(ill: any, index: number): Illustration
       ? ill.charactersPresent
       : [];
 
-  // Derived dims for legacy consumers that still read width/height
-  const [w, h] = derivePixelSize(aspectRatio);
+  const hasExplicitSize = typeof ill?.width === 'number' && typeof ill?.height === 'number';
+  const [derivedW, derivedH] = hasExplicitSize
+    ? [ill.width, ill.height]
+    : derivePixelSize(aspectRatio);
 
   return {
     id,
@@ -215,10 +197,8 @@ export function normalizeIllustrationSpec(ill: any, index: number): Illustration
     negativePrompt,
     visualAnchorVisible,
     charactersPresent,
-    width: typeof ill?.width === 'number' ? ill.width : w,
-    height: typeof ill?.height === 'number' ? ill.height : h,
-    illustrationId: id,
-    prompt: illustrationPrompt,
+    width: derivedW,
+    height: derivedH,
     sceneDescription: typeof ill?.sceneDescription === 'string' ? ill.sceneDescription : undefined,
     keyElements: Array.isArray(ill?.keyElements) ? ill.keyElements : undefined,
   };

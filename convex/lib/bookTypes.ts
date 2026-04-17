@@ -6,7 +6,9 @@
 
 // ── Order Form Data ──────────────────────────────
 
-export type AgeBracket = '3-5' | '6-8' | '9+';
+import type { AgeBracket } from './ageBracket';
+export type { AgeBracket };
+
 export type Gender = 'boy' | 'girl';
 export type StyleChoice = 'A' | 'B';
 
@@ -161,7 +163,7 @@ export interface StoryBlueprint {
     beatRef: number;
     illustrationId: string;
   }>;
-  // 2026-04-16 refactor: per-bracket illustration plan driving A5 and A9.
+  /** Per-bracket illustration plan — drives A5 (prompts) and A9 (page sequence). */
   illustrationPlan?: BlueprintIllustrationEntry[];
 }
 
@@ -187,8 +189,8 @@ export interface ParentCard {
 export interface StoryDraft {
   title: string;
   /**
-   * Dedication text. Post-2026-04-16: no longer produced by A3 — supplied by
-   * the parent via UI during illustration rendering. May be empty on fresh drafts.
+   * Dedication text. No longer produced by A3 — supplied by the parent via UI
+   * during illustration rendering, so it may be empty on a fresh draft.
    */
   dedication: string;
   pages: StoryPage[];
@@ -249,10 +251,10 @@ export interface PsychReview {
  * retained for unmigrated orders & callers that still read the old shape.
  */
 export interface IllustrationSpec {
-  /** Stable id. 2026-04-16: string (e.g. "cover", "scene_1.1", "scene_4a.2"). */
+  /** Stable id, e.g. "cover", "scene_1.1", "scene_4a.2". */
   id: string;
-  /** Beat reference. 2026-04-16: string ("1" | "4a" | "4b") or null for cover/mood_*. */
-  beatRef: string | number | null;
+  /** Beat reference — "1" | "4a" | "4b" etc., or null for cover/mood_*. */
+  beatRef: string | null;
   category: 'cover' | 'scene' | 'mood';
   aspectRatio: string; // "2:3" (cover) | "3:2" (scene/mood)
   composition: string;
