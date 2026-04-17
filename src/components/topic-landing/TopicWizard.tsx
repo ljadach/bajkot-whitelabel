@@ -16,6 +16,7 @@ const toOptions = (record: Record<string, string>) =>
 const AGE_OPTIONS = [
   { value: '3-5', label: '3 - 5 lat (Prostszy język)' },
   { value: '6-8', label: '6 - 8 lat (Bardziej rozbudowana treść)' },
+  { value: '9+', label: '9+ lat (Dłuższa narracja)' },
 ] as const;
 
 const GENDER_OPTIONS = [
@@ -33,7 +34,7 @@ const OUTFIT_OPTIONS = toOptions(OUTFITS);
 
 interface WizardForm {
   childName: string;
-  age: '3-5' | '6-8' | '';
+  age: '3-5' | '6-8' | '9+' | '';
   gender: 'boy' | 'girl' | '';
   hairColor: string;
   hairStyle: string;
@@ -126,7 +127,7 @@ export function TopicWizard({ topic }: { topic: Topic }) {
       const { orderId } = await startLandingOrder({
         accessToken: getAccessToken() ?? '',
         childName: form.childName.trim(),
-        ageBracket: form.age as '3-5' | '6-8',
+        ageBracket: form.age as '3-5' | '6-8' | '9+',
         gender: form.gender as 'boy' | 'girl',
         problemId: topic.problemId,
         problemDetail: form.problemDetail || undefined,
