@@ -32,6 +32,7 @@ import type * as lib_bookAgentUtils from '../lib/bookAgentUtils.js';
 import type * as lib_bookAgentUtilsV2 from '../lib/bookAgentUtilsV2.js';
 import type * as lib_bookData from '../lib/bookData.js';
 import type * as lib_bookTypes from '../lib/bookTypes.js';
+import type * as lib_childPortrait from '../lib/childPortrait.js';
 import type * as lib_config from '../lib/config.js';
 import type * as lib_configClient from '../lib/configClient.js';
 import type * as lib_dbHelpers from '../lib/dbHelpers.js';
@@ -83,6 +84,7 @@ declare const fullApi: ApiFromModules<{
   'lib/bookAgentUtilsV2': typeof lib_bookAgentUtilsV2;
   'lib/bookData': typeof lib_bookData;
   'lib/bookTypes': typeof lib_bookTypes;
+  'lib/childPortrait': typeof lib_childPortrait;
   'lib/config': typeof lib_config;
   'lib/configClient': typeof lib_configClient;
   'lib/dbHelpers': typeof lib_dbHelpers;

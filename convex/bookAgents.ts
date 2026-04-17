@@ -44,6 +44,7 @@ import {
 import { applyCorrections, IMAGE_SAFETY_SUFFIX } from './lib/bookAgentUtils';
 import { normalizeStoryDraftV2, normalizeIllustrationPlan } from './lib/bookAgentUtilsV2';
 import { resolveAgeBracket } from './lib/ageBracket';
+import { buildChildPortrait } from './lib/childPortrait';
 import { getNarrative } from './bookPipelineEvents';
 
 /**
@@ -739,19 +740,30 @@ export const designCharacter = internalAction({
       const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
       if (!order?.characterProfile) throw new Error('Missing character profile');
 
-      const profile = parseArtifact<CharacterProfile>(order.characterProfile, 'characterProfile');
-      // Use same field priority as A7 for consistency
-      const childDesc =
-        profile.descriptionEn || profile.physicalDescription || profile.visualPromptBase || '';
+      // Build a deterministic portrait from the concrete order fields so the
+      // style-vote reference shows the SAME child the parent described in the
+      // form — not whatever A1 may have dreamed up in characterProfile.
+      const childDesc = buildChildPortrait({
+        gender: order.gender,
+        ageBracket: order.ageBracket,
+        ageNumber: order.ageNumber,
+        hairColor: order.hairColor,
+        hairStyle: order.hairStyle,
+        eyeColor: order.eyeColor,
+        skinTone: order.skinTone,
+        outfit: order.outfit,
+        glasses: order.glasses,
+      });
+      const characterLine = `The main character is ${childDesc}. A realistic human child — not a monster, not a creature, not a plant. Full body visible, standing in a neutral relaxed pose, front view, centered composition, soft plain background.`;
 
       // Generate Style A reference image
-      const promptA = `Children's book character design. Character: ${childDesc}, standing in a neutral pose, front view, full body visible, centered composition. Style: ${STYLE_A.style}. ${STYLE_A.modifiers}. Character design reference sheet, well-lit, no text. ${IMAGE_SAFETY_SUFFIX}`;
+      const promptA = `Children's book character design reference. ${characterLine} Style: ${STYLE_A.style}. ${STYLE_A.modifiers}. Well-lit, no text. ${IMAGE_SAFETY_SUFFIX}`;
 
       await checkCallBudget(ctx, orderId);
       const imageA = await generateImage(promptA, { width: 512, height: 512 });
 
       // Generate Style B reference image
-      const promptB = `Children's book character design. Character: ${childDesc}, standing in a neutral pose, front view, full body visible, centered composition. Style: ${STYLE_B.style}. ${STYLE_B.modifiers}. Character design reference sheet, well-lit, no text. ${IMAGE_SAFETY_SUFFIX}`;
+      const promptB = `Children's book character design reference. ${characterLine} Style: ${STYLE_B.style}. ${STYLE_B.modifiers}. Well-lit, no text. ${IMAGE_SAFETY_SUFFIX}`;
 
       await checkCallBudget(ctx, orderId);
       const imageB = await generateImage(promptB, { width: 512, height: 512 });
