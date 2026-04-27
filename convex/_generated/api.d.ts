@@ -11,8 +11,10 @@
 import type * as admin_bookBatch from '../admin/bookBatch.js';
 import type * as admin_bookPrompts from '../admin/bookPrompts.js';
 import type * as admin_config from '../admin/config.js';
+import type * as admin_stripe from '../admin/stripe.js';
 import type * as auth from '../auth.js';
 import type * as backendLogs from '../backendLogs.js';
+import type * as billing from '../billing.js';
 import type * as bookAgents from '../bookAgents.js';
 import type * as bookComposer from '../bookComposer.js';
 import type * as bookPipeline from '../bookPipeline.js';
@@ -56,6 +58,8 @@ import type * as llmLogs from '../llmLogs.js';
 import type * as pipelineConfig from '../pipelineConfig.js';
 import type * as prompts from '../prompts.js';
 import type * as rateLimitMutation from '../rateLimitMutation.js';
+import type * as stripe from '../stripe.js';
+import type * as stripeHttp from '../stripeHttp.js';
 
 import type { ApiFromModules, FilterApi, FunctionReference } from 'convex/server';
 
@@ -63,8 +67,10 @@ declare const fullApi: ApiFromModules<{
   'admin/bookBatch': typeof admin_bookBatch;
   'admin/bookPrompts': typeof admin_bookPrompts;
   'admin/config': typeof admin_config;
+  'admin/stripe': typeof admin_stripe;
   auth: typeof auth;
   backendLogs: typeof backendLogs;
+  billing: typeof billing;
   bookAgents: typeof bookAgents;
   bookComposer: typeof bookComposer;
   bookPipeline: typeof bookPipeline;
@@ -108,6 +114,8 @@ declare const fullApi: ApiFromModules<{
   pipelineConfig: typeof pipelineConfig;
   prompts: typeof prompts;
   rateLimitMutation: typeof rateLimitMutation;
+  stripe: typeof stripe;
+  stripeHttp: typeof stripeHttp;
 }>;
 
 /**

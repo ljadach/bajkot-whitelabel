@@ -1,7 +1,12 @@
 import { httpRouter } from 'convex/server';
+import { receiveWebhook } from './stripeHttp';
 
 const http = httpRouter();
 
-// Book pipeline and other HTTP routes can be added here
+http.route({
+  path: '/stripe/webhook',
+  method: 'POST',
+  handler: receiveWebhook,
+});
 
 export default http;
