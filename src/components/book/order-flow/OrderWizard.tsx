@@ -509,6 +509,13 @@ const CATEGORY_PLACEHOLDER_KEY: Record<string, string> = {
 
 function situationPlaceholder(topic: SelectedTopic, t: TFunction): string {
   if (isOtherTopic(topic)) return t('wizard.situationPlaceholderOther');
+  // Per-problem placeholder takes precedence (spec section 3.3). Falls back to
+  // category placeholder if a problem-specific one isn't translated yet.
+  if (topic.problemId) {
+    const perProblemKey = `wizard.situationPlaceholderByProblem.${topic.problemId}`;
+    const perProblem = t(perProblemKey);
+    if (perProblem && perProblem !== perProblemKey) return perProblem;
+  }
   const key = CATEGORY_PLACEHOLDER_KEY[topic.category];
   return key ? t(key) : t('wizard.situationPlaceholder');
 }
