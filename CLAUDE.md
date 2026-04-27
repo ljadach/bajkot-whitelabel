@@ -10,8 +10,20 @@ Bajkot is a personalized therapeutic storybook platform for children, built with
 
 **Convex deployments:**
 
-- Production: `accomplished-schnauzer-177`
-- Staging: `coordinated-seahorse-267`
+- Production: `wonderful-egret-522`
+- Development: `proficient-anaconda-129` (z `.env.local`, używana przez `npx convex dev`)
+- Brak staging. `.env.staging` z `coordinated-seahorse-267` to dziedzictwo po innym projekcie (course platform), nie używane w bajkocie.
+
+**Vercel:** project `itsgglobal/bajkoterapia.org` — https://vercel.com/itsgglobal/bajkoterapia.org. **Deploy ręczny** (`npm run deploy`), brak GitHub auto-deploy. Po push do `main` NIC się nie deployuje samo.
+
+## Session start checklist
+
+Na początku każdej sesji **przypomnij użytkownikowi** które środowisko jest prod, a które dev — żeby nie pomylił wpisywania danych testowych do produkcji ani odwrotnie:
+
+- **Prod:** Vercel `bajkoterapia.org` ↔ Convex `wonderful-egret-522`
+- **Dev:** lokalny `npm run dev` ↔ Convex `proficient-anaconda-129`
+
+Sprawdź w `.env.local` które `CONVEX_DEPLOYMENT` jest aktywne i wypisz to w pierwszej odpowiedzi sesji.
 
 ## Commands
 
