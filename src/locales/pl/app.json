@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Bajkoterapia — Spersonalizowana bajka terapeutyczna dla Twojego dziecka",
-    "description": "Opowiedz nam o swoim dziecku, a stworzymy spersonalizowaną bajkę terapeutyczną z ilustracjami — gotową jako piękny PDF do czytania razem."
+    "description": "Stwórz spersonalizowaną bajkę terapeutyczną, w której Twoje dziecko jest bohaterem. Oparte na badaniach naukowych, gotowe w kilka minut."
   },
   "branding": {
     "appName": "Bajkoterapia",
@@ -14,79 +14,112 @@
   },
   "hero": {
     "betaBadge": "Wczesna Beta",
-    "headline": "Bajka napisana specjalnie dla Twojego dziecka.",
-    "description": "Opisz sytuację dziecka — lęki, wyzwania, trudne emocje. Stworzymy spersonalizowaną bajkę terapeutyczną z ilustracjami, gotową do czytania razem.",
-    "getStarted": "Stwórz bajkę"
+    "headline": "Bajka, w której Twoje dziecko jest bohaterem — i uczy się radzić sobie z emocjami",
+    "description": "Każda bajka jest inna — bo każde dziecko jest inne. Tworzymy spersonalizowane książeczki terapeutyczne z imieniem, wyglądem i konkretnym wyzwaniem Twojego malucha. Sprawdzona struktura psychoedukacyjna zamknięta w pięknej historii.",
+    "cta": "Stwórz spersonalizowaną bajkę",
+    "signIn": "Zaloguj się",
+    "badges": {
+      "fast": "Gotowa do czytania w kilka minut",
+      "topics": "{{count}} tematów terapeutycznych",
+      "research": "Oparta na badaniach naukowych"
+    },
+    "book": {
+      "title": "Bajka dla Twojego dziecka",
+      "subtitle": "Spersonalizowana. Terapeutyczna. Piękna."
+    }
+  },
+  "howItWorks": {
+    "title": "Jak powstaje bajka dla Twojego dziecka?",
+    "subtitle": "Trzy proste kroki — i Twoje dziecko ma swoją własną książeczkę.",
+    "stepLabel": "Krok {{number}}",
+    "cta": "Stwórz bajkę teraz",
+    "steps": {
+      "pickTopic": {
+        "title": "Wybierz temat",
+        "description": "Powiedz nam, z jakim wyzwaniem mierzy się Twoje dziecko — od lęku przed ciemnością po adaptację w przedszkolu."
+      },
+      "tellAboutChild": {
+        "title": "Opowiedz o dziecku",
+        "description": "Podaj imię, wiek i wygląd malucha. Stworzymy bohatera, w którym Twoje dziecko się rozpozna."
+      },
+      "receiveBook": {
+        "title": "Odbierz książkę",
+        "description": "Otrzymasz spersonalizowaną bajkę z pięknymi ilustracjami — w PDF do pobrania lub jako wydrukowaną książeczkę."
+      }
+    }
+  },
+  "whyItWorks": {
+    "title": "Dlaczego spersonalizowana bajkoterapia działa?",
+    "subtitle": "Nasze bajki łączą sprawdzone techniki psychologii dziecięcej z magią personalizacji.",
+    "disclaimer": "Nota: Bajkoterapia pełni funkcję psychoedukacyjną. Nie zastępuje konsultacji ze specjalistą.",
+    "cards": {
+      "selfReference": {
+        "title": "Efekt Odniesienia do Ja",
+        "description": "Gdy dziecko widzi bohatera o swoim imieniu i wyglądzie, mózg przetwarza tę historię jako własną. Lekcja terapeutyczna staje się częścią tożsamości dziecka."
+      },
+      "safeDistance": {
+        "title": "Bezpieczny dystans",
+        "description": "Dziecko przetwarza trudne emocje przez metaforę — w fikcyjnym, magicznym świecie. To technika stosowana w psychologii dziecięcej od dekad."
+      },
+      "wiseGuide": {
+        "title": "Mądry Przewodnik",
+        "description": "W każdej bajce pojawia się magiczny pomocnik, który pomaga bohaterowi znaleźć rozwiązanie. To realizacja Strefy Najbliższego Rozwoju Wygotskiego."
+      },
+      "therapeuticStructure": {
+        "title": "Struktura terapeutyczna",
+        "description": "Każda bajka ma 5-etapową strukturę: Bezpieczna Baza → Wyzwanie → Przewodnik → Rozwiązanie → Sukces. Model walidowany w badaniach dr Marii Molickiej."
+      }
+    }
+  },
+  "topicsSection": {
+    "eyebrow": "Wybierz temat",
+    "title": "Z jakim wyzwaniem mierzy się Twoje dziecko?",
+    "subtitle": "Wybierz jeden z {{count}} tematów — stworzymy spersonalizowaną bajkę terapeutyczną dopasowaną do Twojego dziecka."
+  },
+  "story": {
+    "title": "Jak powstała Bajkoterapia?",
+    "p1": "Wszystko zaczęło się od zwykłego wieczoru. Nasz syn nie chciał zasnąć — bał się ciemności. Próbowaliśmy wszystkiego: lampek nocnych, otwartych drzwi, kolejnych przytuleń. Nic nie działało.",
+    "p2": "Pewnego wieczoru wymyśliliśmy bajkę, w której Antek — nasz syn — spotyka magicznego świetlika, który pokazuje mu, że ciemność to tak naprawdę miękka kołdra pełna gwiazd. Zasnął po 10 minutach.",
+    "p3": "Zaczęliśmy pisać kolejne bajki — o dzieleniu się zabawkami, o pierwszym dniu w przedszkolu, o złości. Za każdym razem personalizowaliśmy je: imię dziecka, jego ulubiona zabawka, konkretny problem. I za każdym razem to działało.",
+    "p4": "Pomyśleliśmy: jeśli to pomaga naszym dzieciom, może pomoże i innym? Tak powstała Bajkoterapia — połączenie rodzicielskiej intuicji, wiedzy psychologicznej i nowoczesnej technologii, które pozwala każdemu rodzicowi stworzyć taką bajkę dla swojego dziecka.",
+    "signature": "— Andrzej i Łukasz, założyciele Bajkoterapii i przede wszystkim — tatusiowie 💙"
+  },
+  "opinions": {
+    "title": "Co mówią rodzice i eksperci?",
+    "items": {
+      "aska": {
+        "name": "Aśka",
+        "role": "mama testerka",
+        "quote": "„Mój syn bał się ciemności od miesięcy. Po tygodniu czytania bajki, w której sam jest bohaterem, zaczął sam gasić lampkę. Nie wierzyłam, że to możliwe.”"
+      },
+      "expert": {
+        "name": "Dr Anna Kowalska",
+        "role": "Psycholog dziecięcy",
+        "quote": "„Personalizacja narracji to potężne narzędzie psychoedukacyjne. Gdy dziecko widzi siebie w historii, mechanizmy identyfikacji i modelowania zachowań działają wielokrotnie silniej niż w przypadku generycznych bajek.”"
+      },
+      "karolina": {
+        "name": "Karolina",
+        "role": "mama dwójki dzieci",
+        "quote": "„Zamówiłam bajkę o dzieleniu się zabawkami, bo moje córki ciągle się kłóciły. Teraz czytamy ją co wieczór i same mówią ‚pamiętasz, jak Zosia się podzieliła?’. Magiczne.”"
+      },
+      "tomek": {
+        "name": "Tomek",
+        "role": "tata",
+        "quote": "„Syn miał problem z adaptacją w przedszkolu. Bajka z jego imieniem i wyglądem pomogła mu zrozumieć, że przedszkole to bezpieczne miejsce. Nauczycielka zauważyła zmianę po 2 tygodniach.”"
+      }
+    }
+  },
+  "finalCta": {
+    "title": "Stwórz bajkę dla swojego dziecka",
+    "subtitle": "Spersonalizowana historia, która pomoże Twojemu maluchowi zrozumieć i pokonać trudne emocje.",
+    "button": "Stwórz bajkę teraz",
+    "badges": {
+      "topics": "{{count}} sprawdzonych tematów",
+      "fast": "Gotowe w kilka minut",
+      "research": "Oparte na badaniach"
+    }
   },
   "emailNote": {
     "text": "Twoje dane są szyfrowane. Nigdy ich nie udostępniamy."
-  },
-  "learningExperience": {
-    "title": "Jak to działa?",
-    "subtitlePrefix": "Trzy proste kroki",
-    "subtitleBold": "do bajki Twojego dziecka:",
-    "step1": {
-      "title": "Opowiedz o dziecku",
-      "description": "Podaj imię, wiek i opisz sytuację — strach przed ciemnością, problemy z rówieśnikami, trudne emocje. Im więcej szczegółów, tym lepsza bajka."
-    },
-    "step2": {
-      "title": "Wybierz styl ilustracji",
-      "description": "Nasz AI wygeneruje dwa style ilustracji postaci Twojego dziecka. Wybierz ten, który bardziej Ci się podoba."
-    }
-  },
-  "features": {
-    "title": "Dlaczego bajki terapeutyczne?",
-    "subtitle": "Bajka to bezpieczna przestrzeń, w której dziecko może zmierzyć się z trudnymi emocjami przez postać, z którą się identyfikuje.",
-    "promptFrameworks": {
-      "title": "Spersonalizowana historia",
-      "description": "Bohater wygląda jak Twoje dziecko i przeżywa podobne wyzwania. Dziecko widzi siebie w historii i uczy się nowych strategii radzenia sobie."
-    },
-    "featureDiscovery": {
-      "title": "Elementy terapeutyczne",
-      "description": "Każda bajka zawiera techniki z terapii poznawczo-behawioralnej, dostosowane do wieku dziecka. Sprawdzone przez nasz system recenzji psychologicznej."
-    },
-    "toolMatching": {
-      "title": "Piękne ilustracje",
-      "description": "7 unikalnych ilustracji w wybranym stylu artystycznym. Bohater wygląda konsekwentnie w każdej scenie — dziecko go rozpoznaje."
-    },
-    "roleShortcuts": {
-      "title": "Karta dla rodzica",
-      "description": "Na końcu bajki znajdziesz pytania do rozmowy z dzieckiem i aktywność do wspólnego wykonania. Bajka to początek ważnej rozmowy."
-    }
-  },
-  "curriculum": {
-    "title": "Co otrzymujesz?",
-    "subtitle": "16-stronicowa bajka w PDF",
-    "description": "Gotowa do wydruku lub czytania na tablecie. Pięknie sformatowana, z pełnymi ilustracjami.",
-    "evolving": {
-      "title": "Okładka z ilustracją",
-      "description": "Pełnoekranowa ilustracja okładkowa z imieniem dziecka jako tytuł. Książka, którą dziecko będzie chciało czytać wielokrotnie."
-    },
-    "adaptive": {
-      "title": "6 rozdziałów + ilustracje",
-      "description": "Każdy rozdział to oddzielna scena z pełnostronicową ilustracją i tekstem dostosowanym do grupy wiekowej dziecka."
-    },
-    "feedback": {
-      "title": "Karta rodzica",
-      "description": "Pytania do rozmowy po przeczytaniu bajki, inspirowane technikami terapeutycznymi. Pomaga prowadzić rozmowę o emocjach."
-    }
-  },
-  "testimonials": {
-    "title": "Opinie rodziców",
-    "subtitle": "Bajki, które naprawdę pomagają",
-    "quote1": {
-      "text": "Bajkoterapia jest w fazie beta — zbieramy opinie od pierwszych rodziców. Dołącz i pomóż nam stworzyć narzędzie, które naprawdę pomaga dzieciom.",
-      "author": "Zespół Bajkoterapia"
-    },
-    "quote2": {
-      "text": "Przetestuj za darmo i powiedz nam, co myślisz. Każda opinia pomaga nam tworzyć lepsze bajki.",
-      "author": "Dołącz do beta testów"
-    }
-  },
-  "cta": {
-    "title": "Stwórz bajkę dla swojego dziecka.",
-    "subtitle": "Opisz sytuację, wybierz styl ilustracji — resztą zajmiemy się my. Gotowa bajka w kilka minut.",
-    "button": "Stwórz bajkę",
-    "privacy": "Twoje dane są szyfrowane i wykorzystywane wyłącznie do stworzenia bajki."
   }
 }
