@@ -14,10 +14,12 @@
 
 export type AgeBracket = '3-5' | '6-8' | '9+';
 
-const MIN_AGE = 3;
+const MIN_AGE = 2;
 const MAX_AGE = 16;
 
-/** Map concrete age (years) to the bracket used throughout the pipeline. */
+/** Map concrete age (years) to the bracket used throughout the pipeline.
+ *  Spec section 3.4 mandates supporting ages 2-12; age 2 maps to the
+ *  smallest bracket ('3-5'). */
 export function toAgeBracket(age: number): AgeBracket {
   if (!Number.isFinite(age)) throw new Error(`Invalid age: ${age}`);
   if (age < MIN_AGE || age > MAX_AGE) {

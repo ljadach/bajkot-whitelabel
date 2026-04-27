@@ -118,7 +118,10 @@ export const intake = internalAction({
       if (!HAIR_STYLE_MAP[order.hairStyle])
         throw new Error(`Unknown hairStyle: ${order.hairStyle}`);
       if (!EYE_COLOR_MAP[order.eyeColor]) throw new Error(`Unknown eyeColor: ${order.eyeColor}`);
-      if (!SKIN_TONE_MAP[order.skinTone]) throw new Error(`Unknown skinTone: ${order.skinTone}`);
+      // Spec section 3.4 dropped skin tone from intake. Default to 'jasna'
+      // when absent (legacy + new orders) and validate only when set.
+      const skinToneKey = order.skinTone ?? 'jasna';
+      if (!SKIN_TONE_MAP[skinToneKey]) throw new Error(`Unknown skinTone: ${skinToneKey}`);
       if (!OUTFIT_MAP[order.outfit]) throw new Error(`Unknown outfit: ${order.outfit}`);
 
       const problem = PROBLEMS[order.problemId];
@@ -143,8 +146,8 @@ export const intake = internalAction({
         hairStyleEn: HAIR_STYLE_MAP[order.hairStyle],
         eyeColor: order.eyeColor,
         eyeColorEn: EYE_COLOR_MAP[order.eyeColor],
-        skinTone: order.skinTone,
-        skinToneEn: SKIN_TONE_MAP[order.skinTone],
+        skinTone: skinToneKey,
+        skinToneEn: SKIN_TONE_MAP[skinToneKey],
         outfit: order.outfit,
         outfitPl: outfit.pl,
         outfitEn: outfit.en,
@@ -750,7 +753,7 @@ export const designCharacter = internalAction({
         hairColor: order.hairColor,
         hairStyle: order.hairStyle,
         eyeColor: order.eyeColor,
-        skinTone: order.skinTone,
+        skinTone: order.skinTone ?? 'jasna',
         outfit: order.outfit,
         glasses: order.glasses,
       });
@@ -918,7 +921,7 @@ export const illustrate = internalAction({
         hairColor: order.hairColor,
         hairStyle: order.hairStyle,
         eyeColor: order.eyeColor,
-        skinTone: order.skinTone,
+        skinTone: order.skinTone ?? 'jasna',
         outfit: order.outfit,
         glasses: order.glasses,
       });

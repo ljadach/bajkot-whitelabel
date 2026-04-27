@@ -27,6 +27,21 @@ function deriveAgeBracket(args: { ageBracket?: AgeBracket; ageNumber?: number })
   throw new Error('Either ageNumber or ageBracket must be provided');
 }
 
+/** Best-effort extraction of the generated book title from storyDraft JSON. */
+function extractBookTitle(storyDraft: string | null | undefined): string | null {
+  if (!storyDraft) return null;
+  try {
+    const parsed: unknown = JSON.parse(storyDraft);
+    if (parsed && typeof parsed === 'object' && 'title' in parsed) {
+      const title = (parsed as { title?: unknown }).title;
+      if (typeof title === 'string' && title.trim().length > 0) return title.trim();
+    }
+  } catch {
+    // ignore parse failures — title is optional
+  }
+  return null;
+}
+
 function validateOrderInput(args: {
   childName: string;
   problemDetail?: string;
@@ -58,7 +73,7 @@ export const startOrder = action({
     hairColor: v.string(),
     hairStyle: v.string(),
     eyeColor: v.string(),
-    skinTone: v.string(),
+    skinTone: v.optional(v.string()),
     outfit: v.string(),
     email: v.optional(v.string()),
     skipQaReviews: v.optional(v.boolean()),
@@ -147,7 +162,7 @@ export const createOrder = internalMutation({
     hairColor: v.string(),
     hairStyle: v.string(),
     eyeColor: v.string(),
-    skinTone: v.string(),
+    skinTone: v.optional(v.string()),
     outfit: v.string(),
     email: v.optional(v.string()),
     skipQaReviews: v.optional(v.boolean()),
@@ -222,6 +237,9 @@ export const getOrderProgress = query({
     hasStyleVoteImages: v.boolean(),
     chosenStyle: v.union(v.string(), v.null()),
     hasPdf: v.boolean(),
+    childName: v.string(),
+    ageNumber: v.union(v.number(), v.null()),
+    problemId: v.string(),
   }),
   handler: async (ctx, { orderId }) => {
     const order = await assertOrderOwner(ctx, orderId);
@@ -236,6 +254,9 @@ export const getOrderProgress = query({
       hasStyleVoteImages: !!(order.styleVoteImageA && order.styleVoteImageB),
       chosenStyle: order.chosenStyle ?? null,
       hasPdf: !!order.pdfStorageId,
+      childName: order.childName,
+      ageNumber: order.ageNumber ?? null,
+      problemId: order.problemId,
     };
   },
 });
@@ -354,11 +375,19 @@ export const submitLandingParentDedication = mutation({
 
 export const getDownloadUrl = query({
   args: { orderId: v.id('bookOrders') },
-  returns: v.union(v.string(), v.null()),
+  returns: v.object({
+    url: v.union(v.string(), v.null()),
+    childName: v.string(),
+    bookTitle: v.union(v.string(), v.null()),
+  }),
   handler: async (ctx, { orderId }) => {
     const order = await assertOrderOwner(ctx, orderId);
-    if (!order.pdfStorageId) return null;
-    return await ctx.storage.getUrl(order.pdfStorageId);
+    const url = order.pdfStorageId ? await ctx.storage.getUrl(order.pdfStorageId) : null;
+    return {
+      url,
+      childName: order.childName,
+      bookTitle: extractBookTitle(order.storyDraft) ?? null,
+    };
   },
 });
 
@@ -378,7 +407,7 @@ export const startLandingOrder = action({
     hairColor: v.string(),
     hairStyle: v.string(),
     eyeColor: v.string(),
-    skinTone: v.string(),
+    skinTone: v.optional(v.string()),
     outfit: v.string(),
     email: v.optional(v.string()),
     format: v.optional(formatValidator),
@@ -443,6 +472,9 @@ export const getLandingOrderProgress = query({
     hasStyleVoteImages: v.boolean(),
     chosenStyle: v.union(v.string(), v.null()),
     hasPdf: v.boolean(),
+    childName: v.string(),
+    ageNumber: v.union(v.number(), v.null()),
+    problemId: v.string(),
   }),
   handler: async (ctx, { orderId }) => {
     const order = await assertLandingOrder(ctx, orderId);
@@ -457,6 +489,9 @@ export const getLandingOrderProgress = query({
       hasStyleVoteImages: !!(order.styleVoteImageA && order.styleVoteImageB),
       chosenStyle: order.chosenStyle ?? null,
       hasPdf: !!order.pdfStorageId,
+      childName: order.childName,
+      ageNumber: order.ageNumber ?? null,
+      problemId: order.problemId,
     };
   },
 });
@@ -489,11 +524,19 @@ export const getLandingOrderEvents = query({
 
 export const getLandingDownloadUrl = query({
   args: { orderId: v.id('bookOrders') },
-  returns: v.union(v.string(), v.null()),
+  returns: v.object({
+    url: v.union(v.string(), v.null()),
+    childName: v.string(),
+    bookTitle: v.union(v.string(), v.null()),
+  }),
   handler: async (ctx, { orderId }) => {
     const order = await assertLandingOrder(ctx, orderId);
-    if (!order.pdfStorageId) return null;
-    return await ctx.storage.getUrl(order.pdfStorageId);
+    const url = order.pdfStorageId ? await ctx.storage.getUrl(order.pdfStorageId) : null;
+    return {
+      url,
+      childName: order.childName,
+      bookTitle: extractBookTitle(order.storyDraft) ?? null,
+    };
   },
 });
 

@@ -111,7 +111,8 @@ export interface IntakeOrderArgs {
   hairColor: string;
   hairStyle: string;
   eyeColor: string;
-  skinTone: string;
+  /** Spec section 3.4 dropped skin tone from intake. Optional for legacy callers. */
+  skinTone?: string;
   outfit: string;
   email: string;
   format: OrderFormat;
@@ -144,8 +145,7 @@ export function intakeToOrderArgs(
     // treats it as free-text descriptor, so the literal Polish word is fine.
     hairStyle: intake.appearance.hairLength,
     eyeColor: intake.appearance.eyeColor,
-    // Skin tone defaults to 'jasna' — prototype dropped the explicit field.
-    skinTone: 'jasna',
+    // Spec section 3.4 dropped skin tone — pipeline defaults to 'jasna' downstream.
     outfit: trimmedOutfit || 'Wygodne ubranie',
     email: payload.email,
     format: payload.format,

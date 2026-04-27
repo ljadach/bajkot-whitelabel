@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Id } from '../../../convex/_generated/dataModel';
 import { OrderTimeline } from './OrderTimeline';
+import { TOPICS } from '../../data/topics';
 
 type PipelineStep = {
   status: string;
@@ -24,6 +25,22 @@ interface ProgressJourneyProps {
   status: string;
   pipelineSteps: ReadonlyArray<PipelineStep>;
   events: PipelineEvent[] | undefined;
+  /** Used for personalising engagement tip cards (spec section 5.4). */
+  childName?: string;
+  ageNumber?: number | null;
+  problemId?: string;
+}
+
+/**
+ * Best-effort lookup of a human-readable problem title from a problemId
+ * (e.g. "fear_of_separation" -> "Bajkoterapia – Dziecko Nie Chce Iść do Przedszkola | Adaptacja").
+ * Falls back to a generic phrase when no topic matches (custom "Inny problem" submissions).
+ */
+function resolveProblemTitle(problemId: string | undefined, fallback: string): string {
+  if (!problemId) return fallback;
+  const topic = TOPICS.find((t) => t.problemId === problemId);
+  // Catalog short title is friendlier than the SEO `title` field.
+  return topic?.catalog.shortTitle ?? fallback;
 }
 
 const STAGE_THRESHOLDS = [
@@ -42,7 +59,14 @@ const STAGE_THRESHOLDS = [
  * The progress percentage is derived from `status` against the canonical
  * `PIPELINE_STEPS` order — same data the previous UI relied on.
  */
-export function ProgressJourney({ status, pipelineSteps, events }: ProgressJourneyProps) {
+export function ProgressJourney({
+  status,
+  pipelineSteps,
+  events,
+  childName,
+  ageNumber,
+  problemId,
+}: ProgressJourneyProps) {
   const { t } = useTranslation('book');
 
   // Map status -> percentage based on canonical pipeline order.
@@ -63,17 +87,23 @@ export function ProgressJourney({ status, pipelineSteps, events }: ProgressJourn
     return s;
   }, [percent]);
 
-  // Rotate engagement tips every 5s.
-  const tips = useMemo(
-    () => [
-      { emoji: '💡', text: t('progress.tip1') },
-      { emoji: '🧠', text: t('progress.tip2') },
-      { emoji: '🌟', text: t('progress.tip3') },
-      { emoji: '📖', text: t('progress.tip4') },
-      { emoji: '🦉', text: t('progress.tip5') },
-    ],
-    [t],
-  );
+  // Rotate engagement tips every 5s. Tip copy supports {{name}}, {{ageNumber}}
+  // and {{problemTitle}} interpolation per spec section 5.4 (7 card types).
+  const tips = useMemo(() => {
+    const name = childName?.trim() || 'Twoje dziecko';
+    const ageValue = typeof ageNumber === 'number' ? ageNumber : '';
+    const problemTitle = resolveProblemTitle(problemId, 'Twoim wyzwaniem');
+    const params = { name, ageNumber: ageValue, problemTitle };
+    return [
+      { emoji: '💡', text: t('progress.tip1', params) },
+      { emoji: '🧠', text: t('progress.tip2', params) },
+      { emoji: '🌟', text: t('progress.tip3', params) },
+      { emoji: '📖', text: t('progress.tip4', params) },
+      { emoji: '🦉', text: t('progress.tip5', params) },
+      { emoji: '🛡️', text: t('progress.tip6', params) },
+      { emoji: '💬', text: t('progress.tip7', params) },
+    ];
+  }, [t, childName, ageNumber, problemId]);
 
   const [tipIndex, setTipIndex] = useState(0);
   useEffect(() => {

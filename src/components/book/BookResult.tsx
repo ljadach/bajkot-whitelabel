@@ -7,7 +7,7 @@ import { Id } from '../../../convex/_generated/dataModel';
 export function BookResult() {
   const { orderId } = useParams<{ orderId: string }>();
 
-  const downloadUrl = useQuery(
+  const data = useQuery(
     api.bookPipeline.getDownloadUrl,
     orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip',
   );
@@ -22,7 +22,9 @@ export function BookResult() {
 
   return (
     <BookSuccessScreen
-      downloadUrl={downloadUrl ?? null}
+      downloadUrl={data?.url ?? null}
+      childName={data?.childName ?? null}
+      bookTitle={data?.bookTitle ?? null}
       printHref={`/book/${orderId}/print`}
       upsellTo="/book/order"
     />
@@ -31,6 +33,10 @@ export function BookResult() {
 
 interface BookSuccessScreenProps {
   downloadUrl: string | null;
+  /** Child's name. When combined with bookTitle, drives the personalized heading. */
+  childName?: string | null;
+  /** Generated book title (from storyDraft). When combined with childName, drives heading. */
+  bookTitle?: string | null;
   /** Optional internal link to printer-friendly version. Hidden when omitted. */
   printHref?: string;
   /** Where the upsell CTA should point (auth: order page, landing: home). */
@@ -41,8 +47,18 @@ interface BookSuccessScreenProps {
  * Shared success screen rendered by both auth and landing result pages.
  * Auth flow shows a "print version" link, landing does not.
  */
-export function BookSuccessScreen({ downloadUrl, printHref, upsellTo }: BookSuccessScreenProps) {
+export function BookSuccessScreen({
+  downloadUrl,
+  childName,
+  bookTitle,
+  printHref,
+  upsellTo,
+}: BookSuccessScreenProps) {
   const { t } = useTranslation('book');
+  const headingText =
+    childName && bookTitle
+      ? t('result.heading', { name: childName, bookTitle })
+      : t('result.headingFallback');
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-12 sm:px-6">
       <div className="max-w-2xl mx-auto text-center space-y-8">
@@ -52,9 +68,7 @@ export function BookSuccessScreen({ downloadUrl, printHref, upsellTo }: BookSucc
           <span className="text-magic-500 font-bold uppercase tracking-widest text-sm mb-2 block">
             {t('result.kicker')}
           </span>
-          <h1 className="text-3xl md:text-4xl font-black text-calm-900 mb-3">
-            {t('result.headingFallback')}
-          </h1>
+          <h1 className="text-3xl md:text-4xl font-black text-calm-900 mb-3">{headingText}</h1>
           <p className="text-gray-600 text-base md:text-lg max-w-md mx-auto">
             {t('result.description')}
           </p>

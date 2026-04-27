@@ -9,7 +9,7 @@ export function LandingBookResult() {
   const { t } = useTranslation('book');
   const { orderId } = useParams<{ orderId: string }>();
 
-  const downloadUrl = useQuery(
+  const data = useQuery(
     api.bookPipeline.getLandingDownloadUrl,
     orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip',
   );
@@ -22,5 +22,12 @@ export function LandingBookResult() {
     );
   }
 
-  return <BookSuccessScreen downloadUrl={downloadUrl ?? null} upsellTo="/" />;
+  return (
+    <BookSuccessScreen
+      downloadUrl={data?.url ?? null}
+      childName={data?.childName ?? null}
+      bookTitle={data?.bookTitle ?? null}
+      upsellTo="/"
+    />
+  );
 }

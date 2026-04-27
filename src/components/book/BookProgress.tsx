@@ -73,6 +73,9 @@ export function BookProgress() {
       status={progress.status}
       pipelineSteps={PIPELINE_STEPS}
       events={events ?? undefined}
+      childName={progress.childName}
+      ageNumber={progress.ageNumber}
+      problemId={progress.problemId}
     />
   );
 }

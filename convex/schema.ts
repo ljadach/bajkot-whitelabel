@@ -124,7 +124,8 @@ const applicationTables = {
     hairColor: v.string(),
     hairStyle: v.string(),
     eyeColor: v.string(),
-    skinTone: v.string(),
+    // Spec section 3.4 dropped skin tone from intake. Kept optional for legacy orders.
+    skinTone: v.optional(v.string()),
     outfit: v.string(),
     email: v.optional(v.string()),
 

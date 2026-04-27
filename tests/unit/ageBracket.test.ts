@@ -9,7 +9,8 @@ import {
 } from '../../convex/lib/ageBracket';
 
 describe('toAgeBracket', () => {
-  it('maps 3, 4, 5 to "3-5"', () => {
+  it('maps 2, 3, 4, 5 to "3-5"', () => {
+    expect(toAgeBracket(2)).toBe('3-5');
     expect(toAgeBracket(3)).toBe('3-5');
     expect(toAgeBracket(4)).toBe('3-5');
     expect(toAgeBracket(5)).toBe('3-5');
@@ -28,7 +29,7 @@ describe('toAgeBracket', () => {
   });
 
   it('throws for out-of-range ages', () => {
-    expect(() => toAgeBracket(2)).toThrow();
+    expect(() => toAgeBracket(1)).toThrow();
     expect(() => toAgeBracket(17)).toThrow();
     expect(() => toAgeBracket(NaN)).toThrow();
   });

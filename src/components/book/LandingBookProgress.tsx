@@ -71,6 +71,9 @@ export function LandingBookProgress() {
       status={progress.status}
       pipelineSteps={PIPELINE_STEPS}
       events={events ?? undefined}
+      childName={progress.childName}
+      ageNumber={progress.ageNumber}
+      problemId={progress.problemId}
     />
   );
 }

@@ -20,9 +20,9 @@ interface Props {
   showProgressNav?: boolean;
 }
 
-// Pipeline supports ages 3-16 (see convex/lib/ageBracket.ts). Wizard caps
-// at 12 to match the prototype copy / target audience.
-const AGE_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+// Spec section 3.4 mandates age list 2-12. Pipeline maps age 2 to the
+// smallest bracket ('3-5') in convex/lib/ageBracket.ts.
+const AGE_OPTIONS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
 const EYE_OPTIONS = ['Niebieskie', 'Zielone', 'Brązowe', 'Szare'];
 const HAIR_COLOR_OPTIONS = ['Blond', 'Brązowe', 'Czarne', 'Rude'];
