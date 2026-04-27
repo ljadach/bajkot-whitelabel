@@ -94,21 +94,22 @@ There are two user flows: authenticated (via Clerk) and landing (token-gated, no
 
 **Authenticated flow** (existing, for logged-in users):
 
-1. **Home** (`/`) → Marketing page with topic grid
-2. **Book Order** (`/book/order`) → Parent fills in child profile + problem description (requires Clerk auth)
-3. **Pipeline** → Chain of LLM agents generates story, illustrations, review
-4. **Progress** (`/book/:id/progress`) → Real-time pipeline progress
-5. **Style Vote** (`/book/:id/vote`) → Parent picks illustration style
-6. **Result** (`/book/:id/result`) → Final PDF download
+1. **Home** (`/`) → Marketing page with topic grid (refreshed in 2026-04-27 — hero, 3-step explainer, 4 therapeutic-principle cards, origin story, testimonials, FAQ, CTA). Hero CTA scrolls to `#tematy`. Login moved from hero to text link below badges.
+2. **Topic page** (`/problem/:slug`) → SEO landing page; from there the user is guided to either the auth book order or the inline landing wizard.
+3. **Book Order** (`/book/order`) → 5-step form: Dziecko, Temat, Wygląd, Przewodnik, Finalizacja. Refreshed UI — calm/magic palette, rounded-3xl cards, embedded "Co zawiera książka?" panel. Requires Clerk auth.
+4. **Pipeline** → Chain of LLM agents generates story, illustrations, review.
+5. **Progress** (`/book/:id/progress`) → Real-time pipeline progress via shared `ProgressJourney.tsx` (animated stage icon, gradient progress bar, rotating tip cards, pipeline step list, event timeline).
+6. **Style Vote** (`/book/:id/vote`) → Parent picks illustration style. After successful vote, `phase` flips to `'dedication'` and `DedicationForm.tsx` renders before redirecting back to progress. Dedication is required, NOT optional in UX (parent can skip via the Skip button).
+7. **Result** (`/book/:id/result`) → Mock book cover, download CTA, optional print version link, upsell card.
 
 **Landing flow** (public, token-gated):
 
-1. **Home** (`/?token=<ACCESS_TOKEN>`) → Token saved to localStorage
-2. **Topic page** (`/problem/:slug`) → SEO landing page per child problem (15 topics, SSG prerendered)
-3. **Wizard** → Inline 4-step form on topic page, submits order via `startLandingOrder` (Convex action, validates token)
-4. **Progress** (`/landing/book/:id/progress`) → Real-time progress (no auth, checks `clerkUserId === 'landing-user'`)
-5. **Style Vote** (`/landing/book/:id/vote`) → Pick illustration style
-6. **Result** (`/landing/book/:id/result`) → PDF download
+1. **Home** (`/?token=<ACCESS_TOKEN>`) → Token saved to localStorage.
+2. **Topic page** (`/problem/:slug`) → SEO landing page per child problem (15 topics, SSG prerendered).
+3. **Wizard** → Inline 4-step form on topic page (`TopicWizard.tsx`), submits order via `startLandingOrder` (Convex action, validates token).
+4. **Progress** (`/landing/book/:id/progress`) → Real-time progress, shares `ProgressJourney.tsx` with auth flow (no auth, checks `clerkUserId === 'landing-user'`).
+5. **Style Vote** (`/landing/book/:id/vote`) → Pick illustration style. Same dedication transition as auth flow — `phase` → `'dedication'` → `DedicationForm.tsx` → redirect to progress.
+6. **Result** (`/landing/book/:id/result`) → Mock cover + download + upsell card (no print link in landing flow).
 
 **Access token:** The landing flow requires `LANDING_ACCESS_TOKEN` env var set in Convex. Users must visit any page with `?token=<value>` to activate. Token persists in localStorage (`bajkot_access_token`). Without a valid token, the wizard submit is blocked.
 
@@ -117,7 +118,7 @@ There are two user flows: authenticated (via Clerk) and landing (token-gated, no
 - `root.tsx`: React Router v7 entry with SSR support
 - `routes/`: Route definitions (public marketing, landing book flow, auth-gated app routes)
 - `pages/`: Public pages (HomePage, FaqPage, ContactPage)
-- `components/book/`: Book order form, progress, vote, result (auth + landing variants)
+- `components/book/`: Book order form, progress, vote, result (auth + landing variants). Shared internals: `ProgressJourney.tsx` (animated stage UI for both progress pages, plus exported `BookErrorScreen` / `BookPausedScreen`), `BookSuccessScreen` (download + upsell card reused by both result pages), `StyleVoteCards` exported from `BookStyleVote.tsx` and reused by `LandingBookVote.tsx`, `DedicationForm.tsx` shared between auth + landing.
 - `components/topic-landing/`: Topic landing page components (TopicNav, TopicHero, TopicPain, TopicScience, TopicWizard, TopicFooter, TopicLayout)
 - `components/landing/`: Legacy landing page sections (Hero, ValueProps, FAQ, CTA, Testimonial, Pitch)
 - `data/topics.ts`: 15 topic definitions with SEO content, extracted from HTML prototypes
@@ -149,10 +150,20 @@ There are two user flows: authenticated (via Clerk) and landing (token-gated, no
 
 ### Admin (`src/admin/`, `convex/admin/`)
 
-- `AdminLayout.tsx`: Admin panel (Dashboard, Config, Book Batch)
+- `AdminLayout.tsx`: Admin panel (Dashboard, Config, Book Batch, Logs, Stripe)
 - `convex/admin/bookBatch.ts`: Batch book generation
 - `convex/admin/bookPrompts.ts`: Prompt management
 - `convex/admin/config.ts`: Admin key-value configuration
+- `convex/admin/stripe.ts` + `src/admin/pages/AdminStripe.tsx`: Sandbox for Stripe Checkout integration testing — env config check, test bookOrders (`problemId='stripe-test'`, status `'paused'` so the pipeline never runs), live `paymentStatus` flips via Convex query.
+
+### Stripe payments (`convex/stripe.ts`, `convex/billing.ts`, `convex/stripeHttp.ts`)
+
+One-shot Checkout per book order (`mode: 'payment'`):
+
+- `stripe.createCheckoutSession({ bookOrderId, returnPath? })` — public action, validates ownership, attaches `bookOrderId` via metadata + `client_reference_id`, saves `stripeSessionId` on the order.
+- Webhook `POST /stripe/webhook` (in `http.ts`) verifies signature and patches `bookOrders.paymentStatus = 'completed'` (idempotent — short-circuits if already completed).
+- `paymentStatusValidator` exported from `convex/billing.ts` — single source of truth for `'pending' | 'completed' | 'failed'`.
+- Required env vars on Convex (per deployment): `STRIPE_SECRET_KEY`, `STRIPE_BOOK_PRICE_ID` (one-time price), `STRIPE_WEBHOOK_SECRET`, `APP_URL`. See `docs/stripe-setup-checklist.md`.
 
 ### Convex Conventions
 
