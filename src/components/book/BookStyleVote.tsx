@@ -64,15 +64,15 @@ export function BookStyleVote() {
 
   if (!orderId) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-sm text-muted">Order not found</p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-sm text-gray-500">Order not found</p>
       </div>
     );
   }
 
   if (!images) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="w-6 h-6 spinner" />
       </div>
     );
@@ -83,69 +83,133 @@ export function BookStyleVote() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="text-2xl font-semibold text-ink text-center mb-2">{t('vote.heading')}</h1>
-      <p className="text-sm text-muted text-center mb-8">{t('vote.description')}</p>
+    <StyleVoteCards
+      imageUrlA={images.imageUrlA ?? null}
+      imageUrlB={images.imageUrlB ?? null}
+      selected={selected}
+      onSelect={setSelected}
+      onConfirm={() => void handleVote()}
+      isSubmitting={isSubmitting}
+      error={error}
+      labels={{
+        kicker: t('vote.kicker'),
+        heading: t('vote.heading'),
+        description: t('vote.description'),
+        styleA: t('vote.styleA'),
+        styleADesc: t('vote.styleADesc'),
+        styleB: t('vote.styleB'),
+        styleBDesc: t('vote.styleBDesc'),
+        confirm: t('vote.confirm'),
+        confirming: t('vote.confirming'),
+        chooseFirst: t('vote.chooseFirst'),
+      }}
+    />
+  );
+}
 
-      {error && (
-        <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
-      )}
+export interface StyleVoteCardsProps {
+  imageUrlA: string | null;
+  imageUrlB: string | null;
+  selected: 'A' | 'B' | null;
+  onSelect: (choice: 'A' | 'B') => void;
+  onConfirm: () => void;
+  isSubmitting: boolean;
+  error: string | null;
+  labels: {
+    kicker: string;
+    heading: string;
+    description: string;
+    styleA: string;
+    styleADesc: string;
+    styleB: string;
+    styleBDesc: string;
+    confirm: string;
+    confirming: string;
+    chooseFirst: string;
+  };
+}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        {/* Style A */}
-        <button
-          type="button"
-          onClick={() => setSelected('A')}
-          className={`rounded-xl border-3 p-4 text-center transition-all cursor-pointer ${
-            selected === 'A'
-              ? 'border-success bg-emerald-50 scale-[1.02]'
-              : 'border-line hover:border-accent'
-          }`}
-        >
-          {images.imageUrlA ? (
-            <img src={images.imageUrlA} alt={t('vote.styleA')} className="w-full rounded-lg mb-3" />
-          ) : (
-            <div className="w-full aspect-square rounded-lg bg-bg-muted flex items-center justify-center mb-3">
-              <span className="text-muted text-sm">Image A</span>
-            </div>
-          )}
-          <span className="block font-semibold text-ink">{t('vote.styleA')}</span>
-        </button>
+/**
+ * Reusable card grid for the A/B style vote — used by both auth and landing
+ * flows. Keeps the visual layout identical between the two.
+ */
+export function StyleVoteCards({
+  imageUrlA,
+  imageUrlB,
+  selected,
+  onSelect,
+  onConfirm,
+  isSubmitting,
+  error,
+  labels,
+}: StyleVoteCardsProps) {
+  return (
+    <div className="min-h-screen bg-gray-50 px-4 py-12 sm:px-6">
+      <div className="max-w-3xl mx-auto">
+        <div className="text-center mb-10">
+          <span className="text-magic-500 font-bold uppercase tracking-widest text-sm mb-2 block">
+            {labels.kicker}
+          </span>
+          <h1 className="text-3xl md:text-4xl font-black text-calm-900 mb-3">{labels.heading}</h1>
+          <p className="text-gray-600 text-base md:text-lg max-w-xl mx-auto">
+            {labels.description}
+          </p>
+        </div>
 
-        {/* Style B */}
-        <button
-          type="button"
-          onClick={() => setSelected('B')}
-          className={`rounded-xl border-3 p-4 text-center transition-all cursor-pointer ${
-            selected === 'B'
-              ? 'border-success bg-emerald-50 scale-[1.02]'
-              : 'border-line hover:border-accent'
-          }`}
-        >
-          {images.imageUrlB ? (
-            <img src={images.imageUrlB} alt={t('vote.styleB')} className="w-full rounded-lg mb-3" />
-          ) : (
-            <div className="w-full aspect-square rounded-lg bg-bg-muted flex items-center justify-center mb-3">
-              <span className="text-muted text-sm">Image B</span>
-            </div>
-          )}
-          <span className="block font-semibold text-ink">{t('vote.styleB')}</span>
-        </button>
-      </div>
+        {error && (
+          <div className="mb-6 rounded-2xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-700 font-medium">
+            {error}
+          </div>
+        )}
 
-      <div className="text-center">
-        <button
-          type="button"
-          onClick={() => void handleVote()}
-          disabled={!selected || isSubmitting}
-          className="rounded-lg bg-accent px-8 py-3.5 text-base font-semibold text-white hover:bg-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isSubmitting
-            ? t('vote.confirming')
-            : selected
-              ? t('vote.confirm')
-              : t('vote.chooseFirst')}
-        </button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8">
+          {(['A', 'B'] as const).map((choice) => {
+            const url = choice === 'A' ? imageUrlA : imageUrlB;
+            const title = choice === 'A' ? labels.styleA : labels.styleB;
+            const desc = choice === 'A' ? labels.styleADesc : labels.styleBDesc;
+            const isSelected = selected === choice;
+            return (
+              <button
+                key={choice}
+                type="button"
+                onClick={() => onSelect(choice)}
+                className={`relative rounded-3xl overflow-hidden border-2 bg-white text-left transition-all shadow-sm hover:shadow-xl ${
+                  isSelected
+                    ? 'border-magic-500 ring-4 ring-magic-400/20 scale-[1.02]'
+                    : 'border-gray-100 hover:border-calm-500'
+                }`}
+              >
+                {url ? (
+                  <img src={url} alt={title} className="w-full aspect-square object-cover" />
+                ) : (
+                  <div className="w-full aspect-square bg-calm-50 flex items-center justify-center text-gray-400 text-sm font-semibold">
+                    Ładowanie...
+                  </div>
+                )}
+                <div className="p-4">
+                  <div className="font-black text-calm-900 text-base">{title}</div>
+                  <div className="text-xs text-gray-500 font-semibold">{desc}</div>
+                </div>
+                {isSelected && (
+                  <div className="absolute top-3 right-3 bg-magic-500 text-white rounded-full w-9 h-9 flex items-center justify-center shadow-lg">
+                    <i className="fa-solid fa-check" />
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={!selected || isSubmitting}
+            className="bg-magic-500 hover:bg-magic-600 text-white font-bold px-10 py-4 rounded-2xl text-lg shadow-xl shadow-magic-500/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? labels.confirming : selected ? labels.confirm : labels.chooseFirst}
+          </button>
+        </div>
       </div>
     </div>
   );

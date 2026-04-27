@@ -2,9 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
-// hasAccessToken kept in import for future re-enable of token gate
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { captureTokenFromUrl, getAccessToken, hasAccessToken } from '../../hooks/useAccessToken';
+import { captureTokenFromUrl, getAccessToken } from '../../hooks/useAccessToken';
 import { HAIR_COLORS, HAIR_STYLES, EYE_COLORS, SKIN_TONES, OUTFITS } from '../../lib/bookData';
 import type { Topic } from '../../data/topics';
 

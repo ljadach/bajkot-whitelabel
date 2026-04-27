@@ -30,46 +30,58 @@ export function DedicationForm({ onSubmit, onSkip }: DedicationFormProps) {
   };
 
   return (
-    <div className="mx-auto max-w-xl px-4 py-8">
-      <h1 className="text-2xl font-semibold text-ink text-center mb-2">
-        {t('dedication.heading')}
-      </h1>
-      <p className="text-sm text-muted text-center mb-6">{t('dedication.description')}</p>
+    <div className="min-h-screen bg-gray-50 px-4 py-12 sm:px-6">
+      <div className="max-w-xl mx-auto">
+        <div className="text-center mb-8">
+          <div className="w-20 h-20 bg-magic-100 text-magic-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-5">
+            <i className="fa-solid fa-pen-nib" />
+          </div>
+          <h1 className="text-2xl md:text-3xl font-black text-calm-900 mb-3">
+            {t('dedication.heading')}
+          </h1>
+          <p className="text-gray-600 text-base max-w-md mx-auto">{t('dedication.description')}</p>
+        </div>
 
-      {error && (
-        <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
-      )}
+        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
+          {error && (
+            <div className="mb-4 rounded-2xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-700 font-medium">
+              {error}
+            </div>
+          )}
 
-      <textarea
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder={t('dedication.placeholder')}
-        maxLength={MAX_LENGTH}
-        rows={4}
-        disabled={busy}
-        className="w-full rounded-lg border-2 border-line bg-bg px-3 py-2.5 text-base focus:border-accent focus:outline-none resize-none disabled:opacity-60"
-      />
-      <div className="mt-1 flex justify-end text-xs text-muted">
-        {trimmed.length} / {MAX_LENGTH}
-      </div>
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder={t('dedication.placeholder')}
+            maxLength={MAX_LENGTH}
+            rows={5}
+            disabled={busy}
+            className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-magic-500 focus:bg-white outline-none transition font-semibold text-base resize-none disabled:opacity-60"
+          />
+          <div className="mt-1 flex justify-end text-xs text-gray-400 font-bold">
+            {trimmed.length} / {MAX_LENGTH}
+          </div>
 
-      <div className="mt-4 flex gap-3 justify-center">
-        <button
-          type="button"
-          onClick={onSkip}
-          disabled={busy}
-          className="rounded-lg border-2 border-line bg-bg px-6 py-3 text-base font-semibold text-ink hover:border-accent transition-colors disabled:opacity-50"
-        >
-          {t('dedication.skip')}
-        </button>
-        <button
-          type="button"
-          onClick={() => void handleSubmit()}
-          disabled={!canSubmit}
-          className="rounded-lg bg-accent px-6 py-3 text-base font-semibold text-white hover:bg-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {busy ? t('dedication.saving') : t('dedication.submit')}
-        </button>
+          <div className="mt-6 flex gap-4">
+            <button
+              type="button"
+              onClick={onSkip}
+              disabled={busy}
+              className="w-1/3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-4 rounded-2xl transition disabled:opacity-50"
+            >
+              {t('dedication.skip')}
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleSubmit()}
+              disabled={!canSubmit}
+              className="w-2/3 bg-magic-500 hover:bg-magic-600 text-white font-bold py-4 rounded-2xl text-lg shadow-lg shadow-magic-500/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <i className="fa-solid fa-heart mr-2" />
+              {busy ? t('dedication.saving') : t('dedication.submit')}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
