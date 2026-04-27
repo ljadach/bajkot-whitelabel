@@ -11,6 +11,7 @@ export default [
   route('landing/book/:orderId/progress', 'routes/landing-book-progress.tsx'),
   route('landing/book/:orderId/vote', 'routes/landing-book-vote.tsx'),
   route('landing/book/:orderId/result', 'routes/landing-book-result.tsx'),
+  route('landing/book/:orderId/print-thanks', 'routes/landing-book-print-thanks.tsx'),
 
   // Legacy /pl/* → redirect to root (backwards compat for indexed URLs)
   route('pl/*', 'routes/pl-redirect.tsx', { id: 'pl-redirect' }),
@@ -23,6 +24,7 @@ export default [
     route('book/:orderId/vote', 'routes/app/book-vote.tsx'),
     route('book/:orderId/result', 'routes/app/book-result.tsx'),
     route('book/:orderId/print', 'routes/app/book-print.tsx'),
+    route('book/:orderId/print-thanks', 'routes/app/book-print-thanks.tsx'),
     route('admin/*', 'routes/app/admin.tsx'),
   ]),
 

@@ -9,6 +9,39 @@ export interface ScienceCard {
   description: string;
 }
 
+/**
+ * Catalog category — drives the tab filter on the auth-flow catalog screen.
+ * Mirrors the prototype's 7 categories from docs/protos_v2/Bajkoterapia-Nowy-Flow.html.
+ */
+export type CatalogCategory =
+  | 'sen'
+  | 'emocje'
+  | 'higiena'
+  | 'relacje'
+  | 'leki'
+  | 'trudne'
+  | 'roznorodnosc';
+
+export const CATALOG_CATEGORIES: { id: CatalogCategory; label: string; emoji: string }[] = [
+  { id: 'sen', label: 'Sen i Wieczór', emoji: '🌙' },
+  { id: 'emocje', label: 'Emocje i Zachowanie', emoji: '😤' },
+  { id: 'higiena', label: 'Higiena i Nawyki', emoji: '🧼' },
+  { id: 'relacje', label: 'Relacje i Rodzeństwo', emoji: '👫' },
+  { id: 'leki', label: 'Lęki i Odwaga', emoji: '🦁' },
+  { id: 'trudne', label: 'Trudne Sytuacje', emoji: '💔' },
+  { id: 'roznorodnosc', label: 'Różnorodność', emoji: '🌈' },
+];
+
+/**
+ * Short catalog card content (emoji + headline + 1-line description) used by
+ * the auth-flow catalog screen. Independent from the long-form SEO topic.
+ */
+export interface CatalogCard {
+  emoji: string;
+  shortTitle: string;
+  shortDesc: string;
+}
+
 export interface Topic {
   slug: string;
   problemId: string | null;
@@ -28,6 +61,10 @@ export interface Topic {
   scienceSubheading: string;
   scienceCards: [ScienceCard, ScienceCard, ScienceCard];
   loadingMessage: string;
+  /** Catalog tab this topic belongs to. */
+  category: CatalogCategory;
+  /** Short content for the catalog grid card (auth flow). */
+  catalog: CatalogCard;
 }
 
 export const TOPICS: Topic[] = [
@@ -79,6 +116,12 @@ export const TOPICS: Topic[] = [
       },
     ],
     loadingMessage: 'Tworzę magiczną bajkę o przedszkolnej przygodzie...',
+    category: 'leki',
+    catalog: {
+      emoji: '🦁',
+      shortTitle: 'Nie chce iść do przedszkola?',
+      shortDesc: 'Adaptacja przedszkolna. Historia pomoże oswoić nowe miejsce i nowych ludzi.',
+    },
   },
 
   // ---------------------------------------------------------------------------
@@ -128,6 +171,12 @@ export const TOPICS: Topic[] = [
       },
     ],
     loadingMessage: 'Tworzę Twoją wyjątkową spersonalizowaną bajkę...',
+    category: 'roznorodnosc',
+    catalog: {
+      emoji: '🌈',
+      shortTitle: 'Inny problem?',
+      shortDesc: 'Ogólne wsparcie emocjonalne. Bajka dopasowana do indywidualnych potrzeb dziecka.',
+    },
   },
 
   // ---------------------------------------------------------------------------
@@ -178,6 +227,13 @@ export const TOPICS: Topic[] = [
       },
     ],
     loadingMessage: 'Analizujemy wyzwanie wychowawcze.',
+    category: 'emocje',
+    catalog: {
+      emoji: '😤',
+      shortTitle: 'Bije, gryzie, kopie?',
+      shortDesc:
+        'Agresywne zachowania u małych dzieci. Historia pokaże inne sposoby wyrażania emocji.',
+    },
   },
 
   // ---------------------------------------------------------------------------
@@ -228,6 +284,13 @@ export const TOPICS: Topic[] = [
       },
     ],
     loadingMessage: 'Tworzę magiczną bajkę o odkryciu współpracy...',
+    category: 'emocje',
+    catalog: {
+      emoji: '😤',
+      shortTitle: 'Ciągle mówi NIE?',
+      shortDesc:
+        'Bunt i odmowa współpracy. Bajka pomoże dziecku zrozumieć zasady i znaleźć kompromis.',
+    },
   },
 
   // ---------------------------------------------------------------------------
@@ -278,6 +341,13 @@ export const TOPICS: Topic[] = [
       },
     ],
     loadingMessage: 'Tworzę magiczną bajkę o spokojnej nocy...',
+    category: 'sen',
+    catalog: {
+      emoji: '🌙',
+      shortTitle: 'Budzi się w nocy z płaczem?',
+      shortDesc:
+        'Nocne pobudki, koszmary i lęk przed ciemnością. Historia, która da dziecku poczucie bezpieczeństwa nocą.',
+    },
   },
 
   // ---------------------------------------------------------------------------
@@ -328,6 +398,12 @@ export const TOPICS: Topic[] = [
       },
     ],
     loadingMessage: 'Tworzę magiczną bajkę o Misji Czystych Zębów...',
+    category: 'higiena',
+    catalog: {
+      emoji: '🧼',
+      shortTitle: 'Mycie zębów to codzienne pole bitwy?',
+      shortDesc: 'Higiena jamy ustnej jako walka. Historia zamieni mycie zębów w zabawną przygodę.',
+    },
   },
 
   // ---------------------------------------------------------------------------
@@ -379,6 +455,13 @@ export const TOPICS: Topic[] = [
       },
     ],
     loadingMessage: 'Tworzę magiczną bajkę o superzmysłach...',
+    category: 'leki',
+    catalog: {
+      emoji: '🦁',
+      shortTitle: 'Zatyka uszy, boi się burzy lub tłumu?',
+      shortDesc:
+        'Nadwrażliwość sensoryczna. Bajka pomoże dziecku radzić sobie z głośnymi dźwiękami.',
+    },
   },
 
   // ---------------------------------------------------------------------------
@@ -429,6 +512,13 @@ export const TOPICS: Topic[] = [
       },
     ],
     loadingMessage: 'Tworzę magiczną bajkę o oswajaniu złości...',
+    category: 'emocje',
+    catalog: {
+      emoji: '😤',
+      shortTitle: 'Wybuchy złości, których nie da się opanować?',
+      shortDesc:
+        'Napady histerii i frustracji. Bajka nauczy dziecko rozpoznawać i oswajać trudne emocje.',
+    },
   },
 
   // ---------------------------------------------------------------------------
@@ -479,6 +569,12 @@ export const TOPICS: Topic[] = [
       },
     ],
     loadingMessage: 'Tworzę magiczną bajkę o odkryciu przyjaźni...',
+    category: 'relacje',
+    catalog: {
+      emoji: '👫',
+      shortTitle: 'Nie chce się bawić z innymi dziećmi?',
+      shortDesc: 'Wycofanie społeczne. Historia pokaże, jak fajnie jest mieć przyjaciół.',
+    },
   },
 
   // ---------------------------------------------------------------------------
@@ -530,6 +626,13 @@ export const TOPICS: Topic[] = [
       },
     ],
     loadingMessage: 'Tworzę magiczną bajkę o przygodzie nocnika...',
+    category: 'higiena',
+    catalog: {
+      emoji: '🧼',
+      shortTitle: 'Nocnik? Nie, dziękuję!',
+      shortDesc:
+        'Nauka korzystania z nocnika. Bajka przedstawi nocnik jako naturalny krok w dorastaniu.',
+    },
   },
 
   // ---------------------------------------------------------------------------
@@ -580,6 +683,13 @@ export const TOPICS: Topic[] = [
       },
     ],
     loadingMessage: 'Tworzę bajkę pełną miłości i bezpieczeństwa...',
+    category: 'trudne',
+    catalog: {
+      emoji: '💔',
+      shortTitle: 'Rodzice się rozstają?',
+      shortDesc:
+        'Rozwód lub rozstanie rodziców. Bajka da dziecku poczucie bezpieczeństwa i miłości.',
+    },
   },
 
   // ---------------------------------------------------------------------------
@@ -630,6 +740,13 @@ export const TOPICS: Topic[] = [
       },
     ],
     loadingMessage: 'Tworzę magiczną bajkę o sile przyjaźni rodzeństwa...',
+    category: 'relacje',
+    catalog: {
+      emoji: '👫',
+      shortTitle: 'Kto jest ważniejszy — ja czy brat?',
+      shortDesc:
+        'Rywalizacja między rodzeństwem. Bajka pokaże, że miłość rodziców nie dzieli się na pół.',
+    },
   },
 
   // ---------------------------------------------------------------------------
@@ -680,6 +797,13 @@ export const TOPICS: Topic[] = [
       },
     ],
     loadingMessage: 'Tworzę magiczną bajkę o odważnym śnie...',
+    category: 'sen',
+    catalog: {
+      emoji: '🌙',
+      shortTitle: 'Pora na własne łóżeczko?',
+      shortDesc:
+        'Przejście do własnego łóżka. Bajka pokaże dziecku, że własne łóżeczko to bezpieczne miejsce.',
+    },
   },
 
   // ---------------------------------------------------------------------------
@@ -730,6 +854,13 @@ export const TOPICS: Topic[] = [
       },
     ],
     loadingMessage: 'Tworzę magiczną bajkę na dobranoc...',
+    category: 'sen',
+    catalog: {
+      emoji: '🌙',
+      shortTitle: 'Twoje dziecko nie chce iść spać?',
+      shortDesc:
+        'Wieczorne bitwy o sen. Bajka pomoże dziecku zrozumieć, że pora snu może być przygodą.',
+    },
   },
 
   // ---------------------------------------------------------------------------
@@ -780,6 +911,13 @@ export const TOPICS: Topic[] = [
       },
     ],
     loadingMessage: 'Tworzę magiczną bajkę o odkrywaniu smaków...',
+    category: 'higiena',
+    catalog: {
+      emoji: '🧼',
+      shortTitle: 'Je tylko 3 rzeczy?',
+      shortDesc:
+        'Wybiórczość pokarmowa i niejadek. Bajka zachęci dziecko do próbowania nowych smaków.',
+    },
   },
 ];
 
@@ -793,4 +931,12 @@ export const TOPIC_SLUGS = TOPICS.map((t) => t.slug);
  */
 export function getTopicBySlug(slug: string): Topic | undefined {
   return TOPICS.find((t) => t.slug === slug);
+}
+
+/**
+ * Filter topics for the catalog grid by category, or 'all' for everything.
+ */
+export function topicsByCategory(category: CatalogCategory | 'all'): Topic[] {
+  if (category === 'all') return TOPICS;
+  return TOPICS.filter((t) => t.category === category);
 }

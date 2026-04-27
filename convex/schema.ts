@@ -131,6 +131,26 @@ const applicationTables = {
     // Fast mode flags (admin batch)
     skipQaReviews: v.optional(v.boolean()),
 
+    // Order format (defaults to 'pdf' if absent for legacy orders).
+    // 'pdf_print' is a manual-fulfillment trapdoor: pipeline is paused,
+    // staff contacts the customer to arrange the printed book.
+    format: v.optional(v.union(v.literal('pdf'), v.literal('pdf_print'))),
+
+    // Shipping address — only present when format === 'pdf_print'.
+    shippingAddress: v.optional(
+      v.object({
+        fullName: v.string(),
+        phone: v.string(),
+        street: v.string(),
+        zip: v.string(),
+        city: v.string(),
+      }),
+    ),
+
+    // DEV flag: bypass Stripe checkout entirely (admin-only).
+    // TODO(c3z): pre-launch cleanup — remove this field before launch.
+    skipStripe: v.optional(v.boolean()),
+
     // Parallel track completion (A2-A5 story track, A6-vote image track)
     storyTrackDone: v.optional(v.boolean()),
     imageTrackDone: v.optional(v.boolean()),

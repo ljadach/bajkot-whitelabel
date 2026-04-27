@@ -4,7 +4,7 @@ import { TopicNav } from './TopicNav';
 import { TopicHero } from './TopicHero';
 import { TopicPain } from './TopicPain';
 import { TopicScience } from './TopicScience';
-import { TopicWizard } from './TopicWizard';
+import { LandingOrderFlow } from '../book/order-flow/LandingOrderFlow';
 import { TopicFooter } from './TopicFooter';
 
 function WizardPlaceholder() {
@@ -28,7 +28,9 @@ export function TopicLayout({ topic }: { topic: Topic }) {
       <TopicPain topic={topic} />
       <TopicScience topic={topic} />
       <ClientOnly fallback={<WizardPlaceholder />}>
-        <TopicWizard topic={topic} />
+        <div id="kreator">
+          <LandingOrderFlow topic={topic} />
+        </div>
       </ClientOnly>
       <TopicFooter />
     </div>

@@ -8,6 +8,24 @@ import { internal } from './_generated/api';
 import { v } from 'convex/values';
 import { Id } from './_generated/dataModel';
 import { assertOrderOwner, assertLandingOrder, LANDING_USER_ID } from './lib/roles';
+import { toAgeBracket, type AgeBracket } from './lib/ageBracket';
+
+// Schema validators reused across entry-point mutations.
+const ageBracketValidator = v.union(v.literal('3-5'), v.literal('6-8'), v.literal('9+'));
+const formatValidator = v.union(v.literal('pdf'), v.literal('pdf_print'));
+const shippingAddressValidator = v.object({
+  fullName: v.string(),
+  phone: v.string(),
+  street: v.string(),
+  zip: v.string(),
+  city: v.string(),
+});
+
+function deriveAgeBracket(args: { ageBracket?: AgeBracket; ageNumber?: number }): AgeBracket {
+  if (typeof args.ageNumber === 'number') return toAgeBracket(args.ageNumber);
+  if (args.ageBracket) return args.ageBracket;
+  throw new Error('Either ageNumber or ageBracket must be provided');
+}
 
 function validateOrderInput(args: {
   childName: string;
@@ -30,7 +48,8 @@ function validateOrderInput(args: {
 export const startOrder = action({
   args: {
     childName: v.string(),
-    ageBracket: v.union(v.literal('3-5'), v.literal('6-8'), v.literal('9+')),
+    ageBracket: v.optional(ageBracketValidator),
+    ageNumber: v.optional(v.number()),
     gender: v.union(v.literal('boy'), v.literal('girl')),
     problemId: v.string(),
     problemDetail: v.optional(v.string()),
@@ -43,6 +62,11 @@ export const startOrder = action({
     outfit: v.string(),
     email: v.optional(v.string()),
     skipQaReviews: v.optional(v.boolean()),
+    // DEV: remove these flags before launch.
+    // TODO(c3z): pre-launch cleanup
+    skipStripe: v.optional(v.boolean()),
+    format: v.optional(formatValidator),
+    shippingAddress: v.optional(shippingAddressValidator),
   },
   returns: v.object({ orderId: v.id('bookOrders') }),
   handler: async (ctx, args): Promise<{ orderId: Id<'bookOrders'> }> => {
@@ -50,9 +74,18 @@ export const startOrder = action({
     if (!identity) throw new Error('Not authenticated');
     const clerkUserId = identity.subject;
 
-    // Only admins can skip QA reviews
+    // Only admins can flip dev shortcut flags (skipQa, skipStripe).
+    // DEV: remove these flags before launch.
+    // TODO(c3z): pre-launch cleanup
     const adminUser = (identity as any).isAdmin === true;
     const skipQaReviews = adminUser ? args.skipQaReviews : undefined;
+    const skipStripe = adminUser ? args.skipStripe : undefined;
+
+    const ageBracket = deriveAgeBracket({
+      ageBracket: args.ageBracket,
+      ageNumber: args.ageNumber,
+    });
+    const format = args.format ?? 'pdf';
 
     // Rate limiting
     await ctx.runMutation(internal.rateLimitMutation.checkAndRecordLLMRateLimit, {
@@ -66,7 +99,8 @@ export const startOrder = action({
     const orderId: Id<'bookOrders'> = await ctx.runMutation(internal.bookPipeline.createOrder, {
       clerkUserId,
       childName: args.childName,
-      ageBracket: args.ageBracket,
+      ageBracket,
+      ageNumber: args.ageNumber,
       gender: args.gender,
       problemId: args.problemId,
       problemDetail: args.problemDetail,
@@ -79,7 +113,16 @@ export const startOrder = action({
       outfit: args.outfit,
       email: args.email,
       skipQaReviews,
+      skipStripe,
+      format,
+      shippingAddress: format === 'pdf_print' ? args.shippingAddress : undefined,
+      pauseForPrint: format === 'pdf_print',
     });
+
+    // PDF+Print trapdoor: do NOT start the pipeline. Manual contact flow.
+    if (format === 'pdf_print') {
+      return { orderId };
+    }
 
     // Schedule A0 (intake)
     await ctx.scheduler.runAfter(0, internal.bookAgents.intake, { orderId });
@@ -94,7 +137,8 @@ export const createOrder = internalMutation({
   args: {
     clerkUserId: v.string(),
     childName: v.string(),
-    ageBracket: v.union(v.literal('3-5'), v.literal('6-8'), v.literal('9+')),
+    ageBracket: ageBracketValidator,
+    ageNumber: v.optional(v.number()),
     gender: v.union(v.literal('boy'), v.literal('girl')),
     problemId: v.string(),
     problemDetail: v.optional(v.string()),
@@ -107,13 +151,21 @@ export const createOrder = internalMutation({
     outfit: v.string(),
     email: v.optional(v.string()),
     skipQaReviews: v.optional(v.boolean()),
+    // DEV: remove these flags before launch.
+    // TODO(c3z): pre-launch cleanup
+    skipStripe: v.optional(v.boolean()),
+    format: v.optional(formatValidator),
+    shippingAddress: v.optional(shippingAddressValidator),
+    /** When true (PDF+Print), order starts in 'paused' instead of 'intake'. */
+    pauseForPrint: v.optional(v.boolean()),
   },
   returns: v.id('bookOrders'),
   handler: async (ctx, args) => {
-    return await ctx.db.insert('bookOrders', {
+    const orderId = await ctx.db.insert('bookOrders', {
       clerkUserId: args.clerkUserId,
       childName: args.childName,
       ageBracket: args.ageBracket,
+      ageNumber: args.ageNumber,
       gender: args.gender,
       problemId: args.problemId,
       problemDetail: args.problemDetail,
@@ -126,9 +178,33 @@ export const createOrder = internalMutation({
       outfit: args.outfit,
       email: args.email,
       skipQaReviews: args.skipQaReviews,
-      status: 'intake',
+      skipStripe: args.skipStripe,
+      format: args.format,
+      shippingAddress: args.shippingAddress,
+      status: args.pauseForPrint ? 'paused' : 'intake',
       createdAt: Date.now(),
     });
+
+    // Trapdoor: PDF+Print orders never enter the pipeline. We log a narrative
+    // event so admins can find them in the audit timeline.
+    if (args.pauseForPrint) {
+      await ctx.db.insert('bookPipelineEvents', {
+        orderId,
+        agent: 'system',
+        event: 'info',
+        narrative: 'Klient wybrał wersję drukowaną — wymagany kontakt manualny',
+        details: JSON.stringify({
+          format: args.format,
+          shippingAddress: args.shippingAddress,
+          email: args.email,
+          childName: args.childName,
+          problemId: args.problemId,
+        }),
+        timestamp: Date.now(),
+      });
+    }
+
+    return orderId;
   },
 });
 
@@ -292,7 +368,8 @@ export const startLandingOrder = action({
   args: {
     accessToken: v.string(),
     childName: v.string(),
-    ageBracket: v.union(v.literal('3-5'), v.literal('6-8'), v.literal('9+')),
+    ageBracket: v.optional(ageBracketValidator),
+    ageNumber: v.optional(v.number()),
     gender: v.union(v.literal('boy'), v.literal('girl')),
     problemId: v.string(),
     problemDetail: v.optional(v.string()),
@@ -304,6 +381,8 @@ export const startLandingOrder = action({
     skinTone: v.string(),
     outfit: v.string(),
     email: v.optional(v.string()),
+    format: v.optional(formatValidator),
+    shippingAddress: v.optional(shippingAddressValidator),
   },
   returns: v.object({ orderId: v.id('bookOrders') }),
   handler: async (ctx, args): Promise<{ orderId: Id<'bookOrders'> }> => {
@@ -316,10 +395,17 @@ export const startLandingOrder = action({
 
     validateOrderInput(args);
 
+    const ageBracket = deriveAgeBracket({
+      ageBracket: args.ageBracket,
+      ageNumber: args.ageNumber,
+    });
+    const format = args.format ?? 'pdf';
+
     const orderId: Id<'bookOrders'> = await ctx.runMutation(internal.bookPipeline.createOrder, {
       clerkUserId: LANDING_USER_ID,
       childName: args.childName,
-      ageBracket: args.ageBracket,
+      ageBracket,
+      ageNumber: args.ageNumber,
       gender: args.gender,
       problemId: args.problemId,
       problemDetail: args.problemDetail,
@@ -331,7 +417,14 @@ export const startLandingOrder = action({
       skinTone: args.skinTone,
       outfit: args.outfit,
       email: args.email,
+      format,
+      shippingAddress: format === 'pdf_print' ? args.shippingAddress : undefined,
+      pauseForPrint: format === 'pdf_print',
     });
+
+    if (format === 'pdf_print') {
+      return { orderId };
+    }
 
     await ctx.scheduler.runAfter(0, internal.bookAgents.intake, { orderId });
     return { orderId };
@@ -450,6 +543,45 @@ export const getLandingStyleVoteImages = query({
 });
 
 // ── Get user's orders ──────────────────────────────────────
+
+// ── PDF+Print trapdoor — thank you page queries ───────────
+
+const printThanksReturn = v.union(
+  v.null(),
+  v.object({
+    childName: v.string(),
+    format: v.string(),
+    email: v.union(v.string(), v.null()),
+  }),
+);
+
+export const getPrintThanksOrder = query({
+  args: { orderId: v.id('bookOrders') },
+  returns: printThanksReturn,
+  handler: async (ctx, { orderId }) => {
+    const order = await assertOrderOwner(ctx, orderId);
+    if (order.format !== 'pdf_print') return null;
+    return {
+      childName: order.childName,
+      format: order.format,
+      email: order.email ?? null,
+    };
+  },
+});
+
+export const getLandingPrintThanksOrder = query({
+  args: { orderId: v.id('bookOrders') },
+  returns: printThanksReturn,
+  handler: async (ctx, { orderId }) => {
+    const order = await assertLandingOrder(ctx, orderId);
+    if (order.format !== 'pdf_print') return null;
+    return {
+      childName: order.childName,
+      format: order.format,
+      email: order.email ?? null,
+    };
+  },
+});
 
 export const getMyOrders = query({
   args: {},

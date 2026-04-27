@@ -1,16 +1,16 @@
 import { lazy } from 'react';
 import { RouteSuspense } from '../../components/RouteSuspense';
 
-const BookOrderForm = lazy(() =>
-  import('../../components/book/BookOrderForm').then((m) => ({
-    default: m.BookOrderForm,
+const AuthOrderFlow = lazy(() =>
+  import('../../components/book/order-flow/AuthOrderFlow').then((m) => ({
+    default: m.AuthOrderFlow,
   })),
 );
 
 export default function BookOrder() {
   return (
     <RouteSuspense>
-      <BookOrderForm />
+      <AuthOrderFlow />
     </RouteSuspense>
   );
 }
