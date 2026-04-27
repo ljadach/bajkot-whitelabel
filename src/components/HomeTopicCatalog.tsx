@@ -1,0 +1,102 @@
+import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router';
+import { CATALOG_CATEGORIES, topicsByCategory, type CatalogCategory } from '../data/topics';
+
+type CatalogTab = CatalogCategory | 'all';
+
+interface HomeTopicCatalogProps {
+  topicCount: number;
+}
+
+/**
+ * Homepage 7-tab topic catalog (spec section 2, scenario B).
+ * Visually consistent with `OrderCatalog` but tailored for the marketing
+ * homepage — links go to `/problem/<slug>` SEO pages instead of the
+ * authenticated order flow. The "Inny problem?" entry deep-links to
+ * `/book/order` which surfaces the same concept inside the auth flow.
+ */
+export function HomeTopicCatalog({ topicCount }: HomeTopicCatalogProps) {
+  const { t } = useTranslation('app');
+  const { t: tBook } = useTranslation('book');
+  const [tab, setTab] = useState<CatalogTab>('all');
+
+  const filteredTopics = useMemo(() => topicsByCategory(tab), [tab]);
+
+  return (
+    <section id="tematy" className="py-20 md:py-28 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-10">
+          <span className="text-magic-500 font-bold uppercase tracking-widest text-sm mb-2 block">
+            {t('topicsSection.eyebrow')}
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-calm-900 mb-4">
+            {t('topicsSection.title')}
+          </h2>
+          <p className="text-slate-500 text-lg max-w-2xl mx-auto">
+            {t('topicsSection.subtitle', { count: topicCount })}
+          </p>
+        </div>
+
+        {/* Tab filter buttons — mirrors OrderCatalog visual style. */}
+        <div
+          className="flex gap-3 overflow-x-auto pb-4 mb-8 px-2 justify-start sm:justify-center"
+          style={{ scrollbarWidth: 'none' }}
+        >
+          <button
+            type="button"
+            onClick={() => setTab('all')}
+            className={`px-4 py-2 rounded-full text-sm font-bold border-2 transition whitespace-nowrap ${
+              tab === 'all'
+                ? 'bg-calm-500 text-white border-calm-500'
+                : 'border-gray-200 hover:border-calm-500'
+            }`}
+          >
+            {tBook('catalog.tabAll')}
+          </button>
+          {CATALOG_CATEGORIES.map((cat) => (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => setTab(cat.id)}
+              className={`px-4 py-2 rounded-full text-sm font-bold border-2 transition whitespace-nowrap ${
+                tab === cat.id
+                  ? 'bg-calm-500 text-white border-calm-500'
+                  : 'border-gray-200 hover:border-calm-500'
+              }`}
+            >
+              {cat.emoji} {cat.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Topic cards grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredTopics.map((topic) => (
+            <Link
+              key={topic.slug}
+              to={`/problem/${topic.slug}`}
+              className="text-left bg-white rounded-3xl p-6 border-2 border-gray-100 shadow-sm hover:shadow-xl hover:border-calm-500 transition transform hover:-translate-y-0.5 cursor-pointer no-underline"
+            >
+              <div className="text-2xl mb-3">{topic.catalog.emoji}</div>
+              <h3 className="font-bold text-calm-900 text-base mb-2">{topic.catalog.shortTitle}</h3>
+              <p className="text-gray-500 text-sm leading-relaxed">{topic.catalog.shortDesc}</p>
+            </Link>
+          ))}
+        </div>
+
+        {/* "Inny problem?" dashed card — entry point to the auth order flow. */}
+        <div className="mt-6">
+          <Link
+            to="/book/order"
+            className="block w-full bg-white rounded-3xl p-6 border-2 border-dashed border-calm-500 shadow-sm hover:shadow-xl text-center transition hover:-translate-y-0.5 no-underline"
+          >
+            <div className="text-4xl mb-3">✨</div>
+            <h3 className="font-bold text-calm-900 text-lg mb-2">{tBook('catalog.otherTitle')}</h3>
+            <p className="text-gray-500 text-sm">{tBook('catalog.otherDesc')}</p>
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}

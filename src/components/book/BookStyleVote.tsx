@@ -1,109 +1,28 @@
-import { useState, useRef, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { useQuery, useMutation } from 'convex/react';
-import { useTranslation } from 'react-i18next';
-import { api } from '../../../convex/_generated/api';
-import { Id } from '../../../convex/_generated/dataModel';
-import { DedicationForm } from './DedicationForm';
 
+/**
+ * Backwards-compat: the standalone /book/:id/vote route is no longer the
+ * canonical place for the style vote. The vote now appears inline inside
+ * `BookProgress` when the pipeline produces both style images. If a user
+ * lands on this route directly (e.g. an old bookmark or external link), we
+ * just bounce them to the progress page where the inline vote will surface
+ * if it's still pending.
+ */
 export function BookStyleVote() {
-  const { t } = useTranslation('book');
   const navigate = useNavigate();
   const { orderId } = useParams<{ orderId: string }>();
-  const votedRef = useRef(false);
 
-  const [selected, setSelected] = useState<'A' | 'B' | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [phase, setPhase] = useState<'vote' | 'dedication'>('vote');
-
-  const images = useQuery(
-    api.bookPipeline.getStyleVoteImages,
-    orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip',
-  );
-
-  const goToProgress = () => {
-    votedRef.current = true;
-    void navigate(`/book/${orderId}/progress`, { replace: true });
-  };
-
-  // If style was already chosen server-side (fast mode / reopen), skip the
-  // dedication step — we only prompt for dedication immediately after a vote.
   useEffect(() => {
-    if (images?.chosenStyle && orderId && !votedRef.current && phase === 'vote') {
-      goToProgress();
+    if (orderId) {
+      void navigate(`/book/${orderId}/progress`, { replace: true });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [images?.chosenStyle, orderId, phase]);
-
-  const submitVote = useMutation(api.bookPipeline.submitStyleVote);
-  const submitDedication = useMutation(api.bookPipeline.submitParentDedication);
-
-  const handleVote = async () => {
-    if (!selected || !orderId || isSubmitting) return;
-    setIsSubmitting(true);
-
-    try {
-      await submitVote({
-        orderId: orderId as Id<'bookOrders'>,
-        choice: selected,
-      });
-      setPhase('dedication');
-      setIsSubmitting(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Vote failed');
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDedicationSubmit = async (dedication: string) => {
-    if (!orderId) return;
-    await submitDedication({ orderId: orderId as Id<'bookOrders'>, dedication });
-    goToProgress();
-  };
-
-  if (!orderId) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-sm text-gray-500">Order not found</p>
-      </div>
-    );
-  }
-
-  if (!images) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-6 h-6 spinner" />
-      </div>
-    );
-  }
-
-  if (phase === 'dedication') {
-    return <DedicationForm onSubmit={handleDedicationSubmit} onSkip={goToProgress} />;
-  }
+  }, [orderId, navigate]);
 
   return (
-    <StyleVoteCards
-      imageUrlA={images.imageUrlA ?? null}
-      imageUrlB={images.imageUrlB ?? null}
-      selected={selected}
-      onSelect={setSelected}
-      onConfirm={() => void handleVote()}
-      isSubmitting={isSubmitting}
-      error={error}
-      labels={{
-        kicker: t('vote.kicker'),
-        heading: t('vote.heading'),
-        description: t('vote.description'),
-        styleA: t('vote.styleA'),
-        styleADesc: t('vote.styleADesc'),
-        styleB: t('vote.styleB'),
-        styleBDesc: t('vote.styleBDesc'),
-        confirm: t('vote.confirm'),
-        confirming: t('vote.confirming'),
-        chooseFirst: t('vote.chooseFirst'),
-      }}
-    />
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="w-6 h-6 spinner" />
+    </div>
   );
 }
 
@@ -131,7 +50,7 @@ export interface StyleVoteCardsProps {
 
 /**
  * Reusable card grid for the A/B style vote — used by both auth and landing
- * flows. Keeps the visual layout identical between the two.
+ * progress screens (rendered inline when style images are ready).
  */
 export function StyleVoteCards({
   imageUrlA,

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router';
 import { JsonLd } from '../components/JsonLd';
 import { TopicNav } from '../components/topic-landing/TopicNav';
 import { TopicFooter } from '../components/topic-landing/TopicFooter';
 import { SignInModal } from '../components/SignInModal';
+import { HomeTopicCatalog } from '../components/HomeTopicCatalog';
 import { getPageFaqItems, type FaqItemData } from '../lib/faqHelpers';
 import { TOPICS } from '../data/topics';
 
@@ -231,42 +231,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <section id="tematy" className="py-20 md:py-28 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <span className="text-magic-500 font-bold uppercase tracking-widest text-sm mb-2 block">
-              {t('topicsSection.eyebrow')}
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-calm-900 mb-4">
-              {t('topicsSection.title')}
-            </h2>
-            <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-              {t('topicsSection.subtitle', { count: topicCount })}
-            </p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {TOPICS.map((topic) => (
-              <Link
-                key={topic.slug}
-                to={`/problem/${topic.slug}`}
-                className="group bg-white rounded-2xl border border-calm-100 p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all flex items-start gap-4 no-underline"
-              >
-                <div className="shrink-0 w-12 h-12 rounded-2xl bg-calm-50 flex items-center justify-center text-calm-500 text-lg group-hover:bg-calm-100 transition-colors">
-                  <i className={topic.scienceCards[0].icon} />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="font-bold text-calm-900 text-sm leading-snug mb-1 group-hover:text-calm-500 transition-colors">
-                    {topic.headline.replace(/,?\s*gdy$/, '')}
-                  </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
-                    {topic.metaDescription}
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+      <HomeTopicCatalog topicCount={topicCount} />
 
       <section id="nasza-historia" className="py-20 md:py-28 bg-calm-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

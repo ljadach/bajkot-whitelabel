@@ -1,12 +1,16 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
 import { PIPELINE_STEPS } from '@lib/bookData';
 import { friendlyBookError } from '@lib/bookErrors';
 import { BookErrorScreen, BookPausedScreen, ProgressJourney } from './ProgressJourney';
+import { StyleVoteCards } from './BookStyleVote';
+import { DedicationForm } from './DedicationForm';
+
+type InlinePhase = 'progress' | 'vote' | 'dedication';
 
 export function LandingBookProgress() {
   const { t } = useTranslation('book');
@@ -24,13 +28,35 @@ export function LandingBookProgress() {
     orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip',
   );
 
+  // Inline vote state — vote becomes available when pipeline reports both
+  // style images ready (~30% spec hint, but actual % depends on agent stage).
+  const styleVoteImages = useQuery(
+    api.bookPipeline.getLandingStyleVoteImages,
+    orderId && progress?.hasStyleVoteImages && !progress?.chosenStyle
+      ? { orderId: orderId as Id<'bookOrders'> }
+      : 'skip',
+  );
+
+  const submitVote = useMutation(api.bookPipeline.submitLandingStyleVote);
+  const submitDedication = useMutation(api.bookPipeline.submitLandingParentDedication);
+
+  const [phase, setPhase] = useState<InlinePhase>('progress');
+  const [selected, setSelected] = useState<'A' | 'B' | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [voteError, setVoteError] = useState<string | null>(null);
+
+  // Surface inline vote when images become available and choice not yet made.
+  useEffect(() => {
+    if (!progress) return;
+    if (progress.hasStyleVoteImages && !progress.chosenStyle && phase === 'progress') {
+      setPhase('vote');
+    }
+  }, [progress, phase]);
+
+  // Auto-redirect: result page only (vote is now inline).
   useEffect(() => {
     if (!progress || !orderId || redirectedRef.current) return;
-
-    if (progress.hasStyleVoteImages && !progress.chosenStyle) {
-      redirectedRef.current = true;
-      void navigate(`/landing/book/${orderId}/vote`);
-    } else if (progress.status === 'completed') {
+    if (progress.status === 'completed') {
       redirectedRef.current = true;
       void navigate(`/landing/book/${orderId}/result`);
     }
@@ -64,6 +90,60 @@ export function LandingBookProgress() {
 
   if (progress.status === 'paused') {
     return <BookPausedScreen />;
+  }
+
+  // Inline: dedication form (after vote submitted).
+  if (phase === 'dedication') {
+    const handleDedicationSubmit = async (dedication: string) => {
+      if (!orderId) return;
+      await submitDedication({ orderId: orderId as Id<'bookOrders'>, dedication });
+      setPhase('progress');
+    };
+    return <DedicationForm onSubmit={handleDedicationSubmit} onSkip={() => setPhase('progress')} />;
+  }
+
+  // Inline: style vote (when images ready and not yet chosen).
+  if (phase === 'vote' && styleVoteImages && !styleVoteImages.chosenStyle) {
+    const handleVote = async () => {
+      if (!selected || !orderId || isSubmitting) return;
+      setIsSubmitting(true);
+      setVoteError(null);
+      try {
+        await submitVote({
+          orderId: orderId as Id<'bookOrders'>,
+          choice: selected,
+        });
+        setPhase('dedication');
+        setIsSubmitting(false);
+      } catch (err) {
+        setVoteError(err instanceof Error ? err.message : 'Vote failed');
+        setIsSubmitting(false);
+      }
+    };
+
+    return (
+      <StyleVoteCards
+        imageUrlA={styleVoteImages.imageUrlA ?? null}
+        imageUrlB={styleVoteImages.imageUrlB ?? null}
+        selected={selected}
+        onSelect={setSelected}
+        onConfirm={() => void handleVote()}
+        isSubmitting={isSubmitting}
+        error={voteError}
+        labels={{
+          kicker: t('vote.kicker'),
+          heading: t('vote.heading'),
+          description: t('vote.description'),
+          styleA: t('vote.styleA'),
+          styleADesc: t('vote.styleADesc'),
+          styleB: t('vote.styleB'),
+          styleBDesc: t('vote.styleBDesc'),
+          confirm: t('vote.confirm'),
+          confirming: t('vote.confirming'),
+          chooseFirst: t('vote.chooseFirst'),
+        }}
+      />
+    );
   }
 
   return (
