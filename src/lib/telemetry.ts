@@ -12,7 +12,8 @@ import {
   useFeatureFlagVariantKey,
   useFeatureFlagPayload,
 } from '@posthog/react';
-import { useCallback, useEffect, useMemo } from 'react';
+import posthog from 'posthog-js';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 // Re-export React components from @posthog/react
 export { PostHogFeature, PostHogCaptureOnViewed } from '@posthog/react';
@@ -295,6 +296,133 @@ export function useFeatureFlagWithPayload<T = unknown>(flagKey: string) {
   const payload = useFeatureFlagPayload(flagKey) as T | undefined;
 
   return { enabled, payload };
+}
+
+// ============================================================================
+// FUNNEL EVENTS (intake → engagement spec, sections 7 + 7.1)
+// ============================================================================
+
+/**
+ * Closed list of funnel event names. Mirrors docs/spec-intake-engagement.md
+ * sections 7 + 7.1. Pageviews (`homepage_viewed`, `topic_landing_viewed`)
+ * are captured automatically by `capture_pageview: true` and intentionally
+ * omitted here.
+ */
+export type FunnelEventName =
+  | 'cta_create_book_clicked'
+  | 'order_form_step_viewed'
+  | 'order_form_step_completed'
+  | 'topic_selected'
+  | 'preview_viewed'
+  | 'checkout_viewed'
+  | 'checkout_format_changed'
+  | 'checkout_submit_clicked'
+  | 'payment_success'
+  | 'payment_cancelled'
+  | 'progress_viewed'
+  | 'style_vote_viewed'
+  | 'style_vote_submitted'
+  | 'dedication_submitted'
+  | 'dedication_skipped'
+  | 'result_viewed'
+  | 'pdf_downloaded'
+  | 'print_thanks_viewed';
+
+/**
+ * Default flow tag attached to events when relevant. The caller component
+ * knows whether it's running in the auth or landing branch.
+ */
+export type FunnelFlow = 'auth' | 'landing';
+
+/**
+ * Fire a PostHog event without going through the React hook plumbing.
+ * Safe before opt-in and safe during SSR — both branches no-op silently.
+ *
+ * Use this from event handlers, useEffect mount hooks, or anywhere you
+ * don't already have a PostHog instance from `useAnalytics()`. When you
+ * already have a hook context (rendering body), prefer `useAnalytics`.
+ */
+export function trackEvent(name: FunnelEventName, properties?: Record<string, unknown>): void {
+  if (typeof window === 'undefined') return;
+  // posthog-js exposes `__loaded` only after init(); reading capture before
+  // init() throws. The singleton is initialised in entry.client.tsx.
+  const ph = posthog as unknown as { __loaded?: boolean; capture?: typeof posthog.capture };
+  if (!ph.__loaded || typeof ph.capture !== 'function') {
+    return;
+  }
+  try {
+    ph.capture(name, properties);
+  } catch {
+    // Telemetry must never break product flows.
+  }
+}
+
+/**
+ * Attach a "super property" that will be merged into every subsequent
+ * capture from this device. Used to stamp `bookOrderId` on a funnel run
+ * once an order has been created — see spec section 7.1.
+ */
+export function setFunnelSuperProperties(props: Record<string, unknown>): void {
+  if (typeof window === 'undefined') return;
+  const ph = posthog as unknown as {
+    __loaded?: boolean;
+    register?: (p: Record<string, unknown>) => void;
+  };
+  if (!ph.__loaded || typeof ph.register !== 'function') return;
+  try {
+    ph.register(props);
+  } catch {
+    // ignore
+  }
+}
+
+/**
+ * Hook helper for OrderWizard step transitions.
+ *
+ * Fires `order_form_step_viewed` when `step` changes (and on mount), and
+ * `order_form_step_completed` for the *previous* step with a `durationMs`
+ * delta. The last step also fires `_completed` on unmount.
+ */
+export function useStepTransitionTracker(
+  step: number | string,
+  extra: Record<string, unknown> = {},
+): void {
+  const stepRef = useRef<number | string | null>(null);
+  const startedAtRef = useRef<number>(Date.now());
+
+  useEffect(() => {
+    const previous = stepRef.current;
+    const now = Date.now();
+    if (previous !== null && previous !== step) {
+      trackEvent('order_form_step_completed', {
+        ...extra,
+        step: previous,
+        durationMs: now - startedAtRef.current,
+      });
+    }
+    if (previous !== step) {
+      trackEvent('order_form_step_viewed', { ...extra, step });
+      stepRef.current = step;
+      startedAtRef.current = now;
+    }
+    // Intentionally omit `extra` from deps — callers pass fresh objects
+    // and we want the effect to fire only on `step` changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
+
+  useEffect(() => {
+    // On unmount, complete the current step.
+    return () => {
+      if (stepRef.current !== null) {
+        trackEvent('order_form_step_completed', {
+          ...extra,
+          step: stepRef.current,
+          durationMs: Date.now() - startedAtRef.current,
+        });
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 }
 
 // ============================================================================

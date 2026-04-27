@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
+import { useStepTransitionTracker } from '../../../lib/telemetry';
 import {
   ageLabel,
   isOtherTopic,
@@ -46,6 +47,10 @@ export function OrderWizard({
   const { t } = useTranslation('book');
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [error, setError] = useState('');
+
+  // Fires `order_form_step_viewed` and `order_form_step_completed` with
+  // durationMs so we can analyse drop-off per step (spec section 7.1).
+  useStepTransitionTracker(step, { surface: 'order_wizard' });
 
   const update = useCallback(
     <K extends keyof IntakeState>(key: K, value: IntakeState[K]) => {

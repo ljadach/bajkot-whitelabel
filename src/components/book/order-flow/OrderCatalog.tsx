@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CATALOG_CATEGORIES, type Topic, topicsByCategory } from '../../../data/topics';
+import { trackEvent } from '../../../lib/telemetry';
 import type { CatalogTab, OtherTopic, SelectedTopic } from './types';
 
 interface Props {
@@ -26,6 +27,19 @@ export function OrderCatalog({ onSelect }: Props) {
     shortTitle: t('catalog.otherTitle'),
     shortDesc: t('catalog.otherDesc'),
   };
+
+  const handleSelect = useCallback(
+    (topic: SelectedTopic) => {
+      const isCustom = 'isOther' in topic && topic.isOther === true;
+      trackEvent('topic_selected', {
+        flow: 'auth',
+        problemId: isCustom ? 'other' : (topic as Topic).slug,
+        isCustom,
+      });
+      onSelect(topic);
+    },
+    [onSelect],
+  );
 
   return (
     <section className="pt-28 pb-20 px-6 bg-gray-50 min-h-screen">
@@ -75,7 +89,7 @@ export function OrderCatalog({ onSelect }: Props) {
         {/* Topic cards grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((topic) => (
-            <CatalogCardView key={topic.slug} topic={topic} onClick={() => onSelect(topic)} />
+            <CatalogCardView key={topic.slug} topic={topic} onClick={() => handleSelect(topic)} />
           ))}
         </div>
 
@@ -83,7 +97,7 @@ export function OrderCatalog({ onSelect }: Props) {
         <div className="mt-6">
           <button
             type="button"
-            onClick={() => onSelect(otherCard)}
+            onClick={() => handleSelect(otherCard)}
             className="w-full bg-white rounded-3xl p-6 border-2 border-dashed border-calm-500 shadow-sm hover:shadow-xl text-center transition cursor-pointer hover:-translate-y-0.5"
           >
             <div className="text-4xl mb-3">{otherCard.emoji}</div>

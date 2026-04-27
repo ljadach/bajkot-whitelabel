@@ -1,4 +1,5 @@
 import type { Topic } from '../../data/topics';
+import { trackEvent } from '../../lib/telemetry';
 
 export function TopicHero({ topic }: { topic: Topic }) {
   return (
@@ -18,6 +19,12 @@ export function TopicHero({ topic }: { topic: Topic }) {
           <div className="pt-4 flex flex-col sm:flex-row gap-4 items-center sm:items-start">
             <a
               href="#kreator"
+              onClick={() =>
+                trackEvent('cta_create_book_clicked', {
+                  location: 'topic_hero',
+                  topicSlug: topic.slug,
+                })
+              }
               className="w-full sm:w-auto bg-magic-500 hover:bg-magic-600 text-white px-8 py-4 rounded-full font-extrabold text-lg shadow-xl shadow-magic-500/30 transition transform hover:-translate-y-1 text-center"
             >
               <i className="fa-solid fa-wand-magic-sparkles mr-2" />

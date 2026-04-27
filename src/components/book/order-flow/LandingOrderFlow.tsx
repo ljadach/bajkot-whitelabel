@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../../../convex/_generated/api';
 import { captureTokenFromUrl, getAccessToken } from '../../../hooks/useAccessToken';
 import type { Topic } from '../../../data/topics';
+import { setFunnelSuperProperties, trackEvent } from '../../../lib/telemetry';
 import { OrderWizard } from './OrderWizard';
 import { OrderPreview } from './OrderPreview';
 import { OrderCheckout, type CheckoutSubmitPayload } from './OrderCheckout';
@@ -20,6 +21,7 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
   const { t } = useTranslation('book');
   const navigate = useNavigate();
   const startLandingOrder = useAction(api.bookPipeline.startLandingOrder);
+  const createLandingCheckoutSession = useAction(api.stripe.createLandingCheckoutSession);
 
   const [screen, setScreen] = useState<Screen>('wizard');
   const [intake, setIntake] = useState<IntakeState>(() => ({
@@ -31,6 +33,17 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
 
   // Capture access token on mount (preserves landing-flow token gate).
   useEffect(() => captureTokenFromUrl(), []);
+
+  // Topic is preselected via URL — record a `topic_selected` per spec
+  // section 7 so the funnel has a single source of truth for "topic
+  // committed", regardless of catalog vs. topic-landing entry.
+  useEffect(() => {
+    trackEvent('topic_selected', {
+      flow: 'landing',
+      problemId: topic.slug,
+      isCustom: false,
+    });
+  }, [topic.slug]);
 
   // Re-sync if user navigates between topic pages (defensive).
   useEffect(() => {
@@ -61,24 +74,34 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
         });
 
         const orderId = result.orderId;
+        // Stamp bookOrderId on every subsequent event for this device so
+        // PostHog can stitch the full funnel together (spec section 7.1).
+        setFunnelSuperProperties({ bookOrderId: orderId, flow: 'landing' });
 
-        // PDF+Print → landing trapdoor thank-you
+        // PDF+Print → landing trapdoor thank-you (no Stripe; manual fulfillment)
         if (payload.format === 'pdf_print') {
           void navigate(`/landing/book/${orderId}/print-thanks`);
           return;
         }
 
-        // Landing flow currently doesn't have authenticated Stripe (Stripe
-        // action requires identity). Until landing checkout is wired through
-        // Stripe Connect / a public hosted checkout, we route directly to
-        // progress and let the pipeline run. TODO(c3z): wire landing payment.
-        void navigate(`/landing/book/${orderId}/progress`);
+        // PDF: kick off Stripe Checkout. The landing-specific action
+        // validates the access token instead of requiring Clerk identity,
+        // and uses bookOrderId metadata so the existing webhook still
+        // marks the order paid (identity-agnostic).
+        const session = await createLandingCheckoutSession({
+          bookOrderId: orderId,
+          accessToken: getAccessToken() ?? '',
+          returnPath: `/landing/book/${orderId}/progress`,
+        });
+        if (typeof window !== 'undefined') {
+          window.location.assign(session.url);
+        }
       } catch (err) {
         setSubmitError(err instanceof Error ? err.message : t('flow.errorGeneric'));
         setSubmitting(false);
       }
     },
-    [intake, startLandingOrder, navigate, t],
+    [intake, startLandingOrder, createLandingCheckoutSession, navigate, t],
   );
 
   // Landing has no admin (clerkUserId is "landing-user"). Dev flags hidden.

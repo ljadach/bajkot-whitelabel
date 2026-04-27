@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { trackEvent } from '../../../lib/telemetry';
 import { isOtherTopic, type IntakeState, type OrderFormat } from './types';
 
 interface Props {
@@ -14,6 +16,12 @@ interface Props {
  */
 export function OrderPreview({ intake, onChangeFormat, onContinue, onBack }: Props) {
   const { t } = useTranslation('book');
+
+  useEffect(() => {
+    trackEvent('preview_viewed', { format: intake.format });
+    // Fire-on-mount; format prop reads stale-but-correct on first render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const trimmedName = intake.name.trim();
   const topicTitle = intake.topic
     ? isOtherTopic(intake.topic)

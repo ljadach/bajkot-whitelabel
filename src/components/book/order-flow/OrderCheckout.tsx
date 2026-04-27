@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { trackEvent } from '../../../lib/telemetry';
 import { isOtherTopic, type IntakeState, type OrderFormat } from './types';
 
 export interface ShippingAddress {
@@ -62,6 +63,17 @@ export function OrderCheckout({
   const [skipQa, setSkipQa] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    trackEvent('checkout_viewed', { format: intake.format });
+    // mount-only — format change is captured separately
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleChangeFormat = (fmt: OrderFormat) => {
+    trackEvent('checkout_format_changed', { format: fmt });
+    onChangeFormat(fmt);
+  };
+
   const trimmedName = intake.name.trim();
   const productName = trimmedName
     ? t('checkout.summaryProductFor', { name: trimmedName })
@@ -102,11 +114,16 @@ export function OrderCheckout({
       }
     }
     setError('');
+    const finalSkipStripe = isAdmin ? skipStripe : false;
+    trackEvent('checkout_submit_clicked', {
+      format: intake.format,
+      skipStripe: finalSkipStripe,
+    });
     await onSubmit({
       email: email.trim(),
       format: intake.format,
       shippingAddress: isPrint ? address : undefined,
-      skipStripe: isAdmin ? skipStripe : false,
+      skipStripe: finalSkipStripe,
       skipQa: isAdmin ? skipQa : false,
     });
   };
@@ -169,7 +186,7 @@ export function OrderCheckout({
               <DeliveryRadio
                 value="pdf"
                 selected={intake.format}
-                onSelect={onChangeFormat}
+                onSelect={handleChangeFormat}
                 emoji="📱"
                 label={t('checkout.deliveryPdf')}
                 price={t('previewScreen.formatPdfPrice')}
@@ -177,7 +194,7 @@ export function OrderCheckout({
               <DeliveryRadio
                 value="pdf_print"
                 selected={intake.format}
-                onSelect={onChangeFormat}
+                onSelect={handleChangeFormat}
                 emoji="📚"
                 label={t('checkout.deliveryPrint')}
                 price={t('previewScreen.formatPrintPrice')}

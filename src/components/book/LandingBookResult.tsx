@@ -28,6 +28,8 @@ export function LandingBookResult() {
       childName={data?.childName ?? null}
       bookTitle={data?.bookTitle ?? null}
       upsellTo="/"
+      flow="landing"
+      bookOrderId={orderId}
     />
   );
 }

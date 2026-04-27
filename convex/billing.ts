@@ -30,6 +30,37 @@ export const getBookOrderForCheckout = internalQuery({
   },
 });
 
+/**
+ * Internal helper for landing-flow Stripe checkout: also exposes the
+ * order's email so the public landing action can pre-fill Stripe's
+ * `customer_email`. Landing orders have no Clerk identity, so the
+ * caller validates against LANDING_ACCESS_TOKEN instead.
+ */
+export const getLandingBookOrderForCheckout = internalQuery({
+  args: {
+    bookOrderId: v.id('bookOrders'),
+  },
+  returns: v.union(
+    v.null(),
+    v.object({
+      clerkUserId: v.string(),
+      email: v.union(v.string(), v.null()),
+      paymentStatus: v.union(paymentStatusValidator, v.null()),
+      stripeSessionId: v.union(v.string(), v.null()),
+    }),
+  ),
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.bookOrderId);
+    if (!order) return null;
+    return {
+      clerkUserId: order.clerkUserId,
+      email: order.email ?? null,
+      paymentStatus: order.paymentStatus ?? null,
+      stripeSessionId: order.stripeSessionId ?? null,
+    };
+  },
+});
+
 export const attachStripeSessionId = internalMutation({
   args: {
     bookOrderId: v.id('bookOrders'),

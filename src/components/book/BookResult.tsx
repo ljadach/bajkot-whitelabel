@@ -1,8 +1,10 @@
+import { useEffect } from 'react';
 import { useParams, Link } from 'react-router';
 import { useQuery } from 'convex/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
+import { trackEvent } from '@lib/telemetry';
 
 export function BookResult() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -27,6 +29,8 @@ export function BookResult() {
       bookTitle={data?.bookTitle ?? null}
       printHref={`/book/${orderId}/print`}
       upsellTo="/book/order"
+      flow="auth"
+      bookOrderId={orderId}
     />
   );
 }
@@ -41,6 +45,10 @@ interface BookSuccessScreenProps {
   printHref?: string;
   /** Where the upsell CTA should point (auth: order page, landing: home). */
   upsellTo: string;
+  /** Funnel branch — used for telemetry attribution. */
+  flow?: 'auth' | 'landing';
+  /** Order id stamped onto telemetry events. */
+  bookOrderId?: string;
 }
 
 /**
@@ -53,12 +61,24 @@ export function BookSuccessScreen({
   bookTitle,
   printHref,
   upsellTo,
+  flow,
+  bookOrderId,
 }: BookSuccessScreenProps) {
   const { t } = useTranslation('book');
   const headingText =
     childName && bookTitle
       ? t('result.heading', { name: childName, bookTitle })
       : t('result.headingFallback');
+
+  useEffect(() => {
+    trackEvent('result_viewed', { flow, bookOrderId });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleDownloadClick = () => {
+    trackEvent('pdf_downloaded', { flow, bookOrderId });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-12 sm:px-6">
       <div className="max-w-2xl mx-auto text-center space-y-8">
@@ -92,6 +112,7 @@ export function BookSuccessScreen({
                 href={downloadUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={handleDownloadClick}
                 className="w-full inline-flex items-center justify-center gap-2 bg-magic-500 hover:bg-magic-600 text-white font-extrabold px-8 py-4 rounded-2xl text-lg shadow-xl shadow-magic-500/30 transition transform hover:-translate-y-0.5"
               >
                 <i className="fa-solid fa-download" />

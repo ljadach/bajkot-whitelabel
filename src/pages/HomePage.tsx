@@ -7,6 +7,7 @@ import { SignInModal } from '../components/SignInModal';
 import { HomeTopicCatalog } from '../components/HomeTopicCatalog';
 import { getPageFaqItems, type FaqItemData } from '../lib/faqHelpers';
 import { TOPICS } from '../data/topics';
+import { trackEvent } from '../lib/telemetry';
 
 const STEPS = [
   { key: 'pickTopic', emoji: '🎯' },
@@ -105,6 +106,7 @@ export function HomePage() {
               <p className="text-lg text-slate-600 mb-8 leading-relaxed">{t('hero.description')}</p>
               <a
                 href="#tematy"
+                onClick={() => trackEvent('cta_create_book_clicked', { location: 'homepage_hero' })}
                 className="inline-flex items-center gap-2 bg-magic-500 hover:bg-magic-600 text-white font-bold px-8 py-4 rounded-full text-lg transition-colors shadow-lg hover:shadow-xl"
               >
                 <i className="fa-solid fa-wand-magic-sparkles" />
@@ -192,6 +194,9 @@ export function HomePage() {
           <div className="text-center mt-12">
             <a
               href="#tematy"
+              onClick={() =>
+                trackEvent('cta_create_book_clicked', { location: 'homepage_how_it_works' })
+              }
               className="inline-flex items-center gap-2 bg-magic-500 hover:bg-magic-600 text-white font-bold px-8 py-4 rounded-full text-lg transition-colors shadow-lg hover:shadow-xl"
             >
               <i className="fa-solid fa-wand-magic-sparkles" />
@@ -356,6 +361,7 @@ export function HomePage() {
             <p className="text-lg text-slate-600 mb-8 max-w-xl mx-auto">{t('finalCta.subtitle')}</p>
             <a
               href="#tematy"
+              onClick={() => trackEvent('cta_create_book_clicked', { location: 'homepage_final' })}
               className="inline-flex items-center gap-2 bg-magic-500 hover:bg-magic-600 text-white font-bold px-10 py-4 rounded-full text-lg transition-colors shadow-lg hover:shadow-xl"
             >
               <i className="fa-solid fa-wand-magic-sparkles" />

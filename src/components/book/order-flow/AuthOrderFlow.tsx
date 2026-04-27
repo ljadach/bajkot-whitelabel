@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { useAction, useQuery } from 'convex/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../../convex/_generated/api';
+import { setFunnelSuperProperties } from '../../../lib/telemetry';
 import { OrderCatalog } from './OrderCatalog';
 import { OrderWizard } from './OrderWizard';
 import { OrderPreview } from './OrderPreview';
@@ -66,6 +67,9 @@ export function AuthOrderFlow() {
         });
 
         const orderId = result.orderId;
+        // Stamp bookOrderId on every subsequent event for this device so
+        // PostHog can stitch the full funnel together (spec section 7.1).
+        setFunnelSuperProperties({ bookOrderId: orderId, flow: 'auth' });
 
         // PDF+Print → trapdoor thank-you
         if (payload.format === 'pdf_print') {
