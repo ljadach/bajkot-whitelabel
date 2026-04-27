@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="pl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bajkoterapia — Spersonalizowane bajki terapeutyczne dla dzieci</title>
+    <meta name="description" content="Stwórz spersonalizowaną bajkę terapeutyczną, w której Twoje dziecko jest bohaterem. 35 tematów, oparte na badaniach naukowych.">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Nunito -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Nunito', 'sans-serif'],
+                    },
+                    colors: {
+                        calm: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        magic: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #FAFAFA; color: #334155; }
+        .hero-gradient { background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%); }
+
+        /* FAQ accordion */
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.35s ease, padding 0.35s ease; }
+        .faq-answer.open { max-height: 500px; }
+        .faq-chevron { transition: transform 0.3s ease; }
+        .faq-chevron.open { transform: rotate(180deg); }
+
+        /* Modal */
+        .modal-overlay { opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-content { transform: translateY(20px); transition: transform 0.3s ease; }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+
+        /* Smooth float animation for hero decoration */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+        }
+        .float-anim { animation: float 4s ease-in-out infinite; }
+        .float-anim-delay { animation: float 4s ease-in-out 1s infinite; }
+    </style>
+</head>
+<body class="font-sans antialiased">
+
+<!-- ==================== NAVIGATION ==================== -->
+<nav id="navbar" class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-calm-100 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <!-- Logo -->
+            <a href="#" class="flex items-center gap-2 text-calm-800 font-extrabold text-xl">
+                <i class="fa-solid fa-book-open text-calm-500"></i>
+                <span>Bajkoterapia</span>
+            </a>
+
+            <!-- Desktop links -->
+            <div class="hidden md:flex items-center gap-6 text-sm font-semibold text-calm-800">
+                <a href="#jak-to-dziala" class="hover:text-calm-500 transition-colors">Jak to działa</a>
+                <a href="#dlaczego-dziala" class="hover:text-calm-500 transition-colors">Dlaczego działa</a>
+                <a href="#nasza-historia" class="hover:text-calm-500 transition-colors">Nasza historia</a>
+                <a href="#opinie" class="hover:text-calm-500 transition-colors">Opinie</a>
+                <a href="#faq" class="hover:text-calm-500 transition-colors">FAQ</a>
+            </div>
+
+            <!-- CTA + Mobile menu button -->
+            <div class="flex items-center gap-3">
+                <a href="Bajkoterapia-Nowy-Flow.html" class="hidden sm:inline-flex items-center gap-2 bg-magic-500 hover:bg-magic-600 text-white font-bold px-5 py-2.5 rounded-full text-sm transition-colors shadow-md hover:shadow-lg">
+                    <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                    Stwórz Bajkę
+                </a>
+                <button id="mobile-menu-btn" class="md:hidden p-2 text-calm-800" aria-label="Menu">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-calm-100 pb-4">
+        <div class="px-4 pt-3 space-y-2">
+            <a href="#jak-to-dziala" class="block py-2 text-calm-800 font-semibold hover:text-calm-500 mobile-link">Jak to działa</a>
+            <a href="#dlaczego-dziala" class="block py-2 text-calm-800 font-semibold hover:text-calm-500 mobile-link">Dlaczego działa</a>
+            <a href="#nasza-historia" class="block py-2 text-calm-800 font-semibold hover:text-calm-500 mobile-link">Nasza historia</a>
+            <a href="#opinie" class="block py-2 text-calm-800 font-semibold hover:text-calm-500 mobile-link">Opinie</a>
+            <a href="#faq" class="block py-2 text-calm-800 font-semibold hover:text-calm-500 mobile-link">FAQ</a>
+            <a href="Bajkoterapia-Nowy-Flow.html" class="inline-flex items-center gap-2 bg-magic-500 text-white font-bold px-5 py-2.5 rounded-full text-sm mt-2">
+                <i class="fa-solid fa-wand-magic-sparkles text-xs"></i> Stwórz Bajkę
+            </a>
+        </div>
+    </div>
+</nav>
+
+
+<!-- ==================== HERO ==================== -->
+<section class="hero-gradient pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
+            <!-- Left: Copy -->
+            <div class="max-w-xl">
+                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-calm-900 leading-tight mb-6">
+                    Bajka, w której Twoje dziecko jest bohaterem — i uczy się radzić sobie z emocjami
+                </h1>
+                <p class="text-lg text-slate-600 mb-8 leading-relaxed">
+                    Każda bajka jest inna — bo każde dziecko jest inne. Tworzymy spersonalizowane książeczki terapeutyczne z imieniem, wyglądem i konkretnym wyzwaniem Twojego malucha. Sprawdzona struktura psychoedukacyjna zamknięta w pięknej historii.
+                </p>
+                <a href="Bajkoterapia-Nowy-Flow.html" class="inline-flex items-center gap-2 bg-magic-500 hover:bg-magic-600 text-white font-bold px-8 py-4 rounded-full text-lg transition-colors shadow-lg hover:shadow-xl">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    Stwórz spersonalizowaną bajkę
+                </a>
+                <div class="mt-6 flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-500 font-medium">
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-clock text-calm-500"></i> Gotowa do czytania w kilka minut</span>
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-heart text-calm-500"></i> 35 tematów terapeutycznych</span>
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-flask text-calm-500"></i> Oparta na badaniach naukowych</span>
+                </div>
+            </div>
+
+            <!-- Right: Hero visual placeholder -->
+            <div class="relative flex items-center justify-center">
+                <div class="relative w-full max-w-md mx-auto">
+                    <!-- Main book visual -->
+                    <div class="bg-gradient-to-br from-calm-100 via-calm-50 to-white rounded-3xl shadow-xl p-8 sm:p-12 text-center float-anim">
+                        <div class="text-7xl sm:text-8xl mb-4">📖</div>
+                        <div class="text-calm-800 font-bold text-lg mb-1">Bajka dla Twojego dziecka</div>
+                        <div class="text-sm text-slate-500">Spersonalizowana. Terapeutyczna. Piękna.</div>
+                    </div>
+                    <!-- Floating decorations -->
+                    <div class="absolute -top-4 -right-4 bg-magic-400 text-white w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center text-2xl float-anim-delay">✨</div>
+                    <div class="absolute -bottom-3 -left-3 bg-calm-500 text-white w-12 h-12 rounded-xl shadow-lg flex items-center justify-center text-xl float-anim">🧸</div>
+                    <div class="absolute top-1/2 -right-6 bg-pink-100 text-pink-500 w-10 h-10 rounded-full shadow flex items-center justify-center text-lg float-anim-delay">💛</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ==================== JAK TO DZIAŁA ==================== -->
+<section id="jak-to-dziala" class="py-20 md:py-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-14">
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-calm-900 mb-4">Jak powstaje bajka dla Twojego dziecka?</h2>
+            <p class="text-lg text-slate-500 max-w-2xl mx-auto">Trzy proste kroki — i Twoje dziecko ma swoją własną książeczkę.</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Step 1 -->
+            <div class="bg-white rounded-3xl shadow-xl p-8 text-center hover:shadow-2xl transition-shadow">
+                <div class="w-16 h-16 bg-calm-100 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-5">🎯</div>
+                <div class="text-xs font-bold text-calm-500 uppercase tracking-wider mb-2">Krok 1</div>
+                <h3 class="text-xl font-bold text-calm-900 mb-3">Wybierz temat</h3>
+                <p class="text-slate-600 leading-relaxed">Powiedz nam, z jakim wyzwaniem mierzy się Twoje dziecko — od lęku przed ciemnością po adaptację w przedszkolu.</p>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="bg-white rounded-3xl shadow-xl p-8 text-center hover:shadow-2xl transition-shadow">
+                <div class="w-16 h-16 bg-calm-100 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-5">👶</div>
+                <div class="text-xs font-bold text-calm-500 uppercase tracking-wider mb-2">Krok 2</div>
+                <h3 class="text-xl font-bold text-calm-900 mb-3">Opowiedz o dziecku</h3>
+                <p class="text-slate-600 leading-relaxed">Podaj imię, wiek i wygląd malucha. Stworzymy bohatera, w którym Twoje dziecko się rozpozna.</p>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="bg-white rounded-3xl shadow-xl p-8 text-center hover:shadow-2xl transition-shadow">
+                <div class="w-16 h-16 bg-calm-100 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-5">📖</div>
+                <div class="text-xs font-bold text-calm-500 uppercase tracking-wider mb-2">Krok 3</div>
+                <h3 class="text-xl font-bold text-calm-900 mb-3">Odbierz książkę</h3>
+                <p class="text-slate-600 leading-relaxed">Otrzymasz spersonalizowaną bajkę z pięknymi ilustracjami — w PDF do pobrania lub jako wydrukowaną książeczkę.</p>
+            </div>
+        </div>
+
+        <div class="text-center mt-12">
+            <a href="Bajkoterapia-Nowy-Flow.html" class="inline-flex items-center gap-2 bg-magic-500 hover:bg-magic-600 text-white font-bold px-8 py-4 rounded-full text-lg transition-colors shadow-lg hover:shadow-xl">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                Stwórz bajkę teraz
+            </a>
+        </div>
+    </div>
+</section>
+
+
+<!-- ==================== DLACZEGO DZIAŁA ==================== -->
+<section id="dlaczego-dziala" class="py-20 md:py-28 bg-calm-900 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-14">
+            <h2 class="text-3xl sm:text-4xl font-extrabold mb-4">Dlaczego spersonalizowana bajkoterapia działa?</h2>
+            <p class="text-lg text-calm-200 max-w-2xl mx-auto">Nasze bajki łączą sprawdzone techniki psychologii dziecięcej z magią personalizacji.</p>
+        </div>
+
+        <div class="grid sm:grid-cols-2 gap-8">
+            <!-- Card 1 -->
+            <div class="bg-white/10 backdrop-blur rounded-3xl p-8 border border-white/10">
+                <div class="text-4xl mb-4">🧠</div>
+                <h3 class="text-xl font-bold mb-3 text-magic-400">Efekt Odniesienia do Ja</h3>
+                <p class="text-calm-100 leading-relaxed">Gdy dziecko widzi bohatera o swoim imieniu i wyglądzie, mózg przetwarza tę historię jako własną. Lekcja terapeutyczna staje się częścią tożsamości dziecka.</p>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="bg-white/10 backdrop-blur rounded-3xl p-8 border border-white/10">
+                <div class="text-4xl mb-4">🛡️</div>
+                <h3 class="text-xl font-bold mb-3 text-magic-400">Bezpieczny dystans</h3>
+                <p class="text-calm-100 leading-relaxed">Dziecko przetwarza trudne emocje przez metaforę — w fikcyjnym, magicznym świecie. To technika stosowana w psychologii dziecięcej od dekad.</p>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="bg-white/10 backdrop-blur rounded-3xl p-8 border border-white/10">
+                <div class="text-4xl mb-4">🧙</div>
+                <h3 class="text-xl font-bold mb-3 text-magic-400">Mądry Przewodnik</h3>
+                <p class="text-calm-100 leading-relaxed">W każdej bajce pojawia się magiczny pomocnik, który pomaga bohaterowi znaleźć rozwiązanie. To realizacja Strefy Najbliższego Rozwoju Wygotskiego.</p>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="bg-white/10 backdrop-blur rounded-3xl p-8 border border-white/10">
+                <div class="text-4xl mb-4">📚</div>
+                <h3 class="text-xl font-bold mb-3 text-magic-400">Struktura terapeutyczna</h3>
+                <p class="text-calm-100 leading-relaxed">Każda bajka ma 5-etapową strukturę: Bezpieczna Baza → Wyzwanie → Przewodnik → Rozwiązanie → Sukces. Model walidowany w badaniach dr Marii Molickiej.</p>
+            </div>
+        </div>
+
+        <p class="text-center mt-10 text-sm text-calm-200/70 italic">Nota: Bajkoterapia pełni funkcję psychoedukacyjną. Nie zastępuje konsultacji ze specjalistą.</p>
+    </div>
+</section>
+
+
+<!-- ==================== NASZA HISTORIA ==================== -->
+<section id="nasza-historia" class="py-20 md:py-28 bg-calm-50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-calm-900 mb-4">Jak powstała Bajkoterapia?</h2>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-xl p-8 sm:p-12 space-y-6 text-lg leading-relaxed text-slate-700">
+            <p>
+                Wszystko zaczęło się od zwykłego wieczoru. Nasz syn nie chciał zasnąć — bał się ciemności. Próbowaliśmy wszystkiego: lampek nocnych, otwartych drzwi, kolejnych przytuleń. Nic nie działało.
+            </p>
+            <p>
+                Pewnego wieczoru wymyśliliśmy bajkę, w której Antek — nasz syn — spotyka magicznego świetlika, który pokazuje mu, że ciemność to tak naprawdę miękka kołdra pełna gwiazd. Zasnął po 10 minutach.
+            </p>
+            <p>
+                Zaczęliśmy pisać kolejne bajki — o dzieleniu się zabawkami, o pierwszym dniu w przedszkolu, o złości. Za każdym razem personalizowaliśmy je: imię dziecka, jego ulubiona zabawka, konkretny problem. I za każdym razem to działało.
+            </p>
+            <p>
+                Pomyśleliśmy: jeśli to pomaga naszym dzieciom, może pomoże i innym? Tak powstała Bajkoterapia — połączenie rodzicielskiej intuicji, wiedzy psychologicznej i nowoczesnej technologii, które pozwala każdemu rodzicowi stworzyć taką bajkę dla swojego dziecka.
+            </p>
+
+            <div class="pt-4 border-t border-calm-100">
+                <p class="font-bold text-calm-800 text-base">
+                    — Andrzej i Łukasz, założyciele Bajkoterapii i przede wszystkim — tatusiowie 💙
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ==================== OPINIE ==================== -->
+<section id="opinie" class="py-20 md:py-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-14">
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-calm-900 mb-4">Co mówią rodzice i eksperci?</h2>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+            <!-- Testimonial 1 -->
+            <div class="bg-white rounded-3xl shadow-xl p-8 flex flex-col">
+                <div class="flex items-center gap-4 mb-5">
+                    <div class="w-14 h-14 rounded-full bg-calm-100 flex items-center justify-center text-2xl">📚</div>
+                    <div>
+                        <div class="font-bold text-calm-900">Aśka</div>
+                        <div class="text-sm text-slate-500">mama testerka</div>
+                    </div>
+                </div>
+                <p class="text-slate-600 leading-relaxed italic flex-1">
+                    „Mój syn bał się ciemności od miesięcy. Po tygodniu czytania bajki, w której sam jest bohaterem, zaczął sam gasić lampkę. Nie wierzyłam, że to możliwe."
+                </p>
+                <div class="mt-4 flex gap-1 text-magic-400">
+                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                </div>
+            </div>
+
+            <!-- Testimonial 2 -->
+            <div class="bg-white rounded-3xl shadow-xl p-8 flex flex-col border-2 border-calm-200">
+                <div class="flex items-center gap-4 mb-5">
+                    <div class="w-14 h-14 rounded-full bg-calm-500 text-white flex items-center justify-center text-xl font-bold">AK</div>
+                    <div>
+                        <div class="font-bold text-calm-900">Dr Anna Kowalska</div>
+                        <div class="text-sm text-white bg-calm-500 inline-block px-3 py-0.5 rounded-full font-semibold">Psycholog dziecięcy</div>
+                    </div>
+                </div>
+                <p class="text-slate-600 leading-relaxed italic flex-1">
+                    „Personalizacja narracji to potężne narzędzie psychoedukacyjne. Gdy dziecko widzi siebie w historii, mechanizmy identyfikacji i modelowania zachowań działają wielokrotnie silniej niż w przypadku generycznych bajek."
+                </p>
+            </div>
+
+            <!-- Testimonial 3 -->
+            <div class="bg-white rounded-3xl shadow-xl p-8 flex flex-col">
+                <div class="flex items-center gap-4 mb-5">
+                    <div class="w-14 h-14 rounded-full bg-pink-100 flex items-center justify-center text-2xl">👩‍👧‍👧</div>
+                    <div>
+                        <div class="font-bold text-calm-900">Karolina</div>
+                        <div class="text-sm text-slate-500">mama dwójki dzieci</div>
+                    </div>
+                </div>
+                <p class="text-slate-600 leading-relaxed italic flex-1">
+                    „Zamówiłam bajkę o dzieleniu się zabawkami, bo moje córki ciągle się kłóciły. Teraz czytamy ją co wieczór i same mówią 'pamiętasz, jak Zosia się podzieliła?'. Magiczne."
+                </p>
+                <div class="mt-4 flex gap-1 text-magic-400">
+                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                </div>
+            </div>
+
+            <!-- Testimonial 4 -->
+            <div class="bg-white rounded-3xl shadow-xl p-8 flex flex-col">
+                <div class="flex items-center gap-4 mb-5">
+                    <div class="w-14 h-14 rounded-full bg-calm-100 flex items-center justify-center text-2xl">👨‍👦</div>
+                    <div>
+                        <div class="font-bold text-calm-900">Tomek</div>
+                        <div class="text-sm text-slate-500">tata</div>
+                    </div>
+                </div>
+                <p class="text-slate-600 leading-relaxed italic flex-1">
+                    „Syn miał problem z adaptacją w przedszkolu. Bajka z jego imieniem i wyglądem pomogła mu zrozumieć, że przedszkole to bezpieczne miejsce. Nauczycielka zauważyła zmianę po 2 tygodniach."
+                </p>
+                <div class="mt-4 flex gap-1 text-magic-400">
+                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ==================== FAQ ==================== -->
+<section id="faq" class="py-20 md:py-28 bg-calm-50">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-14">
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-calm-900 mb-4">Najczęściej zadawane pytania</h2>
+        </div>
+
+        <div class="space-y-4">
+            <!-- FAQ 1 -->
+            <div class="bg-white rounded-2xl shadow-md overflow-hidden">
+                <button class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left" aria-expanded="false">
+                    <span class="font-bold text-calm-900 pr-4">Ile trwa przygotowanie bajki?</span>
+                    <i class="fa-solid fa-chevron-down text-calm-500 faq-chevron flex-shrink-0"></i>
+                </button>
+                <div class="faq-answer px-6">
+                    <div class="pb-5 text-slate-600 leading-relaxed">
+                        Bajka jest gotowa do czytania w kilka minut od złożenia zamówienia. Otrzymasz PDF natychmiast po przygotowaniu.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 2 -->
+            <div class="bg-white rounded-2xl shadow-md overflow-hidden">
+                <button class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left" aria-expanded="false">
+                    <span class="font-bold text-calm-900 pr-4">Czy bajki są bezpieczne dla dzieci?</span>
+                    <i class="fa-solid fa-chevron-down text-calm-500 faq-chevron flex-shrink-0"></i>
+                </button>
+                <div class="faq-answer px-6">
+                    <div class="pb-5 text-slate-600 leading-relaxed">
+                        Tak. Każda bajka ma sprawdzoną strukturę terapeutyczną opartą na badaniach naukowych. Treści są psychoedukacyjne — pomagają dziecku zrozumieć i przetworzyć emocje w bezpieczny sposób. Nie zastępują jednak konsultacji z psychologiem.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 3 -->
+            <div class="bg-white rounded-2xl shadow-md overflow-hidden">
+                <button class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left" aria-expanded="false">
+                    <span class="font-bold text-calm-900 pr-4">Dla jakiego wieku są bajki?</span>
+                    <i class="fa-solid fa-chevron-down text-calm-500 faq-chevron flex-shrink-0"></i>
+                </button>
+                <div class="faq-answer px-6">
+                    <div class="pb-5 text-slate-600 leading-relaxed">
+                        Bajki są dostosowane do dzieci w wieku 2-12 lat. Język, długość tekstu i proporcja ilustracji do tekstu automatycznie dopasowują się do podanego wieku dziecka.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 4 -->
+            <div class="bg-white rounded-2xl shadow-md overflow-hidden">
+                <button class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left" aria-expanded="false">
+                    <span class="font-bold text-calm-900 pr-4">Czy mogę wydrukować książkę?</span>
+                    <i class="fa-solid fa-chevron-down text-calm-500 faq-chevron flex-shrink-0"></i>
+                </button>
+                <div class="faq-answer px-6">
+                    <div class="pb-5 text-slate-600 leading-relaxed">
+                        Tak! Możesz pobrać PDF i wydrukować samodzielnie, albo zamówić profesjonalny druk z dostawą kurierską za dodatkowe 20 zł.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 5 -->
+            <div class="bg-white rounded-2xl shadow-md overflow-hidden">
+                <button class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left" aria-expanded="false">
+                    <span class="font-bold text-calm-900 pr-4">Jak wygląda książka?</span>
+                    <i class="fa-solid fa-chevron-down text-calm-500 faq-chevron flex-shrink-0"></i>
+                </button>
+                <div class="faq-answer px-6">
+                    <div class="pb-5 text-slate-600 leading-relaxed">
+                        Każda książka zawiera: spersonalizowaną okładkę z imieniem dziecka, stronę dedykacyjną „Ta książka należy do...", 4-6 rozdziałów z pięknymi ilustracjami oraz pytania do dyskusji z dzieckiem na końcu.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 6 -->
+            <div class="bg-white rounded-2xl shadow-md overflow-hidden">
+                <button class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left" aria-expanded="false">
+                    <span class="font-bold text-calm-900 pr-4">Czy mogę zamówić kilka bajek na różne tematy?</span>
+                    <i class="fa-solid fa-chevron-down text-calm-500 faq-chevron flex-shrink-0"></i>
+                </button>
+                <div class="faq-answer px-6">
+                    <div class="pb-5 text-slate-600 leading-relaxed">
+                        Oczywiście! Każda bajka jest unikalna — możesz stworzyć oddzielną historię na każdy temat, który dotyczy Twojego dziecka.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 7 -->
+            <div class="bg-white rounded-2xl shadow-md overflow-hidden">
+                <button class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left" aria-expanded="false">
+                    <span class="font-bold text-calm-900 pr-4">Jak czytać bajkę terapeutyczną?</span>
+                    <i class="fa-solid fa-chevron-down text-calm-500 faq-chevron flex-shrink-0"></i>
+                </button>
+                <div class="faq-answer px-6">
+                    <div class="pb-5 text-slate-600 leading-relaxed">
+                        Najważniejsze to czytać RAZEM z dzieckiem. Po przeczytaniu zapytaj: „Co czuł bohater?", „Co mu pomogło?" — takie rozmowy podwajają skuteczność bajki.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ==================== CTA SECTION ==================== -->
+<section class="py-20 md:py-28">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div class="bg-gradient-to-br from-calm-100 via-white to-calm-50 rounded-3xl shadow-xl p-10 sm:p-16">
+            <div class="text-5xl mb-6">📖✨</div>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-calm-900 mb-6">Stwórz bajkę dla swojego dziecka</h2>
+            <p class="text-lg text-slate-600 mb-8 max-w-xl mx-auto">Spersonalizowana historia, która pomoże Twojemu maluchowi zrozumieć i pokonać trudne emocje.</p>
+            <a href="Bajkoterapia-Nowy-Flow.html" class="inline-flex items-center gap-2 bg-magic-500 hover:bg-magic-600 text-white font-bold px-10 py-4 rounded-full text-lg transition-colors shadow-lg hover:shadow-xl">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                Stwórz bajkę teraz
+            </a>
+            <div class="mt-6 flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm text-slate-500 font-medium">
+                <span>35 sprawdzonych tematów</span>
+                <span>•</span>
+                <span>Gotowe w kilka minut</span>
+                <span>•</span>
+                <span>Oparte na badaniach</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ==================== FOOTER ==================== -->
+<footer class="bg-calm-900 text-calm-200 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-10">
+            <!-- Col 1 -->
+            <div>
+                <a href="#" class="flex items-center gap-2 text-white font-extrabold text-xl mb-4">
+                    <i class="fa-solid fa-book-open text-magic-400"></i>
+                    <span>Bajkoterapia</span>
+                </a>
+                <p class="text-sm leading-relaxed text-calm-200/80">
+                    Spersonalizowane bajki terapeutyczne dla dzieci. Oparte na badaniach naukowych, tworzone z miłością.
+                </p>
+            </div>
+
+            <!-- Col 2 -->
+            <div>
+                <h4 class="font-bold text-white mb-3">Kontakt</h4>
+                <p class="text-sm leading-relaxed">
+                    Trustee Interactive<br>
+                    Plac Inwalidów 10<br>
+                    01-552 Warszawa
+                </p>
+                <p class="text-sm mt-2">
+                    <a href="mailto:info@bajkoterapia.org" class="hover:text-magic-400 transition-colors">info@bajkoterapia.org</a>
+                </p>
+            </div>
+
+            <!-- Col 3 -->
+            <div>
+                <h4 class="font-bold text-white mb-3">Informacje prawne</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#" class="hover:text-magic-400 transition-colors">Regulamin</a></li>
+                    <li><a href="#" onclick="openPrivacyModal(); return false;" class="hover:text-magic-400 transition-colors">Polityka Prywatności</a></li>
+                    <li><a href="#" onclick="openPrivacyModal(); return false;" class="hover:text-magic-400 transition-colors">RODO</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="border-t border-calm-800 pt-6 text-center text-sm text-calm-200/60">
+            &copy; 2026 Bajkoterapia by Trustee Interactive. Wszelkie prawa zastrzeżone.
+        </div>
+    </div>
+</footer>
+
+
+<!-- ==================== PRIVACY / RODO MODAL ==================== -->
+<div id="privacy-modal" class="modal-overlay fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/50" onclick="closePrivacyModal()"></div>
+    <div class="modal-content relative bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[85vh] overflow-y-auto">
+        <div class="sticky top-0 bg-white rounded-t-3xl px-8 py-5 border-b border-calm-100 flex items-center justify-between">
+            <h2 class="text-xl font-bold text-calm-900">Polityka Prywatności / RODO</h2>
+            <button onclick="closePrivacyModal()" class="w-10 h-10 rounded-full bg-calm-50 hover:bg-calm-100 flex items-center justify-center text-calm-800 transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="px-8 py-6 space-y-6 text-sm text-slate-700 leading-relaxed">
+            <div>
+                <h3 class="font-bold text-calm-900 text-base mb-2">1. Administrator danych</h3>
+                <p>Administratorem danych osobowych jest Trustee Interactive z siedzibą przy Placu Inwalidów 10, 01-552 Warszawa. Kontakt z administratorem: <a href="mailto:info@bajkoterapia.org" class="text-calm-500 underline">info@bajkoterapia.org</a>.</p>
+            </div>
+
+            <div>
+                <h3 class="font-bold text-calm-900 text-base mb-2">2. Jakie dane zbieramy</h3>
+                <p>W ramach korzystania z serwisu Bajkoterapia możemy zbierać następujące dane osobowe:</p>
+                <ul class="list-disc ml-5 mt-2 space-y-1">
+                    <li>Imię dziecka</li>
+                    <li>Wiek dziecka</li>
+                    <li>Opis wyzwania / problemu</li>
+                    <li>Adres e-mail rodzica / opiekuna</li>
+                    <li>Adres dostawy (w przypadku zamówienia druku)</li>
+                </ul>
+            </div>
+
+            <div>
+                <h3 class="font-bold text-calm-900 text-base mb-2">3. Cel przetwarzania danych</h3>
+                <p>Dane osobowe przetwarzane są wyłącznie w celu:</p>
+                <ul class="list-disc ml-5 mt-2 space-y-1">
+                    <li>Realizacji zamówienia — przygotowania spersonalizowanej bajki terapeutycznej</li>
+                    <li>Dostarczenia produktu (PDF lub druk)</li>
+                    <li>Kontaktu w sprawie zamówienia</li>
+                </ul>
+            </div>
+
+            <div>
+                <h3 class="font-bold text-calm-900 text-base mb-2">4. Podstawa prawna</h3>
+                <p>Dane przetwarzamy na podstawie:</p>
+                <ul class="list-disc ml-5 mt-2 space-y-1">
+                    <li><strong>Art. 6 ust. 1 lit. b RODO</strong> — przetwarzanie jest niezbędne do wykonania umowy (realizacja zamówienia)</li>
+                    <li><strong>Art. 6 ust. 1 lit. a RODO</strong> — zgoda użytkownika (w przypadku działań marketingowych)</li>
+                </ul>
+            </div>
+
+            <div>
+                <h3 class="font-bold text-calm-900 text-base mb-2">5. Okres przechowywania danych</h3>
+                <p>Dane osobowe przechowujemy przez okres niezbędny do realizacji zamówienia, a następnie przez okres 5 lat w celu wypełnienia obowiązków podatkowych i rachunkowych. Dane dziecka (imię, wiek, opis) nie są przechowywane dłużej niż to konieczne do wygenerowania produktu.</p>
+            </div>
+
+            <div>
+                <h3 class="font-bold text-calm-900 text-base mb-2">6. Prawa użytkownika</h3>
+                <p>Zgodnie z RODO przysługują Państwu następujące prawa:</p>
+                <ul class="list-disc ml-5 mt-2 space-y-1">
+                    <li>Prawo dostępu do swoich danych</li>
+                    <li>Prawo do sprostowania danych</li>
+                    <li>Prawo do usunięcia danych („prawo do bycia zapomnianym")</li>
+                    <li>Prawo do ograniczenia przetwarzania</li>
+                    <li>Prawo do przenoszenia danych</li>
+                    <li>Prawo do sprzeciwu wobec przetwarzania</li>
+                </ul>
+                <p class="mt-2">W celu realizacji powyższych praw prosimy o kontakt: <a href="mailto:info@bajkoterapia.org" class="text-calm-500 underline">info@bajkoterapia.org</a>.</p>
+            </div>
+
+            <div>
+                <h3 class="font-bold text-calm-900 text-base mb-2">7. Bezpieczeństwo danych</h3>
+                <p>Stosujemy odpowiednie środki techniczne i organizacyjne w celu ochrony danych osobowych przed nieuprawnionym dostępem, utratą lub zniszczeniem.</p>
+            </div>
+
+            <div>
+                <h3 class="font-bold text-calm-900 text-base mb-2">8. Prawo do skargi</h3>
+                <p>Mają Państwo prawo wniesienia skargi do Prezesa Urzędu Ochrony Danych Osobowych (PUODO), ul. Stawki 2, 00-193 Warszawa.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ==================== JAVASCRIPT ==================== -->
+<script>
+// Mobile menu toggle
+const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+const mobileMenu = document.getElementById('mobile-menu');
+mobileMenuBtn.addEventListener('click', () => {
+    mobileMenu.classList.toggle('hidden');
+});
+// Close mobile menu on link click
+document.querySelectorAll('.mobile-link').forEach(link => {
+    link.addEventListener('click', () => mobileMenu.classList.add('hidden'));
+});
+
+// FAQ accordion
+document.querySelectorAll('.faq-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const answer = btn.nextElementSibling;
+        const chevron = btn.querySelector('.faq-chevron');
+        const isOpen = answer.classList.contains('open');
+
+        // Close all
+        document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('open'));
+        document.querySelectorAll('.faq-chevron').forEach(c => c.classList.remove('open'));
+        document.querySelectorAll('.faq-toggle').forEach(t => t.setAttribute('aria-expanded', 'false'));
+
+        // Open clicked if it was closed
+        if (!isOpen) {
+            answer.classList.add('open');
+            chevron.classList.add('open');
+            btn.setAttribute('aria-expanded', 'true');
+        }
+    });
+});
+
+// Privacy modal
+function openPrivacyModal() {
+    document.getElementById('privacy-modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function closePrivacyModal() {
+    document.getElementById('privacy-modal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+// Close on Escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closePrivacyModal();
+});
+
+// Navbar shadow on scroll
+window.addEventListener('scroll', () => {
+    const nav = document.getElementById('navbar');
+    if (window.scrollY > 10) {
+        nav.classList.add('shadow-md');
+    } else {
+        nav.classList.remove('shadow-md');
+    }
+});
+</script>
+
+</body>
+</html>

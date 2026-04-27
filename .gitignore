@@ -47,6 +47,7 @@ lerna-debug.log*
 
 # Local scratch/tooling
 .superset/
+graphify-out/
 
 # Configuration
 settings.local.json
