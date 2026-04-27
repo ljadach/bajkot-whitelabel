@@ -42,8 +42,8 @@ export class BookOrderPage {
     this.emailInput = page.locator('input[type="email"]');
     this.disclaimerCheckbox = page.locator('input[type="checkbox"]');
     this.nextButton = page.getByRole('button', { name: /dalej|next/i });
-    this.backButton = page.getByRole('button', { name: /wstecz|back/i });
-    this.submitButton = page.getByRole('button', { name: /zamawiam|submit|wyślij/i });
+    this.backButton = page.getByRole('button', { name: /wróć|wstecz|back/i });
+    this.submitButton = page.getByRole('button', { name: /generuj bajkę|zamawiam|submit|wyślij/i });
     this.errorMessage = page.locator('.bg-red-50');
   }
 
@@ -77,15 +77,13 @@ export class BookOrderPage {
   }
 
   async getCurrentStepIndex(): Promise<number> {
-    const steps = this.page.locator('.bg-accent.text-white');
-    const count = await steps.count();
-    if (count === 0) return -1;
-    // Find which step indicator has bg-accent (current step)
-    const allSteps = this.page.locator('.flex.gap-2 > div');
-    const totalSteps = await allSteps.count();
-    for (let i = 0; i < totalSteps; i++) {
-      const classes = await allSteps.nth(i).getAttribute('class');
-      if (classes?.includes('bg-accent')) return i;
+    // The progress strip uses span elements per step. The active step has
+    // the magic-600 color class; past steps use calm-700; future steps gray-400.
+    const labels = this.page.locator('div.bg-calm-50 span').filter({ hasText: /^\d+\./ });
+    const total = await labels.count();
+    for (let i = 0; i < total; i++) {
+      const classes = await labels.nth(i).getAttribute('class');
+      if (classes?.includes('text-magic-600')) return i;
     }
     return -1;
   }
