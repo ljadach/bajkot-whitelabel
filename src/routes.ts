@@ -3,6 +3,7 @@ import { type RouteConfig, route, layout, index } from '@react-router/dev/routes
 export default [
   // Public marketing routes (Polish, root level)
   index('routes/home.tsx', { id: 'home' }),
+  route('katalog', 'routes/catalog.tsx', { id: 'catalog' }),
   route('about/contact', 'routes/contact.tsx', { id: 'contact' }),
   route('support/faq', 'routes/faq.tsx', { id: 'faq' }),
   route('problem/:slug', 'routes/topic.tsx', { id: 'topic' }),

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router';
 import { JsonLd } from '../components/JsonLd';
 import { TopicNav } from '../components/topic-landing/TopicNav';
 import { TopicFooter } from '../components/topic-landing/TopicFooter';
 import { SignInModal } from '../components/SignInModal';
-import { HomeTopicCatalog } from '../components/HomeTopicCatalog';
 import { getPageFaqItems, type FaqItemData } from '../lib/faqHelpers';
 import { TOPICS } from '../data/topics';
 import { trackEvent } from '../lib/telemetry';
@@ -104,14 +104,14 @@ export function HomePage() {
                 {t('hero.headline')}
               </h1>
               <p className="text-lg text-slate-600 mb-8 leading-relaxed">{t('hero.description')}</p>
-              <a
-                href="#tematy"
+              <Link
+                to="/katalog"
                 onClick={() => trackEvent('cta_create_book_clicked', { location: 'homepage_hero' })}
-                className="inline-flex items-center gap-2 bg-magic-500 hover:bg-magic-600 text-white font-bold px-8 py-4 rounded-full text-lg transition-colors shadow-lg hover:shadow-xl"
+                className="inline-flex items-center gap-2 bg-magic-500 hover:bg-magic-600 text-white font-bold px-8 py-4 rounded-full text-lg transition-colors shadow-lg hover:shadow-xl no-underline"
               >
                 <i className="fa-solid fa-wand-magic-sparkles" />
                 {t('hero.cta')}
-              </a>
+              </Link>
               <div className="mt-6 flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-500 font-medium">
                 <span className="flex items-center gap-1.5">
                   <i className="fa-solid fa-clock text-calm-500" />
@@ -192,16 +192,16 @@ export function HomePage() {
           </div>
 
           <div className="text-center mt-12">
-            <a
-              href="#tematy"
+            <Link
+              to="/katalog"
               onClick={() =>
                 trackEvent('cta_create_book_clicked', { location: 'homepage_how_it_works' })
               }
-              className="inline-flex items-center gap-2 bg-magic-500 hover:bg-magic-600 text-white font-bold px-8 py-4 rounded-full text-lg transition-colors shadow-lg hover:shadow-xl"
+              className="inline-flex items-center gap-2 bg-magic-500 hover:bg-magic-600 text-white font-bold px-8 py-4 rounded-full text-lg transition-colors shadow-lg hover:shadow-xl no-underline"
             >
               <i className="fa-solid fa-wand-magic-sparkles" />
               {t('howItWorks.cta')}
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -235,8 +235,6 @@ export function HomePage() {
           </p>
         </div>
       </section>
-
-      <HomeTopicCatalog topicCount={topicCount} />
 
       <section id="nasza-historia" className="py-20 md:py-28 bg-calm-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -359,14 +357,14 @@ export function HomePage() {
               {t('finalCta.title')}
             </h2>
             <p className="text-lg text-slate-600 mb-8 max-w-xl mx-auto">{t('finalCta.subtitle')}</p>
-            <a
-              href="#tematy"
+            <Link
+              to="/katalog"
               onClick={() => trackEvent('cta_create_book_clicked', { location: 'homepage_final' })}
-              className="inline-flex items-center gap-2 bg-magic-500 hover:bg-magic-600 text-white font-bold px-10 py-4 rounded-full text-lg transition-colors shadow-lg hover:shadow-xl"
+              className="inline-flex items-center gap-2 bg-magic-500 hover:bg-magic-600 text-white font-bold px-10 py-4 rounded-full text-lg transition-colors shadow-lg hover:shadow-xl no-underline"
             >
               <i className="fa-solid fa-wand-magic-sparkles" />
               {t('finalCta.button')}
-            </a>
+            </Link>
             <div className="mt-6 flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm text-slate-500 font-medium">
               <span>{t('finalCta.badges.topics', { count: topicCount })}</span>
               <span>•</span>
