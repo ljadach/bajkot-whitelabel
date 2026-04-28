@@ -104,9 +104,6 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
     [intake, startLandingOrder, createLandingCheckoutSession, navigate, t],
   );
 
-  // Landing has no admin (clerkUserId is "landing-user"). Dev flags hidden.
-  const isAdmin = false;
-
   return (
     <>
       {screen === 'wizard' && (
@@ -141,7 +138,6 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
           onChangeFormat={handleChangeFormat}
           onSubmit={handleCheckoutSubmit}
           onBack={() => setScreen('preview')}
-          isAdmin={isAdmin}
           isSubmitting={submitting}
           externalError={submitError}
         />

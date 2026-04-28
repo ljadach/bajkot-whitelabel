@@ -34,6 +34,11 @@ export function AuthOrderFlow() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // DEV: admin diagnostic flags. Default true so smoke tests are fast.
+  // TODO(c3z): pre-launch cleanup
+  const [skipStripe, setSkipStripe] = useState(true);
+  const [skipQa, setSkipQa] = useState(true);
+
   const handleSelectTopic = useCallback((topic: SelectedTopic) => {
     setIntake((prev) => ({ ...prev, topic }));
     setScreen('wizard');
@@ -44,59 +49,86 @@ export function AuthOrderFlow() {
     setIntake((prev) => ({ ...prev, format }));
   }, []);
 
-  const handleCheckoutSubmit = useCallback(
-    async (payload: CheckoutSubmitPayload) => {
+  const submitOrder = useCallback(
+    async (
+      checkoutPayload: CheckoutSubmitPayload | null,
+    ): Promise<{ orderId: string; format: OrderFormat } | null> => {
       if (!intake.topic || !intake.age || !intake.gender) {
         setSubmitError(t('flow.errorMissingData'));
-        return;
+        return null;
       }
       setSubmitting(true);
       setSubmitError(null);
       try {
         const baseArgs = intakeToOrderArgs(intake, {
-          email: payload.email,
-          format: payload.format,
-          shippingAddress: payload.shippingAddress,
+          email: checkoutPayload?.email,
+          format: checkoutPayload?.format ?? intake.format,
+          shippingAddress: checkoutPayload?.shippingAddress,
         });
         const result = await startOrder({
           ...baseArgs,
           // DEV: admin shortcuts. Server enforces admin gate.
           // TODO(c3z): pre-launch cleanup
-          skipStripe: payload.skipStripe || undefined,
-          skipQaReviews: payload.skipQa || undefined,
+          skipStripe: isAdmin && skipStripe ? true : undefined,
+          skipQaReviews: isAdmin && skipQa ? true : undefined,
         });
-
         const orderId = result.orderId;
         // Stamp bookOrderId on every subsequent event for this device so
         // PostHog can stitch the full funnel together (spec section 7.1).
         setFunnelSuperProperties({ bookOrderId: orderId, flow: 'auth' });
-
-        // PDF+Print → trapdoor thank-you
-        if (payload.format === 'pdf_print') {
-          void navigate(`/book/${orderId}/print-thanks`);
-          return;
-        }
-
-        // Admin skipStripe → straight to progress (pipeline already started)
-        if (payload.skipStripe && isAdmin) {
-          void navigate(`/book/${orderId}/progress`);
-          return;
-        }
-
-        // Default: Stripe checkout
-        const session = await createCheckoutSession({
-          bookOrderId: orderId,
-          returnPath: `/book/${orderId}/progress`,
-        });
-        if (typeof window !== 'undefined') {
-          window.location.assign(session.url);
-        }
+        return { orderId, format: checkoutPayload?.format ?? intake.format };
       } catch (err) {
         setSubmitError(err instanceof Error ? err.message : t('flow.errorGeneric'));
         setSubmitting(false);
+        return null;
       }
     },
-    [intake, startOrder, createCheckoutSession, navigate, isAdmin, t],
+    [intake, startOrder, isAdmin, skipStripe, skipQa, t],
+  );
+
+  // Admin shortcut: clicking the Preview CTA with `skipStripe` ON submits
+  // the order directly (no checkout step, no Stripe). Skip-QA is also wired
+  // through. PDF+Print still routes to the trapdoor thank-you regardless.
+  const handlePreviewContinue = useCallback(async () => {
+    if (isAdmin && skipStripe) {
+      const result = await submitOrder(null);
+      if (!result) return;
+      if (result.format === 'pdf_print') {
+        void navigate(`/book/${result.orderId}/print-thanks`);
+        return;
+      }
+      void navigate(`/book/${result.orderId}/progress`);
+      return;
+    }
+    setScreen('checkout');
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [isAdmin, skipStripe, submitOrder, navigate]);
+
+  const handleCheckoutSubmit = useCallback(
+    async (payload: CheckoutSubmitPayload) => {
+      const result = await submitOrder(payload);
+      if (!result) return;
+      // PDF+Print → trapdoor thank-you
+      if (payload.format === 'pdf_print') {
+        void navigate(`/book/${result.orderId}/print-thanks`);
+        return;
+      }
+      // Admin skipStripe (rare here — usually they'd skip preview→checkout
+      // entirely). Kept for completeness.
+      if (isAdmin && skipStripe) {
+        void navigate(`/book/${result.orderId}/progress`);
+        return;
+      }
+      // Default: Stripe checkout
+      const session = await createCheckoutSession({
+        bookOrderId: result.orderId,
+        returnPath: `/book/${result.orderId}/progress`,
+      });
+      if (typeof window !== 'undefined') {
+        window.location.assign(session.url);
+      }
+    },
+    [submitOrder, createCheckoutSession, navigate, isAdmin, skipStripe],
   );
 
   return (
@@ -117,11 +149,13 @@ export function AuthOrderFlow() {
         <OrderPreview
           intake={intake}
           onChangeFormat={handleChangeFormat}
-          onContinue={() => {
-            setScreen('checkout');
-            if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onContinue={() => void handlePreviewContinue()}
           onBack={() => setScreen('wizard')}
+          isAdmin={isAdmin}
+          skipStripe={skipStripe}
+          skipQa={skipQa}
+          onChangeSkipStripe={setSkipStripe}
+          onChangeSkipQa={setSkipQa}
         />
       )}
       {screen === 'checkout' && (
@@ -130,7 +164,6 @@ export function AuthOrderFlow() {
           onChangeFormat={handleChangeFormat}
           onSubmit={handleCheckoutSubmit}
           onBack={() => setScreen('preview')}
-          isAdmin={isAdmin}
           isSubmitting={submitting}
           externalError={submitError}
         />

@@ -23,10 +23,6 @@ export interface CheckoutSubmitPayload {
   email: string;
   format: OrderFormat;
   shippingAddress?: ShippingAddress;
-  /** DEV: admin-only — bypass Stripe and start pipeline immediately. */
-  skipStripe: boolean;
-  /** DEV: admin-only — pass skipQaReviews to the backend. */
-  skipQa: boolean;
 }
 
 interface Props {
@@ -34,8 +30,6 @@ interface Props {
   onChangeFormat: (fmt: OrderFormat) => void;
   onSubmit: (payload: CheckoutSubmitPayload) => Promise<void> | void;
   onBack: () => void;
-  /** Shows the dev shortcut checkboxes. Wire to api.auth.isAdmin. */
-  isAdmin: boolean;
   /** External submitting flag (Stripe redirect / pipeline start in flight). */
   isSubmitting: boolean;
   /** External error string. */
@@ -51,7 +45,6 @@ export function OrderCheckout({
   onChangeFormat,
   onSubmit,
   onBack,
-  isAdmin,
   isSubmitting,
   externalError,
 }: Props) {
@@ -59,8 +52,6 @@ export function OrderCheckout({
   const [email, setEmail] = useState('');
   const [consent, setConsent] = useState(false);
   const [address, setAddress] = useState<ShippingAddress>(INITIAL_ADDRESS);
-  const [skipStripe, setSkipStripe] = useState(false);
-  const [skipQa, setSkipQa] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -114,17 +105,11 @@ export function OrderCheckout({
       }
     }
     setError('');
-    const finalSkipStripe = isAdmin ? skipStripe : false;
-    trackEvent('checkout_submit_clicked', {
-      format: intake.format,
-      skipStripe: finalSkipStripe,
-    });
+    trackEvent('checkout_submit_clicked', { format: intake.format });
     await onSubmit({
       email: email.trim(),
       format: intake.format,
       shippingAddress: isPrint ? address : undefined,
-      skipStripe: finalSkipStripe,
-      skipQa: isAdmin ? skipQa : false,
     });
   };
 
@@ -258,39 +243,6 @@ export function OrderCheckout({
               <span className="text-sm text-gray-600">{t('checkout.consent')}</span>
             </label>
           </div>
-
-          {/* DEV flags — admin only */}
-          {/* DEV: remove these flags before launch. */}
-          {/* TODO(c3z): pre-launch cleanup */}
-          {isAdmin && (
-            <div className="rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-4 space-y-2">
-              <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
-                {t('checkout.devHeading')}
-              </p>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={skipStripe}
-                  onChange={(e) => setSkipStripe(e.target.checked)}
-                  className="w-5 h-5"
-                />
-                <span className="text-sm text-amber-900 font-semibold">
-                  {t('checkout.devSkipStripe')}
-                </span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={skipQa}
-                  onChange={(e) => setSkipQa(e.target.checked)}
-                  className="w-5 h-5"
-                />
-                <span className="text-sm text-amber-900 font-semibold">
-                  {t('checkout.devSkipQa')}
-                </span>
-              </label>
-            </div>
-          )}
 
           {/* Pay button */}
           <div className="flex gap-4">

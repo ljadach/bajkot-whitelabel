@@ -8,13 +8,31 @@ interface Props {
   onChangeFormat: (fmt: OrderFormat) => void;
   onContinue: () => void;
   onBack: () => void;
+  /** Shows the admin diagnostic checkboxes under the CTA. */
+  isAdmin?: boolean;
+  /** Default true. When checked AND admin clicks CTA, skip Stripe entirely. */
+  skipStripe?: boolean;
+  /** Default true. Propagates `skipQaReviews` to the backend (fast mode). */
+  skipQa?: boolean;
+  onChangeSkipStripe?: (next: boolean) => void;
+  onChangeSkipQa?: (next: boolean) => void;
 }
 
 /**
  * "Co otrzymasz?" preview screen — mirrors `#screen-preview` from
  * docs/protos_v2/Bajkoterapia-Nowy-Flow.html.
  */
-export function OrderPreview({ intake, onChangeFormat, onContinue, onBack }: Props) {
+export function OrderPreview({
+  intake,
+  onChangeFormat,
+  onContinue,
+  onBack,
+  isAdmin = false,
+  skipStripe = false,
+  skipQa = false,
+  onChangeSkipStripe,
+  onChangeSkipQa,
+}: Props) {
   const { t } = useTranslation('book');
 
   useEffect(() => {
@@ -151,6 +169,38 @@ export function OrderPreview({ intake, onChangeFormat, onContinue, onBack }: Pro
                 <i className="fa-solid fa-wand-magic-sparkles mr-2" /> {cta}
               </button>
             </div>
+
+            {/* DEV: admin-only diagnostic checkboxes under the CTA. */}
+            {/* TODO(c3z): pre-launch cleanup */}
+            {isAdmin && (
+              <div className="rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-4 space-y-2">
+                <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
+                  {t('checkout.devHeading')}
+                </p>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={skipStripe}
+                    onChange={(e) => onChangeSkipStripe?.(e.target.checked)}
+                    className="w-5 h-5"
+                  />
+                  <span className="text-sm text-amber-900 font-semibold">
+                    {t('checkout.devSkipStripe')}
+                  </span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={skipQa}
+                    onChange={(e) => onChangeSkipQa?.(e.target.checked)}
+                    className="w-5 h-5"
+                  />
+                  <span className="text-sm text-amber-900 font-semibold">
+                    {t('checkout.devSkipQa')}
+                  </span>
+                </label>
+              </div>
+            )}
           </div>
         </div>
 
