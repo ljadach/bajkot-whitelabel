@@ -32,7 +32,7 @@ export function CatalogPage() {
         </div>
       </header>
 
-      <HomeTopicCatalog topicCount={topicCount} />
+      <HomeTopicCatalog />
 
       <TopicFooter />
     </div>

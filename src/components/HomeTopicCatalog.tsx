@@ -5,39 +5,25 @@ import { CATALOG_CATEGORIES, topicsByCategory, type CatalogCategory } from '../d
 
 type CatalogTab = CatalogCategory | 'all';
 
-interface HomeTopicCatalogProps {
-  topicCount: number;
-}
-
 /**
- * Homepage 7-tab topic catalog (spec section 2, scenario B).
- * Visually consistent with `OrderCatalog` but tailored for the marketing
- * homepage — links go to `/problem/<slug>` SEO pages instead of the
- * authenticated order flow. The "Inny problem?" entry deep-links to
- * `/book/order` which surfaces the same concept inside the auth flow.
+ * 7-tab topic catalog rendered on the standalone `/katalog` page
+ * (spec section 2, scenario B). The page-level title lives in
+ * `CatalogPage`; this component is just the tab filter + card grid +
+ * "Inny problem?" card.
+ *
+ * Cards link to `/problem/<slug>` SEO pages. The "Inny problem?" entry
+ * deep-links to `/book/order` which surfaces the same concept inside
+ * the auth flow.
  */
-export function HomeTopicCatalog({ topicCount }: HomeTopicCatalogProps) {
-  const { t } = useTranslation('app');
+export function HomeTopicCatalog() {
   const { t: tBook } = useTranslation('book');
   const [tab, setTab] = useState<CatalogTab>('all');
 
   const filteredTopics = useMemo(() => topicsByCategory(tab), [tab]);
 
   return (
-    <section id="tematy" className="py-20 md:py-28 bg-white">
+    <section id="tematy" className="py-12 md:py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10">
-          <span className="text-magic-500 font-bold uppercase tracking-widest text-sm mb-2 block">
-            {t('topicsSection.eyebrow')}
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-calm-900 mb-4">
-            {t('topicsSection.title')}
-          </h2>
-          <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-            {t('topicsSection.subtitle', { count: topicCount })}
-          </p>
-        </div>
-
         {/* Tab filter buttons — mirrors OrderCatalog visual style. */}
         <div
           className="flex gap-3 overflow-x-auto pb-4 mb-8 px-2 justify-start sm:justify-center"
