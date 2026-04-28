@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useAction } from 'convex/react';
+import { useAction, useQuery } from 'convex/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../../convex/_generated/api';
 import { captureTokenFromUrl, getAccessToken } from '../../../hooks/useAccessToken';
@@ -22,6 +22,7 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
   const navigate = useNavigate();
   const startLandingOrder = useAction(api.bookPipeline.startLandingOrder);
   const createLandingCheckoutSession = useAction(api.stripe.createLandingCheckoutSession);
+  const isAdmin = useQuery(api.auth.isAdmin) ?? false;
 
   const [screen, setScreen] = useState<Screen>('wizard');
   const [intake, setIntake] = useState<IntakeState>(() => ({
@@ -30,6 +31,11 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
   }));
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // DEV: admin diagnostic flags. Default true so smoke tests are fast.
+  // TODO(c3z): pre-launch cleanup
+  const [skipStripe, setSkipStripe] = useState(true);
+  const [skipQa, setSkipQa] = useState(true);
 
   // Capture access token on mount (preserves landing-flow token gate).
   useEffect(() => captureTokenFromUrl(), []);
@@ -54,54 +60,87 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
     setIntake((prev) => ({ ...prev, format }));
   }, []);
 
-  const handleCheckoutSubmit = useCallback(
-    async (payload: CheckoutSubmitPayload) => {
+  const submitOrder = useCallback(
+    async (
+      checkoutPayload: CheckoutSubmitPayload | null,
+    ): Promise<{ orderId: string; format: OrderFormat } | null> => {
       if (!intake.topic || !intake.age || !intake.gender) {
         setSubmitError(t('flow.errorMissingData'));
-        return;
+        return null;
       }
       setSubmitting(true);
       setSubmitError(null);
       try {
         const baseArgs = intakeToOrderArgs(intake, {
-          email: payload.email,
-          format: payload.format,
-          shippingAddress: payload.shippingAddress,
+          email: checkoutPayload?.email,
+          format: checkoutPayload?.format ?? intake.format,
+          shippingAddress: checkoutPayload?.shippingAddress,
         });
         const result = await startLandingOrder({
           accessToken: getAccessToken() ?? '',
           ...baseArgs,
+          // DEV: admin shortcuts. Server enforces admin gate.
+          // TODO(c3z): pre-launch cleanup
+          skipStripe: isAdmin && skipStripe ? true : undefined,
+          skipQaReviews: isAdmin && skipQa ? true : undefined,
         });
-
         const orderId = result.orderId;
-        // Stamp bookOrderId on every subsequent event for this device so
-        // PostHog can stitch the full funnel together (spec section 7.1).
         setFunnelSuperProperties({ bookOrderId: orderId, flow: 'landing' });
-
-        // PDF+Print → landing trapdoor thank-you (no Stripe; manual fulfillment)
-        if (payload.format === 'pdf_print') {
-          void navigate(`/landing/book/${orderId}/print-thanks`);
-          return;
-        }
-
-        // PDF: kick off Stripe Checkout. The landing-specific action
-        // validates the access token instead of requiring Clerk identity,
-        // and uses bookOrderId metadata so the existing webhook still
-        // marks the order paid (identity-agnostic).
-        const session = await createLandingCheckoutSession({
-          bookOrderId: orderId,
-          accessToken: getAccessToken() ?? '',
-          returnPath: `/landing/book/${orderId}/progress`,
-        });
-        if (typeof window !== 'undefined') {
-          window.location.assign(session.url);
-        }
+        return { orderId, format: checkoutPayload?.format ?? intake.format };
       } catch (err) {
         setSubmitError(err instanceof Error ? err.message : t('flow.errorGeneric'));
         setSubmitting(false);
+        return null;
       }
     },
-    [intake, startLandingOrder, createLandingCheckoutSession, navigate, t],
+    [intake, startLandingOrder, isAdmin, skipStripe, skipQa, t],
+  );
+
+  // Admin shortcut on Preview CTA: skipStripe ON → submit directly.
+  const handlePreviewContinue = useCallback(async () => {
+    if (isAdmin && skipStripe) {
+      const result = await submitOrder(null);
+      if (!result) return;
+      if (result.format === 'pdf_print') {
+        void navigate(`/landing/book/${result.orderId}/print-thanks`);
+        return;
+      }
+      void navigate(`/landing/book/${result.orderId}/progress`);
+      return;
+    }
+    setScreen('checkout');
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [isAdmin, skipStripe, submitOrder, navigate]);
+
+  const handleCheckoutSubmit = useCallback(
+    async (payload: CheckoutSubmitPayload) => {
+      const result = await submitOrder(payload);
+      if (!result) return;
+      // PDF+Print → landing trapdoor thank-you (no Stripe; manual fulfillment)
+      if (payload.format === 'pdf_print') {
+        void navigate(`/landing/book/${result.orderId}/print-thanks`);
+        return;
+      }
+      // Admin skipStripe (rare here — usually they'd skip preview→checkout
+      // entirely). Kept for completeness.
+      if (isAdmin && skipStripe) {
+        void navigate(`/landing/book/${result.orderId}/progress`);
+        return;
+      }
+      // Default: Stripe checkout. The landing-specific action validates
+      // the access token instead of requiring Clerk identity, and uses
+      // bookOrderId metadata so the existing webhook still marks the
+      // order paid (identity-agnostic).
+      const session = await createLandingCheckoutSession({
+        bookOrderId: result.orderId,
+        accessToken: getAccessToken() ?? '',
+        returnPath: `/landing/book/${result.orderId}/progress`,
+      });
+      if (typeof window !== 'undefined') {
+        window.location.assign(session.url);
+      }
+    },
+    [submitOrder, createLandingCheckoutSession, navigate, isAdmin, skipStripe],
   );
 
   return (
@@ -127,11 +166,13 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
         <OrderPreview
           intake={intake}
           onChangeFormat={handleChangeFormat}
-          onContinue={() => {
-            setScreen('checkout');
-            if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onContinue={() => void handlePreviewContinue()}
           onBack={() => setScreen('wizard')}
+          isAdmin={isAdmin}
+          skipStripe={skipStripe}
+          skipQa={skipQa}
+          onChangeSkipStripe={setSkipStripe}
+          onChangeSkipQa={setSkipQa}
         />
       )}
       {screen === 'checkout' && (

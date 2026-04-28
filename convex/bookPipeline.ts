@@ -412,6 +412,11 @@ export const startLandingOrder = action({
     email: v.optional(v.string()),
     format: v.optional(formatValidator),
     shippingAddress: v.optional(shippingAddressValidator),
+    // DEV: admin-only shortcuts. Server gates these on the Clerk identity
+    // even though the order itself is recorded against LANDING_USER_ID.
+    // TODO(c3z): pre-launch cleanup
+    skipQaReviews: v.optional(v.boolean()),
+    skipStripe: v.optional(v.boolean()),
   },
   returns: v.object({ orderId: v.id('bookOrders') }),
   handler: async (ctx, args): Promise<{ orderId: Id<'bookOrders'> }> => {
@@ -421,6 +426,14 @@ export const startLandingOrder = action({
     //   throw new Error('Invalid access token');
     // }
     void args.accessToken;
+
+    // Honor dev shortcut flags only if the caller is signed in as admin.
+    // The order is still recorded under LANDING_USER_ID so it stays in the
+    // landing flow's data model.
+    const identity = await ctx.auth.getUserIdentity();
+    const adminUser = identity ? (identity as { isAdmin?: boolean }).isAdmin === true : false;
+    const skipQaReviews = adminUser ? args.skipQaReviews : undefined;
+    const skipStripe = adminUser ? args.skipStripe : undefined;
 
     validateOrderInput(args);
 
@@ -449,6 +462,8 @@ export const startLandingOrder = action({
       format,
       shippingAddress: format === 'pdf_print' ? args.shippingAddress : undefined,
       pauseForPrint: format === 'pdf_print',
+      skipQaReviews,
+      skipStripe,
     });
 
     if (format === 'pdf_print') {
