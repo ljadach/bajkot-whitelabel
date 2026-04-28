@@ -115,8 +115,10 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
             if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           onChangeTopic={() => {
-            // Landing: go back to the topic page itself.
-            void navigate(`/problem/${topic.slug}`);
+            // Landing user is already on `/problem/<slug>` — sending them
+            // back to the same URL would no-op. Send them to the standalone
+            // catalog where they can pick a different topic.
+            void navigate('/katalog');
           }}
           showProgressNav={false}
         />

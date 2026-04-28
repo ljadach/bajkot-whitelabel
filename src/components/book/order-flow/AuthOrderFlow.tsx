@@ -142,7 +142,10 @@ export function AuthOrderFlow() {
             setScreen('preview');
             if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          onChangeTopic={() => setScreen('catalog')}
+          onChangeTopic={() => {
+            setScreen('catalog');
+            if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
         />
       )}
       {screen === 'preview' && (
