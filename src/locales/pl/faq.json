@@ -25,59 +25,52 @@
   },
   "categoryOrder": ["gettingStarted", "content", "technical", "safety"],
   "items": {
-    "whatIsBajkoterapia": {
-      "question": "Czym jest Bajkoterapia?",
-      "answer": "Bajkoterapia tworzy spersonalizowane bajki terapeutyczne dla dzieci. Opisujesz sytuację dziecka (lęki, wyzwania, trudne emocje), a nasz system generuje bajkę z ilustracjami, w której bohater wygląda jak Twoje dziecko i przeżywa podobne wyzwania — ucząc się nowych strategii radzenia sobie.",
+    "preparationTime": {
+      "question": "Ile trwa przygotowanie bajki?",
+      "answer": "Bajka jest gotowa do czytania w kilka minut od złożenia zamówienia. Otrzymasz PDF natychmiast po przygotowaniu.",
       "category": "gettingStarted",
       "faqVisible": true,
       "pages": ["home"]
     },
-    "howLong": {
-      "question": "Ile trwa stworzenie bajki?",
-      "answer": "Cały proces zajmuje kilka minut. Wypełniasz formularz (2-3 min), wybierasz styl ilustracji, a nasz system generuje bajkę z 7 ilustracjami i 16 stronami. Gotowy PDF jest dostępny od razu.",
-      "category": "gettingStarted",
+    "safety": {
+      "question": "Czy bajki są bezpieczne dla dzieci?",
+      "answer": "Tak. Każda bajka ma sprawdzoną strukturę terapeutyczną opartą na badaniach naukowych. Treści są psychoedukacyjne — pomagają dziecku zrozumieć i przetworzyć emocje w bezpieczny sposób. Nie zastępują jednak konsultacji z psychologiem.",
+      "category": "safety",
       "faqVisible": true,
       "pages": ["home"]
     },
     "ageRange": {
       "question": "Dla jakiego wieku są bajki?",
-      "answer": "Bajkoterapia tworzy bajki dla trzech grup wiekowych: 3-5 lat, 6-8 lat i 9+ lat. Tekst, słownictwo i elementy terapeutyczne są automatycznie dostosowane do wieku dziecka.",
+      "answer": "Bajki są dostosowane do dzieci w wieku 2-12 lat. Język, długość tekstu i proporcja ilustracji do tekstu automatycznie dopasowują się do podanego wieku dziecka.",
       "category": "gettingStarted",
       "faqVisible": true,
       "pages": ["home"]
     },
-    "therapeutic": {
-      "question": "Jak działają elementy terapeutyczne?",
-      "answer": "Każda bajka zawiera techniki z terapii poznawczo-behawioralnej (CBT) i biblioterapii. Bohater modeluje zdrowe strategie radzenia sobie z trudnościami. Bajka przechodzi automatyczną recenzję psychologiczną, która sprawdza bezpieczeństwo emocjonalne i adekwatność terapeutyczną.",
-      "category": "content",
-      "faqVisible": true,
-      "pages": ["home"]
-    },
-    "problems": {
-      "question": "Jakie problemy mogą być tematem bajki?",
-      "answer": "Bajkoterapia obsługuje szeroką gamę wyzwań dziecięcych: strach przed ciemnością, lęk separacyjny, problemy z rówieśnikami, trudności z wyrażaniem emocji, nieśmiałość, złość, zmiany życiowe (przeprowadzka, nowe rodzeństwo) i wiele innych.",
-      "category": "content",
-      "faqVisible": true,
-      "pages": ["home"]
-    },
-    "illustrations": {
-      "question": "Jak wyglądają ilustracje?",
-      "answer": "Oferujemy dwa style artystyczne do wyboru. Przed wygenerowaniem bajki zobaczysz podgląd postaci dziecka w obu stylach i wybierzesz ten, który bardziej Ci odpowiada. Każda bajka zawiera 7 unikalnych ilustracji — okładkę i 6 scen.",
-      "category": "content",
-      "faqVisible": true,
-      "pages": ["home"]
-    },
-    "format": {
-      "question": "W jakim formacie otrzymuję bajkę?",
-      "answer": "Bajka jest dostarczana jako PDF w kwadratowym formacie (210×210mm) — idealnym do druku lub czytania na tablecie. 16 stron: okładka, dedykacja, 6 rozdziałów z ilustracjami, karta rodzica i tylna okładka.",
+    "print": {
+      "question": "Czy mogę wydrukować książkę?",
+      "answer": "Tak! Możesz pobrać PDF i wydrukować samodzielnie, albo zamówić profesjonalny druk z dostawą kurierską za dodatkowe 20 zł.",
       "category": "technical",
       "faqVisible": true,
       "pages": ["home"]
     },
-    "privacy": {
-      "question": "Czy moje dane są bezpieczne?",
-      "answer": "Tak. Dane są szyfrowane i wykorzystywane wyłącznie do stworzenia bajki. Nie udostępniamy ich osobom trzecim. Możesz w każdej chwili poprosić o usunięcie swoich danych.",
-      "category": "safety",
+    "bookContent": {
+      "question": "Jak wygląda książka?",
+      "answer": "Każda książka zawiera: spersonalizowaną okładkę z imieniem dziecka, stronę dedykacyjną „Ta książka należy do…”, 4-6 rozdziałów z pięknymi ilustracjami oraz pytania do dyskusji z dzieckiem na końcu.",
+      "category": "content",
+      "faqVisible": true,
+      "pages": ["home"]
+    },
+    "multipleStories": {
+      "question": "Czy mogę zamówić kilka bajek na różne tematy?",
+      "answer": "Oczywiście! Każda bajka jest unikalna — możesz stworzyć oddzielną historię na każdy temat, który dotyczy Twojego dziecka.",
+      "category": "content",
+      "faqVisible": true,
+      "pages": ["home"]
+    },
+    "howToRead": {
+      "question": "Jak czytać bajkę terapeutyczną?",
+      "answer": "Najważniejsze to czytać RAZEM z dzieckiem. Po przeczytaniu zapytaj: „Co czuł bohater?”, „Co mu pomogło?” — takie rozmowy podwajają skuteczność bajki.",
+      "category": "content",
       "faqVisible": true,
       "pages": ["home"]
     }
