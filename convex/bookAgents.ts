@@ -29,6 +29,7 @@ import {
   OUTFIT_MAP,
   STYLE_A,
   STYLE_B,
+  resolveProblemId,
 } from './lib/bookData';
 import {
   parseArtifact,
@@ -111,21 +112,31 @@ export const intake = internalAction({
       const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
       if (!order) throw new Error('Order not found');
 
-      // Validate against known maps
-      if (!PROBLEMS[order.problemId]) throw new Error(`Unknown problemId: ${order.problemId}`);
-      if (!HAIR_COLOR_MAP[order.hairColor])
-        throw new Error(`Unknown hairColor: ${order.hairColor}`);
-      if (!HAIR_STYLE_MAP[order.hairStyle])
-        throw new Error(`Unknown hairStyle: ${order.hairStyle}`);
-      if (!EYE_COLOR_MAP[order.eyeColor]) throw new Error(`Unknown eyeColor: ${order.eyeColor}`);
-      // Spec section 3.4 dropped skin tone from intake. Default to 'jasna'
-      // when absent (legacy + new orders) and validate only when set.
-      const skinToneKey = order.skinTone ?? 'jasna';
-      if (!SKIN_TONE_MAP[skinToneKey]) throw new Error(`Unknown skinTone: ${skinToneKey}`);
-      if (!OUTFIT_MAP[order.outfit]) throw new Error(`Unknown outfit: ${order.outfit}`);
+      // Resolve problemId via aliases. Unknown ids fall back to
+      // `general_resilience` so the pipeline doesn't reject custom
+      // problems written by parents via "Inny problem?" — the user's
+      // problemDetail still drives the actual story.
+      const canonicalProblemId = resolveProblemId(order.problemId);
+      const problem = PROBLEMS[canonicalProblemId] ?? PROBLEMS.general_resilience;
 
-      const problem = PROBLEMS[order.problemId];
-      const outfit = OUTFIT_MAP[order.outfit];
+      // Appearance maps fall through to a sensible default if the user
+      // submits an unrecognized value (e.g. an old slug or a typo).
+      const hairColorEn = HAIR_COLOR_MAP[order.hairColor] ?? order.hairColor;
+      const hairStyleEn = HAIR_STYLE_MAP[order.hairStyle] ?? order.hairStyle;
+      const eyeColorEn = EYE_COLOR_MAP[order.eyeColor] ?? order.eyeColor;
+
+      // Spec § 3.4 dropped skin tone from intake. Default to 'jasna'
+      // for both undefined and unrecognized values.
+      const skinToneKey =
+        order.skinTone && SKIN_TONE_MAP[order.skinTone] ? order.skinTone : 'jasna';
+
+      // Outfit is a free-text field — pass through when not in the preset
+      // map so user input ("czerwona sukienka w kropki") drives the
+      // illustration prompt directly.
+      const outfit = OUTFIT_MAP[order.outfit] ?? {
+        pl: order.outfit,
+        en: order.outfit,
+      };
 
       // Build normalized order data
       const normalized: NormalizedOrder = {
@@ -141,11 +152,11 @@ export const intake = internalAction({
         favoriteToy: order.favoriteToy,
         glasses: order.glasses,
         hairColor: order.hairColor,
-        hairColorEn: HAIR_COLOR_MAP[order.hairColor],
+        hairColorEn,
         hairStyle: order.hairStyle,
-        hairStyleEn: HAIR_STYLE_MAP[order.hairStyle],
+        hairStyleEn,
         eyeColor: order.eyeColor,
-        eyeColorEn: EYE_COLOR_MAP[order.eyeColor],
+        eyeColorEn,
         skinTone: skinToneKey,
         skinToneEn: SKIN_TONE_MAP[skinToneKey],
         outfit: order.outfit,

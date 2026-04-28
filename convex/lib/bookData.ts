@@ -16,6 +16,7 @@ export const PROBLEM_CATEGORIES: Record<string, string> = {
   social: 'Relacje społeczne',
   routine: 'Nawyki i codzienność',
   change: 'Zmiany w życiu',
+  general: 'Wsparcie ogólne',
 };
 
 // ── Problems ─────────────────────────────────────
@@ -174,11 +175,264 @@ export const PROBLEMS: Record<string, ProblemDefinition> = {
       'Kompas serca, który zawsze wskazuje drogę do wewnętrznej siły dziecka. Ćmik Iskra.',
     category: 'emotions',
   },
+
+  // === Spec § 4 — Sen i Wieczór ===
+  bedtime_resistance: {
+    title_pl: 'Trudności z zasypianiem',
+    context_pl:
+      'Dziecko opóźnia kładzenie się — kolejna szklanka wody, jeszcze jedna bajka. Pokaż, że spokojne wieczory to wspólny rytuał, nie walka.',
+    metaphor_pl:
+      'Magiczne pióro, które otwiera „wieczorną krainę" tylko gdy dziecko samo zaprosi sen. Sowa Sennica.',
+    category: 'routine',
+  },
+  night_wakings: {
+    title_pl: 'Częste pobudki nocne',
+    context_pl:
+      'Dziecko budzi się w nocy z płaczem, woła rodzica, boi się ciemności. Pokaż, że noc też ma swoich opiekunów i można poczuć się bezpiecznie do rana.',
+    metaphor_pl:
+      'Strażnik Nocy z latarnią księżyca, który przyświeca aż do brzasku. Borsuk Bezsenny-Już-Nie.',
+    category: 'fears',
+  },
+  independent_sleep: {
+    title_pl: 'Nauka samodzielnego zasypiania',
+    context_pl:
+      'Dziecko przechodzi ze wspólnego łóżka do swojego pokoju. Pokaż, że własne łóżeczko to gniazdo siły, nie miejsce rozłąki.',
+    metaphor_pl:
+      'Magiczny kocyk, który pamięta zapach mamy i taty nawet gdy dziecko śpi już samo. Pingwin Pierwszy-Sen.',
+    category: 'change',
+  },
+
+  // === Spec § 4 — Emocje i Zachowanie ===
+  physical_aggression: {
+    title_pl: 'Agresja fizyczna (bicie, gryzienie, kopanie)',
+    context_pl:
+      'Dziecko nie umie nazwać emocji — uderza, gryzie, kopie. Pokaż, że to sygnał potrzeby, a nie złośliwość, i że istnieją inne sposoby pokazania, co czujesz.',
+    metaphor_pl:
+      'Burzowa chmura w środku, którą można rozproszyć słowem-zaklęciem zamiast ręką. Lew Łapka-Stop.',
+    category: 'emotions',
+  },
+  defiance: {
+    title_pl: 'Bunt i odmowa współpracy',
+    context_pl:
+      'Dziecko ciągle mówi „NIE" — to naturalna część rozwoju, ale nie musi oznaczać codziennej walki. Pokaż, że współpraca może być fajniejsza niż opór.',
+    metaphor_pl:
+      'Magiczne klucze, które otwierają się tylko gdy „NIE" zamienisz w „spróbuję". Smok Wybór.',
+    category: 'emotions',
+  },
+
+  // === Spec § 4 — Higiena i Nawyki ===
+  toilet_holding: {
+    title_pl: 'Nawykowe wstrzymywanie potrzeb',
+    context_pl:
+      'Dziecko nie chce iść do toalety i wstrzymuje potrzeby. Pokaż, że ciało wysyła ważne sygnały, których warto słuchać.',
+    metaphor_pl:
+      'Kapitan brzuszka, który dowodzi statkiem ciała i woła „pora na port!" Foka Słuchaczka.',
+    category: 'routine',
+  },
+  food_selectivity: {
+    title_pl: 'Wybiórczość pokarmowa (niejadek)',
+    context_pl:
+      'Dziecko je tylko kilka rzeczy i odmawia próbowania nowych smaków. Pokaż jedzenie jako odkrywanie krain, nie obowiązek.',
+    metaphor_pl:
+      'Talerz to mapa, każdy nowy smak to nowa wyspa do odwiedzenia. Wiewiórka Smakożerka.',
+    category: 'routine',
+  },
+  bath_anxiety: {
+    title_pl: 'Lęk przed kąpielą i myciem głowy',
+    context_pl:
+      'Dziecko panikuje przy kąpieli, krzyczy przy myciu głowy. Pokaż wodę jako przyjazny żywioł i kąpiel jako przygodę.',
+    metaphor_pl: 'Wanna to ocean odkrywców, a piana to magiczna mgła chmurowa. Delfin Bąbelek.',
+    category: 'fears',
+  },
+  morning_routine: {
+    title_pl: 'Poranna organizacja',
+    context_pl:
+      'Dziecko nie umie zorganizować się rano — ubranie trwa wieczność, buty się gubią. Pokaż, że poranek może być rytuałem przygody, nie walki.',
+    metaphor_pl:
+      'Magiczna lista skarbu — każdy odhaczony krok przybliża do dziennej misji. Wróbelek Punktualnik.',
+    category: 'routine',
+  },
+  screen_time_management: {
+    title_pl: 'Zarządzanie czasem ekranowym',
+    context_pl:
+      'Dziecko traktuje wyłączenie tabletu jak koniec świata. Pokaż, że ekran to jedna z wielu kraina zabawy, a inne są równie ciekawe.',
+    metaphor_pl:
+      'Czarodziejska klepsydra, która zaprasza do nowych przygód, gdy ekran zasypia. Lis Wyłącznik.',
+    category: 'routine',
+  },
+  pacifier_weaning: {
+    title_pl: 'Odstawienie smoczka lub butelki',
+    context_pl:
+      'Dziecko żegna się ze smoczkiem/butelką i traci znajomy sposób uspokajania. Pokaż, że pożegnanie to start nowej przygody, nie strata.',
+    metaphor_pl:
+      'Wróżkowa wymiana — smoczek zostawiony pod poduszką zamienia się w drobny prezent odwagi. Zajączek Pożegnańczyk.',
+    category: 'change',
+  },
+
+  // === Spec § 4 — Relacje i Rodzeństwo ===
+  sibling_rivalry: {
+    title_pl: 'Rywalizacja między rodzeństwem',
+    context_pl:
+      'Dziecko walczy o uwagę rodzica, jest zazdrosne o siostrę/brata. Pokaż, że miłość rodzica nie dzieli się — mnoży.',
+    metaphor_pl:
+      'Magiczne serce-ogród rodzica, w którym kwitnie tyle kwiatów, ile dzieci. Wróżka Dośćdlawszystkich.',
+    category: 'emotions',
+  },
+  empathy_building: {
+    title_pl: 'Empatia i rozumienie emocji innych',
+    context_pl:
+      'Dziecko nie chce się bawić z innymi, nie zauważa ich uczuć. Pokaż, że każdy bohater ma swoją historię — i można jej posłuchać.',
+    metaphor_pl: 'Magiczne lusterko serca, które pokazuje, co czuje druga osoba. Sowa Wsłuchana.',
+    category: 'social',
+  },
+  first_friendships: {
+    title_pl: 'Budowanie pierwszych przyjaźni',
+    context_pl:
+      'Dziecko nie wie, jak nawiązać kontakt z rówieśnikiem. Pokaż, że pierwszy krok jest najtrudniejszy, ale potem robi się łatwiej.',
+    metaphor_pl:
+      'Niewidzialna nić, która łączy serca dwóch dzieci od pierwszego „cześć". Mrówka Zaprzyjaźnioneczka.',
+    category: 'social',
+  },
+
+  // === Spec § 4 — Lęki i Odwaga ===
+  separation_anxiety: {
+    title_pl: 'Lęk separacyjny',
+    context_pl:
+      'Każde rozstanie z rodzicem to dramat. Pokaż, że miłość nie znika, gdy rodzic wychodzi — zawsze wraca.',
+    metaphor_pl:
+      'Niewidzialna nitka łącząca serca dziecka i rodzica, świecąca nawet przez ściany. Elfik Powrócik.',
+    category: 'fears',
+  },
+  preschool_adaptation: {
+    title_pl: 'Adaptacja przedszkolna i szkolna',
+    context_pl:
+      'Dziecko płacze przy drzwiach, prosi o zostanie w domu. Pokaż, że przedszkole/szkoła to bezpieczne miejsce pełne nowych przyjaciół.',
+    metaphor_pl:
+      'Magiczna brama, która znika, gdy bohater odkrywa, że po drugiej stronie czekają już znajomi. Niedźwiadek Pierwszy-Dzień.',
+    category: 'change',
+  },
+  medical_anxiety: {
+    title_pl: 'Lęk przed zabiegami medycznymi',
+    context_pl:
+      'Szczepienie, dentysta, biały fartuch = panika. Pokaż lekarza jako sojusznika, a narzędzia jako magiczne pomocniki.',
+    metaphor_pl:
+      'Szpital to warsztat naprawczy superbohaterów, a stetoskop słucha historii serca. Doktor Iskierka.',
+    category: 'fears',
+  },
+  relocation: {
+    title_pl: 'Zmiana miejsca zamieszkania',
+    context_pl:
+      'Dziecko traci znane otoczenie i rutynę. Pokaż, że dom jest tam, gdzie rodzina, a wspomnienia podróżują z nami.',
+    metaphor_pl:
+      'Magiczna walizka wspomnień, która otwiera portale do nowych przygód. Żółwik Domek.',
+    category: 'change',
+  },
+  failure_resilience: {
+    title_pl: 'Niska odporność na porażkę',
+    context_pl:
+      'Dziecko rezygnuje przy pierwszej trudności, płacze przy przegranej. Pokaż, że pomyłki to część zabawy, a próba to już zwycięstwo.',
+    metaphor_pl:
+      'Magiczny dziennik, w którym każda pomyłka rozkwita w mądrość. Króliczek Spróbujmy-Jeszcze.',
+    category: 'emotions',
+  },
+  lying_confabulation: {
+    title_pl: 'Kłamstwa i konfabulacje',
+    context_pl:
+      'Dziecko zmyśla, miesza wyobraźnię z prawdą. Pokaż, że to często kreatywność, a nie złośliwość, i że oba światy mają swoje miejsce.',
+    metaphor_pl:
+      'Magiczna szuflada — w jednej połówce mieszkają historie, w drugiej fakty. Lis Prawdomówca.',
+    category: 'emotions',
+  },
+
+  // === Spec § 4 — Trudne Sytuacje Życiowe ===
+  death_in_family: {
+    title_pl: 'Śmierć w rodzinie',
+    context_pl:
+      'Dziecko zmaga się z odejściem bliskiej osoby. Pokaż delikatnie, że osoby, które kochaliśmy, zostają w naszym sercu i wspomnieniach.',
+    metaphor_pl:
+      'Świetlik wspomnień, który świeci w sercu nawet gdy ktoś bliski odszedł. Motyl Ciepło.',
+    category: 'change',
+  },
+  family_illness: {
+    title_pl: 'Choroba w rodzinie',
+    context_pl:
+      'Dziecko boi się, że choroba kogoś bliskiego zmieni wszystko. Pokaż, że może być odważne i że miłość pomaga niezależnie od tego, co się dzieje.',
+    metaphor_pl:
+      'Świetlikowa lampa wsparcia, którą każdy w rodzinie może zapalić, gdy się boi. Kotek Otulisz.',
+    category: 'change',
+  },
+  child_illness: {
+    title_pl: 'Choroba dziecka',
+    context_pl:
+      'Dziecko boi się szpitala, badań, samotności. Pokaż, że nawet w trudnych chwilach jest otoczone miłością i że bycie chorym nie znaczy bycie samotnym.',
+    metaphor_pl:
+      'Magiczna kołderka odwagi, która grzeje serce nawet pod kroplówką. Pingwinek Dzielniak.',
+    category: 'change',
+  },
+
+  // === Spec § 4 — Różnorodność i Akceptacja ===
+  self_acceptance: {
+    title_pl: 'Akceptacja odmienności własnej',
+    context_pl:
+      'Dziecko czuje, że jest „inne" niż rówieśnicy. Pokaż, że bycie innym to supermoc, nie wada.',
+    metaphor_pl:
+      'Magiczne lusterko, które pokazuje unikalny wzór serca każdego dziecka. Pawik Iskra.',
+    category: 'emotions',
+  },
+  peer_acceptance: {
+    title_pl: 'Akceptacja odmienności rówieśników',
+    context_pl:
+      'Dziecko nie rozumie, dlaczego ktoś jest inny — fizycznie, emocjonalnie, kulturowo. Pokaż, że różnorodność czyni świat ciekawszym.',
+    metaphor_pl:
+      'Magiczna mozaika, gdzie każdy kafelek ma inny kolor, ale razem tworzą najpiękniejszy obraz. Wiewiórka Witamy-Każdego.',
+    category: 'social',
+  },
+  peer_exclusion: {
+    title_pl: 'Wykluczenie rówieśnicze',
+    context_pl:
+      'Dziecko czuje, że nikt nie chce się z nim bawić. Pokaż, że jego wartość nie zależy od decyzji innych dzieci, a prawdziwi przyjaciele są tam, gdzie szczerość.',
+    metaphor_pl:
+      'Magiczne ognisko serca, do którego sami siadają ci, którzy potrafią się ogrzać. Lis Sojusznik.',
+    category: 'social',
+  },
+  learning_motivation: {
+    title_pl: 'Zrozumienie celu nauki',
+    context_pl:
+      'Dziecko nie widzi sensu nauki, wszystko wydaje się nudne. Pokaż, że uczenie się to odkrywanie świata i nowych supermocy.',
+    metaphor_pl: 'Magiczna mapa wiedzy, która powiększa się z każdą nauczoną rzeczą. Sowa Cyferka.',
+    category: 'emotions',
+  },
 };
+
+/**
+ * Aliases for renamed problemIds — keeps old slugs working without
+ * duplicating prompt copy. Use `resolveProblemId(id)` to canonicalize.
+ */
+export const PROBLEM_ALIASES: Record<string, string> = {
+  // Empty for now — every spec problemId has its own entry above.
+};
+
+/**
+ * Resolves a frontend problemId to its canonical entry in PROBLEMS.
+ * Falls back to the input if no alias exists. Caller is responsible
+ * for handling the case where the canonical id isn't in PROBLEMS.
+ */
+export function resolveProblemId(id: string): string {
+  return PROBLEM_ALIASES[id] ?? id;
+}
 
 // ── Appearance Maps ──────────────────────────────
 
+// Spec § 3.4 intake form sends Polish, capitalized strings verbatim
+// (e.g. "Blond", "Brązowe"). Earlier internal slugs are kept for
+// backwards compatibility with orders already in flight.
 export const HAIR_COLOR_MAP: Record<string, string> = {
+  // Spec values
+  Blond: 'blonde',
+  Brązowe: 'brown',
+  Czarne: 'black',
+  Rude: 'red / ginger',
+  // Legacy slugs
   blond: 'blonde',
   jasny_braz: 'light brown',
   braz: 'brown',
@@ -188,6 +442,11 @@ export const HAIR_COLOR_MAP: Record<string, string> = {
 };
 
 export const HAIR_STYLE_MAP: Record<string, string> = {
+  // Spec § 3.4 collapses hair structure to length only.
+  Krótkie: 'short',
+  Średnie: 'medium-length',
+  Długie: 'long',
+  // Legacy slugs (richer style options)
   krotkie_proste: 'short and straight',
   krotkie_falowane: 'short and slightly wavy',
   srednie_proste: 'medium-length and straight',
@@ -199,6 +458,12 @@ export const HAIR_STYLE_MAP: Record<string, string> = {
 };
 
 export const EYE_COLOR_MAP: Record<string, string> = {
+  // Spec values
+  Niebieskie: 'blue',
+  Zielone: 'green',
+  Brązowe: 'brown',
+  Szare: 'gray',
+  // Legacy slugs
   niebieskie: 'blue',
   zielone: 'green',
   brazowe: 'brown',
