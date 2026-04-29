@@ -33,6 +33,7 @@ const applicationTables = {
     finishReason: v.optional(v.string()), // e.g. "stop", "length", "content-filter"
     safetyBlockReason: v.optional(v.string()), // Gemini promptFeedback.blockReason
     retryCount: v.optional(v.number()),
+    traceId: v.optional(v.string()), // Langfuse trace ID for cross-system correlation
     timestamp: v.number(),
   }).index('by_clerk_user', ['clerkUserId']),
 
@@ -278,6 +279,9 @@ const applicationTables = {
     ),
     narrative: v.string(),
     details: v.optional(v.string()),
+    // Langfuse trace ID — lets admin debugging join pipeline event ↔ LLM log
+    // ↔ Langfuse trace by a single ID. Optional so legacy rows don't break.
+    traceId: v.optional(v.string()),
     timestamp: v.number(),
   }).index('by_order', ['orderId']),
 

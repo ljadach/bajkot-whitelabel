@@ -223,6 +223,16 @@ export function isLangfuseEnabled(): boolean {
   return langfuseEnabled;
 }
 
+/**
+ * Trace ID of the currently active observation, if any. Lets non-Langfuse
+ * code (DB log mutations, pipeline events) tag rows with the same correlation
+ * ID so admin tooling can join across systems.
+ */
+export function getCurrentTraceId(): string | undefined {
+  const ctx = getCurrentContext();
+  return ctx?.traceId;
+}
+
 export async function startActiveObservation<T>(
   name: string,
   handler: (span: Observation) => Promise<T>,

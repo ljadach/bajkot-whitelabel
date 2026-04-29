@@ -17,7 +17,7 @@ import { chatJsonForStage, chatJsonForStageWithImages } from './lib/llmClient';
 import { applyPlaceholders, PromptTemplate } from './lib/prompts';
 import { normalizeFallback } from './lib/prompts/types';
 import { bookFallbacks } from './lib/prompts/bookFallbacks';
-import { startActiveObservation } from './lib/langfuse';
+import { startActiveObservation, getCurrentTraceId } from './lib/langfuse';
 import { buildInternalLogContext } from './lib/actionHelpers';
 import { generateImage, IMAGE_GEN_MIN_INTERVAL_MS } from './lib/geminiImageGen';
 import {
@@ -47,6 +47,28 @@ import { normalizeStoryDraftV2, normalizeIllustrationPlan } from './lib/bookAgen
 import { resolveAgeBracket } from './lib/ageBracket';
 import { buildChildPortrait } from './lib/childPortrait';
 import { getNarrative } from './bookPipelineEvents';
+
+/**
+ * Record a pipeline event with the current Langfuse trace ID auto-attached.
+ * Lets admin debugging join `bookPipelineEvents` rows ↔ `llmLogs` rows ↔
+ * Langfuse traces by a single ID without every callsite remembering to do it.
+ */
+async function recordPipelineEvent(
+  ctx: ActionCtx,
+  args: {
+    orderId: any;
+    agent: string;
+    event: 'start' | 'complete' | 'error' | 'retry' | 'info';
+    narrative: string;
+    details?: string;
+    traceId?: string;
+  },
+): Promise<void> {
+  await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+    ...args,
+    traceId: args.traceId ?? getCurrentTraceId(),
+  });
+}
 
 /**
  * Increment LLM call counter and abort if budget exceeded.
@@ -102,7 +124,7 @@ export const intake = internalAction({
         status: 'intake',
         currentAgent: 'A0',
       });
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A0',
         event: 'start',
@@ -170,7 +192,7 @@ export const intake = internalAction({
         value: JSON.stringify(normalized),
       });
 
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A0',
         event: 'complete',
@@ -181,7 +203,7 @@ export const intake = internalAction({
       await ctx.scheduler.runAfter(0, internal.bookAgents.profileChild, { orderId });
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A0',
         event: 'error',
@@ -213,7 +235,7 @@ export const profileChild = internalAction({
         status: 'profiling',
         currentAgent: 'A1',
       });
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A1',
         event: 'start',
@@ -257,7 +279,7 @@ export const profileChild = internalAction({
         value: JSON.stringify(profile),
       });
 
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A1',
         event: 'complete',
@@ -269,7 +291,7 @@ export const profileChild = internalAction({
       await ctx.scheduler.runAfter(0, internal.bookAgents.designCharacter, { orderId });
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A1',
         event: 'error',
@@ -301,7 +323,7 @@ export const planStory = internalAction({
         status: 'story_planning',
         currentAgent: 'A2',
       });
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A2',
         event: 'start',
@@ -343,7 +365,7 @@ export const planStory = internalAction({
         value: JSON.stringify(blueprint),
       });
 
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A2',
         event: 'complete',
@@ -354,7 +376,7 @@ export const planStory = internalAction({
       await ctx.scheduler.runAfter(0, internal.bookAgents.writeStory, { orderId });
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A2',
         event: 'error',
@@ -389,7 +411,7 @@ export const writeStory = internalAction({
         status: 'story_writing',
         currentAgent: 'A3',
       });
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A3',
         event: 'start',
@@ -439,7 +461,7 @@ export const writeStory = internalAction({
         value: JSON.stringify(draft),
       });
 
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A3',
         event: 'complete',
@@ -450,7 +472,7 @@ export const writeStory = internalAction({
       await ctx.scheduler.runAfter(0, internal.bookAgents.reviewPsych, { orderId });
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A3',
         event: 'error',
@@ -482,7 +504,7 @@ export const reviewPsych = internalAction({
         status: 'psych_review',
         currentAgent: 'A4',
       });
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A4',
         event: 'start',
@@ -502,7 +524,7 @@ export const reviewPsych = internalAction({
       // Fast mode: skip QA review entirely
       if (order.skipQaReviews) {
         console.log('[A4] skipQaReviews=true — auto-PASS, proceeding to A5');
-        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        await recordPipelineEvent(ctx, {
           orderId,
           agent: 'A4',
           event: 'complete',
@@ -548,7 +570,7 @@ export const reviewPsych = internalAction({
 
       // Handle review result
       if (review.status === 'PASS') {
-        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        await recordPipelineEvent(ctx, {
           orderId,
           agent: 'A4',
           event: 'complete',
@@ -557,7 +579,7 @@ export const reviewPsych = internalAction({
         // Proceed to A5
         await ctx.scheduler.runAfter(0, internal.bookAgents.directArt, { orderId });
       } else if (review.status === 'PASS_WITH_CORRECTIONS') {
-        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        await recordPipelineEvent(ctx, {
           orderId,
           agent: 'A4',
           event: 'complete',
@@ -574,7 +596,7 @@ export const reviewPsych = internalAction({
         await ctx.scheduler.runAfter(0, internal.bookAgents.directArt, { orderId });
       } else {
         // FAIL — retry A3
-        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        await recordPipelineEvent(ctx, {
           orderId,
           agent: 'A4',
           event: 'retry',
@@ -600,7 +622,7 @@ export const reviewPsych = internalAction({
       }
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A4',
         event: 'error',
@@ -633,7 +655,7 @@ export const directArt = internalAction({
         status: 'art_direction',
         currentAgent: 'A5',
       });
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A5',
         event: 'start',
@@ -716,7 +738,7 @@ export const directArt = internalAction({
         value: JSON.stringify(plan),
       });
 
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A5',
         event: 'complete',
@@ -730,7 +752,7 @@ export const directArt = internalAction({
       });
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A5',
         event: 'error',
@@ -762,7 +784,7 @@ export const designCharacter = internalAction({
         status: 'character_design',
         currentAgent: 'A6',
       });
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A6',
         event: 'start',
@@ -811,7 +833,7 @@ export const designCharacter = internalAction({
         styleVoteImageB: storageIdB,
       });
 
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A6',
         event: 'complete',
@@ -821,7 +843,7 @@ export const designCharacter = internalAction({
       // Batch mode: if chosenStyle is already set, skip the vote pause
       const freshOrder = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
       if (freshOrder?.chosenStyle) {
-        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        await recordPipelineEvent(ctx, {
           orderId,
           agent: 'A6b',
           event: 'complete',
@@ -833,7 +855,7 @@ export const designCharacter = internalAction({
         });
       } else {
         // Regular flow — pause for user vote
-        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        await recordPipelineEvent(ctx, {
           orderId,
           agent: 'A6b',
           event: 'start',
@@ -847,7 +869,7 @@ export const designCharacter = internalAction({
       }
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A6',
         event: 'error',
@@ -922,7 +944,7 @@ export const illustrate = internalAction({
         status: 'illustrating',
         currentAgent: 'A7',
       });
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A7',
         event: 'start',
@@ -1019,7 +1041,7 @@ export const illustrate = internalAction({
         });
       }
 
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A7',
         event: 'complete',
@@ -1030,7 +1052,7 @@ export const illustrate = internalAction({
       await ctx.scheduler.runAfter(0, internal.bookAgents.reviewVisual, { orderId });
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A7',
         event: 'error',
@@ -1062,7 +1084,7 @@ export const reviewVisual = internalAction({
         status: 'visual_qa',
         currentAgent: 'A8',
       });
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A8',
         event: 'start',
@@ -1077,7 +1099,7 @@ export const reviewVisual = internalAction({
       // Fast mode: skip visual QA entirely
       if (order.skipQaReviews) {
         console.log('[A8] skipQaReviews=true — auto-PASS, proceeding to A9');
-        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        await recordPipelineEvent(ctx, {
           orderId,
           agent: 'A8',
           event: 'complete',
@@ -1132,7 +1154,7 @@ export const reviewVisual = internalAction({
 
       // Handle REGENERATE with retry logic (max 3)
       if (qa.status === 'REGENERATE') {
-        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        await recordPipelineEvent(ctx, {
           orderId,
           agent: 'A8',
           event: 'retry',
@@ -1149,7 +1171,7 @@ export const reviewVisual = internalAction({
           await ctx.scheduler.runAfter(0, internal.bookAgents.illustrate, { orderId });
         } else {
           console.warn(`[A8] Max visual QA retries reached (${retryCount}), proceeding to A9`);
-          await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+          await recordPipelineEvent(ctx, {
             orderId,
             agent: 'A8',
             event: 'complete',
@@ -1159,7 +1181,7 @@ export const reviewVisual = internalAction({
         }
       } else {
         // PASS → proceed to A9
-        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        await recordPipelineEvent(ctx, {
           orderId,
           agent: 'A8',
           event: 'complete',
@@ -1169,7 +1191,7 @@ export const reviewVisual = internalAction({
       }
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A8',
         event: 'error',
@@ -1201,7 +1223,7 @@ export const composePdf = internalAction({
         status: 'composing_pdf',
         currentAgent: 'A9',
       });
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A9',
         event: 'start',
@@ -1212,7 +1234,7 @@ export const composePdf = internalAction({
       await ctx.scheduler.runAfter(0, internal.bookComposer.generatePdf, { orderId });
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A9',
         event: 'error',
@@ -1244,7 +1266,7 @@ export const reviewFinal = internalAction({
         status: 'final_qa',
         currentAgent: 'A10',
       });
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A10',
         event: 'start',
@@ -1259,7 +1281,7 @@ export const reviewFinal = internalAction({
       // Fast mode: skip final QA entirely
       if (order.skipQaReviews) {
         console.log('[A10] skipQaReviews=true — auto-DELIVER, proceeding to A11');
-        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        await recordPipelineEvent(ctx, {
           orderId,
           agent: 'A10',
           event: 'complete',
@@ -1368,7 +1390,7 @@ export const reviewFinal = internalAction({
       if (qa.status === 'BLOCK') {
         const blockMsg = `Final QA blocked: ${issues.join('; ')}`;
         console.error(`[A10] ${blockMsg}`);
-        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        await recordPipelineEvent(ctx, {
           orderId,
           agent: 'A10',
           event: 'error',
@@ -1382,7 +1404,7 @@ export const reviewFinal = internalAction({
           error: blockMsg,
         });
       } else {
-        await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+        await recordPipelineEvent(ctx, {
           orderId,
           agent: 'A10',
           event: 'complete',
@@ -1392,7 +1414,7 @@ export const reviewFinal = internalAction({
       }
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A10',
         event: 'error',
@@ -1424,7 +1446,7 @@ export const deliver = internalAction({
         status: 'delivering',
         currentAgent: 'A11',
       });
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A11',
         event: 'start',
@@ -1441,7 +1463,7 @@ export const deliver = internalAction({
 
       // Mark complete
       await ctx.runMutation(internal.bookPipelineHelpers.markOrderComplete, { orderId });
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A11',
         event: 'complete',
@@ -1449,7 +1471,7 @@ export const deliver = internalAction({
       });
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
-      await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      await recordPipelineEvent(ctx, {
         orderId,
         agent: 'A11',
         event: 'error',

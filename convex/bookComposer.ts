@@ -23,6 +23,7 @@ import { parseArtifact } from './lib/bookTypes';
 import type { StoryDraft, StoryBlueprint, CharacterProfile } from './lib/bookTypes';
 import type { Id } from './_generated/dataModel';
 import { getNarrative } from './bookPipelineEvents';
+import { getCurrentTraceId } from './lib/langfuse';
 import { resolveAgeBracket, type AgeBracket } from './lib/ageBracket';
 import { buildPageSequence, splitBeatText, type PageSpec } from './lib/pageSequence';
 import PDFDocument from 'pdfkit';
@@ -208,6 +209,7 @@ export const generatePdf = internalAction({
         agent: 'A9',
         event: 'complete',
         narrative: getNarrative('A9', 'complete'),
+        traceId: getCurrentTraceId(),
       });
 
       await ctx.scheduler.runAfter(0, internal.bookAgents.reviewFinal, { orderId });
@@ -222,6 +224,7 @@ export const generatePdf = internalAction({
         event: 'error',
         narrative: getNarrative('A9', 'error', errMsg),
         details: errMsg,
+        traceId: getCurrentTraceId(),
       });
       await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
         orderId,

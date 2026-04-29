@@ -119,7 +119,12 @@ export async function chatJsonWithRetries<T = any>(
   const storeLog = async (
     response?: string,
     error?: string,
-    extra?: { finishReason?: string; safetyBlockReason?: string; retryCount?: number },
+    extra?: {
+      finishReason?: string;
+      safetyBlockReason?: string;
+      retryCount?: number;
+      traceId?: string;
+    },
   ) => {
     if (!logContext) return;
     try {
@@ -136,6 +141,7 @@ export async function chatJsonWithRetries<T = any>(
         finishReason: extra?.finishReason,
         safetyBlockReason: extra?.safetyBlockReason,
         retryCount: extra?.retryCount,
+        traceId: extra?.traceId,
       });
     } catch (e) {
       console.warn('Failed to store LLM log:', e);
@@ -146,6 +152,7 @@ export async function chatJsonWithRetries<T = any>(
     'llmClient.chatJsonWithRetries',
     async (span: Observation) => {
       span.update({ ...spanAttributes, input: promptPreview });
+      const traceId = span.context().traceId || undefined;
       let lastErr: any;
 
       for (let attempt = 0; attempt < retries; attempt++) {
@@ -176,6 +183,7 @@ export async function chatJsonWithRetries<T = any>(
           await storeLog(JSON.stringify(parsed, null, 2), undefined, {
             finishReason: response.finishReason ?? undefined,
             retryCount: attempt,
+            traceId,
           });
 
           return parsed;
@@ -223,11 +231,12 @@ export async function chatJsonWithRetries<T = any>(
         await storeLog(JSON.stringify(fallback, null, 2) + '\n\n[FALLBACK USED]', errMsg, {
           safetyBlockReason,
           retryCount: retries,
+          traceId,
         });
         return fallback;
       }
 
-      await storeLog(undefined, errMsg, { safetyBlockReason, retryCount: retries });
+      await storeLog(undefined, errMsg, { safetyBlockReason, retryCount: retries, traceId });
       throw new Error(errMsg);
     },
     { asType: 'generation' },
