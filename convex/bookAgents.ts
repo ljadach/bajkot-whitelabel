@@ -19,7 +19,7 @@ import { normalizeFallback } from './lib/prompts/types';
 import { bookFallbacks } from './lib/prompts/bookFallbacks';
 import { startActiveObservation } from './lib/langfuse';
 import { buildInternalLogContext } from './lib/actionHelpers';
-import { generateImage } from './lib/geminiImageGen';
+import { generateImage, IMAGE_GEN_MIN_INTERVAL_MS } from './lib/geminiImageGen';
 import {
   PROBLEMS,
   HAIR_COLOR_MAP,
@@ -660,8 +660,26 @@ export const directArt = internalAction({
           // triggering Google's content filter on sensitive therapeutic topics
           // (e.g. potty training text about children). Blueprint already contains
           // visual_direction and summary_en for each beat — sufficient for art planning.
+
+          // Strip visual_identity.distinguishing_features (e.g. "round cheeks,
+          // small button nose") before interpolation. Verified empirically: that
+          // value deterministically trips Gemini 2.5 Flash PROHIBITED_CONTENT —
+          // a non-configurable hard filter — for bathroom/body scenes with minors.
+          // The artifact in DB is left intact for downstream agents that may want it.
+          const sanitizedProfile = (() => {
+            try {
+              const obj = JSON.parse(order.characterProfile!);
+              if (obj?.child_character?.visual_identity) {
+                delete obj.child_character.visual_identity.distinguishing_features;
+              }
+              return JSON.stringify(obj);
+            } catch {
+              return order.characterProfile!;
+            }
+          })();
+
           const systemPrompt = await getPrompt(ctx, PromptTemplate.BookArtDirector, {
-            CHARACTER_PROFILE: order.characterProfile!,
+            CHARACTER_PROFILE: sanitizedProfile,
             STORY_BLUEPRINT: order.storyBlueprint!,
             STORY_DRAFT: '[See blueprint beat summaries and visual_direction fields above]',
             ART_STYLE:
@@ -949,7 +967,8 @@ export const illustrate = internalAction({
 
       // Sequential generation is mandatory — each call goes through the per-order
       // LLM budget counter, and Gemini image gen is rate-limited per project.
-      for (const ill of plan.illustrations) {
+      for (let i = 0; i < plan.illustrations.length; i++) {
+        const ill = plan.illustrations[i];
         const id = ill.id;
         const width = ill.width ?? 900;
         const height = ill.height ?? 900;
@@ -974,6 +993,13 @@ export const illustrate = internalAction({
         ]
           .filter(Boolean)
           .join(' ');
+
+        // Pace requests against Gemini's per-project rate limit. Caller-side
+        // (here, deterministic) — module-level state in geminiImageGen would
+        // not survive cold V8 contexts.
+        if (i > 0) {
+          await new Promise((resolve) => setTimeout(resolve, IMAGE_GEN_MIN_INTERVAL_MS));
+        }
 
         await checkCallBudget(ctx, orderId);
         const imageData = await generateImage(fullPrompt, { width, height });

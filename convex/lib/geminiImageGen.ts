@@ -9,21 +9,14 @@
 const API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 const MODEL = 'gemini-2.5-flash-image';
 
-let lastCallTime = 0;
-const MIN_INTERVAL_MS = 2_000; // 2s between calls
+/** Recommended delay between sequential generateImage() calls. The caller
+ * (currently A7 illustrate loop) is responsible for spacing — module-level
+ * state is unreliable in serverless because each Convex action invocation
+ * may land on a fresh V8 context. */
+export const IMAGE_GEN_MIN_INTERVAL_MS = 2_000;
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-async function rateLimitWait() {
-  const now = Date.now();
-  const elapsed = now - lastCallTime;
-  if (elapsed < MIN_INTERVAL_MS && lastCallTime > 0) {
-    const waitMs = MIN_INTERVAL_MS - elapsed;
-    await sleep(waitMs);
-  }
-  lastCallTime = Date.now();
 }
 
 /**
@@ -43,8 +36,6 @@ export async function generateImage(
     console.warn('[ImageGen] No GOOGLE_GENERATIVE_AI_API_KEY — skipping image generation');
     return null;
   }
-
-  await rateLimitWait();
 
   const maxRetries = 3;
   for (let attempt = 0; attempt < maxRetries; attempt++) {
@@ -69,7 +60,6 @@ export async function generateImage(
         const waitSec = 30 * (attempt + 1);
         console.warn(`[ImageGen] Rate limited (429). Waiting ${waitSec}s...`);
         await sleep(waitSec * 1000);
-        lastCallTime = Date.now();
         continue;
       }
 

@@ -17,15 +17,21 @@ export const receiveWebhook = httpAction(async (ctx, request) => {
     return new Response('ok', { status: 200 });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    if (
-      message.includes('STRIPE_WEBHOOK_SECRET') ||
-      message.includes('No signatures found') ||
-      message.includes('signature')
-    ) {
+    // Config error → 500 so Stripe retries (and we get paged via repeated
+    // failures in the dashboard) until ops fixes the env var.
+    if (message.includes('[stripe-config]')) {
+      console.error('[stripe-webhook] Config error:', message);
+      return new Response('Webhook configuration error', { status: 500 });
+    }
+    // Signature errors → 400 so Stripe stops retrying (the request is
+    // structurally bad and a retry won't help).
+    if (message.includes('No signatures found') || message.includes('signature')) {
       console.error('[stripe-webhook] Signature verification failed:', message);
       return new Response('Webhook signature verification failed', { status: 400 });
     }
-    console.error('[stripe-webhook] Processing error:', message);
+    // Business/processing errors are caught inside verifyWebhookEvent and
+    // never reach here. If something does, treat as infrastructure (500).
+    console.error('[stripe-webhook] Unexpected error:', message);
     return new Response('Internal processing error', { status: 500 });
   }
 });

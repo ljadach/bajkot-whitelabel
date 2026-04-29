@@ -25,6 +25,15 @@ Na początku każdej sesji **przypomnij użytkownikowi** które środowisko jest
 
 Sprawdź w `.env.local` które `CONVEX_DEPLOYMENT` jest aktywne i wypisz to w pierwszej odpowiedzi sesji.
 
+### 🔥 PRE-LAUNCH SECURITY HOLES — przypomnij na każdej sesji 🔥
+
+**Jesteśmy GOLI.** Otwórz `TODO.md` w katalogu głównym i wypisz statusy dwóch dziur:
+
+1. **Landing access token gate WYŁĄCZONY** (`convex/bookPipeline.ts:422-428`) — public endpoint bez rate-limitu. Docelowo zastąpiony przez Stripe gate na każdą generację. Do tego czasu: NIE PROMUJEMY landing flow publicznie.
+2. **PII dzieci w LLM logach + Langfuse** — imiona, problemy, dedykacje wpadają nieanonimizowane. RODO ryzyko.
+
+Nie znikają same — sprawdź `TODO.md` czy dalej tam są i przypomnij użytkownikowi na starcie sesji.
+
 ## Commands
 
 ```bash
