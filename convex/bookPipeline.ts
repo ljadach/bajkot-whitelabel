@@ -9,6 +9,7 @@ import { v } from 'convex/values';
 import { Id } from './_generated/dataModel';
 import { assertOrderOwner, assertLandingOrder, LANDING_USER_ID } from './lib/roles';
 import { toAgeBracket, type AgeBracket } from './lib/ageBracket';
+import { sanitizeUserText, sanitizeRequiredUserText } from './lib/security';
 
 // Schema validators reused across entry-point mutations.
 const ageBracketValidator = v.union(v.literal('3-5'), v.literal('6-8'), v.literal('9+'));
@@ -56,6 +57,25 @@ function validateOrderInput(args: {
   if (args.favoriteToy && args.favoriteToy.length > 100) {
     throw new Error('favoriteToy must be max 100 characters');
   }
+}
+
+/**
+ * Pull all parent-supplied text fields through the prompt-injection
+ * sanitiser. Length caps mirror `validateOrderInput` (which has already run).
+ */
+function sanitizeOrderTextFields<
+  T extends {
+    childName: string;
+    problemDetail?: string;
+    favoriteToy?: string;
+  },
+>(args: T): T {
+  return {
+    ...args,
+    childName: sanitizeRequiredUserText(args.childName, 30),
+    problemDetail: sanitizeUserText(args.problemDetail, 500),
+    favoriteToy: sanitizeUserText(args.favoriteToy, 100),
+  };
 }
 
 // ── Start a new book order ─────────────────────────────────
@@ -109,17 +129,18 @@ export const startOrder = action({
     });
 
     validateOrderInput(args);
+    const cleaned = sanitizeOrderTextFields(args);
 
     // Create order in DB
     const orderId: Id<'bookOrders'> = await ctx.runMutation(internal.bookPipeline.createOrder, {
       clerkUserId,
-      childName: args.childName,
+      childName: cleaned.childName,
       ageBracket,
       ageNumber: args.ageNumber,
       gender: args.gender,
       problemId: args.problemId,
-      problemDetail: args.problemDetail,
-      favoriteToy: args.favoriteToy,
+      problemDetail: cleaned.problemDetail,
+      favoriteToy: cleaned.favoriteToy,
       glasses: args.glasses,
       hairColor: args.hairColor,
       hairStyle: args.hairStyle,
@@ -328,11 +349,15 @@ export const submitStyleVote = mutation({
 const DEDICATION_MAX = 200;
 
 function normalizeDedication(raw: string): string {
-  const trimmed = raw.trim();
-  if (trimmed.length === 0) throw new Error('Dedykacja nie może być pusta');
-  if (trimmed.length > DEDICATION_MAX)
+  if (raw.trim().length === 0) throw new Error('Dedykacja nie może być pusta');
+  if (raw.trim().length > DEDICATION_MAX)
     throw new Error(`Dedykacja może mieć maksymalnie ${DEDICATION_MAX} znaków`);
-  return trimmed;
+  // Defang prompt-injection patterns — the dedication ends up on the title
+  // page next to the child's name and could otherwise carry instructions
+  // through any LLM that re-reads the order.
+  const cleaned = sanitizeRequiredUserText(raw, DEDICATION_MAX);
+  if (cleaned.length === 0) throw new Error('Dedykacja nie może być pusta');
+  return cleaned;
 }
 
 function assertDedicationWindow(order: {
@@ -478,6 +503,7 @@ export const startLandingOrder = action({
     const skipStripe = adminUser ? args.skipStripe : undefined;
 
     validateOrderInput(args);
+    const cleaned = sanitizeOrderTextFields(args);
 
     const ageBracket = deriveAgeBracket({
       ageBracket: args.ageBracket,
@@ -487,13 +513,13 @@ export const startLandingOrder = action({
 
     const orderId: Id<'bookOrders'> = await ctx.runMutation(internal.bookPipeline.createOrder, {
       clerkUserId: LANDING_USER_ID,
-      childName: args.childName,
+      childName: cleaned.childName,
       ageBracket,
       ageNumber: args.ageNumber,
       gender: args.gender,
       problemId: args.problemId,
-      problemDetail: args.problemDetail,
-      favoriteToy: args.favoriteToy,
+      problemDetail: cleaned.problemDetail,
+      favoriteToy: cleaned.favoriteToy,
       glasses: args.glasses,
       hairColor: args.hairColor,
       hairStyle: args.hairStyle,
