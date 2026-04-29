@@ -6,6 +6,28 @@ import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
 import { trackEvent } from '@lib/telemetry';
 
+const PRINT_REQUEST_EMAIL = 'info@bajkoterapia.org';
+
+function buildPrintRequestMailto(bookOrderId?: string, childName?: string | null): string {
+  const subject = encodeURIComponent('Wydruk bajki — zamówienie wersji drukowanej');
+  const lines = [
+    'Cześć,',
+    '',
+    'Chciałabym/chciałbym zamówić wydrukowaną wersję bajki.',
+    '',
+    childName ? `Imię dziecka: ${childName}` : null,
+    bookOrderId ? `Numer zamówienia: ${bookOrderId}` : null,
+    '',
+    'Adres do wysyłki:',
+    '— Imię i nazwisko:',
+    '— Ulica i numer:',
+    '— Kod pocztowy i miejscowość:',
+    '— Telefon:',
+  ].filter(Boolean);
+  const body = encodeURIComponent(lines.join('\n'));
+  return `mailto:${PRINT_REQUEST_EMAIL}?subject=${subject}&body=${body}`;
+}
+
 export function BookResult() {
   const { orderId } = useParams<{ orderId: string }>();
 
@@ -118,6 +140,14 @@ export function BookSuccessScreen({
                 <i className="fa-solid fa-download" />
                 {t('result.download')}
               </a>
+              <a
+                href={buildPrintRequestMailto(bookOrderId, childName)}
+                onClick={() => trackEvent('print_requested_from_result', { flow, bookOrderId })}
+                className="inline-flex items-center gap-2 rounded-2xl border-2 border-calm-300 bg-white px-6 py-2.5 text-sm font-bold text-calm-800 hover:border-calm-500 transition"
+              >
+                <i className="fa-solid fa-truck" />
+                {t('result.requestPrint')}
+              </a>
               {printHref && (
                 <Link
                   to={printHref}
@@ -134,6 +164,30 @@ export function BookSuccessScreen({
               <span className="text-sm text-gray-500">{t('result.processing')}</span>
             </div>
           )}
+        </div>
+
+        {/* Delivery info — sets expectations for both formats. */}
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-7 grid sm:grid-cols-2 gap-4 text-left">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 bg-magic-50 text-magic-600 rounded-2xl flex items-center justify-center text-lg shrink-0">
+              <i className="fa-solid fa-bolt" />
+            </div>
+            <div>
+              <p className="font-bold text-calm-900 text-sm">{t('result.deliveryPdfHeading')}</p>
+              <p className="text-gray-500 text-xs leading-relaxed">{t('result.deliveryPdfBody')}</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 bg-calm-50 text-calm-700 rounded-2xl flex items-center justify-center text-lg shrink-0">
+              <i className="fa-solid fa-truck" />
+            </div>
+            <div>
+              <p className="font-bold text-calm-900 text-sm">{t('result.deliveryPrintHeading')}</p>
+              <p className="text-gray-500 text-xs leading-relaxed">
+                {t('result.deliveryPrintBody')}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Upsell — create another book */}

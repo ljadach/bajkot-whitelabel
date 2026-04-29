@@ -181,6 +181,10 @@ export function OrderCheckout({
                 price={t('previewScreen.formatPrintPrice')}
               />
             </div>
+            <p className="mt-3 text-xs text-gray-500 leading-relaxed">
+              <i className="fa-solid fa-circle-info text-calm-500 mr-1" />
+              {t('checkout.printDispatchNote')}
+            </p>
           </div>
 
           {/* Address fields (when PDF+Print) */}
