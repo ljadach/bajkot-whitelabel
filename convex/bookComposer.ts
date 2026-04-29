@@ -166,12 +166,14 @@ export const generatePdf = internalAction({
         return fetchImageBuffer(ctx, ill.storageId);
       };
 
-      const title = draft.title || blueprint?.title || `Książeczka dla ${order.childName}`;
+      // Fallback title intentionally avoids "dla {name}" — that wording
+      // requires the genitive in Polish, which we can't safely produce yet.
+      const title = draft.title || blueprint?.title || 'Twoja bajka';
       const subtitle = blueprint?.subtitle || '';
+      // No "dla {name}" fallback — that needs the genitive. Title page
+      // gracefully omits the dedication when nothing was supplied.
       const dedication =
-        (order.parentDedication as string | undefined)?.trim() ||
-        draft.dedication?.trim() ||
-        `Dla ${order.childName}`;
+        (order.parentDedication as string | undefined)?.trim() || draft.dedication?.trim() || '';
 
       const renderCtx: RenderCtx = {
         fs,
@@ -364,41 +366,46 @@ function drawTitlePage(doc: PDFKit.PDFDocument, r: RenderCtx) {
     });
   }
 
+  // The Polish "dla X" construction needs the genitive form of the name —
+  // until we wire a declension library, sidestep it with a vocative-friendly
+  // phrasing that reads correctly with any name in nominative.
   doc.font('Body').fontSize(r.fs.small).fillColor(C.textSecondary);
-  doc.text(`Bajka dla ${r.childName}`, MARGIN, doc.y + 20, {
+  doc.text(`Twoja bajka, ${r.childName}`, MARGIN, doc.y + 20, {
     width: PAGE_W - MARGIN * 2,
     align: 'center',
   });
 
-  // Dedication box further down
-  const dedY = centerY + 40;
-  doc
-    .font('Body')
-    .fontSize(r.fs.small + 1)
-    .fillColor(C.textPrimary);
-  doc.text(r.dedication, MARGIN + 30, dedY, {
-    width: PAGE_W - (MARGIN + 30) * 2,
-    align: 'center',
-    lineGap: 3,
-    characterSpacing: 0.2,
-  });
-  // Tiny heart beneath
-  const heartY = doc.y + 14;
-  doc.save();
-  doc.opacity(0.5);
-  doc
-    .path(
-      `M${centerX - 6} ${heartY + 12}` +
-        `C${centerX - 6} ${heartY + 12} ${centerX - 12} ${heartY + 8} ${centerX - 12} ${heartY + 4.5}` +
-        `C${centerX - 12} ${heartY + 2} ${centerX - 10} ${heartY} ${centerX - 8} ${heartY}` +
-        `C${centerX - 6.8} ${heartY} ${centerX - 6} ${heartY + 0.8} ${centerX - 6} ${heartY + 0.8}` +
-        `C${centerX - 6} ${heartY + 0.8} ${centerX - 5.2} ${heartY} ${centerX - 4} ${heartY}` +
-        `C${centerX - 2} ${heartY} ${centerX} ${heartY + 2} ${centerX} ${heartY + 4.5}` +
-        `C${centerX} ${heartY + 8} ${centerX - 6} ${heartY + 12} ${centerX - 6} ${heartY + 12}z`,
-    )
-    .fill('#EF9A9A');
-  doc.restore();
-  doc.opacity(1);
+  // Dedication box + heart further down — omit entirely when no dedication
+  // exists, otherwise the title page leaves an awkward empty stripe.
+  if (r.dedication.trim().length > 0) {
+    const dedY = centerY + 40;
+    doc
+      .font('Body')
+      .fontSize(r.fs.small + 1)
+      .fillColor(C.textPrimary);
+    doc.text(r.dedication, MARGIN + 30, dedY, {
+      width: PAGE_W - (MARGIN + 30) * 2,
+      align: 'center',
+      lineGap: 3,
+      characterSpacing: 0.2,
+    });
+    const heartY = doc.y + 14;
+    doc.save();
+    doc.opacity(0.5);
+    doc
+      .path(
+        `M${centerX - 6} ${heartY + 12}` +
+          `C${centerX - 6} ${heartY + 12} ${centerX - 12} ${heartY + 8} ${centerX - 12} ${heartY + 4.5}` +
+          `C${centerX - 12} ${heartY + 2} ${centerX - 10} ${heartY} ${centerX - 8} ${heartY}` +
+          `C${centerX - 6.8} ${heartY} ${centerX - 6} ${heartY + 0.8} ${centerX - 6} ${heartY + 0.8}` +
+          `C${centerX - 6} ${heartY + 0.8} ${centerX - 5.2} ${heartY} ${centerX - 4} ${heartY}` +
+          `C${centerX - 2} ${heartY} ${centerX} ${heartY + 2} ${centerX} ${heartY + 4.5}` +
+          `C${centerX} ${heartY + 8} ${centerX - 6} ${heartY + 12} ${centerX - 6} ${heartY + 12}z`,
+      )
+      .fill('#EF9A9A');
+    doc.restore();
+    doc.opacity(1);
+  }
 }
 
 async function drawFullBleedImage(doc: PDFKit.PDFDocument, illustrationId: string, r: RenderCtx) {
@@ -573,9 +580,10 @@ function drawParentCardPage(doc: PDFKit.PDFDocument, r: RenderCtx) {
   y += 14;
 
   const parentCard = r.draft.parentCard;
+  // Fallback intro avoids the "dla {name}" construction (requires genitive).
   const intro =
     parentCard?.introPl ||
-    `Ta bajka została stworzona dla ${r.childName}. ` +
+    `Ta bajka jest spersonalizowana — jej bohaterem jest ${r.childName}. ` +
       'Poniżej znajdziesz pytania, które możesz zadać dziecku po wspólnym czytaniu.';
   doc
     .font('Body')
@@ -678,7 +686,13 @@ function drawColophonPage(doc: PDFKit.PDFDocument, r: RenderCtx) {
     .font('Body')
     .fontSize(r.fs.small - 1)
     .fillColor(C.textSecondary);
-  doc.text(`Stworzone z miłością dla ${r.childName}.`, MARGIN, doc.y + 20, {
+  // "dla X" demands the genitive — phrase without "dla" until a Polish
+  // declension library is in the build (see TODO 6.5/6.6/6.7).
+  doc.text(`Stworzone z miłością ❤️`, MARGIN, doc.y + 20, {
+    width: PAGE_W - MARGIN * 2,
+    align: 'center',
+  });
+  doc.text(r.childName, MARGIN, doc.y + 4, {
     width: PAGE_W - MARGIN * 2,
     align: 'center',
   });
