@@ -26,6 +26,7 @@ import { getNarrative } from './bookPipelineEvents';
 import { getCurrentTraceId } from './lib/langfuse';
 import { resolveAgeBracket, type AgeBracket } from './lib/ageBracket';
 import { buildPageSequence, splitBeatText, type PageSpec } from './lib/pageSequence';
+import { dlaName } from './lib/childNameInflect';
 import PDFDocument from 'pdfkit';
 
 // Patch initFonts — Convex runtime has no Helvetica.afm files
@@ -166,9 +167,13 @@ export const generatePdf = internalAction({
         return fetchImageBuffer(ctx, ill.storageId);
       };
 
-      // Fallback title intentionally avoids "dla {name}" — that wording
-      // requires the genitive in Polish, which we can't safely produce yet.
-      const title = draft.title || blueprint?.title || 'Twoja bajka';
+      // Use the inflection helper for the "Książeczka dla {name}" fallback
+      // when the LLM didn't emit a title. If the helper bails (unknown name)
+      // we drop "dla" entirely rather than ship "dla Gustaw".
+      const titleFallback = dlaName(order.childName)
+        ? `Książeczka ${dlaName(order.childName)}`
+        : 'Twoja bajka';
+      const title = draft.title || blueprint?.title || titleFallback;
       const subtitle = blueprint?.subtitle || '';
       // No "dla {name}" fallback — that needs the genitive. Title page
       // gracefully omits the dedication when nothing was supplied.
@@ -366,11 +371,13 @@ function drawTitlePage(doc: PDFKit.PDFDocument, r: RenderCtx) {
     });
   }
 
-  // The Polish "dla X" construction needs the genitive form of the name —
-  // until we wire a declension library, sidestep it with a vocative-friendly
-  // phrasing that reads correctly with any name in nominative.
+  // "Bajka dla {childName}" with the genitive form of the name when the
+  // inflection helper recognises it; otherwise fall back to the name in
+  // nominative ("Twoja bajka, {childName}") to avoid a grammar bug.
+  const dla = dlaName(r.childName);
+  const subline = dla ? `Bajka ${dla}` : `Twoja bajka, ${r.childName}`;
   doc.font('Body').fontSize(r.fs.small).fillColor(C.textSecondary);
-  doc.text(`Twoja bajka, ${r.childName}`, MARGIN, doc.y + 20, {
+  doc.text(subline, MARGIN, doc.y + 20, {
     width: PAGE_W - MARGIN * 2,
     align: 'center',
   });
@@ -580,11 +587,15 @@ function drawParentCardPage(doc: PDFKit.PDFDocument, r: RenderCtx) {
   y += 14;
 
   const parentCard = r.draft.parentCard;
-  // Fallback intro avoids the "dla {name}" construction (requires genitive).
-  const intro =
-    parentCard?.introPl ||
-    `Ta bajka jest spersonalizowana — jej bohaterem jest ${r.childName}. ` +
+  // Genitive when known ("stworzona dla Gustawa"); else describe the child
+  // in nominative without the "dla" construct.
+  const introDla = dlaName(r.childName);
+  const introFallback = introDla
+    ? `Ta bajka została stworzona ${introDla}. ` +
+      'Poniżej znajdziesz pytania, które możesz zadać dziecku po wspólnym czytaniu.'
+    : `Ta bajka jest spersonalizowana — jej bohaterem jest ${r.childName}. ` +
       'Poniżej znajdziesz pytania, które możesz zadać dziecku po wspólnym czytaniu.';
+  const intro = parentCard?.introPl || introFallback;
   doc
     .font('Body')
     .fontSize(r.fs.small + 1)
@@ -686,16 +697,24 @@ function drawColophonPage(doc: PDFKit.PDFDocument, r: RenderCtx) {
     .font('Body')
     .fontSize(r.fs.small - 1)
     .fillColor(C.textSecondary);
-  // "dla X" demands the genitive — phrase without "dla" until a Polish
-  // declension library is in the build (see TODO 6.5/6.6/6.7).
-  doc.text(`Stworzone z miłością ❤️`, MARGIN, doc.y + 20, {
-    width: PAGE_W - MARGIN * 2,
-    align: 'center',
-  });
-  doc.text(r.childName, MARGIN, doc.y + 4, {
-    width: PAGE_W - MARGIN * 2,
-    align: 'center',
-  });
+  // Use the genitive when we can ("Stworzone z miłością dla Gustawa.");
+  // otherwise split into two lines so the name keeps its nominative form.
+  const colophonDla = dlaName(r.childName);
+  if (colophonDla) {
+    doc.text(`Stworzone z miłością ${colophonDla}.`, MARGIN, doc.y + 20, {
+      width: PAGE_W - MARGIN * 2,
+      align: 'center',
+    });
+  } else {
+    doc.text('Stworzone z miłością ❤️', MARGIN, doc.y + 20, {
+      width: PAGE_W - MARGIN * 2,
+      align: 'center',
+    });
+    doc.text(r.childName, MARGIN, doc.y + 4, {
+      width: PAGE_W - MARGIN * 2,
+      align: 'center',
+    });
+  }
 
   doc
     .font('Body')

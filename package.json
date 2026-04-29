@@ -61,6 +61,7 @@
     "isbot": "^5",
     "openai": "^6.8.1",
     "pdfkit": "0.17.2",
+    "pl-declension": "^0.1.1",
     "posthog-js": "^1.316.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
