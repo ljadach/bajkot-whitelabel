@@ -31,6 +31,9 @@ interface FlowConfig {
     submitDedication:
       | typeof api.bookPipeline.submitParentDedication
       | typeof api.bookPipeline.submitLandingParentDedication;
+    skipDedication:
+      | typeof api.bookPipeline.skipParentDedication
+      | typeof api.bookPipeline.skipLandingParentDedication;
   };
   resultPath: (id: string) => string;
   retryNav: string;
@@ -47,6 +50,7 @@ const FLOW: Record<ProgressFlow, FlowConfig> = {
     mutations: {
       submitVote: api.bookPipeline.submitStyleVote,
       submitDedication: api.bookPipeline.submitParentDedication,
+      skipDedication: api.bookPipeline.skipParentDedication,
     },
     resultPath: (id) => `/book/${id}/result`,
     retryNav: '/book/order',
@@ -61,6 +65,7 @@ const FLOW: Record<ProgressFlow, FlowConfig> = {
     mutations: {
       submitVote: api.bookPipeline.submitLandingStyleVote,
       submitDedication: api.bookPipeline.submitLandingParentDedication,
+      skipDedication: api.bookPipeline.skipLandingParentDedication,
     },
     resultPath: (id) => `/landing/book/${id}/result`,
     retryNav: '/',
@@ -119,11 +124,21 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
 
   const submitVote = useMutation(cfg.mutations.submitVote);
   const submitDedication = useMutation(cfg.mutations.submitDedication);
+  const skipDedication = useMutation(cfg.mutations.skipDedication);
 
   const [phase, setPhase] = useState<InlinePhase>('progress');
   const [selected, setSelected] = useState<'A' | 'B' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [voteError, setVoteError] = useState<string | null>(null);
+  const dedicationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clean up the post-vote → dedication delay timer on unmount so we don't try
+  // to flip phase on a torn-down component.
+  useEffect(() => {
+    return () => {
+      if (dedicationTimerRef.current) clearTimeout(dedicationTimerRef.current);
+    };
+  }, []);
 
   // Fire style_vote_viewed once when images first become available. Tied to
   // image URLs (not phase) so a rapid back-and-forth between phases doesn't
@@ -202,11 +217,20 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
       trackEvent('dedication_submitted', { flow, bookOrderId: orderId });
       setPhase('progress');
     };
-    const handleDedicationSkip = () => {
+    const handleDedicationSkip = async () => {
+      if (!orderId) return;
+      // Even when skipped, the backend needs to know the parent has decided —
+      // otherwise the composer waits forever in `awaiting_dedication`.
+      await skipDedication({ orderId: orderId as Id<'bookOrders'> });
       trackEvent('dedication_skipped', { flow, bookOrderId: orderId });
       setPhase('progress');
     };
-    return <DedicationForm onSubmit={handleDedicationSubmit} onSkip={handleDedicationSkip} />;
+    return (
+      <DedicationForm
+        onSubmit={handleDedicationSubmit}
+        onSkip={() => void handleDedicationSkip()}
+      />
+    );
   }
 
   // Inline: style vote (when images ready and not yet chosen).
@@ -225,8 +249,13 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
           bookOrderId: orderId,
           chosenStyle: selected,
         });
-        setPhase('dedication');
+        // Drop back to the progress UI for a beat — the parent has just made a
+        // choice; surfacing another form immediately feels relentless. Wait
+        // ~30s of "trwa magia" before asking for a dedication.
+        setPhase('progress');
         setIsSubmitting(false);
+        if (dedicationTimerRef.current) clearTimeout(dedicationTimerRef.current);
+        dedicationTimerRef.current = setTimeout(() => setPhase('dedication'), 30_000);
       } catch (err) {
         setVoteError(err instanceof Error ? err.message : 'Vote failed');
         setIsSubmitting(false);

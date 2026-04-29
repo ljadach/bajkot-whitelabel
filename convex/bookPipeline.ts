@@ -343,15 +343,36 @@ function assertDedicationWindow(order: {
   if (order.pdfStorageId) throw new Error('Bajka już została złożona');
 }
 
+/**
+ * Patch the dedication onto the order, mark the dedication step as decided,
+ * and — if the composer was waiting on us — kick it off now. The composer
+ * sets `status='awaiting_dedication'` when it reaches A9 before the parent
+ * has chosen, then idles until this mutation flips the flag.
+ */
+async function applyDedicationDecision(
+  ctx: import('./_generated/server').MutationCtx,
+  orderId: Id<'bookOrders'>,
+  patch: { parentDedication?: string },
+): Promise<void> {
+  const before = await ctx.db.get(orderId);
+  await ctx.db.patch(orderId, {
+    ...patch,
+    dedicationDecided: true,
+    updatedAt: Date.now(),
+  });
+  if (before?.status === 'awaiting_dedication') {
+    await ctx.scheduler.runAfter(0, internal.bookAgents.composePdf, { orderId });
+  }
+}
+
 export const submitParentDedication = mutation({
   args: { orderId: v.id('bookOrders'), dedication: v.string() },
   returns: v.null(),
   handler: async (ctx, { orderId, dedication }) => {
     const order = await assertOrderOwner(ctx, orderId);
     assertDedicationWindow(order);
-    await ctx.db.patch(orderId, {
+    await applyDedicationDecision(ctx, orderId, {
       parentDedication: normalizeDedication(dedication),
-      updatedAt: Date.now(),
     });
     return null;
   },
@@ -363,10 +384,31 @@ export const submitLandingParentDedication = mutation({
   handler: async (ctx, { orderId, dedication }) => {
     const order = await assertLandingOrder(ctx, orderId);
     assertDedicationWindow(order);
-    await ctx.db.patch(orderId, {
+    await applyDedicationDecision(ctx, orderId, {
       parentDedication: normalizeDedication(dedication),
-      updatedAt: Date.now(),
     });
+    return null;
+  },
+});
+
+export const skipParentDedication = mutation({
+  args: { orderId: v.id('bookOrders') },
+  returns: v.null(),
+  handler: async (ctx, { orderId }) => {
+    const order = await assertOrderOwner(ctx, orderId);
+    assertDedicationWindow(order);
+    await applyDedicationDecision(ctx, orderId, {});
+    return null;
+  },
+});
+
+export const skipLandingParentDedication = mutation({
+  args: { orderId: v.id('bookOrders') },
+  returns: v.null(),
+  handler: async (ctx, { orderId }) => {
+    const order = await assertLandingOrder(ctx, orderId);
+    assertDedicationWindow(order);
+    await applyDedicationDecision(ctx, orderId, {});
     return null;
   },
 });

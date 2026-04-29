@@ -17,6 +17,7 @@ export type PipelineStatus =
   | 'style_vote'
   | 'illustrating'
   | 'visual_qa'
+  | 'awaiting_dedication'
   | 'composing_pdf'
   | 'final_qa'
   | 'delivering'
@@ -42,6 +43,7 @@ const IMAGE_TRACK_STATUSES: ReadonlySet<PipelineStatus> = new Set([
 export const POST_CONVERGENCE_STATUSES: ReadonlySet<PipelineStatus> = new Set([
   'illustrating',
   'visual_qa',
+  'awaiting_dedication',
   'composing_pdf',
   'final_qa',
   'delivering',

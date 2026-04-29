@@ -108,6 +108,7 @@ export const PIPELINE_STEPS = [
   { status: 'style_vote', agent: 'A6b', label: 'Wybór stylu' },
   { status: 'illustrating', agent: 'A7', label: 'Rysujemy ilustracje' },
   { status: 'visual_qa', agent: 'A8', label: 'Dopinamy detale' },
+  { status: 'awaiting_dedication', agent: 'A8', label: 'Czekamy na dedykację' },
   { status: 'composing_pdf', agent: 'A9', label: 'Zbieramy bajkę w PDF' },
   { status: 'final_qa', agent: 'A10', label: 'Ostatnie poprawki' },
   { status: 'delivering', agent: 'A11', label: 'Już wysyłamy' },

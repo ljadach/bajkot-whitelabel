@@ -177,6 +177,7 @@ const applicationTables = {
       v.literal('style_vote'),
       v.literal('illustrating'),
       v.literal('visual_qa'),
+      v.literal('awaiting_dedication'),
       v.literal('composing_pdf'),
       v.literal('final_qa'),
       v.literal('delivering'),
@@ -225,6 +226,12 @@ const applicationTables = {
     // A9 composer and A10 final QA read from here instead of round-tripping
     // through storyDraft (which no longer produces a dedication).
     parentDedication: v.optional(v.string()),
+
+    // Set true once the parent has either submitted or skipped the dedication
+    // form. A9 (composePdf) gates on this so the PDF doesn't render before
+    // the parent's input lands. Without it the pipeline races ahead and the
+    // dedication ends up on a PDF that's already been built (or missed).
+    dedicationDecided: v.optional(v.boolean()),
 
     // Final output
     pdfStorageId: v.optional(v.id('_storage')),
