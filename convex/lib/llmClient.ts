@@ -73,6 +73,9 @@ export interface ChatJsonParams {
   expect?: 'object' | 'array' | 'any';
   action?: string;
   reasoning?: boolean;
+  /** Hard cap on output tokens. Forwarded to the model as `maxOutputTokens`
+   * so prose generation isn't silently truncated by OpenRouter's default. */
+  maxTokens?: number;
   images?: Array<{ data: Uint8Array; mimeType: string }>;
 }
 
@@ -96,6 +99,7 @@ export async function chatJsonWithRetries<T = any>(
     expect = 'any',
     action = 'llm.chat',
     reasoning,
+    maxTokens,
     images,
   } = params;
   const providerOptions = buildProviderOptions(reasoning);
@@ -182,6 +186,7 @@ export async function chatJsonWithRetries<T = any>(
             model: ensureModel(model),
             providerOptions,
             temperature,
+            ...(maxTokens !== undefined ? { maxOutputTokens: maxTokens } : {}),
             messages: [
               { role: 'system', content: system },
               { role: 'user', content: userContent },
@@ -280,6 +285,7 @@ export async function chatJsonForStage<T = any>(
       temperature: config.temperature,
       expect: config.expect,
       reasoning: config.reasoning,
+      maxTokens: config.maxTokens,
       action: stage,
     },
     config.retries,
@@ -308,6 +314,7 @@ export async function chatJsonForStageWithImages<T = any>(
       temperature: config.temperature,
       expect: config.expect,
       reasoning: config.reasoning,
+      maxTokens: config.maxTokens,
       action: stage,
       images: params.images,
     },

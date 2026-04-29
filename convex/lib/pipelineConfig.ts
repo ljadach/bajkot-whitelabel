@@ -24,6 +24,15 @@ export interface StageConfig {
   retries: number;
   baseDelayMs: number;
   reasoning?: boolean;
+  /**
+   * Hard cap on output tokens. Without this, OpenRouter applies a
+   * provider-side default (~8192 for Gemini 2.5 Flash) which silently
+   * truncates long prose — A3 (storyWriting) hit this cap when targeting
+   * 4500 Polish words (~9000 tokens). Architectural max for Gemini 2.5
+   * Flash is 65536; Claude Sonnet 4.6 is 64000. 16384 is enough for the
+   * longest beat plan (9+ bracket).
+   */
+  maxTokens?: number;
   expect?: 'object' | 'array' | 'any';
 }
 
@@ -54,11 +63,20 @@ const DEFAULT_LLM_CONFIG: LlmConfig = {
     expect: 'object',
   },
   'book.storyWriting': {
-    model: 'google/gemini-2.5-flash',
+    // Claude Sonnet 4.6 instead of Gemini Flash: Gemini consistently
+    // undershoots target word counts on Polish prose (e.g. 9+ bracket:
+    // 927 words generated against 4500 target — 20% of spec). Claude is
+    // stronger at long-form Polish narrative and already proven on A5.
+    // Same temperature/retries — only the model and limits change.
+    model: 'anthropic/claude-sonnet-4.6',
     temperature: 0.8,
     retries: 3,
     baseDelayMs: 500,
     expect: 'object',
+    // A3 is pure prose generation, not a reasoning task — extended
+    // thinking would just eat output budget without helping the craft.
+    reasoning: false,
+    maxTokens: 16384,
   },
   'book.psychReview': {
     model: 'google/gemini-2.5-flash',
