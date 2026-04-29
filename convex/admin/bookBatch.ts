@@ -461,7 +461,9 @@ export const resetOrderForRetry = internalMutation({
       : {};
     await ctx.db.patch(args.orderId, {
       status: args.status as 'intake',
-      currentAgent: args.currentAgent,
+      // Validator at this layer accepts any string; the schema's union of
+      // agent literals is the runtime gate. Cast keeps the patch typed.
+      currentAgent: args.currentAgent as 'A0',
       error: '',
       updatedAt: Date.now(),
       ...trackReset,

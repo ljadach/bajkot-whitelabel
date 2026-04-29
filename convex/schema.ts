@@ -30,6 +30,9 @@ const applicationTables = {
     webSearchUsed: v.optional(v.boolean()),
     webSearchSources: v.optional(v.array(v.string())),
     reasoningUsed: v.optional(v.boolean()),
+    finishReason: v.optional(v.string()), // e.g. "stop", "length", "content-filter"
+    safetyBlockReason: v.optional(v.string()), // Gemini promptFeedback.blockReason
+    retryCount: v.optional(v.number()),
     timestamp: v.number(),
   }).index('by_clerk_user', ['clerkUserId']),
 
@@ -81,7 +84,10 @@ const applicationTables = {
     createdAt: v.number(),
   })
     .index('by_segment', ['segment'])
-    .index('by_created', ['createdAt']),
+    .index('by_created', ['createdAt'])
+    // Compound index for per-email rate limit checks — without this, the
+    // `by_created` index + `.filter(eq(email))` does a full window scan.
+    .index('by_email_and_created', ['email', 'createdAt']),
 
   // ============================================
   // Contact Form
@@ -100,7 +106,9 @@ const applicationTables = {
     question: v.string(),
     language: v.string(),
     createdAt: v.number(),
-  }).index('by_created', ['createdAt']),
+  })
+    .index('by_created', ['createdAt'])
+    .index('by_email_and_created', ['email', 'createdAt']),
 
   // ============================================
   // Book Pipeline (Bajkoterapia)
@@ -175,7 +183,23 @@ const applicationTables = {
       v.literal('failed'),
       v.literal('paused'),
     ),
-    currentAgent: v.optional(v.string()),
+    currentAgent: v.optional(
+      v.union(
+        v.literal('A0'),
+        v.literal('A1'),
+        v.literal('A2'),
+        v.literal('A3'),
+        v.literal('A4'),
+        v.literal('A5'),
+        v.literal('A6'),
+        v.literal('A6b'),
+        v.literal('A7'),
+        v.literal('A8'),
+        v.literal('A9'),
+        v.literal('A10'),
+        v.literal('A11'),
+      ),
+    ),
     error: v.optional(v.string()),
     retryCount: v.optional(v.number()),
     visualQaRetryCount: v.optional(v.number()),

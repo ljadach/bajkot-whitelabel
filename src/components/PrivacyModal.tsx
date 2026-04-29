@@ -1,10 +1,23 @@
+import { useEffect } from 'react';
+
 interface PrivacyModalProps {
   onClose: () => void;
 }
 
 export function PrivacyModal({ onClose }: PrivacyModalProps) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="privacy-modal-title"
       className="fixed inset-0 z-[100] flex items-center justify-center p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -13,7 +26,9 @@ export function PrivacyModal({ onClose }: PrivacyModalProps) {
       <div className="absolute inset-0 bg-black/50" />
       <div className="relative bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[85vh] overflow-y-auto">
         <div className="sticky top-0 bg-white rounded-t-3xl px-8 py-5 border-b border-calm-100 flex items-center justify-between z-10">
-          <h2 className="text-xl font-bold text-calm-900">Polityka Prywatności / RODO</h2>
+          <h2 id="privacy-modal-title" className="text-xl font-bold text-calm-900">
+            Polityka Prywatności / RODO
+          </h2>
           <button
             type="button"
             onClick={onClose}

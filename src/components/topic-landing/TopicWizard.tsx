@@ -4,6 +4,7 @@ import { useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { captureTokenFromUrl, getAccessToken } from '../../hooks/useAccessToken';
 import { HAIR_COLORS, HAIR_STYLES, EYE_COLORS, SKIN_TONES, OUTFITS } from '../../lib/bookData';
+import { BOOK_PRICE_PDF_PLN, formatPricePLN } from '../../lib/pricing';
 import type { Topic } from '../../data/topics';
 
 // ── Wizard config (derived from canonical bookData) ──
@@ -514,7 +515,9 @@ export function TopicWizard({ topic }: { topic: Topic }) {
                     disabled={showLoading}
                     className="w-2/3 bg-green-500 hover:bg-green-600 text-white font-black py-4 rounded-2xl shadow-xl shadow-green-500/30 transition text-lg flex justify-center items-center gap-2 disabled:opacity-50"
                   >
-                    {showLoading ? 'Generuję...' : 'PŁACĘ I GENERUJĘ (39 zł)'}
+                    {showLoading
+                      ? 'Generuję...'
+                      : `PŁACĘ I GENERUJĘ (${formatPricePLN(BOOK_PRICE_PDF_PLN)})`}
                   </button>
                 </div>
               </div>
