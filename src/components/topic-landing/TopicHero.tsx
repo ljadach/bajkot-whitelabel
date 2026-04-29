@@ -33,7 +33,7 @@ export function TopicHero({ topic }: { topic: Topic }) {
           </div>
           <p className="text-sm text-gray-500 font-semibold text-center sm:text-left">
             <i className="fa-regular fa-clock text-calm-500 mr-1" />
-            Gotowa do czytania w 15 minut
+            Bajka gotowa do czytania w 15 minut
           </p>
         </div>
 
