@@ -21,7 +21,6 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
   const { t } = useTranslation('book');
   const navigate = useNavigate();
   const startLandingOrder = useAction(api.bookPipeline.startLandingOrder);
-  const createLandingCheckoutSession = useAction(api.stripe.createLandingCheckoutSession);
   const isAdmin = useQuery(api.auth.isAdmin) ?? false;
 
   const [screen, setScreen] = useState<Screen>('wizard');
@@ -116,31 +115,15 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
     async (payload: CheckoutSubmitPayload) => {
       const result = await submitOrder(payload);
       if (!result) return;
-      // PDF+Print → landing trapdoor thank-you (no Stripe; manual fulfillment)
+      // PDF+Print → landing trapdoor thank-you (manual fulfillment via mail).
       if (payload.format === 'pdf_print') {
         void navigate(`/landing/book/${result.orderId}/print-thanks`);
         return;
       }
-      // Admin skipStripe (rare here — usually they'd skip preview→checkout
-      // entirely). Kept for completeness.
-      if (isAdmin && skipStripe) {
-        void navigate(`/landing/book/${result.orderId}/progress`);
-        return;
-      }
-      // Default: Stripe checkout. The landing-specific action validates
-      // the access token instead of requiring Clerk identity, and uses
-      // bookOrderId metadata so the existing webhook still marks the
-      // order paid (identity-agnostic).
-      const session = await createLandingCheckoutSession({
-        bookOrderId: result.orderId,
-        accessToken: getAccessToken() ?? '',
-        returnPath: `/landing/book/${result.orderId}/progress`,
-      });
-      if (typeof window !== 'undefined') {
-        window.location.assign(session.url);
-      }
+      // Stripe payment moved to the result page (post-pipeline preview).
+      void navigate(`/landing/book/${result.orderId}/progress`);
     },
-    [submitOrder, createLandingCheckoutSession, navigate, isAdmin, skipStripe],
+    [submitOrder, navigate],
   );
 
   return (
