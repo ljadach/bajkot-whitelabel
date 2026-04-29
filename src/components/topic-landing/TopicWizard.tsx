@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
@@ -75,8 +75,16 @@ export function TopicWizard({ topic }: { topic: Topic }) {
   const [form, setForm] = useState<WizardForm>(INITIAL_FORM);
   const [error, setError] = useState('');
   const [showLoading, setShowLoading] = useState(false);
+  const errorRef = useRef<HTMLDivElement | null>(null);
+  const formCardRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => captureTokenFromUrl(), []);
+
+  // Pull validation errors into the viewport so they're never above the fold.
+  useEffect(() => {
+    if (!error) return;
+    errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [error]);
 
   const update = useCallback(<K extends keyof WizardForm>(key: K, val: WizardForm[K]) => {
     setForm((prev) => ({ ...prev, [key]: val }));
@@ -95,7 +103,10 @@ export function TopicWizard({ topic }: { topic: Topic }) {
       }
       setError('');
       setStep(target);
-      document.getElementById('kreator')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // `block: 'nearest'` keeps the scroll minimal — only nudges the form into
+      // view if the user has scrolled past it. Previously `block: 'start'`
+      // jumped past the prior step's bottom area on every click.
+      formCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     },
     [step, form.childName, form.age, form.gender],
   );
@@ -154,15 +165,18 @@ export function TopicWizard({ topic }: { topic: Topic }) {
           <span className="text-magic-500 font-bold uppercase tracking-widest text-sm mb-2 block">
             Kreator Magii
           </span>
-          <h2 className="text-3xl md:text-4xl font-black text-calm-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-black text-calm-900 mb-3">
             Stwórz Bajkę dla swojego dziecka
           </h2>
-          <p className="text-gray-600 text-lg">
-            Wypełnij ten prosty formularz w 2 minuty. Twoja bajka zostanie przez nas przygotowana.
+          <p className="text-calm-700 text-base font-semibold">
+            Temat: <span className="text-magic-600">{topic.catalog.shortTitle}</span>
           </p>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+        <div
+          ref={formCardRef}
+          className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden"
+        >
           {/* Progress */}
           <div className="bg-calm-50 px-6 py-4 border-b border-calm-100 flex justify-between items-center text-xs md:text-sm font-bold text-gray-400">
             {STEP_LABELS.map((label, i) => (
@@ -179,7 +193,11 @@ export function TopicWizard({ topic }: { topic: Topic }) {
 
           <div className="p-6 md:p-10">
             {error && (
-              <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 font-medium">
+              <div
+                ref={errorRef}
+                role="alert"
+                className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 font-medium"
+              >
                 {error}
               </div>
             )}
@@ -270,14 +288,6 @@ export function TopicWizard({ topic }: { topic: Topic }) {
             {/* Step 2: Wygląd */}
             {step === 1 && (
               <div className="space-y-8 animate-fadeIn">
-                <div>
-                  <h3 className="text-2xl font-bold text-calm-900 mb-2">Stwórzmy awatara</h3>
-                  <p className="text-gray-500 text-sm">
-                    Ograniczamy opcje ubioru do konkretnych &quot;Kotwic Wizualnych&quot;, aby
-                    ilustracje w książce były idealnie spójne na każdej stronie!
-                  </p>
-                </div>
-
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-bold text-calm-900 mb-3">
@@ -398,16 +408,6 @@ export function TopicWizard({ topic }: { topic: Topic }) {
             {step === 2 && (
               <div className="space-y-8 animate-fadeIn">
                 <div>
-                  <h3 className="text-2xl font-bold text-calm-900 mb-2">
-                    Z jakim wyzwaniem się mierzycie?
-                  </h3>
-                  <p className="text-gray-500 text-sm">
-                    Temat bajki został dobrany na podstawie tej strony. Możesz doprecyzować
-                    szczegóły poniżej.
-                  </p>
-                </div>
-
-                <div>
                   <label className="block text-sm font-bold text-calm-900 mb-2">
                     Doprecyzowanie problemu (Opcjonalnie)
                   </label>
@@ -462,16 +462,6 @@ export function TopicWizard({ topic }: { topic: Topic }) {
             {/* Step 4: Finalizacja */}
             {step === 3 && (
               <div className="space-y-8 animate-fadeIn">
-                <div className="text-center">
-                  <div className="w-20 h-20 bg-green-100 text-green-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-4">
-                    <i className="fa-solid fa-wand-sparkles" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-calm-900 mb-2">Mamy wszystko!</h3>
-                  <p className="text-gray-500 text-sm">
-                    Podaj e-mail, na który wyślemy gotową książeczkę w formacie PDF.
-                  </p>
-                </div>
-
                 <div>
                   <label className="block text-sm font-bold text-calm-900 mb-2">
                     Adres E-mail <span className="text-red-500">*</span>
