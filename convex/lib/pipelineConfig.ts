@@ -63,18 +63,18 @@ const DEFAULT_LLM_CONFIG: LlmConfig = {
     expect: 'object',
   },
   'book.storyWriting': {
-    // Claude Sonnet 4.6 instead of Gemini Flash: Gemini consistently
-    // undershoots target word counts on Polish prose (e.g. 9+ bracket:
-    // 927 words generated against 4500 target — 20% of spec). Claude is
-    // stronger at long-form Polish narrative and already proven on A5.
-    // Same temperature/retries — only the model and limits change.
-    model: 'anthropic/claude-sonnet-4.6',
+    // Gemini 2.5 Pro: stronger than Flash (which undershot targets ~50%)
+    // and faster than Claude Sonnet 4.6 (which kept hitting OpenRouter's
+    // ~7-min timeout on long Polish prose, returning truncated JSON and
+    // failing all 3 retries on bad luck). Pro typically completes in
+    // 30-90s and won't trip the safety filter on narrative text.
+    model: 'google/gemini-2.5-pro',
     temperature: 0.8,
     retries: 3,
     baseDelayMs: 500,
     expect: 'object',
-    // A3 is pure prose generation, not a reasoning task — extended
-    // thinking would just eat output budget without helping the craft.
+    // A3 is pure prose generation — extended thinking just eats budget
+    // without helping craft, and Pro's thinking is heavy.
     reasoning: false,
     maxTokens: 16384,
   },
