@@ -53,6 +53,7 @@ import type * as lib_prompts_bookFallbacks from '../lib/prompts/bookFallbacks.js
 import type * as lib_prompts_types from '../lib/prompts/types.js';
 import type * as lib_rateLimiter from '../lib/rateLimiter.js';
 import type * as lib_roles from '../lib/roles.js';
+import type * as lib_security from '../lib/security.js';
 import type * as lib_utils from '../lib/utils.js';
 import type * as llmLogs from '../llmLogs.js';
 import type * as pipelineConfig from '../pipelineConfig.js';
@@ -109,6 +110,7 @@ declare const fullApi: ApiFromModules<{
   'lib/prompts/types': typeof lib_prompts_types;
   'lib/rateLimiter': typeof lib_rateLimiter;
   'lib/roles': typeof lib_roles;
+  'lib/security': typeof lib_security;
   'lib/utils': typeof lib_utils;
   llmLogs: typeof llmLogs;
   pipelineConfig: typeof pipelineConfig;

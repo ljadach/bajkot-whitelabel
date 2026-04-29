@@ -12,6 +12,7 @@
   "wizard": {
     "kicker": "Kreator Bajki",
     "heading": "Stwórz bajkę dla swojego dziecka",
+    "topicLabel": "Temat:",
     "navTopic": "Temat",
     "navSituation": "Sytuacja",
     "navChild": "Dziecko",
