@@ -438,6 +438,126 @@ export const skipLandingParentDedication = mutation({
   },
 });
 
+// ── Payment status helpers (shared by preview + download) ─
+
+const paymentStatusReturnValidator = v.union(
+  v.literal('pending'),
+  v.literal('completed'),
+  v.literal('failed'),
+  v.null(),
+);
+
+/**
+ * Download URL is gated by paymentStatus — the preview screen has to lock
+ * the PDF until the parent has paid. `skipStripe` (admin shortcut) bypasses
+ * the gate so internal test orders still produce a download.
+ */
+function isPaid(order: { paymentStatus?: string; skipStripe?: boolean }): boolean {
+  if (order.skipStripe === true) return true;
+  return order.paymentStatus === 'completed';
+}
+
+// ── Preview (pre-payment) ──────────────────────────────────
+
+const PREVIEW_ILLUSTRATION_IDS = ['cover', 'scene_1', 'scene_2'];
+
+interface PreviewResult {
+  childName: string;
+  bookTitle: string | null;
+  paid: boolean;
+  hasPdf: boolean;
+  paymentStatus: 'pending' | 'completed' | 'failed' | null;
+  illustrations: Array<{ illustrationId: string; url: string | null }>;
+  excerptPl: string | null;
+}
+
+const previewReturnValidator = v.object({
+  childName: v.string(),
+  bookTitle: v.union(v.string(), v.null()),
+  paid: v.boolean(),
+  hasPdf: v.boolean(),
+  paymentStatus: paymentStatusReturnValidator,
+  illustrations: v.array(
+    v.object({ illustrationId: v.string(), url: v.union(v.string(), v.null()) }),
+  ),
+  excerptPl: v.union(v.string(), v.null()),
+});
+
+/**
+ * Pull the first beat's text out of a stored storyDraft JSON. Truncated to
+ * roughly the first paragraph so the result page can tease the prose
+ * without giving away the whole book before payment.
+ */
+function extractFirstBeatExcerpt(storyDraft: string | null | undefined): string | null {
+  if (!storyDraft) return null;
+  try {
+    const parsed = JSON.parse(storyDraft) as { pages?: Array<{ text?: string }> };
+    const firstPage = parsed.pages?.find((p) => typeof p.text === 'string' && p.text.trim());
+    if (!firstPage?.text) return null;
+    const trimmed = firstPage.text.trim();
+    if (trimmed.length <= 360) return trimmed;
+    // Stop at the last sentence boundary inside the cap so we don't end on a
+    // half-finished thought.
+    const sliced = trimmed.slice(0, 360);
+    const lastStop = Math.max(sliced.lastIndexOf('. '), sliced.lastIndexOf('! '));
+    return (lastStop > 200 ? sliced.slice(0, lastStop + 1) : sliced) + '…';
+  } catch {
+    return null;
+  }
+}
+
+async function buildPreviewResult(
+  ctx: import('./_generated/server').QueryCtx,
+  order: {
+    childName: string;
+    storyDraft?: string;
+    paymentStatus?: 'pending' | 'completed' | 'failed';
+    skipStripe?: boolean;
+    pdfStorageId?: Id<'_storage'>;
+    _id: Id<'bookOrders'>;
+  },
+): Promise<PreviewResult> {
+  const illustrations = await ctx.db
+    .query('bookIllustrations')
+    .withIndex('by_order', (q) => q.eq('orderId', order._id))
+    .collect();
+  const byId = new Map(illustrations.map((i) => [i.illustrationId, i]));
+  const previewIllustrations = await Promise.all(
+    PREVIEW_ILLUSTRATION_IDS.map(async (id) => {
+      const ill = byId.get(id);
+      const url = ill ? await ctx.storage.getUrl(ill.storageId) : null;
+      return { illustrationId: id, url };
+    }),
+  );
+  return {
+    childName: order.childName,
+    bookTitle: extractBookTitle(order.storyDraft) ?? null,
+    paid: isPaid(order),
+    hasPdf: !!order.pdfStorageId,
+    paymentStatus: order.paymentStatus ?? null,
+    illustrations: previewIllustrations,
+    excerptPl: extractFirstBeatExcerpt(order.storyDraft),
+  };
+}
+
+export const getOrderPreview = query({
+  args: { orderId: v.id('bookOrders') },
+  returns: previewReturnValidator,
+  handler: async (ctx, { orderId }) => {
+    const order = await assertOrderOwner(ctx, orderId);
+    return buildPreviewResult(ctx, order);
+  },
+});
+
+export const getLandingOrderPreview = query({
+  args: { orderId: v.id('bookOrders') },
+  returns: previewReturnValidator,
+  handler: async (ctx, { orderId }) => {
+    const order = await assertLandingOrder(ctx, orderId);
+    return buildPreviewResult(ctx, order);
+  },
+});
+
 // ── Get download URL ───────────────────────────────────────
 
 export const getDownloadUrl = query({
@@ -446,14 +566,21 @@ export const getDownloadUrl = query({
     url: v.union(v.string(), v.null()),
     childName: v.string(),
     bookTitle: v.union(v.string(), v.null()),
+    paymentStatus: paymentStatusReturnValidator,
+    paid: v.boolean(),
+    hasPdf: v.boolean(),
   }),
   handler: async (ctx, { orderId }) => {
     const order = await assertOrderOwner(ctx, orderId);
-    const url = order.pdfStorageId ? await ctx.storage.getUrl(order.pdfStorageId) : null;
+    const paid = isPaid(order);
+    const url = paid && order.pdfStorageId ? await ctx.storage.getUrl(order.pdfStorageId) : null;
     return {
       url,
       childName: order.childName,
       bookTitle: extractBookTitle(order.storyDraft) ?? null,
+      paymentStatus: order.paymentStatus ?? null,
+      paid,
+      hasPdf: !!order.pdfStorageId,
     };
   },
 });
@@ -611,14 +738,21 @@ export const getLandingDownloadUrl = query({
     url: v.union(v.string(), v.null()),
     childName: v.string(),
     bookTitle: v.union(v.string(), v.null()),
+    paymentStatus: paymentStatusReturnValidator,
+    paid: v.boolean(),
+    hasPdf: v.boolean(),
   }),
   handler: async (ctx, { orderId }) => {
     const order = await assertLandingOrder(ctx, orderId);
-    const url = order.pdfStorageId ? await ctx.storage.getUrl(order.pdfStorageId) : null;
+    const paid = isPaid(order);
+    const url = paid && order.pdfStorageId ? await ctx.storage.getUrl(order.pdfStorageId) : null;
     return {
       url,
       childName: order.childName,
       bookTitle: extractBookTitle(order.storyDraft) ?? null,
+      paymentStatus: order.paymentStatus ?? null,
+      paid,
+      hasPdf: !!order.pdfStorageId,
     };
   },
 });
