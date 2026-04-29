@@ -1,4 +1,5 @@
 import { internalMutation, internalQuery, query } from './_generated/server';
+import { internal } from './_generated/api';
 import { v } from 'convex/values';
 
 export const paymentStatusValidator = v.union(
@@ -96,6 +97,12 @@ export const markBookOrderPaid = internalMutation({
       paymentStatus: 'completed',
       stripeSessionId: args.stripeSessionId,
       updatedAt: Date.now(),
+    });
+    // Hand off the "Twoja bajka jest gotowa" email to the email action.
+    // Scheduled rather than awaited so a Resend hiccup doesn't fail the
+    // webhook (Stripe would retry, double-flipping paid status).
+    await ctx.scheduler.runAfter(0, internal.email.sendBookReady, {
+      bookOrderId: args.bookOrderId,
     });
     return null;
   },
