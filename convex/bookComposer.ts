@@ -589,11 +589,17 @@ function drawParentCardPage(doc: PDFKit.PDFDocument, r: RenderCtx) {
   });
   y = doc.y + 14;
 
-  // Questions (prefer A3 parentCard, fall back to A2 parent_questions)
+  // Questions (prefer A3 parentCard, fall back to A2 parent_questions).
+  // The A2 prompt asks for snake_case `parent_questions`, so the blueprint
+  // JSON often lands in that shape — read both keys to avoid an empty card.
+  const blueprintAny = r.blueprint as
+    | (Record<string, unknown> & { parentQuestions?: string[]; parent_questions?: string[] })
+    | null;
+  const blueprintQuestions = blueprintAny?.parentQuestions ?? blueprintAny?.parent_questions ?? [];
   const questions: string[] =
     parentCard?.questions && parentCard.questions.length > 0
       ? parentCard.questions
-      : r.blueprint?.parentQuestions || [];
+      : blueprintQuestions;
 
   if (questions.length > 0) {
     doc
@@ -619,8 +625,13 @@ function drawParentCardPage(doc: PDFKit.PDFDocument, r: RenderCtx) {
     }
   }
 
-  // Activity — prefer A3, fall back to A2 actionable_takeaway.how_to_pl
-  const activity = parentCard?.activityPl || r.blueprint?.actionableTakeaway?.howToPl || '';
+  // Activity — prefer A3, fall back to A2 actionable_takeaway.how_to_pl.
+  // Same snake_case-aware read as parent questions above.
+  const takeawayAny = (blueprintAny?.actionableTakeaway ??
+    (blueprintAny as Record<string, unknown> | null)?.actionable_takeaway) as
+    | { howToPl?: string; how_to_pl?: string }
+    | undefined;
+  const activity = parentCard?.activityPl || takeawayAny?.howToPl || takeawayAny?.how_to_pl || '';
   if (activity) {
     y = doc.y + 10;
     doc
