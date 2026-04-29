@@ -191,19 +191,6 @@ export function ProgressJourney({
                       <div className="w-4 h-4 rounded-full border-2 border-gray-200" />
                     )}
                   </div>
-                  {step.agent && (
-                    <span
-                      className={`text-[10px] font-mono font-bold shrink-0 ${
-                        state === 'active'
-                          ? 'text-magic-600'
-                          : state === 'done'
-                            ? 'text-green-600'
-                            : 'text-gray-400'
-                      }`}
-                    >
-                      {step.agent}
-                    </span>
-                  )}
                   <span
                     className={`text-sm ${
                       state === 'active'
@@ -230,7 +217,7 @@ export function ProgressJourney({
             <h2 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 px-1">
               {t('progress.timeline')}
             </h2>
-            <OrderTimeline events={events} />
+            <OrderTimeline events={events} showAgentBadge={false} />
           </div>
         )}
       </div>
