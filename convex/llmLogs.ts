@@ -16,6 +16,9 @@ export const storeLlmLog = internalMutation({
     webSearchUsed: v.optional(v.boolean()),
     webSearchSources: v.optional(v.array(v.string())),
     reasoningUsed: v.optional(v.boolean()),
+    finishReason: v.optional(v.string()),
+    safetyBlockReason: v.optional(v.string()),
+    retryCount: v.optional(v.number()),
   },
   returns: v.id('llmLogs'),
   handler: async (ctx, args) => {
@@ -46,6 +49,9 @@ export const storeLlmLog = internalMutation({
       webSearchUsed: args.webSearchUsed,
       webSearchSources: args.webSearchSources,
       reasoningUsed: args.reasoningUsed,
+      finishReason: args.finishReason,
+      safetyBlockReason: args.safetyBlockReason,
+      retryCount: args.retryCount,
       timestamp: Date.now(),
     });
   },

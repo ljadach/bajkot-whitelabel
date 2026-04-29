@@ -12,6 +12,20 @@ import { internal } from './_generated/api';
 import { v } from 'convex/values';
 
 const RESEND_API_URL = 'https://api.resend.com/emails';
+const DEFAULT_NOTIFICATION_RECIPIENTS = ['ljadach@gmail.com', 'cezdmo@gmail.com'];
+
+/** Lead/contact notification recipients. Override via Convex env
+ * `LEADS_NOTIFICATION_EMAILS` (comma-separated) when team membership changes
+ * — falls back to the founders so dev environments still send something. */
+function getNotificationRecipients(): string[] {
+  const raw = process.env.LEADS_NOTIFICATION_EMAILS;
+  if (!raw) return DEFAULT_NOTIFICATION_RECIPIENTS;
+  const parsed = raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return parsed.length > 0 ? parsed : DEFAULT_NOTIFICATION_RECIPIENTS;
+}
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 const MAX_SUBMISSIONS_PER_EMAIL = 2; // Max 2 submissions per email per hour
 const GLOBAL_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
@@ -40,12 +54,12 @@ export const checkEmailRateLimit = internalQuery({
     const windowStart = Date.now() - RATE_LIMIT_WINDOW_MS;
     const normalizedEmail = args.email.toLowerCase().trim();
 
-    // Count recent submissions from this email
+    // Count recent submissions from this email — compound index lets us
+    // skip the per-email .filter() pass over the full time window.
     const recentLeads = await ctx.db
       .query('leads')
-      .withIndex('by_created')
-      .filter((q) =>
-        q.and(q.gte(q.field('createdAt'), windowStart), q.eq(q.field('email'), normalizedEmail)),
+      .withIndex('by_email_and_created', (q) =>
+        q.eq('email', normalizedEmail).gte('createdAt', windowStart),
       )
       .collect();
 
@@ -291,7 +305,7 @@ async function sendEmailNotification(lead: {
       },
       body: JSON.stringify({
         from: 'Bajkoterapia <info@bajkoterapia.org>',
-        to: ['ljadach@gmail.com', 'cezdmo@gmail.com'],
+        to: getNotificationRecipients(),
         subject: `New Lead: ${segmentLabel} - ${lead.organization}`,
         html: generateEmailHtml(lead),
         reply_to: lead.email,

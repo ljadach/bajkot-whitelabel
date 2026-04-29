@@ -78,6 +78,29 @@ export const updateOrderStatus = internalMutation({
 
 // ── Complete Track + Check Convergence (atomic) ──────────
 
+/**
+ * Shared convergence check used by both `completeTrackAndCheck` (story/image
+ * track flags flipped here) and `checkParallelTracksComplete` (caller already
+ * patched the flags upstream — e.g. submitStyleVote sets `chosenStyle` and
+ * `imageTrackDone` in the same mutation, then schedules this).
+ *
+ * `POST_CONVERGENCE_STATUSES` guard makes the call idempotent — both helpers
+ * can fire for the same order without double-scheduling A7.
+ */
+async function maybeScheduleIllustrate(ctx: MutationCtx, orderId: Id<'bookOrders'>): Promise<void> {
+  const order = await ctx.db.get(orderId);
+  if (!order) return;
+  if (POST_CONVERGENCE_STATUSES.has(order.status as PipelineStatus)) return;
+
+  const storyDone = order.storyTrackDone ?? !!order.illustrationPlan;
+  const imageDone = order.imageTrackDone ?? !!order.chosenStyle;
+
+  if (storyDone && imageDone) {
+    await ctx.db.patch(orderId, { status: 'illustrating', updatedAt: Date.now() });
+    await ctx.scheduler.runAfter(0, internal.bookAgents.illustrate, { orderId });
+  }
+}
+
 export const completeTrackAndCheck = internalMutation({
   args: {
     orderId: v.id('bookOrders'),
@@ -87,19 +110,7 @@ export const completeTrackAndCheck = internalMutation({
   handler: async (ctx, { orderId, track }) => {
     const field = track === 'story' ? 'storyTrackDone' : 'imageTrackDone';
     await ctx.db.patch(orderId, { [field]: true, updatedAt: Date.now() });
-
-    // Inline convergence check (same transaction = atomic)
-    const order = await ctx.db.get(orderId);
-    if (!order) return null;
-    if (POST_CONVERGENCE_STATUSES.has(order.status as PipelineStatus)) return null;
-
-    const storyDone = order.storyTrackDone ?? !!order.illustrationPlan;
-    const imageDone = order.imageTrackDone ?? !!order.chosenStyle;
-
-    if (storyDone && imageDone) {
-      await ctx.db.patch(orderId, { status: 'illustrating', updatedAt: Date.now() });
-      await ctx.scheduler.runAfter(0, internal.bookAgents.illustrate, { orderId });
-    }
+    await maybeScheduleIllustrate(ctx, orderId);
     return null;
   },
 });
@@ -312,19 +323,7 @@ export const checkParallelTracksComplete = internalMutation({
   args: { orderId: v.id('bookOrders') },
   returns: v.null(),
   handler: async (ctx, { orderId }) => {
-    const order = await ctx.db.get(orderId);
-    if (!order) return null;
-
-    if (POST_CONVERGENCE_STATUSES.has(order.status as PipelineStatus)) return null;
-
-    // Boolean flags with artifact fallback for pre-migration orders
-    const storyDone = order.storyTrackDone ?? !!order.illustrationPlan;
-    const imageDone = order.imageTrackDone ?? !!order.chosenStyle;
-
-    if (storyDone && imageDone) {
-      await ctx.db.patch(orderId, { status: 'illustrating', updatedAt: Date.now() });
-      await ctx.scheduler.runAfter(0, internal.bookAgents.illustrate, { orderId });
-    }
+    await maybeScheduleIllustrate(ctx, orderId);
     return null;
   },
 });

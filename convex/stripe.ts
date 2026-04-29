@@ -185,40 +185,55 @@ export const verifyWebhookEvent = internalAction({
     const stripe = getStripeClient();
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
     if (!webhookSecret) {
-      throw new Error('STRIPE_WEBHOOK_SECRET is not configured');
+      // Prefix lets stripeHttp distinguish config errors (→ 500, page us)
+      // from signature errors (→ 400, Stripe stops retrying).
+      throw new Error('[stripe-config] STRIPE_WEBHOOK_SECRET is not configured');
     }
 
+    // Signature verification is the only step allowed to throw upward —
+    // a failure here means a bad/forged caller and Stripe should get 400.
     const event = stripe.webhooks.constructEvent(args.payload, args.signature, webhookSecret);
 
-    if (event.type !== 'checkout.session.completed') {
-      return null;
-    }
+    // Once the signature is verified, ack to Stripe regardless of business
+    // outcome. Anything we throw past this point would trigger Stripe's
+    // retry storm (up to 3 days). Business issues (missing order, malformed
+    // metadata) are already permanent, not transient — log and move on.
+    try {
+      if (event.type !== 'checkout.session.completed') {
+        return null;
+      }
 
-    const session = event.data.object as Stripe.Checkout.Session;
-    if (session.mode !== 'payment') {
-      console.warn(
-        `[stripe-webhook] Ignoring non-payment session: mode=${session.mode}, id=${session.id}`,
+      const session = event.data.object as Stripe.Checkout.Session;
+      if (session.mode !== 'payment') {
+        console.warn(
+          `[stripe-webhook] Ignoring non-payment session: mode=${session.mode}, id=${session.id}`,
+        );
+        return null;
+      }
+      if (session.payment_status !== 'paid') {
+        console.warn(
+          `[stripe-webhook] Session not paid: status=${session.payment_status}, id=${session.id}`,
+        );
+        return null;
+      }
+
+      const rawBookOrderId =
+        (session.metadata?.bookOrderId as string | undefined) ?? session.client_reference_id;
+      if (!rawBookOrderId) {
+        console.error(`[stripe-webhook] Missing bookOrderId on session ${session.id}`);
+        return null;
+      }
+
+      await ctx.runMutation(internal.billing.markBookOrderPaid, {
+        bookOrderId: rawBookOrderId as Id<'bookOrders'>,
+        stripeSessionId: session.id,
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(
+        `[stripe-webhook] Post-verification processing failed (event=${event.id}, type=${event.type}): ${message}`,
       );
-      return null;
     }
-    if (session.payment_status !== 'paid') {
-      console.warn(
-        `[stripe-webhook] Session not paid: status=${session.payment_status}, id=${session.id}`,
-      );
-      return null;
-    }
-
-    const rawBookOrderId =
-      (session.metadata?.bookOrderId as string | undefined) ?? session.client_reference_id;
-    if (!rawBookOrderId) {
-      console.error(`[stripe-webhook] Missing bookOrderId on session ${session.id}`);
-      return null;
-    }
-
-    await ctx.runMutation(internal.billing.markBookOrderPaid, {
-      bookOrderId: rawBookOrderId as Id<'bookOrders'>,
-      stripeSessionId: session.id,
-    });
 
     return null;
   },

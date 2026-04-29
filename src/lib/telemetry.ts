@@ -13,7 +13,7 @@ import {
   useFeatureFlagPayload,
 } from '@posthog/react';
 import posthog from 'posthog-js';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 // Re-export React components from @posthog/react
 export { PostHogFeature, PostHogCaptureOnViewed } from '@posthog/react';
@@ -157,17 +157,22 @@ export type ConsentStatus = 'accepted' | 'rejected' | 'custom' | null;
 export function useConsent() {
   const posthog = usePostHog();
 
-  const consentStatus = useMemo((): ConsentStatus => {
-    return localStorage.getItem(CONSENT_KEY) as ConsentStatus;
-  }, []);
+  // Read localStorage post-mount only — touching it during render breaks SSR
+  // (prerender of marketing routes) and would cause a hydration mismatch if
+  // we returned different values server-side vs client-side.
+  const [consentStatus, setConsentStatus] = useState<ConsentStatus>(null);
+  const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);
 
-  const isAnalyticsEnabled = useMemo(() => {
-    return localStorage.getItem(ANALYTICS_KEY) === 'true';
+  useEffect(() => {
+    setConsentStatus(localStorage.getItem(CONSENT_KEY) as ConsentStatus);
+    setIsAnalyticsEnabled(localStorage.getItem(ANALYTICS_KEY) === 'true');
   }, []);
 
   const acceptAll = useCallback(() => {
     localStorage.setItem(CONSENT_KEY, 'accepted');
     localStorage.setItem(ANALYTICS_KEY, 'true');
+    setConsentStatus('accepted');
+    setIsAnalyticsEnabled(true);
     posthog?.opt_in_capturing();
     console.log('Analytics enabled');
   }, [posthog]);
@@ -175,6 +180,8 @@ export function useConsent() {
   const rejectAll = useCallback(() => {
     localStorage.setItem(CONSENT_KEY, 'rejected');
     localStorage.setItem(ANALYTICS_KEY, 'false');
+    setConsentStatus('rejected');
+    setIsAnalyticsEnabled(false);
     posthog?.opt_out_capturing();
     console.log('Analytics disabled');
   }, [posthog]);
@@ -183,6 +190,8 @@ export function useConsent() {
     (analytics: boolean) => {
       localStorage.setItem(CONSENT_KEY, 'custom');
       localStorage.setItem(ANALYTICS_KEY, analytics ? 'true' : 'false');
+      setConsentStatus('custom');
+      setIsAnalyticsEnabled(analytics);
       if (analytics) {
         posthog?.opt_in_capturing();
         console.log('Analytics enabled (custom)');

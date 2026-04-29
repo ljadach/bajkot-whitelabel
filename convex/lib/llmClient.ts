@@ -132,7 +132,16 @@ export async function chatJsonWithRetries<T = any>(
   const promptPreview = `${system}\n\n${user}`;
   const startTime = Date.now();
 
-  const storeLog = async (response?: string, error?: string) => {
+  const storeLog = async (
+    response?: string,
+    error?: string,
+    extra?: {
+      finishReason?: string;
+      safetyBlockReason?: string;
+      retryCount?: number;
+      traceId?: string;
+    },
+  ) => {
     if (!logContext) return;
     try {
       await logContext.ctx.runMutation(internal.llmLogs.storeLlmLog, {
@@ -145,6 +154,10 @@ export async function chatJsonWithRetries<T = any>(
         error,
         durationMs: Date.now() - startTime,
         reasoningUsed,
+        finishReason: extra?.finishReason,
+        safetyBlockReason: extra?.safetyBlockReason,
+        retryCount: extra?.retryCount,
+        traceId: extra?.traceId,
       });
     } catch (e) {
       console.warn('Failed to store LLM log:', e);
@@ -155,6 +168,7 @@ export async function chatJsonWithRetries<T = any>(
     'llmClient.chatJsonWithRetries',
     async (span: Observation) => {
       span.update({ ...spanAttributes, input: promptPreview });
+      const traceId = span.context().traceId || undefined;
       let lastErr: any;
 
       for (let attempt = 0; attempt < retries; attempt++) {
@@ -182,7 +196,11 @@ export async function chatJsonWithRetries<T = any>(
           const parsed = safeParseJson<T>(raw);
           span.update({ output: parsed });
 
-          await storeLog(JSON.stringify(parsed, null, 2));
+          await storeLog(JSON.stringify(parsed, null, 2), undefined, {
+            finishReason: response.finishReason ?? undefined,
+            retryCount: attempt,
+            traceId,
+          });
 
           return parsed;
         } catch (error: any) {
@@ -218,13 +236,23 @@ export async function chatJsonWithRetries<T = any>(
       if (responseBody) parts.push(`body: ${String(responseBody).slice(0, 300)}`);
       const errMsg = parts.join(' | ');
 
+      // Surface Gemini's PROHIBITED_CONTENT / SAFETY block (if any) as a
+      // structured field so admin debugging doesn't have to grep error text.
+      const responseBodyStr = typeof responseBody === 'string' ? responseBody : '';
+      const blockMatch = /"blockReason"\s*:\s*"([^"]+)"/.exec(responseBodyStr);
+      const safetyBlockReason = blockMatch ? blockMatch[1] : undefined;
+
       if (fallback !== undefined) {
         console.warn(`[${action}] All retries exhausted, using fallback. Last error: ${errMsg}`);
-        await storeLog(JSON.stringify(fallback, null, 2) + '\n\n[FALLBACK USED]', errMsg);
+        await storeLog(JSON.stringify(fallback, null, 2) + '\n\n[FALLBACK USED]', errMsg, {
+          safetyBlockReason,
+          retryCount: retries,
+          traceId,
+        });
         return fallback;
       }
 
-      await storeLog(undefined, errMsg);
+      await storeLog(undefined, errMsg, { safetyBlockReason, retryCount: retries, traceId });
       throw new Error(errMsg);
     },
     { asType: 'generation' },

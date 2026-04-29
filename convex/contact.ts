@@ -39,9 +39,8 @@ export const checkContactRateLimit = internalQuery({
 
     const recentSubmissions = await ctx.db
       .query('contactSubmissions')
-      .withIndex('by_created')
-      .filter((q) =>
-        q.and(q.gte(q.field('createdAt'), windowStart), q.eq(q.field('email'), normalizedEmail)),
+      .withIndex('by_email_and_created', (q) =>
+        q.eq('email', normalizedEmail).gte('createdAt', windowStart),
       )
       .collect();
 

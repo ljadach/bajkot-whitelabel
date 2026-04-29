@@ -106,6 +106,7 @@ export const recordEvent = internalMutation({
     ),
     narrative: v.string(),
     details: v.optional(v.string()),
+    traceId: v.optional(v.string()),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -115,6 +116,7 @@ export const recordEvent = internalMutation({
       event: args.event,
       narrative: args.narrative,
       details: args.details,
+      traceId: args.traceId,
       timestamp: Date.now(),
     });
     return null;
