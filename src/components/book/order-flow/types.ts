@@ -22,19 +22,7 @@ export interface AppearanceData {
   outfitText: string;
 }
 
-/** "Inny problem" sentinel — for the dashed catalog card. */
-export interface OtherTopic {
-  isOther: true;
-  emoji: string;
-  shortTitle: string;
-  shortDesc: string;
-}
-
-export type SelectedTopic = Topic | OtherTopic;
-
-export function isOtherTopic(topic: SelectedTopic): topic is OtherTopic {
-  return 'isOther' in topic && topic.isOther === true;
-}
+export type SelectedTopic = Topic;
 
 /** Aggregate intake state shared between flow steps. */
 export interface IntakeState {
@@ -81,14 +69,7 @@ export function ageLabel(age: number): string {
 /** Tab id for the catalog filter ('all' for everything). */
 export type CatalogTab = CatalogCategory | 'all';
 
-/** Resolve a problem id for the pipeline.
- *
- * Topic.problemId may be null (defensive) — fall back to 'general_resilience'.
- * "Inny problem" → 'other' (the pipeline accepts arbitrary strings, and the
- * free-text situation gives the LLM enough to work with).
- */
 export function resolveProblemId(topic: SelectedTopic): string {
-  if (isOtherTopic(topic)) return 'other';
   return topic.problemId ?? 'general_resilience';
 }
 

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { trackEvent } from '../../../lib/telemetry';
-import { isOtherTopic, type IntakeState, type OrderFormat } from './types';
+import type { IntakeState, OrderFormat } from './types';
 
 interface Props {
   intake: IntakeState;
@@ -41,11 +41,7 @@ export function OrderPreview({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const trimmedName = intake.name.trim();
-  const topicTitle = intake.topic
-    ? isOtherTopic(intake.topic)
-      ? intake.topic.shortTitle
-      : intake.topic.catalog.shortTitle
-    : '';
+  const topicTitle = intake.topic ? intake.topic.catalog.shortTitle : '';
 
   // Render around the {{name}} placeholder ourselves so React escapes
   // user-supplied input — dangerouslySetInnerHTML would be an XSS vector.

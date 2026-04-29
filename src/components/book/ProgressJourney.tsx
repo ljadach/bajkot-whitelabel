@@ -34,7 +34,7 @@ interface ProgressJourneyProps {
 /**
  * Best-effort lookup of a human-readable problem title from a problemId
  * (e.g. "fear_of_separation" -> "Bajkoterapia – Dziecko Nie Chce Iść do Przedszkola | Adaptacja").
- * Falls back to a generic phrase when no topic matches (custom "Inny problem" submissions).
+ * Falls back to a generic phrase for legacy orders where no topic matches.
  */
 function resolveProblemTitle(problemId: string | undefined, fallback: string): string {
   if (!problemId) return fallback;

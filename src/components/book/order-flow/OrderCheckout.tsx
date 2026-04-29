@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { trackEvent } from '../../../lib/telemetry';
-import { isOtherTopic, type IntakeState, type OrderFormat } from './types';
+import type { IntakeState, OrderFormat } from './types';
 
 export interface ShippingAddress {
   fullName: string;
@@ -69,11 +69,7 @@ export function OrderCheckout({
   const productName = trimmedName
     ? t('checkout.summaryProductFor', { name: trimmedName })
     : t('checkout.summaryProduct');
-  const topicLine = intake.topic
-    ? isOtherTopic(intake.topic)
-      ? intake.topic.shortTitle
-      : intake.topic.catalog.shortTitle
-    : '';
+  const topicLine = intake.topic ? intake.topic.catalog.shortTitle : '';
   const isPrint = intake.format === 'pdf_print';
   const price = isPrint ? t('previewScreen.formatPrintPrice') : t('previewScreen.formatPdfPrice');
 

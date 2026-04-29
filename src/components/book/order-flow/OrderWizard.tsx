@@ -4,7 +4,6 @@ import type { TFunction } from 'i18next';
 import { useStepTransitionTracker } from '../../../lib/telemetry';
 import {
   ageLabel,
-  isOtherTopic,
   type AppearanceData,
   type Gender,
   type IntakeState,
@@ -184,9 +183,9 @@ function StepTopic({
   onChange: () => void;
 }) {
   const { t } = useTranslation('book');
-  const emoji = isOtherTopic(topic) ? topic.emoji : topic.catalog.emoji;
-  const title = isOtherTopic(topic) ? topic.shortTitle : topic.catalog.shortTitle;
-  const desc = isOtherTopic(topic) ? topic.shortDesc : topic.catalog.shortDesc;
+  const emoji = topic.catalog.emoji;
+  const title = topic.catalog.shortTitle;
+  const desc = topic.catalog.shortDesc;
 
   return (
     <div className="space-y-8 animate-fadeIn">
@@ -513,7 +512,6 @@ const CATEGORY_PLACEHOLDER_KEY: Record<string, string> = {
 };
 
 function situationPlaceholder(topic: SelectedTopic, t: TFunction): string {
-  if (isOtherTopic(topic)) return t('wizard.situationPlaceholderOther');
   // Per-problem placeholder takes precedence (spec section 3.3). Falls back to
   // category placeholder if a problem-specific one isn't translated yet.
   if (topic.problemId) {
