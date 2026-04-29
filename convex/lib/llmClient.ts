@@ -1,14 +1,30 @@
 import { generateText } from 'ai';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createOpenAI } from '@ai-sdk/openai';
 import { startActiveObservation, Observation } from './langfuse';
 import { internal } from '../_generated/api';
 import { stripCodeFences, safeParseJson } from './jsonUtils';
 import { type PipelineStage, getStageConfig } from './pipelineConfig';
 
-const googleApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-const fallbackModel = 'gemini-2.0-flash-001';
+/**
+ * All LLM calls go through OpenRouter — a single OpenAI-compatible endpoint
+ * that proxies to Anthropic/Google/OpenAI/etc. Model IDs are namespaced
+ * (`google/gemini-2.5-flash`, `anthropic/claude-3.5-sonnet`, ...) and live in
+ * `pipelineConfig.ts`. Image generation is unaffected — `geminiImageGen.ts`
+ * still hits Google directly because OpenRouter doesn't proxy image output.
+ *
+ * Why OpenAI-compat instead of `@openrouter/ai-sdk-provider`: that package
+ * peers on `ai@^6`, we're on `ai@5`. OpenRouter's OpenAI-compat endpoint lets
+ * us stay on the existing `@ai-sdk/openai@3` we already ship.
+ */
+const openrouterApiKey = process.env.OPENROUTER_API_KEY;
+const fallbackModel = 'google/gemini-2.0-flash-001';
 
-const google = googleApiKey ? createGoogleGenerativeAI({ apiKey: googleApiKey }) : null;
+const openrouter = openrouterApiKey
+  ? createOpenAI({
+      apiKey: openrouterApiKey,
+      baseURL: 'https://openrouter.ai/api/v1',
+    })
+  : null;
 
 // Type for action context (simplified)
 type ActionCtx = {
@@ -16,12 +32,10 @@ type ActionCtx = {
 };
 
 function ensureModel(modelName: string) {
-  if (!google) {
-    throw new Error(
-      'Google AI not configured. Set GOOGLE_GENERATIVE_AI_API_KEY in Convex environment.',
-    );
+  if (!openrouter) {
+    throw new Error('OpenRouter not configured. Set OPENROUTER_API_KEY in Convex environment.');
   }
-  return google(modelName || fallbackModel);
+  return openrouter(modelName || fallbackModel);
 }
 
 async function sleep(ms: number) {
@@ -29,24 +43,26 @@ async function sleep(ms: number) {
 }
 
 /**
- * Safety settings for Google AI. Therapeutic children's stories (e.g. potty training,
- * fears) can trigger overly sensitive default filters. We use BLOCK_ONLY_HIGH to
- * allow safe educational content while still blocking genuinely harmful material.
+ * Reasoning toggle is forwarded to OpenRouter via `extraBody`. Per-model
+ * support varies (Gemini 2.5 supports it, GPT-4o doesn't). When the provider
+ * doesn't recognize the field it's silently ignored, so no stage-specific
+ * gating is needed.
+ *
+ * Per-model safety settings (formerly Google `BLOCK_ONLY_HIGH`) are dropped:
+ * OpenAI-compat doesn't expose a uniform interface, and the original reason
+ * for tweaking them — false positives on therapeutic content — is exactly
+ * what motivated the OpenRouter switch (we're moving A5 to Claude precisely
+ * because Gemini's hard `PROHIBITED_CONTENT` filter is unconfigurable).
  */
-const GOOGLE_SAFETY_SETTINGS = [
-  { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT' as const, threshold: 'BLOCK_ONLY_HIGH' as const },
-  { category: 'HARM_CATEGORY_DANGEROUS_CONTENT' as const, threshold: 'BLOCK_ONLY_HIGH' as const },
-  { category: 'HARM_CATEGORY_HARASSMENT' as const, threshold: 'BLOCK_ONLY_HIGH' as const },
-  { category: 'HARM_CATEGORY_HATE_SPEECH' as const, threshold: 'BLOCK_ONLY_HIGH' as const },
-];
-
-/** Build Google provider options (reasoning + safety). */
 function buildProviderOptions(reasoning: boolean | undefined) {
-  const base: Record<string, any> = { safetySettings: GOOGLE_SAFETY_SETTINGS };
-  if (reasoning !== false) {
-    base.reasoning = { enabled: true };
-  }
-  return { google: base } as any;
+  if (reasoning === false) return undefined;
+  return {
+    openai: {
+      // The AI SDK forwards unknown keys as part of the request body, which
+      // is what OpenRouter expects for non-standard params.
+      extraBody: { reasoning: { enabled: true } },
+    },
+  } as any;
 }
 
 export interface ChatJsonParams {

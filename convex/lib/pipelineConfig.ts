@@ -30,52 +30,62 @@ export interface StageConfig {
 export type LlmConfig = Record<PipelineStage, StageConfig>;
 
 // ── Prod config ───────────────────────────────────────────────
+//
+// Models are namespaced for OpenRouter (`<provider>/<model-id>`). A5
+// (`book.artDirection`) runs on Claude 3.5 Sonnet because Gemini's hard
+// `PROHIBITED_CONTENT` filter trips deterministically on therapeutic
+// child + body-description prompts even on Pro — not configurable. The
+// rest of the pipeline stays on Gemini 2.5 Flash where the filters
+// behave for narrative text.
 
 const DEFAULT_LLM_CONFIG: LlmConfig = {
   'book.profiling': {
-    model: 'gemini-2.5-flash',
+    model: 'google/gemini-2.5-flash',
     temperature: 0.7,
     retries: 3,
     baseDelayMs: 250,
     expect: 'object',
   },
   'book.storyPlanning': {
-    model: 'gemini-2.5-flash',
+    model: 'google/gemini-2.5-flash',
     temperature: 0.6,
     retries: 3,
     baseDelayMs: 250,
     expect: 'object',
   },
   'book.storyWriting': {
-    model: 'gemini-2.5-flash',
+    model: 'google/gemini-2.5-flash',
     temperature: 0.8,
     retries: 3,
     baseDelayMs: 500,
     expect: 'object',
   },
   'book.psychReview': {
-    model: 'gemini-2.5-flash',
+    model: 'google/gemini-2.5-flash',
     temperature: 0.3,
     retries: 3,
     baseDelayMs: 250,
     expect: 'object',
   },
   'book.artDirection': {
-    model: 'gemini-2.5-flash',
+    // claude-3.5-sonnet is deprecated on OpenRouter — sonnet-4.6 is the
+    // current Anthropic flagship and was empirically verified to handle
+    // the A5 prompt that Gemini hard-blocks (PROHIBITED_CONTENT).
+    model: 'anthropic/claude-sonnet-4.6',
     temperature: 0.6,
     retries: 4,
     baseDelayMs: 250,
     expect: 'object',
   },
   'book.visualQa': {
-    model: 'gemini-2.5-flash',
+    model: 'google/gemini-2.5-flash',
     temperature: 0.3,
     retries: 3,
     baseDelayMs: 250,
     expect: 'object',
   },
   'book.finalQa': {
-    model: 'gemini-2.5-flash',
+    model: 'google/gemini-2.5-flash',
     temperature: 0.2,
     retries: 3,
     baseDelayMs: 250,
@@ -88,7 +98,7 @@ const DEFAULT_LLM_CONFIG: LlmConfig = {
 const TEST_LLM_CONFIG: Partial<LlmConfig> = Object.fromEntries(
   (Object.keys(DEFAULT_LLM_CONFIG) as PipelineStage[]).map((stage) => [
     stage,
-    { model: 'gemini-2.0-flash-001' },
+    { model: 'google/gemini-2.0-flash-001' },
   ]),
 ) as Partial<LlmConfig>;
 
