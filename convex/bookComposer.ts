@@ -187,7 +187,18 @@ export const generatePdf = internalAction({
         profile,
         getIllBuf,
       };
-      for (const spec of pageSequence) {
+
+      // Pre-paginate text — when a beat's prose doesn't fit on its allotted
+      // text page, split into multiple text pages BEFORE rendering. Keeps the
+      // illustration ordering intact (extra text pages are inserted between
+      // the original text page and the next sequence item).
+      const expandedSequence = expandTextPages(doc, pageSequence, renderCtx);
+      log('Page sequence expanded', {
+        before: pageSequence.length,
+        after: expandedSequence.length,
+      });
+
+      for (const spec of expandedSequence) {
         doc.addPage({ size: [PAGE_W, PAGE_H], margin: 0 });
         await renderPage(doc, spec, renderCtx);
       }
@@ -408,37 +419,123 @@ async function drawFullBleedImage(doc: PDFKit.PDFDocument, illustrationId: strin
   }
 }
 
-function drawTextPage(doc: PDFKit.PDFDocument, spec: PageSpec, r: RenderCtx) {
-  doc.rect(0, 0, PAGE_W, PAGE_H).fill(C.bgPage);
-  const beatId = spec.beatId!;
+/**
+ * Width and height of the text box used by `drawTextPage`. Kept as constants
+ * so `expandTextPages` (pre-pagination) measures against the same dimensions
+ * the renderer uses.
+ */
+const TEXT_BOX_X = MARGIN;
+const TEXT_BOX_Y = MARGIN + 20;
+const TEXT_BOX_W = PAGE_W - MARGIN * 2;
+const TEXT_BOX_H = PAGE_H - (MARGIN + 20) - 24;
 
-  let text = '';
+type ResolvedPageSpec = PageSpec & { textOverride?: string };
+
+function resolveBeatText(spec: PageSpec, r: RenderCtx): string {
+  const beatId = spec.beatId;
+  if (!beatId) return '';
   if (spec.textPart === 1 || spec.textPart === 2) {
     const parts = r.beatTextPartsById.get(beatId);
-    if (parts) text = spec.textPart === 1 ? parts[0] : parts[1];
-  } else {
-    text = r.beatTextById.get(beatId) || '';
+    if (parts) return spec.textPart === 1 ? parts[0] : parts[1];
+    return '';
+  }
+  return r.beatTextById.get(beatId) || '';
+}
+
+/**
+ * Greedy word-by-word pagination: walk the text and flush a chunk whenever
+ * adding the next word would overflow `maxHeight`. Single oversized words
+ * are emitted as their own chunk (overflow visible — better than dropping
+ * content silently).
+ */
+function paginateTextToChunks(
+  doc: PDFKit.PDFDocument,
+  text: string,
+  fontSize: number,
+  lineGap: number,
+  maxHeight: number,
+): string[] {
+  const trimmed = text.trim();
+  if (!trimmed) return [trimmed];
+
+  doc.font('Body').fontSize(fontSize);
+  const measureOpts = { width: TEXT_BOX_W, lineGap, align: 'justify' as const };
+
+  if (doc.heightOfString(trimmed, measureOpts) <= maxHeight) {
+    return [trimmed];
   }
 
-  if (!text.trim()) {
-    text = `[brak tekstu dla beatu ${beatId}]`;
+  // Tokenize while preserving whitespace so newlines/paragraph breaks survive.
+  const tokens = trimmed.split(/(\s+)/);
+  const chunks: string[] = [];
+  let current = '';
+
+  for (const tok of tokens) {
+    const candidate = current + tok;
+    const h = doc.heightOfString(candidate, measureOpts);
+    if (h > maxHeight && current.trim().length > 0) {
+      chunks.push(current.trim());
+      current = tok.replace(/^\s+/, ''); // drop leading whitespace on a new chunk
+    } else {
+      current = candidate;
+    }
+  }
+  if (current.trim().length > 0) chunks.push(current.trim());
+  return chunks.length > 0 ? chunks : [trimmed];
+}
+
+/**
+ * Expand the deterministic page sequence so any text page whose prose
+ * overflows its box is split into N consecutive text pages. Inserts the
+ * extras immediately after the original — illustration ordering is
+ * preserved. Page numbers are renumbered after expansion.
+ */
+function expandTextPages(
+  doc: PDFKit.PDFDocument,
+  sequence: PageSpec[],
+  r: RenderCtx,
+): ResolvedPageSpec[] {
+  const out: ResolvedPageSpec[] = [];
+  for (const spec of sequence) {
+    if (spec.kind !== 'text') {
+      out.push(spec);
+      continue;
+    }
+    let text = resolveBeatText(spec, r);
+    if (!text.trim()) text = `[brak tekstu dla beatu ${spec.beatId}]`;
+    if (spec.beatId === '6' && (spec.textPart === undefined || spec.textPart === 2)) {
+      text = `${text}\n\n*Koniec*`;
+    }
+    const chunks = paginateTextToChunks(doc, text, r.fs.body, r.fs.lineGap, TEXT_BOX_H);
+    for (const chunk of chunks) {
+      out.push({ ...spec, textOverride: chunk });
+    }
+  }
+  // Renumber so page-number badges stay consecutive after expansion.
+  return out.map((spec, i) => ({ ...spec, pageNumber: i + 1 }));
+}
+
+function drawTextPage(doc: PDFKit.PDFDocument, spec: ResolvedPageSpec, r: RenderCtx) {
+  doc.rect(0, 0, PAGE_W, PAGE_H).fill(C.bgPage);
+
+  // Pre-paginated by `expandTextPages` — the chunk for this page is in
+  // `textOverride`. Fall back to the legacy lookup only if expansion was
+  // skipped (e.g. tests that bypass the pre-pagination step).
+  let text = spec.textOverride;
+  if (text === undefined) {
+    text = resolveBeatText(spec, r);
+    if (!text.trim()) text = `[brak tekstu dla beatu ${spec.beatId}]`;
+    if (spec.beatId === '6' && (spec.textPart === undefined || spec.textPart === 2)) {
+      text = `${text}\n\n*Koniec*`;
+    }
   }
 
-  // Append "Koniec" to last text page of beat 6
-  if (beatId === '6' && (spec.textPart === undefined || spec.textPart === 2)) {
-    text = `${text}\n\n*Koniec*`;
-  }
-
-  // Constrain height so overflow is clipped (ellipsis) — we never want PDFKit
-  // to auto-insert a fresh page mid-sequence and corrupt the deterministic layout.
-  const textBoxH = PAGE_H - (MARGIN + 20) - 24;
   doc.font('Body').fontSize(r.fs.body).fillColor(C.textPrimary);
-  doc.text(text, MARGIN, MARGIN + 20, {
-    width: PAGE_W - MARGIN * 2,
-    height: textBoxH,
+  doc.text(text, TEXT_BOX_X, TEXT_BOX_Y, {
+    width: TEXT_BOX_W,
+    height: TEXT_BOX_H,
     align: 'justify',
     lineGap: r.fs.lineGap,
-    ellipsis: true,
   });
 
   // Page number at bottom center
