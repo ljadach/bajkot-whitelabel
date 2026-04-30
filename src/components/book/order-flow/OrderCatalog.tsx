@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CATALOG_CATEGORIES, type Topic, topicsByCategory } from '../../../data/topics';
 import { trackEvent } from '../../../lib/telemetry';
-import type { CatalogTab, OtherTopic, SelectedTopic } from './types';
+import type { CatalogTab, SelectedTopic } from './types';
 
 interface Props {
   onSelect: (topic: SelectedTopic) => void;
@@ -21,21 +21,9 @@ export function OrderCatalog({ onSelect }: Props) {
     return topicsByCategory(tab);
   }, [tab]);
 
-  const otherCard: OtherTopic = {
-    isOther: true,
-    emoji: '✨',
-    shortTitle: t('catalog.otherTitle'),
-    shortDesc: t('catalog.otherDesc'),
-  };
-
   const handleSelect = useCallback(
     (topic: SelectedTopic) => {
-      const isCustom = 'isOther' in topic && topic.isOther === true;
-      trackEvent('topic_selected', {
-        flow: 'auth',
-        problemId: isCustom ? 'other' : (topic as Topic).slug,
-        isCustom,
-      });
+      trackEvent('topic_selected', { flow: 'auth', problemId: topic.slug });
       onSelect(topic);
     },
     [onSelect],
@@ -91,19 +79,6 @@ export function OrderCatalog({ onSelect }: Props) {
           {filtered.map((topic) => (
             <CatalogCardView key={topic.slug} topic={topic} onClick={() => handleSelect(topic)} />
           ))}
-        </div>
-
-        {/* "Inny problem" dashed card */}
-        <div className="mt-6">
-          <button
-            type="button"
-            onClick={() => handleSelect(otherCard)}
-            className="w-full bg-white rounded-3xl p-6 border-2 border-dashed border-calm-500 shadow-sm hover:shadow-xl text-center transition cursor-pointer hover:-translate-y-0.5"
-          >
-            <div className="text-4xl mb-3">{otherCard.emoji}</div>
-            <h3 className="font-bold text-calm-900 text-lg mb-2">{otherCard.shortTitle}</h3>
-            <p className="text-gray-500 text-sm">{otherCard.shortDesc}</p>
-          </button>
         </div>
       </div>
     </section>

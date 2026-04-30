@@ -60,7 +60,7 @@ export const PROBLEMS: Record<string, ProblemDefinition> = {
     title_pl: 'Napady złości / trudności z regulacją emocji',
     context_pl:
       'Dziecko nie umie jeszcze zarządzać silnymi emocjami. Pokaż, że złość to sygnał, nie wróg.',
-    metaphor_pl: 'Wulkan emocji, który można oswoić oddechem. Smok Bąbelek.',
+    metaphor_pl: 'Wulkan emocji, który można oswoić oddechem.',
     category: 'emotions',
   },
   jealousy_sibling: {
@@ -156,7 +156,7 @@ export const PROBLEMS: Record<string, ProblemDefinition> = {
     context_pl:
       'Dziecko traktuje mycie zębów jako narzuconą walkę. Pokaż szczoteczkę jako narzędzie misji, a mikroby jako oswojonych przeciwników, których odgania się z radością, nie ze strachu.',
     metaphor_pl:
-      'Szczoteczka to magiczna miotełka rycerza Białego Uśmiechu, która zamienia ząbki w lśniące perły. Smok Bąbelek.',
+      'Szczoteczka to magiczna miotełka rycerza Białego Uśmiechu, która zamienia ząbki w lśniące perły.',
     category: 'routine',
   },
   sensory_sensitivity: {
@@ -241,7 +241,7 @@ export const PROBLEMS: Record<string, ProblemDefinition> = {
     title_pl: 'Lęk przed kąpielą i myciem głowy',
     context_pl:
       'Dziecko panikuje przy kąpieli, krzyczy przy myciu głowy. Pokaż wodę jako przyjazny żywioł i kąpiel jako przygodę.',
-    metaphor_pl: 'Wanna to ocean odkrywców, a piana to magiczna mgła chmurowa. Delfin Bąbelek.',
+    metaphor_pl: 'Wanna to ocean odkrywców, a piana to magiczna mgła chmurowa.',
     category: 'fears',
   },
   morning_routine: {

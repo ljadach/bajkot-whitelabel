@@ -15,6 +15,7 @@ import './lib/i18n';
 import { useEffect } from 'react';
 import { Header } from './components/Header';
 import { ClientOnly } from './components/ClientOnly';
+import { ScrollToTop } from './components/ScrollToTop';
 import { useLangFromUrl } from './hooks/useLangFromUrl';
 import { captureTokenFromUrl } from './hooks/useAccessToken';
 
@@ -81,6 +82,7 @@ export default function Root() {
 
   return (
     <div className="h-screen flex flex-col bg-white">
+      <ScrollToTop />
       <Header />
       <div className="flex flex-1 min-h-0 overflow-hidden">
         <main className="flex-1 overflow-auto bg-neutral-50">

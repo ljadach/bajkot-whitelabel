@@ -12,6 +12,7 @@
   "wizard": {
     "kicker": "Kreator Bajki",
     "heading": "Stwórz bajkę dla swojego dziecka",
+    "topicLabel": "Temat:",
     "navTopic": "Temat",
     "navSituation": "Sytuacja",
     "navChild": "Dziecko",
@@ -167,6 +168,7 @@
     "deliveryHeading": "Opcja dostawy",
     "deliveryPdf": "Tylko PDF",
     "deliveryPrint": "PDF + Druk",
+    "printDispatchNote": "Wydrukowaną wersję wysyłamy w 3-5 dni roboczych. Po wygenerowaniu PDF poprosimy Cię o adres mailem (info@bajkoterapia.org).",
     "addressHeading": "Adres do wysyłki",
     "addressFullName": "Imię i nazwisko",
     "addressFullNamePlaceholder": "Jan Kowalski",
@@ -179,10 +181,10 @@
     "addressCity": "Miasto",
     "addressCityPlaceholder": "Warszawa",
     "consent": "Akceptuję regulamin i wyrażam zgodę na przetwarzanie danych osobowych w celu realizacji zamówienia.",
-    "submit": "Płacę i zamawiam",
-    "submitting": "Przekierowuję...",
+    "submit": "Generuj bajkę",
+    "submitting": "Uruchamiam pipeline...",
     "back": "Wróć",
-    "secureNote": "Bezpieczna płatność. Twoje dane są chronione.",
+    "secureNote": "Bajka generuje się od razu — płatność za PDF dopiero po wygenerowaniu, na ekranie wyniku z podglądem 3 stron.",
     "devHeading": "Dev tools (admin only)",
     "devSkipStripe": "Omiń Stripe",
     "devSkipQa": "Tryb fast (omiń QA)",
@@ -267,10 +269,33 @@
     "headingFallback": "Twoja bajka jest gotowa!",
     "description": "Twoja spersonalizowana bajka terapeutyczna czeka na Ciebie. Sprawdź skrzynkę e-mail lub pobierz od razu.",
     "download": "Pobierz PDF",
+    "requestPrint": "Chcę wersję drukowaną",
     "printVersion": "Wersja do druku",
+    "deliveryPdfHeading": "PDF — od ręki",
+    "deliveryPdfBody": "Plik PDF dostajesz natychmiast po zakończeniu generacji. Możesz wydrukować go samodzielnie albo czytać z ekranu.",
+    "deliveryPrintHeading": "Wydruk — 3-5 dni roboczych",
+    "deliveryPrintBody": "Klikasz „Chcę wersję drukowaną”, podajesz adres mailem — drukujemy i wysyłamy w ciągu 3-5 dni roboczych.",
     "createAnother": "Stwórz kolejną bajkę",
     "processing": "Trwa przygotowywanie pliku...",
     "upsellHeading": "Chcesz stworzyć bajkę na inny temat?",
     "upsellBody": "Twoje dziecko może mieć całą kolekcję spersonalizowanych bajek terapeutycznych."
+  },
+  "paywall": {
+    "kicker": "Twoja bajka jest gotowa",
+    "heading": "„{{bookTitle}}\" — pierwsze 3 strony",
+    "headingFallback": "Twoja bajka jest gotowa — zobacz pierwsze 3 strony",
+    "description": "Tak będzie wyglądać bajka {{name}}. Odblokuj pełny PDF, żeby pobrać całą książkę z ilustracjami i historią.",
+    "excerptKicker": "Pierwsza strona",
+    "unlockHeading": "Odblokuj pełną bajkę",
+    "unlockBody": "Płatność jednorazowa za PDF. Po odblokowaniu możesz pobrać i wydrukować bajkę w dowolnej chwili.",
+    "unlockCta": "Odblokuj PDF ({{price}})",
+    "redirecting": "Przekierowuję do Stripe...",
+    "secureNote": "Bezpieczna płatność przez Stripe. Twoje dane są chronione.",
+    "error": "Nie udało się rozpocząć płatności. Spróbuj ponownie.",
+    "illustrationAlt": {
+      "cover": "Okładka bajki",
+      "scene_1": "Pierwsza ilustracja",
+      "scene_2": "Druga ilustracja"
+    }
   }
 }

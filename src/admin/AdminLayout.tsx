@@ -1,7 +1,5 @@
 import { Suspense } from 'react';
-import { Routes, Route, NavLink, Navigate } from 'react-router';
-import { useQuery } from 'convex/react';
-import { api } from '../../convex/_generated/api';
+import { Routes, Route, NavLink } from 'react-router';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { AdminConfig } from './pages/AdminConfig';
 import { BookBatch } from './pages/BookBatch';
@@ -105,20 +103,9 @@ function NavIcon({ icon }: { icon: string }) {
 }
 
 export function AdminLayout() {
-  const isAdminQuery = useQuery(api.auth.isAdmin);
-
-  if (isAdminQuery === undefined) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <div className="w-6 h-6 spinner" />
-      </div>
-    );
-  }
-
-  if (!isAdminQuery) {
-    return <Navigate to="/" replace />;
-  }
-
+  // Auth + admin-role enforcement is handled by `AdminAuthGate`, which wraps
+  // this component in `routes/app/admin.tsx`. By the time we render, the user
+  // is guaranteed authenticated AND admin.
   return (
     <div className="flex h-full">
       <nav className="w-52 bg-white border-r border-neutral-200 flex flex-col py-5 px-3 shrink-0">

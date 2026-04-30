@@ -51,9 +51,12 @@ function formatRelativeTime(timestamp: number): string {
 export function OrderTimeline({
   events,
   compact = false,
+  showAgentBadge = true,
 }: {
   events: PipelineEvent[] | undefined;
   compact?: boolean;
+  /** Hide the `A1/A2/...` debug badges in parent-facing progress views. */
+  showAgentBadge?: boolean;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -110,10 +113,12 @@ export function OrderTimeline({
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    {/* Agent badge */}
-                    <span className="inline-flex items-center rounded-md bg-neutral-800 px-1.5 py-0.5 text-[10px] font-mono font-bold text-neutral-300">
-                      {ev.agent}
-                    </span>
+                    {/* Agent badge (admin only) */}
+                    {showAgentBadge && (
+                      <span className="inline-flex items-center rounded-md bg-neutral-800 px-1.5 py-0.5 text-[10px] font-mono font-bold text-neutral-300">
+                        {ev.agent}
+                      </span>
+                    )}
 
                     {/* Narrative */}
                     <span

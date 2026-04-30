@@ -29,12 +29,18 @@ interface ProgressJourneyProps {
   childName?: string;
   ageNumber?: number | null;
   problemId?: string;
+  /** Hide the linear "Etapy produkcji" step list (landing flow). */
+  showStages?: boolean;
+  /** When false, the heading drops the per-stage label and only shows the
+   * generic `progress.heading`. Landing flow uses this so first-time
+   * visitors don't read internal stage names ("Piszemy bajkę"). */
+  showStageLabel?: boolean;
 }
 
 /**
  * Best-effort lookup of a human-readable problem title from a problemId
  * (e.g. "fear_of_separation" -> "Bajkoterapia – Dziecko Nie Chce Iść do Przedszkola | Adaptacja").
- * Falls back to a generic phrase when no topic matches (custom "Inny problem" submissions).
+ * Falls back to a generic phrase for legacy orders where no topic matches.
  */
 function resolveProblemTitle(problemId: string | undefined, fallback: string): string {
   if (!problemId) return fallback;
@@ -66,6 +72,8 @@ export function ProgressJourney({
   childName,
   ageNumber,
   problemId,
+  showStages = true,
+  showStageLabel = true,
 }: ProgressJourneyProps) {
   const { t } = useTranslation('book');
 
@@ -123,9 +131,11 @@ export function ProgressJourney({
             {t('progress.kicker')}
           </span>
           <div className="text-7xl mb-6 inline-block animate-pulse">{stage.icon}</div>
-          <h1 className="text-2xl md:text-3xl font-black text-calm-900 mb-3">
-            {activeStep?.label ?? t('progress.heading')}
-          </h1>
+          {showStageLabel && (
+            <h1 className="text-2xl md:text-3xl font-black text-calm-900 mb-3">
+              {activeStep?.label ?? t('progress.heading')}
+            </h1>
+          )}
           <p className="text-gray-500 font-medium text-sm md:text-base max-w-md mx-auto">
             {t('progress.description')}
           </p>
@@ -159,78 +169,70 @@ export function ProgressJourney({
           </div>
         </div>
 
-        {/* Linear step list — transparency for what's happening */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 md:p-6 mb-6">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 px-1">
-            {t('progress.stages')}
-          </h2>
-          <div className="space-y-1.5">
-            {pipelineSteps.map((step, i) => {
-              let state: 'done' | 'active' | 'waiting';
-              if (i < currentIndex) state = 'done';
-              else if (i === currentIndex) state = 'active';
-              else state = 'waiting';
+        {/* Linear step list — transparency for what's happening. Hidden on
+            landing flow per parent feedback (too much "behind the scenes"). */}
+        {showStages && (
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 md:p-6 mb-6">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 px-1">
+              {t('progress.stages')}
+            </h2>
+            <div className="space-y-1.5">
+              {pipelineSteps.map((step, i) => {
+                let state: 'done' | 'active' | 'waiting';
+                if (i < currentIndex) state = 'done';
+                else if (i === currentIndex) state = 'active';
+                else state = 'waiting';
 
-              return (
-                <div
-                  key={step.status}
-                  className={`flex items-center gap-3 rounded-xl px-3 py-2 transition-colors ${
-                    state === 'active'
-                      ? 'bg-amber-50 border border-magic-400/40'
-                      : state === 'done'
-                        ? 'bg-emerald-50/60'
-                        : 'bg-transparent'
-                  }`}
-                >
-                  <div className="shrink-0">
-                    {state === 'done' && <i className="fa-solid fa-circle-check text-green-500" />}
-                    {state === 'active' && (
-                      <div className="w-4 h-4 spinner border-magic-400/30 border-t-magic-500" />
-                    )}
-                    {state === 'waiting' && (
-                      <div className="w-4 h-4 rounded-full border-2 border-gray-200" />
-                    )}
-                  </div>
-                  {step.agent && (
+                return (
+                  <div
+                    key={step.status}
+                    className={`flex items-center gap-3 rounded-xl px-3 py-2 transition-colors ${
+                      state === 'active'
+                        ? 'bg-amber-50 border border-magic-400/40'
+                        : state === 'done'
+                          ? 'bg-emerald-50/60'
+                          : 'bg-transparent'
+                    }`}
+                  >
+                    <div className="shrink-0">
+                      {state === 'done' && (
+                        <i className="fa-solid fa-circle-check text-green-500" />
+                      )}
+                      {state === 'active' && (
+                        <div className="w-4 h-4 spinner border-magic-400/30 border-t-magic-500" />
+                      )}
+                      {state === 'waiting' && (
+                        <div className="w-4 h-4 rounded-full border-2 border-gray-200" />
+                      )}
+                    </div>
                     <span
-                      className={`text-[10px] font-mono font-bold shrink-0 ${
+                      className={`text-sm ${
                         state === 'active'
-                          ? 'text-magic-600'
+                          ? 'font-bold text-calm-900'
                           : state === 'done'
-                            ? 'text-green-600'
+                            ? 'text-gray-600'
                             : 'text-gray-400'
                       }`}
                     >
-                      {step.agent}
+                      {step.label}
                     </span>
-                  )}
-                  <span
-                    className={`text-sm ${
-                      state === 'active'
-                        ? 'font-bold text-calm-900'
-                        : state === 'done'
-                          ? 'text-gray-600'
-                          : 'text-gray-400'
-                    }`}
-                  >
-                    {step.label}
-                  </span>
-                  <span className="ml-auto text-[11px] font-semibold text-gray-400">
-                    {state === 'done' && t('progress.stepDone')}
-                    {state === 'active' && t('progress.stepActive')}
-                  </span>
-                </div>
-              );
-            })}
+                    <span className="ml-auto text-[11px] font-semibold text-gray-400">
+                      {state === 'done' && t('progress.stepDone')}
+                      {state === 'active' && t('progress.stepActive')}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
         {events && events.length > 0 && (
           <div>
             <h2 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 px-1">
               {t('progress.timeline')}
             </h2>
-            <OrderTimeline events={events} />
+            <OrderTimeline events={events} showAgentBadge={false} />
           </div>
         )}
       </div>

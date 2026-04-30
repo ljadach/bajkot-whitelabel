@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router';
 import { useAction, useQuery } from 'convex/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../../convex/_generated/api';
+// Stripe checkout has moved to the result screen (post-pipeline preview).
+// AuthOrderFlow no longer redirects to Stripe — pipeline starts immediately
+// and the result page shows the unlock-PDF CTA after a real preview.
 import { setFunnelSuperProperties } from '../../../lib/telemetry';
 import { OrderCatalog } from './OrderCatalog';
 import { OrderWizard } from './OrderWizard';
@@ -26,7 +29,6 @@ export function AuthOrderFlow() {
   const { t } = useTranslation('book');
   const navigate = useNavigate();
   const startOrder = useAction(api.bookPipeline.startOrder);
-  const createCheckoutSession = useAction(api.stripe.createCheckoutSession);
   const isAdmin = useQuery(api.auth.isAdmin) ?? false;
 
   const [screen, setScreen] = useState<Screen>('catalog');
@@ -108,27 +110,16 @@ export function AuthOrderFlow() {
     async (payload: CheckoutSubmitPayload) => {
       const result = await submitOrder(payload);
       if (!result) return;
-      // PDF+Print → trapdoor thank-you
+      // PDF+Print → trapdoor thank-you (manual fulfilment via mail)
       if (payload.format === 'pdf_print') {
         void navigate(`/book/${result.orderId}/print-thanks`);
         return;
       }
-      // Admin skipStripe (rare here — usually they'd skip preview→checkout
-      // entirely). Kept for completeness.
-      if (isAdmin && skipStripe) {
-        void navigate(`/book/${result.orderId}/progress`);
-        return;
-      }
-      // Default: Stripe checkout
-      const session = await createCheckoutSession({
-        bookOrderId: result.orderId,
-        returnPath: `/book/${result.orderId}/progress`,
-      });
-      if (typeof window !== 'undefined') {
-        window.location.assign(session.url);
-      }
+      // Pipeline starts immediately. Stripe payment is now gated at the
+      // result page — parents see a real preview of their book before paying.
+      void navigate(`/book/${result.orderId}/progress`);
     },
-    [submitOrder, createCheckoutSession, navigate, isAdmin, skipStripe],
+    [submitOrder, navigate],
   );
 
   return (

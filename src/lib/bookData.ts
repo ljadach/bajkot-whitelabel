@@ -91,22 +91,28 @@ export const OUTFITS = {
   ogrodniczki: 'Jeansowe ogrodniczki',
 } as const;
 
-/** All pipeline statuses for display in progress UI */
+/** All pipeline statuses for display in progress UI.
+ *
+ * `label` is the parent-facing copy shown on the progress page — keep it
+ * friendly and free of internal jargon. The `agent` field is for admin/CLI
+ * tooling and is hidden from parents in the UI.
+ */
 export const PIPELINE_STEPS = [
-  { status: 'intake', agent: 'A0', label: 'Przyjmowanie zamowienia' },
-  { status: 'profiling', agent: 'A1', label: 'Profilowanie dziecka' },
-  { status: 'story_planning', agent: 'A2', label: 'Planowanie historii' },
-  { status: 'story_writing', agent: 'A3', label: 'Pisanie historii' },
-  { status: 'psych_review', agent: 'A4', label: 'Recenzja psychologiczna' },
-  { status: 'art_direction', agent: 'A5', label: 'Kierunek artystyczny' },
-  { status: 'character_design', agent: 'A6', label: 'Projekt postaci' },
-  { status: 'style_vote', agent: 'A6b', label: 'Wybor stylu' },
-  { status: 'illustrating', agent: 'A7', label: 'Ilustrowanie' },
-  { status: 'visual_qa', agent: 'A8', label: 'Kontrola wizualna' },
-  { status: 'composing_pdf', agent: 'A9', label: 'Skladanie PDF' },
-  { status: 'final_qa', agent: 'A10', label: 'Ostateczna kontrola' },
-  { status: 'delivering', agent: 'A11', label: 'Dostarczanie' },
-  { status: 'completed', agent: null, label: 'Gotowe' },
+  { status: 'intake', agent: 'A0', label: 'Zaczynamy przygodę' },
+  { status: 'profiling', agent: 'A1', label: 'Poznajemy Twoje dziecko' },
+  { status: 'story_planning', agent: 'A2', label: 'Układamy historię' },
+  { status: 'story_writing', agent: 'A3', label: 'Piszemy bajkę' },
+  { status: 'psych_review', agent: 'A4', label: 'Sprawdzamy emocje' },
+  { status: 'art_direction', agent: 'A5', label: 'Dobieramy styl ilustracji' },
+  { status: 'character_design', agent: 'A6', label: 'Tworzymy bohatera' },
+  { status: 'style_vote', agent: 'A6b', label: 'Wybór stylu' },
+  { status: 'illustrating', agent: 'A7', label: 'Rysujemy ilustracje' },
+  { status: 'visual_qa', agent: 'A8', label: 'Dopinamy detale' },
+  { status: 'awaiting_dedication', agent: 'A8', label: 'Czekamy na dedykację' },
+  { status: 'composing_pdf', agent: 'A9', label: 'Zbieramy bajkę w PDF' },
+  { status: 'final_qa', agent: 'A10', label: 'Ostatnie poprawki' },
+  { status: 'delivering', agent: 'A11', label: 'Już wysyłamy' },
+  { status: 'completed', agent: null, label: 'Gotowe!' },
 ] as const;
 
 export type BookOrderStatus = (typeof PIPELINE_STEPS)[number]['status'] | 'failed';

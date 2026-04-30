@@ -4,7 +4,6 @@ import { Link } from 'react-router';
 import { JsonLd } from '../components/JsonLd';
 import { TopicNav } from '../components/topic-landing/TopicNav';
 import { TopicFooter } from '../components/topic-landing/TopicFooter';
-import { SignInModal } from '../components/SignInModal';
 import { getPageFaqItems, type FaqItemData } from '../lib/faqHelpers';
 import { TOPICS } from '../data/topics';
 import { trackEvent } from '../lib/telemetry';
@@ -60,7 +59,6 @@ const TESTIMONIALS = [
 export function HomePage() {
   const { t } = useTranslation('app');
   const [openFaq, setOpenFaq] = useState<string | null>(null);
-  const [showSignIn, setShowSignIn] = useState(false);
 
   const { t: tFaq } = useTranslation('faq');
   const allFaqItems = tFaq('items', { returnObjects: true }) as Record<string, FaqItemData>;
@@ -125,16 +123,6 @@ export function HomePage() {
                   <i className="fa-solid fa-flask text-calm-500" />
                   {t('hero.badges.research')}
                 </span>
-              </div>
-              <div className="mt-6">
-                <button
-                  type="button"
-                  onClick={() => setShowSignIn(true)}
-                  className="text-sm font-semibold text-calm-700 hover:text-calm-500 transition-colors"
-                >
-                  <i className="fa-regular fa-user mr-1.5" />
-                  {t('hero.signIn')}
-                </button>
               </div>
             </div>
 
@@ -377,7 +365,6 @@ export function HomePage() {
       </section>
 
       <TopicFooter />
-      {showSignIn && <SignInModal onClose={() => setShowSignIn(false)} />}
     </div>
   );
 }

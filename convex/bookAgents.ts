@@ -1218,6 +1218,25 @@ export const composePdf = internalAction({
   returns: v.null(),
   handler: async (ctx, { orderId }) => {
     try {
+      // Gate: don't render the PDF until the parent has decided about a
+      // dedication. Park the order in `awaiting_dedication` and let
+      // submitParentDedication/skipParentDedication kick us back here.
+      const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
+      if (!order?.dedicationDecided) {
+        await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
+          orderId,
+          status: 'awaiting_dedication',
+          currentAgent: 'A8',
+        });
+        await recordPipelineEvent(ctx, {
+          orderId,
+          agent: 'A8',
+          event: 'info',
+          narrative: 'Czekam na dedykację rodzica przed złożeniem PDF...',
+        });
+        return null;
+      }
+
       await ctx.runMutation(internal.bookPipelineHelpers.updateOrderStatus, {
         orderId,
         status: 'composing_pdf',

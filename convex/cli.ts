@@ -27,6 +27,8 @@ export const createOrder = internalMutation({
     outfit: v.string(),
     chosenStyle: v.optional(v.union(v.literal('A'), v.literal('B'))),
     skipQaReviews: v.optional(v.boolean()),
+    /** Optional: deliver-ready email recipient (for Resend send testing). */
+    email: v.optional(v.string()),
   },
   returns: v.id('bookOrders'),
   handler: async (ctx, args) => {
@@ -46,6 +48,12 @@ export const createOrder = internalMutation({
       outfit: args.outfit,
       chosenStyle: args.chosenStyle ?? 'A',
       skipQaReviews: args.skipQaReviews ?? true,
+      // CLI bypasses Stripe — `isPaid()` honours skipStripe, so the result
+      // page won't paywall the PDF. Dedication is also auto-decided so A9
+      // doesn't park in `awaiting_dedication` waiting for a UI submit.
+      skipStripe: true,
+      dedicationDecided: true,
+      email: args.email,
       status: 'intake',
       createdAt: Date.now(),
     });

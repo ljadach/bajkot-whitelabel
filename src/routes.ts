@@ -26,8 +26,11 @@ export default [
     route('book/:orderId/result', 'routes/app/book-result.tsx'),
     route('book/:orderId/print', 'routes/app/book-print.tsx'),
     route('book/:orderId/print-thanks', 'routes/app/book-print-thanks.tsx'),
-    route('admin/*', 'routes/app/admin.tsx'),
   ]),
+
+  // Admin routes — own gate (`AdminAuthGate`) so unauthenticated visitors
+  // see a proper sign-in screen instead of a silent redirect to `/`.
+  route('admin/*', 'routes/app/admin.tsx'),
 
   // Global catch-all
   route('*', 'routes/catch-all.tsx', { id: 'global-catchall' }),

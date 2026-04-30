@@ -26,6 +26,7 @@ import { getNarrative } from './bookPipelineEvents';
 import { getCurrentTraceId } from './lib/langfuse';
 import { resolveAgeBracket, type AgeBracket } from './lib/ageBracket';
 import { buildPageSequence, splitBeatText, type PageSpec } from './lib/pageSequence';
+import { dlaName } from './lib/childNameInflect';
 import PDFDocument from 'pdfkit';
 
 // Patch initFonts — Convex runtime has no Helvetica.afm files
@@ -166,12 +167,18 @@ export const generatePdf = internalAction({
         return fetchImageBuffer(ctx, ill.storageId);
       };
 
-      const title = draft.title || blueprint?.title || `Książeczka dla ${order.childName}`;
+      // Use the inflection helper for the "Książeczka dla {name}" fallback
+      // when the LLM didn't emit a title. If the helper bails (unknown name)
+      // we drop "dla" entirely rather than ship "dla Gustaw".
+      const titleFallback = dlaName(order.childName)
+        ? `Książeczka ${dlaName(order.childName)}`
+        : 'Twoja bajka';
+      const title = draft.title || blueprint?.title || titleFallback;
       const subtitle = blueprint?.subtitle || '';
+      // No "dla {name}" fallback — that needs the genitive. Title page
+      // gracefully omits the dedication when nothing was supplied.
       const dedication =
-        (order.parentDedication as string | undefined)?.trim() ||
-        draft.dedication?.trim() ||
-        `Dla ${order.childName}`;
+        (order.parentDedication as string | undefined)?.trim() || draft.dedication?.trim() || '';
 
       const renderCtx: RenderCtx = {
         fs,
@@ -192,12 +199,15 @@ export const generatePdf = internalAction({
       // text page, split into multiple text pages BEFORE rendering. Keeps the
       // illustration ordering intact (extra text pages are inserted between
       // the original text page and the next sequence item).
+      // We use a throwaway PDFDocument purely to measure heights for
+      // pagination — `expandTextPages` reuses fonts already registered.
       const expandedSequence = expandTextPages(doc, pageSequence, renderCtx);
       log('Page sequence expanded', {
         before: pageSequence.length,
         after: expandedSequence.length,
       });
 
+      // Render full PDF using the existing `doc`.
       for (const spec of expandedSequence) {
         doc.addPage({ size: [PAGE_W, PAGE_H], margin: 0 });
         await renderPage(doc, spec, renderCtx);
@@ -214,6 +224,46 @@ export const generatePdf = internalAction({
         orderId,
         pdfStorageId,
       });
+
+      // Generate 3-page preview PDF for the result-page flipbook. The full
+      // PDF stays paywalled; this teaser ships unconditionally so the parent
+      // can flip through real pages before paying.
+      try {
+        const previewPagesRaw = expandedSequence.slice(0, 3);
+        const previewPages =
+          previewPagesRaw.length > 0
+            ? previewPagesRaw
+            : expandedSequence; // edge case — book shorter than 3 pages, take all
+        if (previewPagesRaw.length < 3) {
+          log('Preview shorter than 3 pages — using full sequence', {
+            available: previewPagesRaw.length,
+            total: expandedSequence.length,
+          });
+        }
+        const previewBuffer = await renderPagesToPdfBuffer(
+          previewPages,
+          renderCtx,
+          regular,
+          bold,
+        );
+        log('Preview ready', {
+          sizeKb: Math.round(previewBuffer.length / 1024),
+          pages: previewPages.length,
+        });
+        const previewBlob = new Blob([new Uint8Array(previewBuffer)], {
+          type: 'application/pdf',
+        });
+        const previewPdfStorageId = await ctx.storage.store(previewBlob);
+        await ctx.runMutation(internal.bookPipelineHelpers.updatePreviewPdfStorageId, {
+          orderId,
+          previewPdfStorageId,
+        });
+      } catch (previewError) {
+        // Preview is non-blocking — falls back to the legacy 3-image grid if
+        // it errors out. Log but don't fail the whole pipeline.
+        const msg = previewError instanceof Error ? previewError.message : String(previewError);
+        console.warn('[A9:PDF] Preview generation failed (non-fatal):', msg);
+      }
 
       await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
         orderId,
@@ -364,41 +414,48 @@ function drawTitlePage(doc: PDFKit.PDFDocument, r: RenderCtx) {
     });
   }
 
+  // "Bajka dla {childName}" with the genitive form of the name when the
+  // inflection helper recognises it; otherwise fall back to the name in
+  // nominative ("Twoja bajka, {childName}") to avoid a grammar bug.
+  const dla = dlaName(r.childName);
+  const subline = dla ? `Bajka ${dla}` : `Twoja bajka, ${r.childName}`;
   doc.font('Body').fontSize(r.fs.small).fillColor(C.textSecondary);
-  doc.text(`Bajka dla ${r.childName}`, MARGIN, doc.y + 20, {
+  doc.text(subline, MARGIN, doc.y + 20, {
     width: PAGE_W - MARGIN * 2,
     align: 'center',
   });
 
-  // Dedication box further down
-  const dedY = centerY + 40;
-  doc
-    .font('Body')
-    .fontSize(r.fs.small + 1)
-    .fillColor(C.textPrimary);
-  doc.text(r.dedication, MARGIN + 30, dedY, {
-    width: PAGE_W - (MARGIN + 30) * 2,
-    align: 'center',
-    lineGap: 3,
-    characterSpacing: 0.2,
-  });
-  // Tiny heart beneath
-  const heartY = doc.y + 14;
-  doc.save();
-  doc.opacity(0.5);
-  doc
-    .path(
-      `M${centerX - 6} ${heartY + 12}` +
-        `C${centerX - 6} ${heartY + 12} ${centerX - 12} ${heartY + 8} ${centerX - 12} ${heartY + 4.5}` +
-        `C${centerX - 12} ${heartY + 2} ${centerX - 10} ${heartY} ${centerX - 8} ${heartY}` +
-        `C${centerX - 6.8} ${heartY} ${centerX - 6} ${heartY + 0.8} ${centerX - 6} ${heartY + 0.8}` +
-        `C${centerX - 6} ${heartY + 0.8} ${centerX - 5.2} ${heartY} ${centerX - 4} ${heartY}` +
-        `C${centerX - 2} ${heartY} ${centerX} ${heartY + 2} ${centerX} ${heartY + 4.5}` +
-        `C${centerX} ${heartY + 8} ${centerX - 6} ${heartY + 12} ${centerX - 6} ${heartY + 12}z`,
-    )
-    .fill('#EF9A9A');
-  doc.restore();
-  doc.opacity(1);
+  // Dedication box + heart further down — omit entirely when no dedication
+  // exists, otherwise the title page leaves an awkward empty stripe.
+  if (r.dedication.trim().length > 0) {
+    const dedY = centerY + 40;
+    doc
+      .font('Body')
+      .fontSize(r.fs.small + 1)
+      .fillColor(C.textPrimary);
+    doc.text(r.dedication, MARGIN + 30, dedY, {
+      width: PAGE_W - (MARGIN + 30) * 2,
+      align: 'center',
+      lineGap: 3,
+      characterSpacing: 0.2,
+    });
+    const heartY = doc.y + 14;
+    doc.save();
+    doc.opacity(0.5);
+    doc
+      .path(
+        `M${centerX - 6} ${heartY + 12}` +
+          `C${centerX - 6} ${heartY + 12} ${centerX - 12} ${heartY + 8} ${centerX - 12} ${heartY + 4.5}` +
+          `C${centerX - 12} ${heartY + 2} ${centerX - 10} ${heartY} ${centerX - 8} ${heartY}` +
+          `C${centerX - 6.8} ${heartY} ${centerX - 6} ${heartY + 0.8} ${centerX - 6} ${heartY + 0.8}` +
+          `C${centerX - 6} ${heartY + 0.8} ${centerX - 5.2} ${heartY} ${centerX - 4} ${heartY}` +
+          `C${centerX - 2} ${heartY} ${centerX} ${heartY + 2} ${centerX} ${heartY + 4.5}` +
+          `C${centerX} ${heartY + 8} ${centerX - 6} ${heartY + 12} ${centerX - 6} ${heartY + 12}z`,
+      )
+      .fill('#EF9A9A');
+    doc.restore();
+    doc.opacity(1);
+  }
 }
 
 async function drawFullBleedImage(doc: PDFKit.PDFDocument, illustrationId: string, r: RenderCtx) {
@@ -573,10 +630,15 @@ function drawParentCardPage(doc: PDFKit.PDFDocument, r: RenderCtx) {
   y += 14;
 
   const parentCard = r.draft.parentCard;
-  const intro =
-    parentCard?.introPl ||
-    `Ta bajka została stworzona dla ${r.childName}. ` +
+  // Genitive when known ("stworzona dla Gustawa"); else describe the child
+  // in nominative without the "dla" construct.
+  const introDla = dlaName(r.childName);
+  const introFallback = introDla
+    ? `Ta bajka została stworzona ${introDla}. ` +
+      'Poniżej znajdziesz pytania, które możesz zadać dziecku po wspólnym czytaniu.'
+    : `Ta bajka jest spersonalizowana — jej bohaterem jest ${r.childName}. ` +
       'Poniżej znajdziesz pytania, które możesz zadać dziecku po wspólnym czytaniu.';
+  const intro = parentCard?.introPl || introFallback;
   doc
     .font('Body')
     .fontSize(r.fs.small + 1)
@@ -589,11 +651,17 @@ function drawParentCardPage(doc: PDFKit.PDFDocument, r: RenderCtx) {
   });
   y = doc.y + 14;
 
-  // Questions (prefer A3 parentCard, fall back to A2 parent_questions)
+  // Questions (prefer A3 parentCard, fall back to A2 parent_questions).
+  // The A2 prompt asks for snake_case `parent_questions`, so the blueprint
+  // JSON often lands in that shape — read both keys to avoid an empty card.
+  const blueprintAny = r.blueprint as
+    | (Record<string, unknown> & { parentQuestions?: string[]; parent_questions?: string[] })
+    | null;
+  const blueprintQuestions = blueprintAny?.parentQuestions ?? blueprintAny?.parent_questions ?? [];
   const questions: string[] =
     parentCard?.questions && parentCard.questions.length > 0
       ? parentCard.questions
-      : r.blueprint?.parentQuestions || [];
+      : blueprintQuestions;
 
   if (questions.length > 0) {
     doc
@@ -619,8 +687,13 @@ function drawParentCardPage(doc: PDFKit.PDFDocument, r: RenderCtx) {
     }
   }
 
-  // Activity — prefer A3, fall back to A2 actionable_takeaway.how_to_pl
-  const activity = parentCard?.activityPl || r.blueprint?.actionableTakeaway?.howToPl || '';
+  // Activity — prefer A3, fall back to A2 actionable_takeaway.how_to_pl.
+  // Same snake_case-aware read as parent questions above.
+  const takeawayAny = (blueprintAny?.actionableTakeaway ??
+    (blueprintAny as Record<string, unknown> | null)?.actionable_takeaway) as
+    | { howToPl?: string; how_to_pl?: string }
+    | undefined;
+  const activity = parentCard?.activityPl || takeawayAny?.howToPl || takeawayAny?.how_to_pl || '';
   if (activity) {
     y = doc.y + 10;
     doc
@@ -667,10 +740,24 @@ function drawColophonPage(doc: PDFKit.PDFDocument, r: RenderCtx) {
     .font('Body')
     .fontSize(r.fs.small - 1)
     .fillColor(C.textSecondary);
-  doc.text(`Stworzone z miłością dla ${r.childName}.`, MARGIN, doc.y + 20, {
-    width: PAGE_W - MARGIN * 2,
-    align: 'center',
-  });
+  // Use the genitive when we can ("Stworzone z miłością dla Gustawa.");
+  // otherwise split into two lines so the name keeps its nominative form.
+  const colophonDla = dlaName(r.childName);
+  if (colophonDla) {
+    doc.text(`Stworzone z miłością ${colophonDla}.`, MARGIN, doc.y + 20, {
+      width: PAGE_W - MARGIN * 2,
+      align: 'center',
+    });
+  } else {
+    doc.text('Stworzone z miłością ❤️', MARGIN, doc.y + 20, {
+      width: PAGE_W - MARGIN * 2,
+      align: 'center',
+    });
+    doc.text(r.childName, MARGIN, doc.y + 4, {
+      width: PAGE_W - MARGIN * 2,
+      align: 'center',
+    });
+  }
 
   doc
     .font('Body')
@@ -680,6 +767,47 @@ function drawColophonPage(doc: PDFKit.PDFDocument, r: RenderCtx) {
     width: PAGE_W - MARGIN * 2,
     align: 'center',
   });
+}
+
+/**
+ * Render a list of already-expanded page specs into a fresh PDF buffer. Used
+ * to produce the 3-page preview alongside the full book — keeps the heavy
+ * lifting (image fetching, pagination) shared with the main render path.
+ */
+async function renderPagesToPdfBuffer(
+  specs: ResolvedPageSpec[],
+  r: RenderCtx,
+  regular: Buffer,
+  bold: Buffer,
+): Promise<Buffer> {
+  const doc = new PDFDocument({
+    size: [PAGE_W, PAGE_H],
+    autoFirstPage: false,
+    bufferPages: true,
+    margin: 0,
+  });
+  const chunks: Buffer[] = [];
+  doc.on('data', (chunk: Buffer) => chunks.push(chunk));
+  const done = new Promise<Buffer>((resolve) => {
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+  });
+
+  doc.registerFont('Body', regular);
+  doc.registerFont('Title', bold);
+  doc.registerFont('Helvetica', regular);
+  doc.registerFont('Helvetica-Bold', bold);
+  doc.font('Body');
+
+  // Renumber pages so the preview shows 1..N rather than original numbers.
+  const renumbered = specs.map((spec, i) => ({ ...spec, pageNumber: i + 1 }));
+
+  for (const spec of renumbered) {
+    doc.addPage({ size: [PAGE_W, PAGE_H], margin: 0 });
+    await renderPage(doc, spec, r);
+  }
+
+  doc.end();
+  return done;
 }
 
 // ════════════════════════════════════════════════════════

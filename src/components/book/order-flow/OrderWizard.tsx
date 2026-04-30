@@ -1,10 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { useStepTransitionTracker } from '../../../lib/telemetry';
 import {
   ageLabel,
-  isOtherTopic,
   type AppearanceData,
   type Gender,
   type IntakeState,
@@ -47,10 +46,19 @@ export function OrderWizard({
   const { t } = useTranslation('book');
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [error, setError] = useState('');
+  const formCardRef = useRef<HTMLDivElement | null>(null);
+  const errorRef = useRef<HTMLDivElement | null>(null);
 
   // Fires `order_form_step_viewed` and `order_form_step_completed` with
   // durationMs so we can analyse drop-off per step (spec section 7.1).
   useStepTransitionTracker(step, { surface: 'order_wizard' });
+
+  // Pull validation errors into the viewport — they're rendered at the top
+  // of the form card and otherwise scroll past the user when shown.
+  useEffect(() => {
+    if (!error) return;
+    errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [error]);
 
   const update = useCallback(
     <K extends keyof IntakeState>(key: K, value: IntakeState[K]) => {
@@ -71,9 +79,10 @@ export function OrderWizard({
   const goToStep = (target: 1 | 2 | 3) => {
     setError('');
     setStep(target);
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    // Nudge the form card into view rather than jumping all the way to the
+    // top of the page — the previous `window.scrollTo({top: 0})` overshot
+    // and disorientated users when the form card was already visible.
+    formCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   };
 
   const handleFinish = () => {
@@ -105,12 +114,21 @@ export function OrderWizard({
           <span className="text-magic-500 font-bold uppercase tracking-widest text-sm mb-2 block">
             {t('wizard.kicker')}
           </span>
-          <h1 className="text-3xl md:text-4xl font-black text-calm-900 mb-4">
+          <h1 className="text-3xl md:text-4xl font-black text-calm-900 mb-3">
             {t('wizard.heading')}
           </h1>
+          {/* Repeat the selected topic in the header so parents always see
+              which problem the wizard is configured for (4.6). */}
+          <p className="text-calm-700 text-base font-semibold">
+            {t('wizard.topicLabel')}{' '}
+            <span className="text-magic-600">{intake.topic.catalog.shortTitle}</span>
+          </p>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+        <div
+          ref={formCardRef}
+          className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden"
+        >
           {showProgressNav && (
             <div className="bg-calm-50 px-6 py-4 border-b border-calm-100 flex justify-between items-center text-xs md:text-sm font-bold text-gray-400 gap-2 flex-wrap">
               <span className={step === 1 ? 'text-magic-600' : 'text-calm-500'}>
@@ -133,7 +151,11 @@ export function OrderWizard({
 
           <div className="p-6 md:p-10">
             {error && (
-              <div className="mb-6 rounded-2xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-700 font-medium">
+              <div
+                ref={errorRef}
+                role="alert"
+                className="mb-6 rounded-2xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-700 font-medium"
+              >
                 {error}
               </div>
             )}
@@ -184,9 +206,9 @@ function StepTopic({
   onChange: () => void;
 }) {
   const { t } = useTranslation('book');
-  const emoji = isOtherTopic(topic) ? topic.emoji : topic.catalog.emoji;
-  const title = isOtherTopic(topic) ? topic.shortTitle : topic.catalog.shortTitle;
-  const desc = isOtherTopic(topic) ? topic.shortDesc : topic.catalog.shortDesc;
+  const emoji = topic.catalog.emoji;
+  const title = topic.catalog.shortTitle;
+  const desc = topic.catalog.shortDesc;
 
   return (
     <div className="space-y-8 animate-fadeIn">
@@ -248,11 +270,6 @@ function StepSituation({
 
   return (
     <div className="space-y-8 animate-fadeIn">
-      <div>
-        <h2 className="text-2xl font-bold text-calm-900 mb-2">{t('wizard.situationHeading')}</h2>
-        <p className="text-gray-500 text-sm">{t('wizard.situationHint')}</p>
-      </div>
-
       <div>
         <label className="block text-sm font-bold text-calm-900 mb-2">
           {t('wizard.situationLabel')}
@@ -323,11 +340,6 @@ function StepChild({
 
   return (
     <div className="space-y-8 animate-fadeIn">
-      <div>
-        <h2 className="text-2xl font-bold text-calm-900 mb-2">{t('wizard.childHeading')}</h2>
-        <p className="text-gray-500 text-sm">{t('wizard.childHint')}</p>
-      </div>
-
       <div className="grid md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-bold text-calm-900 mb-2">
@@ -513,7 +525,6 @@ const CATEGORY_PLACEHOLDER_KEY: Record<string, string> = {
 };
 
 function situationPlaceholder(topic: SelectedTopic, t: TFunction): string {
-  if (isOtherTopic(topic)) return t('wizard.situationPlaceholderOther');
   // Per-problem placeholder takes precedence (spec section 3.3). Falls back to
   // category placeholder if a problem-specific one isn't translated yet.
   if (topic.problemId) {

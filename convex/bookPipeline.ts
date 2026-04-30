@@ -9,6 +9,7 @@ import { v } from 'convex/values';
 import { Id } from './_generated/dataModel';
 import { assertOrderOwner, assertLandingOrder, LANDING_USER_ID } from './lib/roles';
 import { toAgeBracket, type AgeBracket } from './lib/ageBracket';
+import { sanitizeUserText, sanitizeRequiredUserText } from './lib/security';
 
 // Schema validators reused across entry-point mutations.
 const ageBracketValidator = v.union(v.literal('3-5'), v.literal('6-8'), v.literal('9+'));
@@ -56,6 +57,25 @@ function validateOrderInput(args: {
   if (args.favoriteToy && args.favoriteToy.length > 100) {
     throw new Error('favoriteToy must be max 100 characters');
   }
+}
+
+/**
+ * Pull all parent-supplied text fields through the prompt-injection
+ * sanitiser. Length caps mirror `validateOrderInput` (which has already run).
+ */
+function sanitizeOrderTextFields<
+  T extends {
+    childName: string;
+    problemDetail?: string;
+    favoriteToy?: string;
+  },
+>(args: T): T {
+  return {
+    ...args,
+    childName: sanitizeRequiredUserText(args.childName, 30),
+    problemDetail: sanitizeUserText(args.problemDetail, 500),
+    favoriteToy: sanitizeUserText(args.favoriteToy, 100),
+  };
 }
 
 // ── Start a new book order ─────────────────────────────────
@@ -109,17 +129,18 @@ export const startOrder = action({
     });
 
     validateOrderInput(args);
+    const cleaned = sanitizeOrderTextFields(args);
 
     // Create order in DB
     const orderId: Id<'bookOrders'> = await ctx.runMutation(internal.bookPipeline.createOrder, {
       clerkUserId,
-      childName: args.childName,
+      childName: cleaned.childName,
       ageBracket,
       ageNumber: args.ageNumber,
       gender: args.gender,
       problemId: args.problemId,
-      problemDetail: args.problemDetail,
-      favoriteToy: args.favoriteToy,
+      problemDetail: cleaned.problemDetail,
+      favoriteToy: cleaned.favoriteToy,
       glasses: args.glasses,
       hairColor: args.hairColor,
       hairStyle: args.hairStyle,
@@ -328,11 +349,15 @@ export const submitStyleVote = mutation({
 const DEDICATION_MAX = 200;
 
 function normalizeDedication(raw: string): string {
-  const trimmed = raw.trim();
-  if (trimmed.length === 0) throw new Error('Dedykacja nie może być pusta');
-  if (trimmed.length > DEDICATION_MAX)
+  if (raw.trim().length === 0) throw new Error('Dedykacja nie może być pusta');
+  if (raw.trim().length > DEDICATION_MAX)
     throw new Error(`Dedykacja może mieć maksymalnie ${DEDICATION_MAX} znaków`);
-  return trimmed;
+  // Defang prompt-injection patterns — the dedication ends up on the title
+  // page next to the child's name and could otherwise carry instructions
+  // through any LLM that re-reads the order.
+  const cleaned = sanitizeRequiredUserText(raw, DEDICATION_MAX);
+  if (cleaned.length === 0) throw new Error('Dedykacja nie może być pusta');
+  return cleaned;
 }
 
 function assertDedicationWindow(order: {
@@ -343,15 +368,36 @@ function assertDedicationWindow(order: {
   if (order.pdfStorageId) throw new Error('Bajka już została złożona');
 }
 
+/**
+ * Patch the dedication onto the order, mark the dedication step as decided,
+ * and — if the composer was waiting on us — kick it off now. The composer
+ * sets `status='awaiting_dedication'` when it reaches A9 before the parent
+ * has chosen, then idles until this mutation flips the flag.
+ */
+async function applyDedicationDecision(
+  ctx: import('./_generated/server').MutationCtx,
+  orderId: Id<'bookOrders'>,
+  patch: { parentDedication?: string },
+): Promise<void> {
+  const before = await ctx.db.get(orderId);
+  await ctx.db.patch(orderId, {
+    ...patch,
+    dedicationDecided: true,
+    updatedAt: Date.now(),
+  });
+  if (before?.status === 'awaiting_dedication') {
+    await ctx.scheduler.runAfter(0, internal.bookAgents.composePdf, { orderId });
+  }
+}
+
 export const submitParentDedication = mutation({
   args: { orderId: v.id('bookOrders'), dedication: v.string() },
   returns: v.null(),
   handler: async (ctx, { orderId, dedication }) => {
     const order = await assertOrderOwner(ctx, orderId);
     assertDedicationWindow(order);
-    await ctx.db.patch(orderId, {
+    await applyDedicationDecision(ctx, orderId, {
       parentDedication: normalizeDedication(dedication),
-      updatedAt: Date.now(),
     });
     return null;
   },
@@ -363,11 +409,164 @@ export const submitLandingParentDedication = mutation({
   handler: async (ctx, { orderId, dedication }) => {
     const order = await assertLandingOrder(ctx, orderId);
     assertDedicationWindow(order);
-    await ctx.db.patch(orderId, {
+    await applyDedicationDecision(ctx, orderId, {
       parentDedication: normalizeDedication(dedication),
-      updatedAt: Date.now(),
     });
     return null;
+  },
+});
+
+export const skipParentDedication = mutation({
+  args: { orderId: v.id('bookOrders') },
+  returns: v.null(),
+  handler: async (ctx, { orderId }) => {
+    const order = await assertOrderOwner(ctx, orderId);
+    assertDedicationWindow(order);
+    await applyDedicationDecision(ctx, orderId, {});
+    return null;
+  },
+});
+
+export const skipLandingParentDedication = mutation({
+  args: { orderId: v.id('bookOrders') },
+  returns: v.null(),
+  handler: async (ctx, { orderId }) => {
+    const order = await assertLandingOrder(ctx, orderId);
+    assertDedicationWindow(order);
+    await applyDedicationDecision(ctx, orderId, {});
+    return null;
+  },
+});
+
+// ── Payment status helpers (shared by preview + download) ─
+
+const paymentStatusReturnValidator = v.union(
+  v.literal('pending'),
+  v.literal('completed'),
+  v.literal('failed'),
+  v.null(),
+);
+
+/**
+ * Download URL is gated by paymentStatus — the preview screen has to lock
+ * the PDF until the parent has paid. `skipStripe` (admin shortcut) bypasses
+ * the gate so internal test orders still produce a download.
+ */
+function isPaid(order: { paymentStatus?: string; skipStripe?: boolean }): boolean {
+  if (order.skipStripe === true) return true;
+  return order.paymentStatus === 'completed';
+}
+
+// ── Preview (pre-payment) ──────────────────────────────────
+
+const PREVIEW_ILLUSTRATION_IDS = ['cover', 'scene_1', 'scene_2'];
+
+interface PreviewResult {
+  childName: string;
+  bookTitle: string | null;
+  paid: boolean;
+  hasPdf: boolean;
+  paymentStatus: 'pending' | 'completed' | 'failed' | null;
+  illustrations: Array<{ illustrationId: string; url: string | null }>;
+  excerptPl: string | null;
+  /**
+   * URL to the 3-page preview PDF embedded in the result-page flipbook.
+   * Null for legacy orders whose composer ran before the preview was added —
+   * the frontend falls back to the cover/scene illustration grid.
+   */
+  previewPdfUrl: string | null;
+}
+
+const previewReturnValidator = v.object({
+  childName: v.string(),
+  bookTitle: v.union(v.string(), v.null()),
+  paid: v.boolean(),
+  hasPdf: v.boolean(),
+  paymentStatus: paymentStatusReturnValidator,
+  illustrations: v.array(
+    v.object({ illustrationId: v.string(), url: v.union(v.string(), v.null()) }),
+  ),
+  excerptPl: v.union(v.string(), v.null()),
+  previewPdfUrl: v.union(v.string(), v.null()),
+});
+
+/**
+ * Pull the first beat's text out of a stored storyDraft JSON. Truncated to
+ * roughly the first paragraph so the result page can tease the prose
+ * without giving away the whole book before payment.
+ */
+function extractFirstBeatExcerpt(storyDraft: string | null | undefined): string | null {
+  if (!storyDraft) return null;
+  try {
+    const parsed = JSON.parse(storyDraft) as { pages?: Array<{ text?: string }> };
+    const firstPage = parsed.pages?.find((p) => typeof p.text === 'string' && p.text.trim());
+    if (!firstPage?.text) return null;
+    const trimmed = firstPage.text.trim();
+    if (trimmed.length <= 360) return trimmed;
+    // Stop at the last sentence boundary inside the cap so we don't end on a
+    // half-finished thought.
+    const sliced = trimmed.slice(0, 360);
+    const lastStop = Math.max(sliced.lastIndexOf('. '), sliced.lastIndexOf('! '));
+    return (lastStop > 200 ? sliced.slice(0, lastStop + 1) : sliced) + '…';
+  } catch {
+    return null;
+  }
+}
+
+async function buildPreviewResult(
+  ctx: import('./_generated/server').QueryCtx,
+  order: {
+    childName: string;
+    storyDraft?: string;
+    paymentStatus?: 'pending' | 'completed' | 'failed';
+    skipStripe?: boolean;
+    pdfStorageId?: Id<'_storage'>;
+    previewPdfStorageId?: Id<'_storage'>;
+    _id: Id<'bookOrders'>;
+  },
+): Promise<PreviewResult> {
+  const illustrations = await ctx.db
+    .query('bookIllustrations')
+    .withIndex('by_order', (q) => q.eq('orderId', order._id))
+    .collect();
+  const byId = new Map(illustrations.map((i) => [i.illustrationId, i]));
+  const previewIllustrations = await Promise.all(
+    PREVIEW_ILLUSTRATION_IDS.map(async (id) => {
+      const ill = byId.get(id);
+      const url = ill ? await ctx.storage.getUrl(ill.storageId) : null;
+      return { illustrationId: id, url };
+    }),
+  );
+  const previewPdfUrl = order.previewPdfStorageId
+    ? await ctx.storage.getUrl(order.previewPdfStorageId)
+    : null;
+  return {
+    childName: order.childName,
+    bookTitle: extractBookTitle(order.storyDraft) ?? null,
+    paid: isPaid(order),
+    hasPdf: !!order.pdfStorageId,
+    paymentStatus: order.paymentStatus ?? null,
+    illustrations: previewIllustrations,
+    excerptPl: extractFirstBeatExcerpt(order.storyDraft),
+    previewPdfUrl,
+  };
+}
+
+export const getOrderPreview = query({
+  args: { orderId: v.id('bookOrders') },
+  returns: previewReturnValidator,
+  handler: async (ctx, { orderId }) => {
+    const order = await assertOrderOwner(ctx, orderId);
+    return buildPreviewResult(ctx, order);
+  },
+});
+
+export const getLandingOrderPreview = query({
+  args: { orderId: v.id('bookOrders') },
+  returns: previewReturnValidator,
+  handler: async (ctx, { orderId }) => {
+    const order = await assertLandingOrder(ctx, orderId);
+    return buildPreviewResult(ctx, order);
   },
 });
 
@@ -379,14 +578,21 @@ export const getDownloadUrl = query({
     url: v.union(v.string(), v.null()),
     childName: v.string(),
     bookTitle: v.union(v.string(), v.null()),
+    paymentStatus: paymentStatusReturnValidator,
+    paid: v.boolean(),
+    hasPdf: v.boolean(),
   }),
   handler: async (ctx, { orderId }) => {
     const order = await assertOrderOwner(ctx, orderId);
-    const url = order.pdfStorageId ? await ctx.storage.getUrl(order.pdfStorageId) : null;
+    const paid = isPaid(order);
+    const url = paid && order.pdfStorageId ? await ctx.storage.getUrl(order.pdfStorageId) : null;
     return {
       url,
       childName: order.childName,
       bookTitle: extractBookTitle(order.storyDraft) ?? null,
+      paymentStatus: order.paymentStatus ?? null,
+      paid,
+      hasPdf: !!order.pdfStorageId,
     };
   },
 });
@@ -436,6 +642,7 @@ export const startLandingOrder = action({
     const skipStripe = adminUser ? args.skipStripe : undefined;
 
     validateOrderInput(args);
+    const cleaned = sanitizeOrderTextFields(args);
 
     const ageBracket = deriveAgeBracket({
       ageBracket: args.ageBracket,
@@ -445,13 +652,13 @@ export const startLandingOrder = action({
 
     const orderId: Id<'bookOrders'> = await ctx.runMutation(internal.bookPipeline.createOrder, {
       clerkUserId: LANDING_USER_ID,
-      childName: args.childName,
+      childName: cleaned.childName,
       ageBracket,
       ageNumber: args.ageNumber,
       gender: args.gender,
       problemId: args.problemId,
-      problemDetail: args.problemDetail,
-      favoriteToy: args.favoriteToy,
+      problemDetail: cleaned.problemDetail,
+      favoriteToy: cleaned.favoriteToy,
       glasses: args.glasses,
       hairColor: args.hairColor,
       hairStyle: args.hairStyle,
@@ -543,14 +750,21 @@ export const getLandingDownloadUrl = query({
     url: v.union(v.string(), v.null()),
     childName: v.string(),
     bookTitle: v.union(v.string(), v.null()),
+    paymentStatus: paymentStatusReturnValidator,
+    paid: v.boolean(),
+    hasPdf: v.boolean(),
   }),
   handler: async (ctx, { orderId }) => {
     const order = await assertLandingOrder(ctx, orderId);
-    const url = order.pdfStorageId ? await ctx.storage.getUrl(order.pdfStorageId) : null;
+    const paid = isPaid(order);
+    const url = paid && order.pdfStorageId ? await ctx.storage.getUrl(order.pdfStorageId) : null;
     return {
       url,
       childName: order.childName,
       bookTitle: extractBookTitle(order.storyDraft) ?? null,
+      paymentStatus: order.paymentStatus ?? null,
+      paid,
+      hasPdf: !!order.pdfStorageId,
     };
   },
 });

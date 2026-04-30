@@ -7,13 +7,7 @@ type CatalogTab = CatalogCategory | 'all';
 
 /**
  * 7-tab topic catalog rendered on the standalone `/katalog` page
- * (spec section 2, scenario B). The page-level title lives in
- * `CatalogPage`; this component is just the tab filter + card grid +
- * "Inny problem?" card.
- *
- * Cards link to `/problem/<slug>` SEO pages. The "Inny problem?" entry
- * deep-links to `/book/order` which surfaces the same concept inside
- * the auth flow.
+ * (spec section 2, scenario B). Cards link to `/problem/<slug>` SEO pages.
  */
 export function HomeTopicCatalog() {
   const { t: tBook } = useTranslation('book');
@@ -69,18 +63,6 @@ export function HomeTopicCatalog() {
               <p className="text-gray-500 text-sm leading-relaxed">{topic.catalog.shortDesc}</p>
             </Link>
           ))}
-        </div>
-
-        {/* "Inny problem?" dashed card — entry point to the auth order flow. */}
-        <div className="mt-6">
-          <Link
-            to="/book/order"
-            className="block w-full bg-white rounded-3xl p-6 border-2 border-dashed border-calm-500 shadow-sm hover:shadow-xl text-center transition hover:-translate-y-0.5 no-underline"
-          >
-            <div className="text-4xl mb-3">✨</div>
-            <h3 className="font-bold text-calm-900 text-lg mb-2">{tBook('catalog.otherTitle')}</h3>
-            <p className="text-gray-500 text-sm">{tBook('catalog.otherDesc')}</p>
-          </Link>
         </div>
       </div>
     </section>
