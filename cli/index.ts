@@ -133,6 +133,7 @@ program
   .option('-s, --style <A|B>', 'Pre-select style (skip vote)', 'A')
   .option('--no-skip-qa', 'Run full QA reviews (slower)')
   .option('-w, --watch', 'Watch pipeline progress after creating')
+  .option('-e, --email <addr>', 'Recipient email — sends the Resend mailing on completion')
   .action(async (opts) => {
     console.log(`\x1b[36m⟳ Creating order for "${opts.name}"...\x1b[0m`);
 
@@ -151,6 +152,7 @@ program
       outfit: opts.outfit,
       chosenStyle: opts.style,
       skipQaReviews: opts.skipQa !== false,
+      email: opts.email,
     });
 
     const orderId = parseResult(raw);
@@ -162,7 +164,12 @@ program
     console.log(`\x1b[32m✓ Pipeline started\x1b[0m`);
 
     if (opts.watch) {
-      await watchOrder(orderId);
+      const finalStatus = await watchOrder(orderId);
+      if (finalStatus === 'completed' && opts.email) {
+        console.log(`\x1b[36m⟳ Triggering Resend mail to ${opts.email}...\x1b[0m`);
+        convexRun('email:sendBookReady', { bookOrderId: orderId });
+        console.log(`\x1b[32m✓ Email sent (check inbox)\x1b[0m`);
+      }
     }
   });
 
@@ -432,7 +439,7 @@ program
     await watchOrder(orderId);
   });
 
-async function watchOrder(orderId: string) {
+async function watchOrder(orderId: string): Promise<string> {
   const TERMINAL_STATUSES = new Set(['completed', 'failed', 'paused', 'style_vote']);
   let lastStatus = '';
   let lastAgent = '';
@@ -445,7 +452,7 @@ async function watchOrder(orderId: string) {
 
     if (!o) {
       console.error('\x1b[31m✗ Order not found\x1b[0m');
-      break;
+      return 'missing';
     }
 
     const agent = o.currentAgent ?? '—';
@@ -464,7 +471,7 @@ async function watchOrder(orderId: string) {
       } else if (o.status === 'style_vote') {
         console.log(`\n\x1b[33m⏸ Waiting for style vote (auto-resolves in 15min)\x1b[0m`);
       }
-      break;
+      return o.status;
     }
 
     await new Promise((r) => setTimeout(r, 5000));
