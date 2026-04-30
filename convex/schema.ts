@@ -235,6 +235,9 @@ const applicationTables = {
 
     // Final output
     pdfStorageId: v.optional(v.id('_storage')),
+    // 3-page teaser PDF generated alongside the full PDF — embedded in the
+    // result page flipbook so the parent gets a real preview before paying.
+    previewPdfStorageId: v.optional(v.id('_storage')),
     downloadUrl: v.optional(v.string()),
 
     // Payment

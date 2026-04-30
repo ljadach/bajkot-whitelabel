@@ -469,6 +469,12 @@ interface PreviewResult {
   paymentStatus: 'pending' | 'completed' | 'failed' | null;
   illustrations: Array<{ illustrationId: string; url: string | null }>;
   excerptPl: string | null;
+  /**
+   * URL to the 3-page preview PDF embedded in the result-page flipbook.
+   * Null for legacy orders whose composer ran before the preview was added —
+   * the frontend falls back to the cover/scene illustration grid.
+   */
+  previewPdfUrl: string | null;
 }
 
 const previewReturnValidator = v.object({
@@ -481,6 +487,7 @@ const previewReturnValidator = v.object({
     v.object({ illustrationId: v.string(), url: v.union(v.string(), v.null()) }),
   ),
   excerptPl: v.union(v.string(), v.null()),
+  previewPdfUrl: v.union(v.string(), v.null()),
 });
 
 /**
@@ -514,6 +521,7 @@ async function buildPreviewResult(
     paymentStatus?: 'pending' | 'completed' | 'failed';
     skipStripe?: boolean;
     pdfStorageId?: Id<'_storage'>;
+    previewPdfStorageId?: Id<'_storage'>;
     _id: Id<'bookOrders'>;
   },
 ): Promise<PreviewResult> {
@@ -529,6 +537,9 @@ async function buildPreviewResult(
       return { illustrationId: id, url };
     }),
   );
+  const previewPdfUrl = order.previewPdfStorageId
+    ? await ctx.storage.getUrl(order.previewPdfStorageId)
+    : null;
   return {
     childName: order.childName,
     bookTitle: extractBookTitle(order.storyDraft) ?? null,
@@ -537,6 +548,7 @@ async function buildPreviewResult(
     paymentStatus: order.paymentStatus ?? null,
     illustrations: previewIllustrations,
     excerptPl: extractFirstBeatExcerpt(order.storyDraft),
+    previewPdfUrl,
   };
 }
 

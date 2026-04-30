@@ -297,6 +297,23 @@ export const updatePdfStorageId = internalMutation({
   },
 });
 
+// ── Update Preview PDF Storage ID ──────────────────────────
+
+export const updatePreviewPdfStorageId = internalMutation({
+  args: {
+    orderId: v.id('bookOrders'),
+    previewPdfStorageId: v.id('_storage'),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.orderId, {
+      previewPdfStorageId: args.previewPdfStorageId,
+      updatedAt: Date.now(),
+    });
+    return null;
+  },
+});
+
 // ── Mark Order Complete ────────────────────────────────────
 
 export const markOrderComplete = internalMutation({

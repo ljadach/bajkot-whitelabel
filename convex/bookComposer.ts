@@ -199,12 +199,15 @@ export const generatePdf = internalAction({
       // text page, split into multiple text pages BEFORE rendering. Keeps the
       // illustration ordering intact (extra text pages are inserted between
       // the original text page and the next sequence item).
+      // We use a throwaway PDFDocument purely to measure heights for
+      // pagination — `expandTextPages` reuses fonts already registered.
       const expandedSequence = expandTextPages(doc, pageSequence, renderCtx);
       log('Page sequence expanded', {
         before: pageSequence.length,
         after: expandedSequence.length,
       });
 
+      // Render full PDF using the existing `doc`.
       for (const spec of expandedSequence) {
         doc.addPage({ size: [PAGE_W, PAGE_H], margin: 0 });
         await renderPage(doc, spec, renderCtx);
@@ -221,6 +224,46 @@ export const generatePdf = internalAction({
         orderId,
         pdfStorageId,
       });
+
+      // Generate 3-page preview PDF for the result-page flipbook. The full
+      // PDF stays paywalled; this teaser ships unconditionally so the parent
+      // can flip through real pages before paying.
+      try {
+        const previewPagesRaw = expandedSequence.slice(0, 3);
+        const previewPages =
+          previewPagesRaw.length > 0
+            ? previewPagesRaw
+            : expandedSequence; // edge case — book shorter than 3 pages, take all
+        if (previewPagesRaw.length < 3) {
+          log('Preview shorter than 3 pages — using full sequence', {
+            available: previewPagesRaw.length,
+            total: expandedSequence.length,
+          });
+        }
+        const previewBuffer = await renderPagesToPdfBuffer(
+          previewPages,
+          renderCtx,
+          regular,
+          bold,
+        );
+        log('Preview ready', {
+          sizeKb: Math.round(previewBuffer.length / 1024),
+          pages: previewPages.length,
+        });
+        const previewBlob = new Blob([new Uint8Array(previewBuffer)], {
+          type: 'application/pdf',
+        });
+        const previewPdfStorageId = await ctx.storage.store(previewBlob);
+        await ctx.runMutation(internal.bookPipelineHelpers.updatePreviewPdfStorageId, {
+          orderId,
+          previewPdfStorageId,
+        });
+      } catch (previewError) {
+        // Preview is non-blocking — falls back to the legacy 3-image grid if
+        // it errors out. Log but don't fail the whole pipeline.
+        const msg = previewError instanceof Error ? previewError.message : String(previewError);
+        console.warn('[A9:PDF] Preview generation failed (non-fatal):', msg);
+      }
 
       await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
         orderId,
@@ -724,6 +767,47 @@ function drawColophonPage(doc: PDFKit.PDFDocument, r: RenderCtx) {
     width: PAGE_W - MARGIN * 2,
     align: 'center',
   });
+}
+
+/**
+ * Render a list of already-expanded page specs into a fresh PDF buffer. Used
+ * to produce the 3-page preview alongside the full book — keeps the heavy
+ * lifting (image fetching, pagination) shared with the main render path.
+ */
+async function renderPagesToPdfBuffer(
+  specs: ResolvedPageSpec[],
+  r: RenderCtx,
+  regular: Buffer,
+  bold: Buffer,
+): Promise<Buffer> {
+  const doc = new PDFDocument({
+    size: [PAGE_W, PAGE_H],
+    autoFirstPage: false,
+    bufferPages: true,
+    margin: 0,
+  });
+  const chunks: Buffer[] = [];
+  doc.on('data', (chunk: Buffer) => chunks.push(chunk));
+  const done = new Promise<Buffer>((resolve) => {
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+  });
+
+  doc.registerFont('Body', regular);
+  doc.registerFont('Title', bold);
+  doc.registerFont('Helvetica', regular);
+  doc.registerFont('Helvetica-Bold', bold);
+  doc.font('Body');
+
+  // Renumber pages so the preview shows 1..N rather than original numbers.
+  const renumbered = specs.map((spec, i) => ({ ...spec, pageNumber: i + 1 }));
+
+  for (const spec of renumbered) {
+    doc.addPage({ size: [PAGE_W, PAGE_H], margin: 0 });
+    await renderPage(doc, spec, r);
+  }
+
+  doc.end();
+  return done;
 }
 
 // ════════════════════════════════════════════════════════
