@@ -133,7 +133,7 @@ export function useAnalytics() {
 const CONSENT_KEY = 'cookieConsent';
 const ANALYTICS_KEY = 'analyticsEnabled';
 
-export type ConsentStatus = 'accepted' | 'rejected' | 'custom' | null;
+export type ConsentStatus = 'accepted' | 'rejected' | 'custom' | 'dismissed' | null;
 
 /**
  * Hook for managing cookie/analytics consent.
@@ -186,6 +186,14 @@ export function useConsent() {
     console.log('Analytics disabled');
   }, [posthog]);
 
+  const dismiss = useCallback(() => {
+    localStorage.setItem(CONSENT_KEY, 'dismissed');
+    localStorage.setItem(ANALYTICS_KEY, 'false');
+    setConsentStatus('dismissed');
+    setIsAnalyticsEnabled(false);
+    posthog?.opt_out_capturing();
+  }, [posthog]);
+
   const setCustomConsent = useCallback(
     (analytics: boolean) => {
       localStorage.setItem(CONSENT_KEY, 'custom');
@@ -219,6 +227,7 @@ export function useConsent() {
     acceptAll,
     rejectAll,
     setCustomConsent,
+    dismiss,
   };
 }
 

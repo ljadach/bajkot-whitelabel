@@ -6,7 +6,7 @@ export function CookieBanner() {
   const { t } = useTranslation('cookies');
   const [isVisible, setIsVisible] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const { consentStatus, acceptAll, rejectAll, setCustomConsent, isAnalyticsEnabled } =
+  const { consentStatus, acceptAll, rejectAll, setCustomConsent, dismiss, isAnalyticsEnabled } =
     useConsent();
 
   useEffect(() => {
@@ -32,11 +32,34 @@ export function CookieBanner() {
     setShowSettings(false);
   };
 
+  const handleDismiss = () => {
+    dismiss();
+    setIsVisible(false);
+    setShowSettings(false);
+  };
+
   if (!isVisible) return null;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t-2 border-line shadow-lg">
-      <div className="max-w-5xl mx-auto p-6">
+      <div className="max-w-5xl mx-auto p-6 relative">
+        <button
+          onClick={handleDismiss}
+          aria-label={t('buttons.close')}
+          className="absolute top-3 right-3 text-muted hover:text-ink transition-colors p-1.5 rounded-full hover:bg-gray-100"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <path d="M5 5l10 10M15 5L5 15" />
+          </svg>
+        </button>
         {!showSettings ? (
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex-1">
