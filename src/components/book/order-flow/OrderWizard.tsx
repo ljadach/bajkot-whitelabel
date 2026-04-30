@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { useStepTransitionTracker } from '../../../lib/telemetry';
+import { genitiveOf } from '../../../lib/childNameInflect';
 import {
   ageLabel,
   type AppearanceData,
@@ -335,7 +336,7 @@ function StepChild({
   const { t } = useTranslation('book');
 
   const submitLabel = trimmedName
-    ? t('wizard.submitFor', { name: trimmedName })
+    ? t('wizard.submitFor', { nameGen: genitiveOf(trimmedName) ?? trimmedName })
     : t('wizard.submit');
 
   return (

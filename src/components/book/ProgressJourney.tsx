@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { Id } from '../../../convex/_generated/dataModel';
 import { OrderTimeline } from './OrderTimeline';
 import { TOPICS } from '../../data/topics';
+import { zName } from '../../lib/childNameInflect';
 
 type PipelineStep = {
   status: string;
@@ -98,10 +99,12 @@ export function ProgressJourney({
   // Rotate engagement tips every 5s. Tip copy supports {{name}}, {{ageNumber}}
   // and {{problemTitle}} interpolation per spec section 5.4 (7 card types).
   const tips = useMemo(() => {
-    const name = childName?.trim() || 'Twoje dziecko';
+    const trimmed = childName?.trim() ?? '';
+    const name = trimmed || 'Twoje dziecko';
     const ageValue = typeof ageNumber === 'number' ? ageNumber : '';
     const problemTitle = resolveProblemTitle(problemId, 'Twoim wyzwaniem');
-    const params = { name, ageNumber: ageValue, problemTitle };
+    const zNameStr = (trimmed && zName(trimmed)) || 'z dzieckiem';
+    const params = { name, ageNumber: ageValue, problemTitle, zName: zNameStr };
     return [
       { emoji: '💡', text: t('progress.tip1', params) },
       { emoji: '🧠', text: t('progress.tip2', params) },
