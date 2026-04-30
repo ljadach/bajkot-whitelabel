@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { trackEvent } from '../../../lib/telemetry';
-import { genitiveOf } from '../../../lib/childNameInflect';
+import { genitiveOrSelf } from '../../../lib/childNameInflect';
 import type { IntakeState, OrderFormat } from './types';
 
 interface Props {
@@ -44,19 +44,19 @@ export function OrderPreview({
   const trimmedName = intake.name.trim();
   const topicTitle = intake.topic ? intake.topic.catalog.shortTitle : '';
 
-  // Render around the {{name}} placeholder ourselves so React escapes
-  // user-supplied input — dangerouslySetInnerHTML would be an XSS vector.
+  const nameGen = genitiveOrSelf(trimmedName);
+
+  // Split around {{nameGen}} so the inflected name can be wrapped in <strong>
+  // without going through dangerouslySetInnerHTML.
   const NAME_TOKEN = '\u0000NAME\u0000';
   const subheadingTemplate = trimmedName
-    ? t('previewScreen.subheading', { name: NAME_TOKEN })
+    ? t('previewScreen.subheading', { nameGen: NAME_TOKEN })
     : t('previewScreen.subheadingFallback');
   const tokenIdx = subheadingTemplate.indexOf(NAME_TOKEN);
   const subheadingBefore =
     tokenIdx >= 0 ? subheadingTemplate.slice(0, tokenIdx) : subheadingTemplate;
   const subheadingAfter =
     tokenIdx >= 0 ? subheadingTemplate.slice(tokenIdx + NAME_TOKEN.length) : '';
-
-  const nameGen = trimmedName ? (genitiveOf(trimmedName) ?? trimmedName) : '';
 
   const bookTitle = trimmedName
     ? t('previewScreen.bookTitleFor', { nameGen })
@@ -78,7 +78,7 @@ export function OrderPreview({
           </h1>
           <p className="text-gray-600 text-lg">
             {subheadingBefore}
-            {trimmedName && <strong className="text-calm-800">{trimmedName}</strong>}
+            {trimmedName && <strong className="text-calm-800">{nameGen}</strong>}
             {subheadingAfter}
           </p>
         </div>

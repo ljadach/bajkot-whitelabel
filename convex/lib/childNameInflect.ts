@@ -387,6 +387,16 @@ export function instrumentalOf(name: string | undefined | null): string | null {
 }
 
 /**
+ * Best-effort genitive: returns the inflected form, or the trimmed
+ * nominative as fallback. Convenient for UI labels where an empty slot
+ * looks worse than a slightly ungrammatical one.
+ */
+export function genitiveOrSelf(name: string | undefined | null): string {
+  const trimmed = (name ?? '').trim();
+  return genitiveOf(trimmed) ?? trimmed;
+}
+
+/**
  * Build a "dla {name}" string with the genitive applied. Returns `null`
  * when the name is unrecognised so the caller can swap to a phrasing
  * that doesn't need the inflected form.

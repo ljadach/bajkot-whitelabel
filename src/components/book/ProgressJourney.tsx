@@ -103,7 +103,7 @@ export function ProgressJourney({
     const name = trimmed || 'Twoje dziecko';
     const ageValue = typeof ageNumber === 'number' ? ageNumber : '';
     const problemTitle = resolveProblemTitle(problemId, 'Twoim wyzwaniem');
-    const zNameStr = (trimmed && zName(trimmed)) || 'z dzieckiem';
+    const zNameStr = zName(trimmed) ?? 'z dzieckiem';
     const params = { name, ageNumber: ageValue, problemTitle, zName: zNameStr };
     return [
       { emoji: '💡', text: t('progress.tip1', params) },

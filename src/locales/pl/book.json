@@ -115,7 +115,7 @@
   "previewScreen": {
     "kicker": "Podgląd Produktu",
     "heading": "Co otrzymasz?",
-    "subheading": "Dedykowana bajka terapeutyczna dla {{name}}",
+    "subheading": "Dedykowana bajka terapeutyczna dla {{nameGen}}",
     "subheadingFallback": "Dedykowana bajka terapeutyczna dla Twojego dziecka",
     "bookTitleFallback": "Bajka dla Twojego dziecka",
     "bookTitleFor": "Bajka dla {{nameGen}}",
@@ -265,7 +265,7 @@
   },
   "result": {
     "kicker": "Gotowe!",
-    "heading": "Książka „{{bookTitle}}\" dla {{name}} jest gotowa!",
+    "heading": "Książka „{{bookTitle}}\" dla {{nameGen}} jest gotowa!",
     "headingFallback": "Twoja bajka jest gotowa!",
     "description": "Twoja spersonalizowana bajka terapeutyczna czeka na Ciebie. Sprawdź skrzynkę e-mail lub pobierz od razu.",
     "download": "Pobierz PDF",
@@ -284,7 +284,7 @@
     "kicker": "Twoja bajka jest gotowa",
     "heading": "„{{bookTitle}}\" — pierwsze 3 strony",
     "headingFallback": "Twoja bajka jest gotowa — zobacz pierwsze 3 strony",
-    "description": "Tak będzie wyglądać bajka {{name}}. Odblokuj pełny PDF, żeby pobrać całą książkę z ilustracjami i historią.",
+    "description": "Tak będzie wyglądać bajka {{nameGen}}. Odblokuj pełny PDF, żeby pobrać całą książkę z ilustracjami i historią.",
     "excerptKicker": "Pierwsza strona",
     "unlockHeading": "Odblokuj pełną bajkę",
     "unlockBody": "Płatność jednorazowa za PDF. Po odblokowaniu możesz pobrać i wydrukować bajkę w dowolnej chwili.",

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { trackEvent } from '../../../lib/telemetry';
-import { genitiveOf } from '../../../lib/childNameInflect';
+import { genitiveOrSelf } from '../../../lib/childNameInflect';
 import type { IntakeState, OrderFormat } from './types';
 
 export interface ShippingAddress {
@@ -68,7 +68,7 @@ export function OrderCheckout({
 
   const trimmedName = intake.name.trim();
   const productName = trimmedName
-    ? t('checkout.summaryProductFor', { nameGen: genitiveOf(trimmedName) ?? trimmedName })
+    ? t('checkout.summaryProductFor', { nameGen: genitiveOrSelf(trimmedName) })
     : t('checkout.summaryProduct');
   const topicLine = intake.topic ? intake.topic.catalog.shortTitle : '';
   const isPrint = intake.format === 'pdf_print';
