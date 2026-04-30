@@ -131,9 +131,11 @@ export function ProgressJourney({
             {t('progress.kicker')}
           </span>
           <div className="text-7xl mb-6 inline-block animate-pulse">{stage.icon}</div>
-          <h1 className="text-2xl md:text-3xl font-black text-calm-900 mb-3">
-            {showStageLabel ? (activeStep?.label ?? t('progress.heading')) : t('progress.heading')}
-          </h1>
+          {showStageLabel && (
+            <h1 className="text-2xl md:text-3xl font-black text-calm-900 mb-3">
+              {activeStep?.label ?? t('progress.heading')}
+            </h1>
+          )}
           <p className="text-gray-500 font-medium text-sm md:text-base max-w-md mx-auto">
             {t('progress.description')}
           </p>
