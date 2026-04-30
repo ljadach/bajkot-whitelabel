@@ -132,6 +132,7 @@ program
   .option('--outfit <key>', 'Outfit key', 'bluza_dinozaur')
   .option('-s, --style <A|B>', 'Pre-select style (skip vote)', 'A')
   .option('--no-skip-qa', 'Run full QA reviews (slower)')
+  .option('--fast-image', 'Replace illustrations with rasterized ASCII (dev)', false)
   .option('-w, --watch', 'Watch pipeline progress after creating')
   .option('-e, --email <addr>', 'Recipient email — sends the Resend mailing on completion')
   .action(async (opts) => {
@@ -152,6 +153,7 @@ program
       outfit: opts.outfit,
       chosenStyle: opts.style,
       skipQaReviews: opts.skipQa !== false,
+      fastImage: opts.fastImage === true,
       email: opts.email,
     });
 
@@ -255,6 +257,7 @@ program
     console.log(`Problem:  ${o.problemId}`);
     console.log(`Profile:  ${o.gender}, ${o.ageBracket}, style ${o.chosenStyle ?? '?'}`);
     console.log(`QA skip:  ${o.skipQaReviews}`);
+    console.log(`Fast image: ${o.fastImage}`);
     console.log(`LLM calls: ${o.llmCallCount}, retries: ${o.retryCount}`);
     if (o.error) console.log(`\x1b[31mError:    ${o.error}\x1b[0m`);
     console.log(`Created:  ${fmt(o.createdAt)}`);

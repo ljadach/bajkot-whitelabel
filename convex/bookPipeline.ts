@@ -100,6 +100,7 @@ export const startOrder = action({
     // DEV: remove these flags before launch.
     // TODO(c3z): pre-launch cleanup
     skipStripe: v.optional(v.boolean()),
+    fastImage: v.optional(v.boolean()),
     format: v.optional(formatValidator),
     shippingAddress: v.optional(shippingAddressValidator),
   },
@@ -109,12 +110,13 @@ export const startOrder = action({
     if (!identity) throw new Error('Not authenticated');
     const clerkUserId = identity.subject;
 
-    // Only admins can flip dev shortcut flags (skipQa, skipStripe).
+    // Only admins can flip dev shortcut flags (skipQa, skipStripe, fastImage).
     // DEV: remove these flags before launch.
     // TODO(c3z): pre-launch cleanup
     const adminUser = (identity as any).isAdmin === true;
     const skipQaReviews = adminUser ? args.skipQaReviews : undefined;
     const skipStripe = adminUser ? args.skipStripe : undefined;
+    const fastImage = adminUser ? args.fastImage : undefined;
 
     const ageBracket = deriveAgeBracket({
       ageBracket: args.ageBracket,
@@ -150,6 +152,7 @@ export const startOrder = action({
       email: args.email,
       skipQaReviews,
       skipStripe,
+      fastImage,
       format,
       shippingAddress: format === 'pdf_print' ? args.shippingAddress : undefined,
       pauseForPrint: format === 'pdf_print',
@@ -190,6 +193,7 @@ export const createOrder = internalMutation({
     // DEV: remove these flags before launch.
     // TODO(c3z): pre-launch cleanup
     skipStripe: v.optional(v.boolean()),
+    fastImage: v.optional(v.boolean()),
     format: v.optional(formatValidator),
     shippingAddress: v.optional(shippingAddressValidator),
     /** When true (PDF+Print), order starts in 'paused' instead of 'intake'. */
@@ -215,6 +219,7 @@ export const createOrder = internalMutation({
       email: args.email,
       skipQaReviews: args.skipQaReviews,
       skipStripe: args.skipStripe,
+      fastImage: args.fastImage,
       format: args.format,
       shippingAddress: args.shippingAddress,
       status: args.pauseForPrint ? 'paused' : 'intake',
@@ -623,6 +628,7 @@ export const startLandingOrder = action({
     // TODO(c3z): pre-launch cleanup
     skipQaReviews: v.optional(v.boolean()),
     skipStripe: v.optional(v.boolean()),
+    fastImage: v.optional(v.boolean()),
   },
   returns: v.object({ orderId: v.id('bookOrders') }),
   handler: async (ctx, args): Promise<{ orderId: Id<'bookOrders'> }> => {
@@ -640,6 +646,7 @@ export const startLandingOrder = action({
     const adminUser = identity ? (identity as { isAdmin?: boolean }).isAdmin === true : false;
     const skipQaReviews = adminUser ? args.skipQaReviews : undefined;
     const skipStripe = adminUser ? args.skipStripe : undefined;
+    const fastImage = adminUser ? args.fastImage : undefined;
 
     validateOrderInput(args);
     const cleaned = sanitizeOrderTextFields(args);
@@ -671,6 +678,7 @@ export const startLandingOrder = action({
       pauseForPrint: format === 'pdf_print',
       skipQaReviews,
       skipStripe,
+      fastImage,
     });
 
     if (format === 'pdf_print') {

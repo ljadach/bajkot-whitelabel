@@ -32,9 +32,11 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // DEV: admin diagnostic flags. Default true so smoke tests are fast.
+  // fastImage default OFF — non-obvious UX, opt-in only.
   // TODO(c3z): pre-launch cleanup
   const [skipStripe, setSkipStripe] = useState(true);
   const [skipQa, setSkipQa] = useState(true);
+  const [fastImage, setFastImage] = useState(false);
 
   // Capture access token on mount (preserves landing-flow token gate).
   useEffect(() => captureTokenFromUrl(), []);
@@ -82,6 +84,7 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
           // TODO(c3z): pre-launch cleanup
           skipStripe: isAdmin && skipStripe ? true : undefined,
           skipQaReviews: isAdmin && skipQa ? true : undefined,
+          fastImage: isAdmin && fastImage ? true : undefined,
         });
         const orderId = result.orderId;
         setFunnelSuperProperties({ bookOrderId: orderId, flow: 'landing' });
@@ -92,7 +95,7 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
         return null;
       }
     },
-    [intake, startLandingOrder, isAdmin, skipStripe, skipQa, t],
+    [intake, startLandingOrder, isAdmin, skipStripe, skipQa, fastImage, t],
   );
 
   // Admin shortcut on Preview CTA: skipStripe ON → submit directly.
@@ -154,8 +157,10 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
           isAdmin={isAdmin}
           skipStripe={skipStripe}
           skipQa={skipQa}
+          fastImage={fastImage}
           onChangeSkipStripe={setSkipStripe}
           onChangeSkipQa={setSkipQa}
+          onChangeFastImage={setFastImage}
         />
       )}
       {screen === 'checkout' && (

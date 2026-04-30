@@ -15,8 +15,11 @@ interface Props {
   skipStripe?: boolean;
   /** Default true. Propagates `skipQaReviews` to the backend (fast mode). */
   skipQa?: boolean;
+  /** Default false. Replaces Gemini image gen with rasterized ASCII PNG. */
+  fastImage?: boolean;
   onChangeSkipStripe?: (next: boolean) => void;
   onChangeSkipQa?: (next: boolean) => void;
+  onChangeFastImage?: (next: boolean) => void;
 }
 
 /**
@@ -31,8 +34,10 @@ export function OrderPreview({
   isAdmin = false,
   skipStripe = false,
   skipQa = false,
+  fastImage = false,
   onChangeSkipStripe,
   onChangeSkipQa,
+  onChangeFastImage,
 }: Props) {
   const { t } = useTranslation('book');
 
@@ -196,6 +201,17 @@ export function OrderPreview({
                   />
                   <span className="text-sm text-amber-900 font-semibold">
                     {t('checkout.devSkipQa')}
+                  </span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={fastImage}
+                    onChange={(e) => onChangeFastImage?.(e.target.checked)}
+                    className="w-5 h-5"
+                  />
+                  <span className="text-sm text-amber-900 font-semibold">
+                    {t('checkout.devSkipVisual')}
                   </span>
                 </label>
               </div>

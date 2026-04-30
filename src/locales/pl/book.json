@@ -188,6 +188,7 @@
     "devHeading": "Dev tools (admin only)",
     "devSkipStripe": "Omiń Stripe",
     "devSkipQa": "Tryb fast (omiń QA)",
+    "devSkipVisual": "SKIP visual (rastered ASCII)",
     "errorEmail": "Podaj poprawny adres e-mail.",
     "errorConsent": "Musisz zaakceptować regulamin.",
     "errorAddress": "Uzupełnij wszystkie pola adresu wysyłki."

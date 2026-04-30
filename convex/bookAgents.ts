@@ -20,6 +20,7 @@ import { bookFallbacks } from './lib/prompts/bookFallbacks';
 import { startActiveObservation, getCurrentTraceId } from './lib/langfuse';
 import { buildInternalLogContext } from './lib/actionHelpers';
 import { generateImage, IMAGE_GEN_MIN_INTERVAL_MS } from './lib/geminiImageGen';
+import { asciiPlaceholderPng } from './lib/asciiToImage';
 import {
   PROBLEMS,
   HAIR_COLOR_MAP,
@@ -1016,15 +1017,18 @@ export const illustrate = internalAction({
           .filter(Boolean)
           .join(' ');
 
-        // Pace requests against Gemini's per-project rate limit. Caller-side
-        // (here, deterministic) — module-level state in geminiImageGen would
-        // not survive cold V8 contexts.
-        if (i > 0) {
-          await new Promise((resolve) => setTimeout(resolve, IMAGE_GEN_MIN_INTERVAL_MS));
+        // Dev-only short-circuit: rasterize the prompt as ASCII PNG instead
+        // of calling Gemini Flash image. Skips the rate-limit gap too.
+        let imageData: Uint8Array | null;
+        if (order.fastImage) {
+          imageData = asciiPlaceholderPng(fullPrompt, { width, height });
+        } else {
+          if (i > 0) {
+            await new Promise((resolve) => setTimeout(resolve, IMAGE_GEN_MIN_INTERVAL_MS));
+          }
+          await checkCallBudget(ctx, orderId);
+          imageData = await generateImage(fullPrompt, { width, height });
         }
-
-        await checkCallBudget(ctx, orderId);
-        const imageData = await generateImage(fullPrompt, { width, height });
         const storageId = await storeImageOrPlaceholder(ctx, imageData);
 
         // NOTE: sceneRef is legacy (v.number()), incompatible with new string

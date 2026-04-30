@@ -141,6 +141,10 @@ const applicationTables = {
     // Fast mode flags (admin batch)
     skipQaReviews: v.optional(v.boolean()),
 
+    // DEV flag: replace Gemini Flash image gen with rasterized ASCII PNG (admin-only).
+    // TODO(c3z): pre-launch cleanup — remove this field before launch.
+    fastImage: v.optional(v.boolean()),
+
     // Order format (defaults to 'pdf' if absent for legacy orders).
     // 'pdf_print' is a manual-fulfillment trapdoor: pipeline is paused,
     // staff contacts the customer to arrange the printed book.

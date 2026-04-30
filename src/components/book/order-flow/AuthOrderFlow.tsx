@@ -37,9 +37,11 @@ export function AuthOrderFlow() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // DEV: admin diagnostic flags. Default true so smoke tests are fast.
+  // fastImage default OFF — non-obvious UX, opt-in only.
   // TODO(c3z): pre-launch cleanup
   const [skipStripe, setSkipStripe] = useState(true);
   const [skipQa, setSkipQa] = useState(true);
+  const [fastImage, setFastImage] = useState(false);
 
   const handleSelectTopic = useCallback((topic: SelectedTopic) => {
     setIntake((prev) => ({ ...prev, topic }));
@@ -73,6 +75,7 @@ export function AuthOrderFlow() {
           // TODO(c3z): pre-launch cleanup
           skipStripe: isAdmin && skipStripe ? true : undefined,
           skipQaReviews: isAdmin && skipQa ? true : undefined,
+          fastImage: isAdmin && fastImage ? true : undefined,
         });
         const orderId = result.orderId;
         // Stamp bookOrderId on every subsequent event for this device so
@@ -85,7 +88,7 @@ export function AuthOrderFlow() {
         return null;
       }
     },
-    [intake, startOrder, isAdmin, skipStripe, skipQa, t],
+    [intake, startOrder, isAdmin, skipStripe, skipQa, fastImage, t],
   );
 
   // Admin shortcut: clicking the Preview CTA with `skipStripe` ON submits
@@ -148,8 +151,10 @@ export function AuthOrderFlow() {
           isAdmin={isAdmin}
           skipStripe={skipStripe}
           skipQa={skipQa}
+          fastImage={fastImage}
           onChangeSkipStripe={setSkipStripe}
           onChangeSkipQa={setSkipQa}
+          onChangeFastImage={setFastImage}
         />
       )}
       {screen === 'checkout' && (
