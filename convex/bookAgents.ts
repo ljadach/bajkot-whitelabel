@@ -913,7 +913,11 @@ async function fetchIllustrationImages(
 /** Store generated image data or a placeholder if generation failed */
 async function storeImageOrPlaceholder(ctx: ActionCtx, imageData: Uint8Array | null): Promise<any> {
   if (imageData) {
-    const blob = new Blob([imageData.buffer as ArrayBuffer], { type: 'image/png' });
+    // Copy into a fresh, exactly-sized ArrayBuffer. `imageData.buffer`
+    // would expose the entire underlying allocation, which for Node Buffers
+    // (returned by pngjs) is an 8 KB pool shared with unrelated data —
+    // corrupting the PNG with arbitrary garbage at the storage layer.
+    const blob = new Blob([new Uint8Array(imageData)], { type: 'image/png' });
     return await ctx.storage.store(blob);
   }
   return await storeMinimalPlaceholder(ctx);
