@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router';
 import { useAction, useQuery } from 'convex/react';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +6,13 @@ import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
 import { trackEvent } from '@lib/telemetry';
 import { BOOK_PRICE_PDF_PLN, formatPricePLN } from '@lib/pricing';
+import { ClientOnly } from '../ClientOnly';
+
+// PDF viewer is heavy (pdfjs-dist + react-pdf + react-pageflip ~500KB gz).
+// Lazy-load so the success-screen path (post-payment) doesn't pull it in.
+const BookPdfFlipbook = lazy(() =>
+  import('./BookPdfFlipbook').then((m) => ({ default: m.BookPdfFlipbook })),
+);
 
 const PRINT_REQUEST_EMAIL = 'info@bajkoterapia.org';
 
@@ -241,6 +248,7 @@ interface BookPreviewScreenProps {
         bookTitle: string | null;
         excerptPl: string | null;
         illustrations: Array<{ illustrationId: string; url: string | null }>;
+        previewPdfUrl: string | null;
       }
     | undefined;
   bookOrderId: string;
@@ -297,34 +305,67 @@ export function BookPreviewScreen({
           </p>
         </div>
 
-        {/* Preview gallery — cover + first two scene illustrations */}
-        <div className="grid sm:grid-cols-3 gap-4">
-          {(
-            preview?.illustrations ?? [
-              { illustrationId: 'cover', url: null },
-              { illustrationId: 'scene_1', url: null },
-              { illustrationId: 'scene_2', url: null },
-            ]
-          ).map((ill, idx) => (
-            <div
-              key={ill.illustrationId}
-              className="aspect-square bg-white rounded-3xl shadow-md border border-gray-100 overflow-hidden flex items-center justify-center"
+        {/* Preview — embedded flipbook of the first 3 PDF pages. Falls back
+            to the legacy 3-image grid for legacy orders whose composer ran
+            before the preview PDF feature shipped (previewPdfUrl === null). */}
+        {preview?.previewPdfUrl ? (
+          <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-6 md:p-8">
+            <ClientOnly
+              fallback={
+                <div className="flex items-center justify-center gap-2 py-12">
+                  <div className="w-5 h-5 spinner" />
+                  <span className="text-sm text-gray-500">Ładowanie podglądu...</span>
+                </div>
+              }
             >
-              {ill.url ? (
-                <img
-                  src={ill.url}
-                  alt={t(`paywall.illustrationAlt.${ill.illustrationId}`, {
-                    defaultValue: `Strona ${idx + 1}`,
-                  })}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              ) : (
-                <div className="w-6 h-6 spinner" />
-              )}
+              <Suspense
+                fallback={
+                  <div className="flex items-center justify-center gap-2 py-12">
+                    <div className="w-5 h-5 spinner" />
+                    <span className="text-sm text-gray-500">Ładowanie podglądu...</span>
+                  </div>
+                }
+              >
+                <BookPdfFlipbook pdfUrl={preview.previewPdfUrl} />
+              </Suspense>
+            </ClientOnly>
+          </div>
+        ) : (
+          <>
+            <div className="grid sm:grid-cols-3 gap-4">
+              {(
+                preview?.illustrations ?? [
+                  { illustrationId: 'cover', url: null },
+                  { illustrationId: 'scene_1', url: null },
+                  { illustrationId: 'scene_2', url: null },
+                ]
+              ).map((ill, idx) => (
+                <div
+                  key={ill.illustrationId}
+                  className="aspect-square bg-white rounded-3xl shadow-md border border-gray-100 overflow-hidden flex items-center justify-center"
+                >
+                  {ill.url ? (
+                    <img
+                      src={ill.url}
+                      alt={t(`paywall.illustrationAlt.${ill.illustrationId}`, {
+                        defaultValue: `Strona ${idx + 1}`,
+                      })}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-6 h-6 spinner" />
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+            {preview && (
+              <p className="text-xs text-gray-400 text-center">
+                Podgląd PDF niedostępny dla tego zamówienia.
+              </p>
+            )}
+          </>
+        )}
 
         {/* Excerpt teaser */}
         {preview?.excerptPl && (
