@@ -14,6 +14,7 @@
  */
 
 import { Resend } from 'resend';
+import { dlaName } from './childNameInflect';
 
 const DEFAULT_FROM = 'Bajkoterapia <info@bajkoterapia.org>';
 
@@ -71,10 +72,29 @@ export function buildBookReadyEmail(params: {
   downloadUrl: string;
   resultUrl: string;
 }): { subject: string; html: string; text: string } {
-  const titleLine = params.bookTitle
-    ? `„${escapeHtml(params.bookTitle)}"`
-    : `bajka dla ${escapeHtml(params.childName)}`;
-  const subject = `Twoja bajka jest gotowa — ${escapeHtml(params.childName)}`;
+  // Polish "dla X" needs the genitive form of the name. Helper returns
+  // the full "dla {Genitive}" phrase or null when the heuristic can't
+  // produce one — we then fall back to nominative without "dla".
+  const dla = dlaName(params.childName);
+  const dlaPhrase = dla ?? params.childName;
+
+  // Headline / subject. When the LLM gave us a real title we lead with it,
+  // otherwise we describe the book by recipient. Either way "dla {name}"
+  // appears at most once.
+  const subject = params.bookTitle
+    ? `Bajka „${params.bookTitle}" jest gotowa`
+    : dla
+      ? `Spersonalizowana bajka ${dla} jest gotowa`
+      : `Twoja bajka jest gotowa, ${params.childName}`;
+
+  const titleHtml = params.bookTitle ? `<strong>„${escapeHtml(params.bookTitle)}"</strong>` : null;
+
+  const descriptionHtml = titleHtml
+    ? `Spersonalizowana bajka ${titleHtml}${dla ? ` ${escapeHtml(dla)}` : `, ${escapeHtml(params.childName)},`} czeka na Ciebie.`
+    : dla
+      ? `Spersonalizowana bajka ${escapeHtml(dla)} czeka na Ciebie.`
+      : `Twoja spersonalizowana bajka, ${escapeHtml(params.childName)}, czeka na Ciebie.`;
+
   const html = `<!doctype html>
 <html lang="pl">
   <body style="margin:0;padding:0;background:#FAFAFA;font-family:Nunito,Arial,sans-serif;color:#334155;">
@@ -84,9 +104,9 @@ export function buildBookReadyEmail(params: {
           <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:24px;box-shadow:0 8px 24px rgba(15,23,42,0.08);padding:40px;">
             <tr><td align="center" style="font-size:48px;line-height:1;">📖✨</td></tr>
             <tr><td align="center" style="padding-top:24px;font-size:14px;font-weight:700;color:#7c3aed;letter-spacing:0.12em;text-transform:uppercase;">Bajkoterapia</td></tr>
-            <tr><td align="center" style="padding-top:8px;font-size:24px;font-weight:800;color:#0f172a;line-height:1.25;">Twoja bajka jest gotowa!</td></tr>
+            <tr><td align="center" style="padding-top:8px;font-size:24px;font-weight:800;color:#0f172a;line-height:1.25;">${escapeHtml(subject)}</td></tr>
             <tr><td align="center" style="padding-top:16px;font-size:16px;line-height:1.5;color:#475569;">
-              Spersonalizowana ${titleLine} dla&nbsp;${escapeHtml(params.childName)} czeka na Ciebie.
+              ${descriptionHtml}<br/>
               Kliknij poniżej, żeby pobrać PDF.
             </td></tr>
             <tr><td align="center" style="padding-top:32px;">
@@ -107,15 +127,21 @@ export function buildBookReadyEmail(params: {
     </table>
   </body>
 </html>`;
+
+  const textBody = params.bookTitle
+    ? `Spersonalizowana bajka „${params.bookTitle}" ${dlaPhrase} czeka.`
+    : dla
+      ? `Spersonalizowana bajka ${dla} czeka.`
+      : `Twoja spersonalizowana bajka, ${params.childName}, czeka.`;
   const text = [
-    `Twoja bajka jest gotowa!`,
-    ``,
-    `Spersonalizowana ${params.bookTitle ? `"${params.bookTitle}"` : `bajka`} dla ${params.childName} czeka.`,
-    ``,
+    subject,
+    '',
+    textBody,
+    '',
     `Pobierz PDF: ${params.downloadUrl}`,
     `Strona z bajką: ${params.resultUrl}`,
-    ``,
-    `— Bajkoterapia`,
+    '',
+    '— Bajkoterapia',
   ].join('\n');
   return { subject, html, text };
 }
