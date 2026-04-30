@@ -8,7 +8,8 @@
     "rejectAll": "Odrzuć wszystkie",
     "accept": "Akceptuj",
     "cancel": "Anuluj",
-    "savePreferences": "Zapisz preferencje"
+    "savePreferences": "Zapisz preferencje",
+    "close": "Zamknij"
   },
   "essential": {
     "title": "Niezbędne pliki cookie",
