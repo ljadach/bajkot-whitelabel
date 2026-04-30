@@ -77,16 +77,16 @@ export function OrderWizard({
     [intake, onChange],
   );
 
-  const goToStep = (target: 1 | 2 | 3) => {
+  const goToStep = useCallback((target: 1 | 2 | 3) => {
     setError('');
     setStep(target);
     // Nudge the form card into view rather than jumping all the way to the
     // top of the page — the previous `window.scrollTo({top: 0})` overshot
     // and disorientated users when the form card was already visible.
     formCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  };
+  }, []);
 
-  const handleFinish = () => {
+  const handleFinish = useCallback(() => {
     if (!intake.name.trim() || intake.name.trim().length < 2) {
       setError(t('wizard.errorName'));
       return;
@@ -100,7 +100,19 @@ export function OrderWizard({
       return;
     }
     onSubmit();
-  };
+  }, [intake, t, onSubmit]);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Enter' || !(e.ctrlKey || e.metaKey)) return;
+      e.preventDefault();
+      if (step === 1) goToStep(2);
+      else if (step === 2) goToStep(3);
+      else handleFinish();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [step, goToStep, handleFinish]);
 
   const trimmedName = intake.name.trim();
 
