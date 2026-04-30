@@ -110,9 +110,11 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
     orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip',
   );
 
+  // Landing flow hides the timeline section, so skip the events query
+  // entirely instead of fetching data we'll throw away on the client.
   const events = useQuery(
     cfg.queries.events,
-    orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip',
+    orderId && flow !== 'landing' ? { orderId: orderId as Id<'bookOrders'> } : 'skip',
   );
 
   const styleVoteImages = useQuery(
@@ -291,7 +293,10 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
     <ProgressJourney
       status={progress.status}
       pipelineSteps={PIPELINE_STEPS}
-      events={events ?? undefined}
+      // Landing visitors don't see the raw pipeline event log — too
+      // much noise for first-time parents. Auth flow keeps it for
+      // power users who came back to inspect their order.
+      events={flow === 'landing' ? undefined : (events ?? undefined)}
       childName={progress.childName}
       ageNumber={progress.ageNumber}
       problemId={progress.problemId}
