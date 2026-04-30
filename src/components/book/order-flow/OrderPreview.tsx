@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { trackEvent } from '../../../lib/telemetry';
+import { genitiveOf } from '../../../lib/childNameInflect';
 import type { IntakeState, OrderFormat } from './types';
 
 interface Props {
@@ -55,12 +56,14 @@ export function OrderPreview({
   const subheadingAfter =
     tokenIdx >= 0 ? subheadingTemplate.slice(tokenIdx + NAME_TOKEN.length) : '';
 
+  const nameGen = trimmedName ? (genitiveOf(trimmedName) ?? trimmedName) : '';
+
   const bookTitle = trimmedName
-    ? t('previewScreen.bookTitleFor', { name: trimmedName })
+    ? t('previewScreen.bookTitleFor', { nameGen })
     : t('previewScreen.bookTitleFallback');
 
   const cta = trimmedName
-    ? t('previewScreen.ctaOrder', { name: trimmedName })
+    ? t('previewScreen.ctaOrder', { nameGen })
     : t('previewScreen.ctaOrderFallback');
 
   return (
