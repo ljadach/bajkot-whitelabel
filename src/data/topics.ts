@@ -125,61 +125,6 @@ export const TOPICS: Topic[] = [
   },
 
   // ---------------------------------------------------------------------------
-  // 2. Bajkoterapia Personalizowana Ogólna
-  // ---------------------------------------------------------------------------
-  {
-    slug: 'bajkoterapia-ogolna',
-    problemId: 'general_resilience',
-    title: 'Bajkoterapia – Spersonalizowana Bajka Terapeutyczna dla Dziecka',
-    metaDescription:
-      'Każde dziecko ma swoje wyzwania. Bajkoterapia dopasowuje historię do konkretnego imienia, wyglądu i problemu Twojego malucha.',
-    badge: 'Najlepsza personalizowana bajka terapeutyczna',
-    headline: 'Spersonalizowana bajka terapeutyczna,',
-    headlineAccent: 'w której Twoje dziecko jest bohaterem',
-    intro:
-      'Każde dziecko ma swoje wyzwania. Bajkoterapia dopasowuje historię do konkretnego imienia, wyglądu i problemu Twojego malucha. Naukowe podejście, magiczny efekt – gotowe w 15 minut.',
-    heroImage:
-      'https://images.unsplash.com/photo-1512253022256-19f4cb92a4dc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-    heroImageAlt: 'Dziecko z magiczną spersonalizowaną książką',
-    painHeadline: 'Szukasz bajki terapeutycznej, która naprawdę zadziała na Twoje dziecko?',
-    painEmpathy:
-      'Zwykłe bajki terapeutyczne dla dzieci są ogólne – mówią o jakimś Jasiu lub Zosi. Personalizowana książka dla dziecka to coś zupełnie innego. Gdy maluch słyszy własne imię – magia się zaczyna.',
-    painRootCause:
-      'Każde wyzwanie wychowawcze jest inne. Nasza platforma dopasowuje treść bajki do problemu, który aktualnie przeżywa Twoje dziecko – czy to złość, lęk, czy trudności z adaptacją.',
-    painCta: 'Daj dziecku Jego własną historię – i obserwuj, jak zaczyna ją żyć naprawdę.',
-    scienceHeadline: 'Dlaczego spersonalizowana bajkoterapia działa lepiej niż ogólne bajki?',
-    scienceSubheading:
-      'Spersonalizowana bajkoterapia opiera się na udowodnionym naukowo Efekcie Odniesienia do Ja (Self-Reference Effect).',
-    scienceCards: [
-      {
-        icon: 'fa-solid fa-user-astronaut',
-        title: 'Twoje dziecko = bohater',
-        description:
-          'Imię, wygląd, ulubiona zabawka – wszystko wplecione w opowieść. Mózg dziecka przetwarza tę historię jako swoją własną.',
-      },
-      {
-        icon: 'fa-solid fa-shield-halved',
-        title: 'Dopasowany temat',
-        description:
-          'Wybierasz problem, który aktualnie dotyczy Twojego dziecka. Bajka zawiera psychoedukacyjne rozwiązanie ukryte w fabule.',
-      },
-      {
-        icon: 'fa-solid fa-hat-wizard',
-        title: 'Ilustracje 3D',
-        description:
-          'Każda bajka zawiera 5 oryginalnych ilustracji 3D ze spersonalizowaną postacią dziecka – z pełną spójnością wizualną.',
-      },
-    ],
-    loadingMessage: 'Tworzę Twoją wyjątkową spersonalizowaną bajkę...',
-    category: 'roznorodnosc',
-    catalog: {
-      emoji: '🌈',
-      shortTitle: 'Inny problem?',
-      shortDesc: 'Ogólne wsparcie emocjonalne. Bajka dopasowana do indywidualnych potrzeb dziecka.',
-    },
-  },
-
-  // ---------------------------------------------------------------------------
   // 3. Bije Inne Dzieci
   // ---------------------------------------------------------------------------
   {
