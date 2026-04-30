@@ -7,6 +7,7 @@ import { Id } from '../../../convex/_generated/dataModel';
 import { trackEvent } from '@lib/telemetry';
 import { BOOK_PRICE_PDF_PLN, formatPricePLN } from '@lib/pricing';
 import { ClientOnly } from '../ClientOnly';
+import { genitiveOrSelf } from '@lib/childNameInflect';
 
 // PDF viewer is heavy (pdfjs-dist + react-pdf + react-pageflip ~500KB gz).
 // Lazy-load so the success-screen path (post-payment) doesn't pull it in.
@@ -120,7 +121,7 @@ export function BookSuccessScreen({
   const { t } = useTranslation('book');
   const headingText =
     childName && bookTitle
-      ? t('result.heading', { name: childName, bookTitle })
+      ? t('result.heading', { nameGen: genitiveOrSelf(childName), bookTitle })
       : t('result.headingFallback');
 
   useEffect(() => {
@@ -301,7 +302,7 @@ export function BookPreviewScreen({
           </span>
           <h1 className="text-3xl md:text-4xl font-black text-calm-900 mb-3">{heading}</h1>
           <p className="text-gray-600 text-base md:text-lg max-w-md mx-auto">
-            {t('paywall.description', { name: preview?.childName ?? '' })}
+            {t('paywall.description', { nameGen: genitiveOrSelf(preview?.childName) })}
           </p>
         </div>
 
