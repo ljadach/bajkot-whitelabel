@@ -314,6 +314,26 @@ export const updatePreviewPdfStorageId = internalMutation({
   },
 });
 
+// ── Update R2 keys (typst-render service path) ──────────────
+
+export const updateR2Keys = internalMutation({
+  args: {
+    orderId: v.id('bookOrders'),
+    r2FullKey: v.string(),
+    r2PreviewKey: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const patch: { r2FullKey: string; r2PreviewKey?: string; updatedAt: number } = {
+      r2FullKey: args.r2FullKey,
+      updatedAt: Date.now(),
+    };
+    if (args.r2PreviewKey !== undefined) patch.r2PreviewKey = args.r2PreviewKey;
+    await ctx.db.patch(args.orderId, patch);
+    return null;
+  },
+});
+
 // ── Mark Order Complete ────────────────────────────────────
 
 export const markOrderComplete = internalMutation({

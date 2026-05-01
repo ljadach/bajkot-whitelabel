@@ -135,8 +135,12 @@ program
   .option('--fast-image', 'Replace illustrations with rasterized ASCII (dev)', false)
   .option('-w, --watch', 'Watch pipeline progress after creating')
   .option('-e, --email <addr>', 'Recipient email — sends the Resend mailing on completion')
+  .option('--render-service', 'Use typst-render service (V8) instead of legacy pdfkit (Node) for PDF composition', false)
   .action(async (opts) => {
     console.log(`\x1b[36m⟳ Creating order for "${opts.name}"...\x1b[0m`);
+    if (opts.renderService) {
+      console.log(`\x1b[33m  ↳ typst-render path enabled (useRenderService=true)\x1b[0m`);
+    }
 
     const raw = convexRun('cli:createOrder', {
       childName: opts.name,
@@ -155,6 +159,7 @@ program
       skipQaReviews: opts.skipQa !== false,
       fastImage: opts.fastImage === true,
       email: opts.email,
+      useRenderService: opts.renderService === true,
     });
 
     const orderId = parseResult(raw);
@@ -417,11 +422,22 @@ program
   .action((rawId, opts) => {
     const orderId = resolveId(rawId);
     const raw = convexRun('cli:getDownloadUrl', { orderId });
-    const url = parseResult(raw);
+    const initialUrl = parseResult(raw);
 
-    if (!url) {
+    if (!initialUrl) {
       console.error('\x1b[31m✗ No PDF available (order not completed?)\x1b[0m');
       process.exit(1);
+    }
+
+    // typst-render path zwraca r2://<key> sentinel — presign przez action.
+    let url = initialUrl;
+    if (typeof initialUrl === 'string' && initialUrl.startsWith('r2://')) {
+      const presigned = convexRun('cli:presignDownloadUrl', { orderId });
+      url = parseResult(presigned);
+      if (!url) {
+        console.error('\x1b[31m✗ R2 presigning failed — check R2_* env in Convex\x1b[0m');
+        process.exit(1);
+      }
     }
 
     console.log(`\x1b[32m${url}\x1b[0m`);

@@ -586,6 +586,8 @@ export const getDownloadUrl = query({
     paymentStatus: paymentStatusReturnValidator,
     paid: v.boolean(),
     hasPdf: v.boolean(),
+    /** When set, frontend should call resolveR2DownloadUrl action for the R2 path. */
+    r2FullKey: v.union(v.string(), v.null()),
   }),
   handler: async (ctx, { orderId }) => {
     const order = await assertOrderOwner(ctx, orderId);
@@ -597,8 +599,31 @@ export const getDownloadUrl = query({
       bookTitle: extractBookTitle(order.storyDraft) ?? null,
       paymentStatus: order.paymentStatus ?? null,
       paid,
-      hasPdf: !!order.pdfStorageId,
+      hasPdf: !!order.pdfStorageId || !!order.r2FullKey,
+      r2FullKey: paid && order.r2FullKey ? order.r2FullKey : null,
     };
+  },
+});
+
+// Presigned R2 URL — dla typst-render service path. Frontend wzywa po
+// getDownloadUrl gdy r2FullKey != null. TTL 15 min.
+export const resolveR2DownloadUrl = action({
+  args: {
+    orderId: v.id('bookOrders'),
+    kind: v.optional(v.union(v.literal('full'), v.literal('preview'))),
+  },
+  returns: v.union(v.string(), v.null()),
+  handler: async (ctx, { orderId, kind }): Promise<string | null> => {
+    const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
+    if (!order) return null;
+    const paid = (order.paymentStatus ?? null) === 'completed' || order.skipStripe === true;
+    const which = kind ?? 'full';
+    const key = which === 'preview' ? order.r2PreviewKey : order.r2FullKey;
+    // Preview URL nie wymaga payment (preview jest dostępny przed paywallem).
+    if (which === 'full' && !paid) return null;
+    if (!key) return null;
+    const { presignR2GetUrl } = await import('./lib/r2Presign');
+    return presignR2GetUrl(key, 900);
   },
 });
 
@@ -761,6 +786,7 @@ export const getLandingDownloadUrl = query({
     paymentStatus: paymentStatusReturnValidator,
     paid: v.boolean(),
     hasPdf: v.boolean(),
+    r2FullKey: v.union(v.string(), v.null()),
   }),
   handler: async (ctx, { orderId }) => {
     const order = await assertLandingOrder(ctx, orderId);
@@ -772,7 +798,8 @@ export const getLandingDownloadUrl = query({
       bookTitle: extractBookTitle(order.storyDraft) ?? null,
       paymentStatus: order.paymentStatus ?? null,
       paid,
-      hasPdf: !!order.pdfStorageId,
+      hasPdf: !!order.pdfStorageId || !!order.r2FullKey,
+      r2FullKey: paid && order.r2FullKey ? order.r2FullKey : null,
     };
   },
 });

@@ -30,6 +30,8 @@ export const createOrder = internalMutation({
     fastImage: v.optional(v.boolean()),
     /** Optional: deliver-ready email recipient (for Resend send testing). */
     email: v.optional(v.string()),
+    /** Per-order opt-in for typst-render service path (CLI --render-service). */
+    useRenderService: v.optional(v.boolean()),
   },
   returns: v.id('bookOrders'),
   handler: async (ctx, args) => {
@@ -56,6 +58,7 @@ export const createOrder = internalMutation({
       skipStripe: true,
       dedicationDecided: true,
       email: args.email,
+      useRenderService: args.useRenderService ?? false,
       status: 'intake',
       createdAt: Date.now(),
     });
@@ -338,8 +341,29 @@ export const getDownloadUrl = internalQuery({
   returns: v.union(v.string(), v.null()),
   handler: async (ctx, { orderId }) => {
     const order = await ctx.db.get(orderId);
+    if (!order) return null;
+    // R2 path wymaga presigning'u — zwracamy klucz, CLI woła osobny action.
+    if (order.r2FullKey) return `r2://${order.r2FullKey}`;
     if (!order?.pdfStorageId) return null;
     return await ctx.storage.getUrl(order.pdfStorageId);
+  },
+});
+
+/** Action variant — does R2 presigning. CLI uses this when getDownloadUrl returns r2:// scheme. */
+export const presignDownloadUrl = internalAction({
+  args: {
+    orderId: v.id('bookOrders'),
+    kind: v.optional(v.union(v.literal('full'), v.literal('preview'))),
+  },
+  returns: v.union(v.string(), v.null()),
+  handler: async (ctx, { orderId, kind }): Promise<string | null> => {
+    const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
+    if (!order) return null;
+    const which = kind ?? 'full';
+    const key = which === 'preview' ? order.r2PreviewKey : order.r2FullKey;
+    if (!key) return null;
+    const { presignR2GetUrl } = await import('./lib/r2Presign');
+    return presignR2GetUrl(key, 900);
   },
 });
 

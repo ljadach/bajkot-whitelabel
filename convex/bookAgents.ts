@@ -1257,8 +1257,21 @@ export const composePdf = internalAction({
         narrative: getNarrative('A9', 'start'),
       });
 
-      // Schedule the actual PDF generation to the separate bookComposer file
-      await ctx.scheduler.runAfter(0, internal.bookComposer.generatePdf, { orderId });
+      // Route to typst-render service (V8) when USE_RENDER_SERVICE=true.
+      // Otherwise fall back to legacy pdfkit path ('use node' bookComposer).
+      // Per-order override: order.useRenderService (set by CLI --render-service).
+      const orderForFlag = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, {
+        orderId,
+      });
+      const envFlag = process.env.USE_RENDER_SERVICE === 'true';
+      const orderFlag = orderForFlag?.useRenderService === true;
+      if (envFlag || orderFlag) {
+        await ctx.scheduler.runAfter(0, internal.bookComposerRender.generatePdfViaRender, {
+          orderId,
+        });
+      } else {
+        await ctx.scheduler.runAfter(0, internal.bookComposer.generatePdf, { orderId });
+      }
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
       await recordPipelineEvent(ctx, {
