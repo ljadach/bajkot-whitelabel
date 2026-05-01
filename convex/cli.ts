@@ -336,34 +336,18 @@ export const getPipelineStats = internalQuery({
 
 // ── Get download URL for order ───────────────────────────────
 
-export const getDownloadUrl = internalQuery({
+export const getDownloadUrl = internalAction({
   args: { orderId: v.id('bookOrders') },
   returns: v.union(v.string(), v.null()),
-  handler: async (ctx, { orderId }) => {
-    const order = await ctx.db.get(orderId);
-    if (!order) return null;
-    // R2 path wymaga presigning'u — zwracamy klucz, CLI woła osobny action.
-    if (order.r2FullKey) return `r2://${order.r2FullKey}`;
-    if (!order?.pdfStorageId) return null;
-    return await ctx.storage.getUrl(order.pdfStorageId);
-  },
-});
-
-/** Action variant — does R2 presigning. CLI uses this when getDownloadUrl returns r2:// scheme. */
-export const presignDownloadUrl = internalAction({
-  args: {
-    orderId: v.id('bookOrders'),
-    kind: v.optional(v.union(v.literal('full'), v.literal('preview'))),
-  },
-  returns: v.union(v.string(), v.null()),
-  handler: async (ctx, { orderId, kind }): Promise<string | null> => {
+  handler: async (ctx, { orderId }): Promise<string | null> => {
     const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
     if (!order) return null;
-    const which = kind ?? 'full';
-    const key = which === 'preview' ? order.r2PreviewKey : order.r2FullKey;
-    if (!key) return null;
-    const { presignR2GetUrl } = await import('./lib/r2Presign');
-    return presignR2GetUrl(key, 900);
+    if (order.r2FullKey) {
+      const { presignR2GetUrl } = await import('./lib/r2Presign');
+      return presignR2GetUrl(order.r2FullKey);
+    }
+    if (!order.pdfStorageId) return null;
+    return ctx.storage.getUrl(order.pdfStorageId);
   },
 });
 

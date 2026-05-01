@@ -1,16 +1,8 @@
 /**
- * Builds the render service brief from a bookOrder + illustrations.
- *
- * Mirrors the per-page text resolution logic that bookComposer.ts does
- * inline (resolveBeatText + splitBeatText + textOverride from
- * expandTextPages). Here we keep it simpler: emit one PageSpec per
- * sequence entry, with `text` already resolved/split for kind=text.
- *
- * `expandTextPages` (from the pdfkit composer) splits prose across MORE
- * than 2 text pages when it doesn't fit — that's a measurement-driven
- * step we don't replicate here. Typst handles overflow natively (no
- * fixed text box). If a beat's prose is huge for the bracket's font
- * size, Typst lets it cascade onto the next page automatically.
+ * Build the render service brief from an order. One PageSpec per sequence
+ * entry, with `text` pre-resolved/split for kind=text. Typst handles
+ * overflow natively, so we don't replicate `expandTextPages` from the pdfkit
+ * composer (which measures heights and inserts extra pages).
  */
 import type { Doc } from '../_generated/dataModel';
 import { parseArtifact } from './bookTypes';
@@ -19,8 +11,6 @@ import { resolveAgeBracket } from './ageBracket';
 import { buildPageSequence, splitBeatText, type PageSpec as BajkotPageSpec } from './pageSequence';
 import { dlaName } from './childNameInflect';
 
-/** Spłaszcza ParentCard do prozy dla render service. Format zgodny ze stylem
- *  bajkotowego drawParentCardPage: tytuł, intro, pytania jako bullety, activity. */
 function formatParentCard(pc: ParentCard | undefined | string): string {
   if (!pc) return '';
   if (typeof pc === 'string') return pc;
@@ -80,14 +70,12 @@ export function buildRenderBrief(input: BuildBriefInput): RenderBrief {
   const bracket = resolveAgeBracket(order);
   const sequence = buildPageSequence(bracket);
 
-  // Index beat prose by beatId for fast lookup.
   const beatTextById = new Map<string, string>();
   for (const page of draft.pages ?? []) {
     const key = page.beatId ?? String(page.beatNumber);
     if (key && !beatTextById.has(key)) beatTextById.set(key, page.text || '');
   }
 
-  // Pre-split beats that need it.
   const splitsByBeatId = new Map<string, [string, string]>();
   for (const p of sequence) {
     if (p.kind === 'text' && p.textPart && p.beatId && !splitsByBeatId.has(p.beatId)) {
@@ -95,7 +83,6 @@ export function buildRenderBrief(input: BuildBriefInput): RenderBrief {
     }
   }
 
-  // Title with the same fallback hierarchy as bookComposer.ts.
   const titleFallback = dlaName(order.childName)
     ? `Książeczka ${dlaName(order.childName)}`
     : 'Twoja bajka';
@@ -105,7 +92,6 @@ export function buildRenderBrief(input: BuildBriefInput): RenderBrief {
   const dedication =
     (order.parentDedication as string | undefined)?.trim() || draft.dedication?.trim() || undefined;
 
-  // Map sequence to brief page specs, resolving text per page.
   const briefPages: BriefPageSpec[] = sequence.map((spec) => {
     const out: BriefPageSpec = { pageNumber: spec.pageNumber, kind: spec.kind };
     if (spec.illustrationId) out.illustrationId = spec.illustrationId;
@@ -118,7 +104,7 @@ export function buildRenderBrief(input: BuildBriefInput): RenderBrief {
       if (split && spec.textPart) text = split[spec.textPart - 1] ?? '';
       else text = beatTextById.get(spec.beatId) ?? '';
 
-      // Same B6 last-page sentinel as bookComposer.
+      // B6 last-page sentinel — same as bookComposer.
       if (spec.beatId === '6' && (spec.textPart === undefined || spec.textPart === 2)) {
         text = `${text}\n\n*Koniec*`;
       }

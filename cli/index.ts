@@ -422,22 +422,11 @@ program
   .action((rawId, opts) => {
     const orderId = resolveId(rawId);
     const raw = convexRun('cli:getDownloadUrl', { orderId });
-    const initialUrl = parseResult(raw);
+    const url = parseResult(raw);
 
-    if (!initialUrl) {
+    if (!url) {
       console.error('\x1b[31m✗ No PDF available (order not completed?)\x1b[0m');
       process.exit(1);
-    }
-
-    // typst-render path zwraca r2://<key> sentinel — presign przez action.
-    let url = initialUrl;
-    if (typeof initialUrl === 'string' && initialUrl.startsWith('r2://')) {
-      const presigned = convexRun('cli:presignDownloadUrl', { orderId });
-      url = parseResult(presigned);
-      if (!url) {
-        console.error('\x1b[31m✗ R2 presigning failed — check R2_* env in Convex\x1b[0m');
-        process.exit(1);
-      }
     }
 
     console.log(`\x1b[32m${url}\x1b[0m`);

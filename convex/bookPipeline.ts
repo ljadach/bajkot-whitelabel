@@ -605,8 +605,9 @@ export const getDownloadUrl = query({
   },
 });
 
-// Presigned R2 URL — dla typst-render service path. Frontend wzywa po
-// getDownloadUrl gdy r2FullKey != null. TTL 15 min.
+// Presigned R2 URL for the typst-render service path. Frontend calls this after
+// getDownloadUrl reports r2FullKey != null. Preview URL is paywall-free; full
+// URL requires payment.
 export const resolveR2DownloadUrl = action({
   args: {
     orderId: v.id('bookOrders'),
@@ -616,14 +617,15 @@ export const resolveR2DownloadUrl = action({
   handler: async (ctx, { orderId, kind }): Promise<string | null> => {
     const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
     if (!order) return null;
-    const paid = (order.paymentStatus ?? null) === 'completed' || order.skipStripe === true;
     const which = kind ?? 'full';
-    const key = which === 'preview' ? order.r2PreviewKey : order.r2FullKey;
-    // Preview URL nie wymaga payment (preview jest dostępny przed paywallem).
-    if (which === 'full' && !paid) return null;
+    if (which === 'full') {
+      const paid = (order.paymentStatus ?? null) === 'completed' || order.skipStripe === true;
+      if (!paid) return null;
+    }
+    const { presignR2GetUrl, r2KeyFor } = await import('./lib/r2Presign');
+    const key = r2KeyFor(order, which);
     if (!key) return null;
-    const { presignR2GetUrl } = await import('./lib/r2Presign');
-    return presignR2GetUrl(key, 900);
+    return presignR2GetUrl(key);
   },
 });
 

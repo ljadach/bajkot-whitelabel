@@ -1,22 +1,16 @@
 /**
  * A9 — PDF composer via external typst-render service.
- *
- * V8 runtime (NO 'use node') — żeby uniknąć kosztu Node action minutes.
- * Cała robota się dzieje na VPS:
- *   - VPS pobiera ilustracje przez Convex signed URLs (ctx.storage.getUrl)
- *   - VPS kompiluje Typst template
- *   - VPS uploaduje PDFy na Cloudflare R2
- *   - tutaj zapisujemy r2FullKey/r2PreviewKey w bookOrders
- *
- * Triggered przez bookAgents.composePdf gdy USE_RENDER_SERVICE=true.
+ * V8 runtime; no 'use node' to avoid Node action minute cost.
  */
 import { internalAction } from './_generated/server';
 import { internal } from './_generated/api';
 import { v } from 'convex/values';
 import { buildRenderBrief, type RenderBrief } from './lib/buildRenderBrief';
+import { r2OutputKeyFor, type R2Kind } from './lib/r2Presign';
 import { getNarrative } from './bookPipelineEvents';
 
 const RENDER_TIMEOUT_MS = 120_000;
+const PREVIEW_PAGE_COUNT = 3;
 
 interface RenderResponse {
   jobId: string;
@@ -51,7 +45,6 @@ export const generatePdfViaRender = internalAction({
         orderId,
       });
 
-      // Generate signed URLs for all illustrations (~10 min TTL).
       const briefIllustrations = await Promise.all(
         illustrations.map(async (i) => {
           const url = await ctx.storage.getUrl(i.storageId);
@@ -60,41 +53,33 @@ export const generatePdfViaRender = internalAction({
         }),
       );
 
-      const fullBrief = buildRenderBrief({
-        jobId: orderId as unknown as string,
-        mode: 'full',
-        order,
-        illustrations: briefIllustrations,
-        outputKey: `orders/${orderId}/full.pdf`,
-      });
-      const previewBrief = buildRenderBrief({
-        jobId: orderId as unknown as string,
-        mode: 'preview',
-        order,
-        illustrations: briefIllustrations,
-        outputKey: `orders/${orderId}/preview.pdf`,
-        maxPages: 3,
-      });
+      const jobId = String(orderId);
+      const briefFor = (kind: R2Kind): RenderBrief =>
+        buildRenderBrief({
+          jobId,
+          mode: kind,
+          order,
+          illustrations: briefIllustrations,
+          outputKey: r2OutputKeyFor(orderId, kind),
+          maxPages: kind === 'preview' ? PREVIEW_PAGE_COUNT : undefined,
+        });
 
-      log('briefs built', {
-        full: fullBrief.pages.length,
-        preview: previewBrief.maxPages,
-        bracket: fullBrief.bracket,
-      });
+      const fullBrief = briefFor('full');
+      const previewBrief = briefFor('preview');
 
-      // Render both — sequential żeby nie zalać single VPS przy bursts.
-      const fullResult = await callRender(renderUrl, renderSecret, fullBrief);
-      log('full rendered', {
-        sizeKb: Math.round(fullResult.sizeBytes / 1024),
-        durationMs: fullResult.durationMs,
-        cached: fullResult.cached,
-      });
+      log('briefs built', { full: fullBrief.pages.length, bracket: fullBrief.bracket });
 
-      const previewResult = await callRender(renderUrl, renderSecret, previewBrief);
-      log('preview rendered', {
-        sizeKb: Math.round(previewResult.sizeBytes / 1024),
-        durationMs: previewResult.durationMs,
-        cached: previewResult.cached,
+      // p-limit(5) on the render service bounds bursts; 2 parallel calls fit fine.
+      const [fullResult, previewResult] = await Promise.all([
+        callRender(renderUrl, renderSecret, fullBrief),
+        callRender(renderUrl, renderSecret, previewBrief),
+      ]);
+
+      log('rendered', {
+        fullKb: Math.round(fullResult.sizeBytes / 1024),
+        previewKb: Math.round(previewResult.sizeBytes / 1024),
+        fullMs: fullResult.durationMs,
+        previewMs: previewResult.durationMs,
       });
 
       await ctx.runMutation(internal.bookPipelineHelpers.updateR2Keys, {

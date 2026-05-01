@@ -237,21 +237,21 @@ const applicationTables = {
     // dedication ends up on a PDF that's already been built (or missed).
     dedicationDecided: v.optional(v.boolean()),
 
-    // Final output (legacy pdfkit path — kept for backward compat)
+    // Final output — pdfkit path (Convex storage)
     pdfStorageId: v.optional(v.id('_storage')),
-    // 3-page teaser PDF generated alongside the full PDF — embedded in the
-    // result page flipbook so the parent gets a real preview before paying.
+    // 3-page teaser PDF embedded in the result-page flipbook so the parent
+    // gets a real preview before paying.
     previewPdfStorageId: v.optional(v.id('_storage')),
     downloadUrl: v.optional(v.string()),
 
-    // Final output (typst-render service path — preferred when USE_RENDER_SERVICE=true)
-    // R2 keys point to private bajkot-pdfs bucket; getDownloadUrl issues
-    // presigned URLs (15 min TTL) via aws4fetch, never returns raw key.
+    // Final output — typst-render service path (R2). Bucket is private; the
+    // raw key is never returned to the frontend, only presigned URLs.
     r2FullKey: v.optional(v.string()),
     r2PreviewKey: v.optional(v.string()),
 
-    // Per-order opt-in for typst-render service (set by CLI --render-service flag).
-    // Wins over env-level USE_RENDER_SERVICE so testing nie wymaga env zmiany.
+    // Per-order opt-in for the typst-render path. Wins over env-level
+    // USE_RENDER_SERVICE so a single test order can route differently
+    // without redeploying.
     useRenderService: v.optional(v.boolean()),
 
     // Payment

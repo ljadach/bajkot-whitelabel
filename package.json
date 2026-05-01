@@ -53,6 +53,7 @@
     "@react-router/serve": "^7.13.1",
     "@vercel/react-router": "^1.2.5",
     "ai": "^5.0.117",
+    "aws4fetch": "^1.0.20",
     "clsx": "^2.1.1",
     "convex": "^1.24.2",
     "crypto": "^1.0.1",

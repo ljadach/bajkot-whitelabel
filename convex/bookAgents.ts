@@ -1257,21 +1257,15 @@ export const composePdf = internalAction({
         narrative: getNarrative('A9', 'start'),
       });
 
-      // Route to typst-render service (V8) when USE_RENDER_SERVICE=true.
-      // Otherwise fall back to legacy pdfkit path ('use node' bookComposer).
-      // Per-order override: order.useRenderService (set by CLI --render-service).
-      const orderForFlag = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, {
-        orderId,
-      });
-      const envFlag = process.env.USE_RENDER_SERVICE === 'true';
-      const orderFlag = orderForFlag?.useRenderService === true;
-      if (envFlag || orderFlag) {
-        await ctx.scheduler.runAfter(0, internal.bookComposerRender.generatePdfViaRender, {
-          orderId,
-        });
-      } else {
-        await ctx.scheduler.runAfter(0, internal.bookComposer.generatePdf, { orderId });
-      }
+      // Route to typst-render (V8) when USE_RENDER_SERVICE env or order opts in,
+      // otherwise legacy pdfkit ('use node'). The order load is reused — `order`
+      // already in scope above gates `dedicationDecided` so re-using saves a query.
+      const useRenderService =
+        process.env.USE_RENDER_SERVICE === 'true' || order.useRenderService === true;
+      const target = useRenderService
+        ? internal.bookComposerRender.generatePdfViaRender
+        : internal.bookComposer.generatePdf;
+      await ctx.scheduler.runAfter(0, target, { orderId });
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
       await recordPipelineEvent(ctx, {
