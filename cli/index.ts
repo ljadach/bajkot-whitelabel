@@ -135,8 +135,12 @@ program
   .option('--fast-image', 'Replace illustrations with rasterized ASCII (dev)', false)
   .option('-w, --watch', 'Watch pipeline progress after creating')
   .option('-e, --email <addr>', 'Recipient email — sends the Resend mailing on completion')
+  .option('--render-service', 'Use typst-render service (V8) instead of legacy pdfkit (Node) for PDF composition', false)
   .action(async (opts) => {
     console.log(`\x1b[36m⟳ Creating order for "${opts.name}"...\x1b[0m`);
+    if (opts.renderService) {
+      console.log(`\x1b[33m  ↳ typst-render path enabled (useRenderService=true)\x1b[0m`);
+    }
 
     const raw = convexRun('cli:createOrder', {
       childName: opts.name,
@@ -155,6 +159,7 @@ program
       skipQaReviews: opts.skipQa !== false,
       fastImage: opts.fastImage === true,
       email: opts.email,
+      useRenderService: opts.renderService === true,
     });
 
     const orderId = parseResult(raw);

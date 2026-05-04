@@ -30,6 +30,8 @@ export const createOrder = internalMutation({
     fastImage: v.optional(v.boolean()),
     /** Optional: deliver-ready email recipient (for Resend send testing). */
     email: v.optional(v.string()),
+    /** Per-order opt-in for typst-render service path (CLI --render-service). */
+    useRenderService: v.optional(v.boolean()),
   },
   returns: v.id('bookOrders'),
   handler: async (ctx, args) => {
@@ -56,6 +58,7 @@ export const createOrder = internalMutation({
       skipStripe: true,
       dedicationDecided: true,
       email: args.email,
+      useRenderService: args.useRenderService ?? false,
       status: 'intake',
       createdAt: Date.now(),
     });
@@ -333,13 +336,18 @@ export const getPipelineStats = internalQuery({
 
 // ── Get download URL for order ───────────────────────────────
 
-export const getDownloadUrl = internalQuery({
+export const getDownloadUrl = internalAction({
   args: { orderId: v.id('bookOrders') },
   returns: v.union(v.string(), v.null()),
-  handler: async (ctx, { orderId }) => {
-    const order = await ctx.db.get(orderId);
-    if (!order?.pdfStorageId) return null;
-    return await ctx.storage.getUrl(order.pdfStorageId);
+  handler: async (ctx, { orderId }): Promise<string | null> => {
+    const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
+    if (!order) return null;
+    if (order.r2FullKey) {
+      const { presignR2GetUrl } = await import('./lib/r2Presign');
+      return presignR2GetUrl(order.r2FullKey);
+    }
+    if (!order.pdfStorageId) return null;
+    return ctx.storage.getUrl(order.pdfStorageId);
   },
 });
 

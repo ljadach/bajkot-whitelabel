@@ -37,13 +37,22 @@ export const sendBookReady = internalAction({
       console.warn('[email.sendBookReady] no email on order', bookOrderId);
       return null;
     }
-    if (!order.pdfStorageId) {
+    if (!order.pdfStorageId && !order.r2FullKey) {
       console.warn('[email.sendBookReady] PDF not ready, skipping send', bookOrderId);
       return null;
     }
-    const downloadUrl = await ctx.storage.getUrl(order.pdfStorageId);
+    // Recipient gets a one-shot link. Convex storage URLs are signed and
+    // short-lived; R2 needs explicit presigning. Use a longer TTL (24h)
+    // so users following the email later still hit a live link.
+    let downloadUrl: string | null;
+    if (order.r2FullKey) {
+      const { presignR2GetUrl } = await import('./lib/r2Presign');
+      downloadUrl = await presignR2GetUrl(order.r2FullKey, 24 * 60 * 60);
+    } else {
+      downloadUrl = await ctx.storage.getUrl(order.pdfStorageId!);
+    }
     if (!downloadUrl) {
-      console.warn('[email.sendBookReady] storage.getUrl returned null', bookOrderId);
+      console.warn('[email.sendBookReady] no download URL resolved', bookOrderId);
       return null;
     }
 
