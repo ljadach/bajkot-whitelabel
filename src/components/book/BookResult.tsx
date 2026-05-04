@@ -8,6 +8,7 @@ import { trackEvent } from '@lib/telemetry';
 import { BOOK_PRICE_PDF_PLN, formatPricePLN } from '@lib/pricing';
 import { ClientOnly } from '../ClientOnly';
 import { genitiveOrSelf } from '@lib/childNameInflect';
+import { useResolvedR2Url } from '../../hooks/useResolvedR2Url';
 
 // PDF viewer is heavy (pdfjs-dist + react-pdf + react-pageflip ~500KB gz).
 // Lazy-load so the success-screen path (post-payment) doesn't pull it in.
@@ -44,6 +45,13 @@ export function BookResult() {
     api.bookPipeline.getDownloadUrl,
     orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip',
   );
+  const fullDownloadUrl = useResolvedR2Url({
+    orderId: orderId as Id<'bookOrders'> | undefined,
+    flow: 'auth',
+    kind: 'full',
+    r2Key: data?.r2FullKey ?? null,
+    directUrl: data?.url ?? null,
+  });
   const showPreview = data?.hasPdf === true && data?.paid === false;
   const preview = useQuery(
     api.bookPipeline.getOrderPreview,
@@ -78,7 +86,7 @@ export function BookResult() {
 
   return (
     <BookSuccessScreen
-      downloadUrl={data?.url ?? null}
+      downloadUrl={fullDownloadUrl}
       childName={data?.childName ?? null}
       bookTitle={data?.bookTitle ?? null}
       printHref={`/book/${orderId}/print`}
@@ -250,6 +258,7 @@ interface BookPreviewScreenProps {
         excerptPl: string | null;
         illustrations: Array<{ illustrationId: string; url: string | null }>;
         previewPdfUrl: string | null;
+        r2PreviewKey: string | null;
       }
     | undefined;
   bookOrderId: string;
@@ -271,6 +280,14 @@ export function BookPreviewScreen({
   const { t } = useTranslation('book');
   const [redirecting, setRedirecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const previewPdfUrl = useResolvedR2Url({
+    orderId: bookOrderId as Id<'bookOrders'>,
+    flow,
+    kind: 'preview',
+    r2Key: preview?.r2PreviewKey ?? null,
+    directUrl: preview?.previewPdfUrl ?? null,
+  });
 
   useEffect(() => {
     trackEvent('preview_paywall_viewed', { flow, bookOrderId });
@@ -309,7 +326,7 @@ export function BookPreviewScreen({
         {/* Preview — embedded flipbook of the first 3 PDF pages. Falls back
             to the legacy 3-image grid for legacy orders whose composer ran
             before the preview PDF feature shipped (previewPdfUrl === null). */}
-        {preview?.previewPdfUrl ? (
+        {previewPdfUrl ? (
           <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-6 md:p-8">
             <ClientOnly
               fallback={
@@ -327,7 +344,7 @@ export function BookPreviewScreen({
                   </div>
                 }
               >
-                <BookPdfFlipbook pdfUrl={preview.previewPdfUrl} />
+                <BookPdfFlipbook pdfUrl={previewPdfUrl} />
               </Suspense>
             </ClientOnly>
           </div>

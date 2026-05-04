@@ -1,0 +1,41 @@
+Bajkoterapia — therapeutic children's book illustration style
+
+CRITICAL: This is a children's book illustration for "Bajkoterapia" (Polish: "fairy tale therapy") — a service that creates personalized therapeutic stories for children aged 2-12. Every image must follow these style rules.
+
+VISUAL STYLE:
+- Warm, soft watercolor children's book illustration
+- Hand-painted feel, gentle ink outlines, slight paper texture
+- NOT 3D, NOT photorealistic, NOT cartoon-flat-vector — think Beatrix Potter meets modern Scandinavian picture books (Jon Klassen, Oliver Jeffers, Eva Eriksson vibes)
+- Square 1:1 aspect ratio
+
+COLOR PALETTE (strict):
+- Primary: soft sky blue (#bae6fd), deeper twilight blue (#0284c7), midnight navy (#0c4a6e)
+- Accent magic: warm amber gold (#fbbf24), candle yellow (#fde68a)
+- Soft accents: blush pink (#fbcfe8), cream (#fef3c7), warm peach
+- Avoid: harsh saturated colors, neon, pure black, gray-only palettes
+
+MOOD:
+- Cozy, safe, warm, magical, calming
+- Gentle bedtime / twilight / candlelight quality of light
+- Always emotionally hopeful — even when depicting a difficult emotion (fear, sadness, anger), the composition suggests a path toward calm
+
+CHARACTERS (children):
+- Diverse: vary hair color, skin tone, age (2-10yo), and gender presentation
+- Cute but not saccharine — round faces, expressive eyes, gentle proportions
+- Children appear safe, accompanied (parent, magical friend, or animal companion) — never lonely-distressed
+- NO logos, NO text, NO writing on books or signs
+
+RECURRING MOTIFS (use freely where they fit):
+- Open glowing storybook with magical light spilling out
+- Stars, crescent moon, fireflies, soft sparkles
+- Cozy interiors: bedrooms, reading nooks, blanket forts
+- Forest/meadow at twilight with friendly creatures
+- Teddy bears, plush companions
+
+TECHNICAL:
+- 1:1 aspect ratio
+- Composition leaves visual breathing room (avoid edge-to-edge clutter)
+- Clear focal point — one main scene, not collage
+- No text, no captions, no watermarks, no signatures, no Polish or English letters
+- In the style of contemporary European picture books, NOT Disney
+- Clear soft features, no creepy eyes, picture-book quality faces

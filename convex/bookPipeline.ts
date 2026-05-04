@@ -480,6 +480,8 @@ interface PreviewResult {
    * the frontend falls back to the cover/scene illustration grid.
    */
   previewPdfUrl: string | null;
+  /** Set when the typst-render path produced a preview — frontend resolves to a presigned R2 URL. */
+  r2PreviewKey: string | null;
 }
 
 const previewReturnValidator = v.object({
@@ -493,6 +495,7 @@ const previewReturnValidator = v.object({
   ),
   excerptPl: v.union(v.string(), v.null()),
   previewPdfUrl: v.union(v.string(), v.null()),
+  r2PreviewKey: v.union(v.string(), v.null()),
 });
 
 /**
@@ -527,6 +530,8 @@ async function buildPreviewResult(
     skipStripe?: boolean;
     pdfStorageId?: Id<'_storage'>;
     previewPdfStorageId?: Id<'_storage'>;
+    r2FullKey?: string;
+    r2PreviewKey?: string;
     _id: Id<'bookOrders'>;
   },
 ): Promise<PreviewResult> {
@@ -549,11 +554,12 @@ async function buildPreviewResult(
     childName: order.childName,
     bookTitle: extractBookTitle(order.storyDraft) ?? null,
     paid: isPaid(order),
-    hasPdf: !!order.pdfStorageId,
+    hasPdf: !!order.pdfStorageId || !!order.r2FullKey,
     paymentStatus: order.paymentStatus ?? null,
     illustrations: previewIllustrations,
     excerptPl: extractFirstBeatExcerpt(order.storyDraft),
     previewPdfUrl,
+    r2PreviewKey: order.r2PreviewKey ?? null,
   };
 }
 
@@ -607,7 +613,25 @@ export const getDownloadUrl = query({
 
 // Presigned R2 URL for the typst-render service path. Frontend calls this after
 // getDownloadUrl reports r2FullKey != null. Preview URL is paywall-free; full
-// URL requires payment.
+// URL requires payment + ownership.
+async function presignForOrder(
+  ctx: import('./_generated/server').ActionCtx,
+  orderId: Id<'bookOrders'>,
+  kind: 'full' | 'preview',
+  isAllowedOwner: (clerkUserId: string) => boolean,
+): Promise<string | null> {
+  const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
+  if (!order || !isAllowedOwner(order.clerkUserId)) return null;
+  if (kind === 'full') {
+    const paid = (order.paymentStatus ?? null) === 'completed' || order.skipStripe === true;
+    if (!paid) return null;
+  }
+  const { presignR2GetUrl, r2KeyFor } = await import('./lib/r2Presign');
+  const key = r2KeyFor(order, kind);
+  if (!key) return null;
+  return presignR2GetUrl(key);
+}
+
 export const resolveR2DownloadUrl = action({
   args: {
     orderId: v.id('bookOrders'),
@@ -615,18 +639,20 @@ export const resolveR2DownloadUrl = action({
   },
   returns: v.union(v.string(), v.null()),
   handler: async (ctx, { orderId, kind }): Promise<string | null> => {
-    const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
-    if (!order) return null;
-    const which = kind ?? 'full';
-    if (which === 'full') {
-      const paid = (order.paymentStatus ?? null) === 'completed' || order.skipStripe === true;
-      if (!paid) return null;
-    }
-    const { presignR2GetUrl, r2KeyFor } = await import('./lib/r2Presign');
-    const key = r2KeyFor(order, which);
-    if (!key) return null;
-    return presignR2GetUrl(key);
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+    return presignForOrder(ctx, orderId, kind ?? 'full', (uid) => uid === identity.subject);
   },
+});
+
+export const resolveLandingR2DownloadUrl = action({
+  args: {
+    orderId: v.id('bookOrders'),
+    kind: v.optional(v.union(v.literal('full'), v.literal('preview'))),
+  },
+  returns: v.union(v.string(), v.null()),
+  handler: async (ctx, { orderId, kind }): Promise<string | null> =>
+    presignForOrder(ctx, orderId, kind ?? 'full', (uid) => uid === LANDING_USER_ID),
 });
 
 // ── Landing page order (no auth, token-gated) ───────────────

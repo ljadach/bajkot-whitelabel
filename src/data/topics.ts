@@ -82,8 +82,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'płacze przy każdym pożegnaniu?',
     intro:
       'Łzy przy bramce, kurczowe trzymanie za rękę, błagalne nie zostawiaj mnie – to boli oboje. Bajka, w której Twoje dziecko jest bohaterem, zamienia przedszkole w ekscytującą przygodę i oswaja lęk separacyjny.',
-    heroImage:
-      'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-przedszkole.png',
     heroImageAlt: 'Uśmiechnięte dziecko z plecakiem gotowe do przedszkola',
     painHeadline: 'Znasz uczucie, gdy odprowadzasz dziecko i słyszysz płacz przez zamknięte drzwi?',
     painEmpathy:
@@ -423,8 +422,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'dziecko wybucha z błahego powodu?',
     intro:
       'Krzyk w sklepie, rzucanie się na podłogę, łzy bez końca. Bajka, w której Twoje dziecko jest bohaterem, uczy malucha nazywać i regulować emocje – zanim eksplodują. Spokojnie i z empatią.',
-    heroImage:
-      'https://images.unsplash.com/photo-1471286174890-9c112ffca5b4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-zlosc.png',
     heroImageAlt: 'Dziecko uczące się regulować emocje z pomocą rodzica',
     painHeadline:
       'Znasz to uczucie bezsilności, gdy napad złości wybucha w najgorszym możliwym miejscu?',
@@ -594,8 +592,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'rodzina przechodzi przez rozstanie lub rozwód?',
     intro:
       'Rozwód to trudny czas – szczególnie dla dzieci, które nie rozumieją dlaczego ich świat się zmienił. Bajka, w której Twoje dziecko jest bohaterem, daje mu słowa, bezpieczeństwo i nadzieję.',
-    heroImage:
-      'https://images.unsplash.com/photo-1484665754804-74b091211472?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-rozwod.png',
     heroImageAlt: 'Dziecko trzymane za rękę przez rodzica, czujące się bezpiecznie',
     painHeadline: 'Znasz to trudne pytanie: Dlaczego tata lub mama już z nami nie mieszka?',
     painEmpathy:
@@ -1443,8 +1440,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'boi się ciemności i potworów?',
     intro:
       'Potwory pod łóżkiem, cienie na ścianie, prośby o palące się światło. Bajka, w której Twoje dziecko jest bohaterem, pomoże mu odkryć, że ciemność wcale nie jest wrogiem — może być przyjacielem pełnym sekretów.',
-    heroImage:
-      'https://images.unsplash.com/photo-1555252333-9f8e92e65df9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-lek-ciemnosci.png',
     heroImageAlt: 'Dziecko spokojnie zasypiające w przyciemnionym, przytulnym pokoju',
     painHeadline: 'Znasz to uczucie, gdy dziecko panicznie nie chce zostać samo w ciemnym pokoju?',
     painEmpathy:

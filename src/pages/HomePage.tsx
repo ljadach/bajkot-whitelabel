@@ -9,9 +9,9 @@ import { TOPICS } from '../data/topics';
 import { trackEvent } from '../lib/telemetry';
 
 const STEPS = [
-  { key: 'pickTopic', emoji: '🎯' },
-  { key: 'tellAboutChild', emoji: '👶' },
-  { key: 'receiveBook', emoji: '📖' },
+  { key: 'pickTopic', emoji: '🎯', image: '/illustrations/step-01-temat.png' },
+  { key: 'tellAboutChild', emoji: '👶', image: '/illustrations/step-02-dziecko.png' },
+  { key: 'receiveBook', emoji: '📖', image: '/illustrations/step-03-ksiazka.png' },
 ] as const;
 
 const PRINCIPLES = [
@@ -128,8 +128,13 @@ export function HomePage() {
 
             <div className="relative flex items-center justify-center">
               <div className="relative w-full max-w-md mx-auto">
-                <div className="bg-gradient-to-br from-calm-100 via-calm-50 to-white rounded-3xl shadow-xl p-8 sm:p-12 text-center hp-float">
-                  <div className="text-7xl sm:text-8xl mb-4">📖</div>
+                <div className="bg-gradient-to-br from-calm-100 via-calm-50 to-white rounded-3xl shadow-xl p-6 sm:p-8 text-center hp-float">
+                  <img
+                    src="/illustrations/hero.png"
+                    alt={t('hero.book.title')}
+                    className="w-full aspect-square object-cover rounded-2xl mb-4"
+                    loading="eager"
+                  />
                   <div className="text-calm-800 font-bold text-lg mb-1">{t('hero.book.title')}</div>
                   <div className="text-sm text-slate-500">{t('hero.book.subtitle')}</div>
                 </div>
@@ -163,9 +168,13 @@ export function HomePage() {
                 key={step.key}
                 className="bg-white rounded-3xl shadow-xl p-8 text-center hover:shadow-2xl transition-shadow"
               >
-                <div className="w-16 h-16 bg-calm-100 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-5">
-                  {step.emoji}
-                </div>
+                <img
+                  src={step.image}
+                  alt={t(`howItWorks.steps.${step.key}.title`)}
+                  className="w-32 h-32 sm:w-40 sm:h-40 object-cover rounded-2xl mx-auto mb-5 shadow-md"
+                  loading="lazy"
+                />
+                <div className="sr-only">{step.emoji}</div>
                 <div className="text-xs font-bold text-calm-500 uppercase tracking-wider mb-2">
                   {t('howItWorks.stepLabel', { number: i + 1 })}
                 </div>

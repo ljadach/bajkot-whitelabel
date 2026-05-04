@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
 import { getAccessToken } from '../../hooks/useAccessToken';
+import { useResolvedR2Url } from '../../hooks/useResolvedR2Url';
 import { BookSuccessScreen, BookPreviewScreen } from './BookResult';
 
 export function LandingBookResult() {
@@ -14,6 +15,13 @@ export function LandingBookResult() {
     api.bookPipeline.getLandingDownloadUrl,
     orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip',
   );
+  const fullDownloadUrl = useResolvedR2Url({
+    orderId: orderId as Id<'bookOrders'> | undefined,
+    flow: 'landing',
+    kind: 'full',
+    r2Key: data?.r2FullKey ?? null,
+    directUrl: data?.url ?? null,
+  });
   const showPreview = data?.hasPdf === true && data?.paid === false;
   const preview = useQuery(
     api.bookPipeline.getLandingOrderPreview,
@@ -49,7 +57,7 @@ export function LandingBookResult() {
 
   return (
     <BookSuccessScreen
-      downloadUrl={data?.url ?? null}
+      downloadUrl={fullDownloadUrl}
       childName={data?.childName ?? null}
       bookTitle={data?.bookTitle ?? null}
       upsellTo="/"
