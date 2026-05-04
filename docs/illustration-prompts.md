@@ -74,38 +74,38 @@ Confirm you understand by replying with just "Ready" — and then I'll send prom
 
 ## Mapping promptów do miejsc w serwisie
 
-| key (output filename)           | gdzie używane                                       |
-| ------------------------------- | --------------------------------------------------- |
-| `hero.png`                      | HomePage hero (zamiast emoji 📖 w hero card)        |
-| `step-01-temat.png`             | HomePage "Jak to działa" — krok 1                   |
-| `step-02-dziecko.png`           | HomePage "Jak to działa" — krok 2                   |
-| `step-03-ksiazka.png`           | HomePage "Jak to działa" — krok 3                   |
-| `why-01-self.png`               | HomePage zasada terapeutyczna #1                    |
-| `why-02-distance.png`           | HomePage zasada terapeutyczna #2                    |
-| `why-03-guide.png`              | HomePage zasada terapeutyczna #3                    |
-| `why-04-structure.png`          | HomePage zasada terapeutyczna #4                    |
-| `story-founders.png`            | HomePage origin story / Nasza historia              |
-| `cta-bedtime.png`               | HomePage CTA section                                |
-| `theme-lek-ciemnosci.png`       | topics.ts → `lek-przed-ciemnoscia` heroImage        |
-| `theme-przedszkole.png`         | topics.ts → `adaptacja-przedszkolna` heroImage      |
-| `theme-zlosc.png`               | topics.ts → `napady-zlosci` heroImage               |
-| `theme-zazdrosc-rodzenstwo.png` | topics.ts → `nowe-rodzenstwo` heroImage             |
-| `theme-strata-bliskiej.png`     | (do dodania jako nowy temat lub blog cover)         |
-| `theme-rozwod.png`              | topics.ts → `rozwod-rodzicow` heroImage             |
-| `theme-dzielenie-zabawkami.png` | topics.ts → `dzielenie-sie` heroImage               |
-| `theme-jedzenie.png`            | topics.ts → `wybiorczos-pokarmowa` heroImage        |
-| `theme-spanie-samodzielne.png`  | topics.ts → `samodzielne-zasypianie` heroImage      |
-| `theme-szkola.png`              | topics.ts → `adaptacja-przedszkolna` (alt) lub blog |
-| `theme-egzaminy.png`            | (do dodania jako blog/temat starszych dzieci)       |
-| `theme-strata-zwierzaka.png`    | (do dodania jako blog/temat)                        |
-| `theme-rozstanie.png`           | topics.ts → `lek-separacyjny` heroImage             |
-| `theme-niepowodzenie.png`       | topics.ts → `odpornosc-na-porazke` heroImage        |
-| `theme-burza.png`               | topics.ts → `nadwrazliwosc-sensoryczna` heroImage   |
-| `theme-bohaterowie.png`         | topics.ts → `niska-samoocena` heroImage             |
-| `theme-lekarz.png`              | topics.ts → `lek-przed-lekarzem` heroImage          |
-| `theme-niesmialosc.png`         | topics.ts → `niesmialosci` heroImage                |
-| `theme-rodzenstwo-klotnia.png`  | topics.ts → `rywalizacja-rodzenstwo` heroImage      |
-| `theme-przeprowadzka.png`       | topics.ts → `przeprowadzka` heroImage               |
+| key (output filename)           | gdzie używane                                     |
+| ------------------------------- | ------------------------------------------------- |
+| `hero.png`                      | HomePage hero (zamiast emoji 📖 w hero card)      |
+| `step-01-temat.png`             | HomePage "Jak to działa" — krok 1                 |
+| `step-02-dziecko.png`           | HomePage "Jak to działa" — krok 2                 |
+| `step-03-ksiazka.png`           | HomePage "Jak to działa" — krok 3                 |
+| `why-01-self.png`               | HomePage zasada terapeutyczna #1                  |
+| `why-02-distance.png`           | HomePage zasada terapeutyczna #2                  |
+| `why-03-guide.png`              | HomePage zasada terapeutyczna #3                  |
+| `why-04-structure.png`          | HomePage zasada terapeutyczna #4                  |
+| `story-founders.png`            | HomePage origin story / Nasza historia            |
+| `cta-bedtime.png`               | HomePage CTA section                              |
+| `theme-lek-ciemnosci.png`       | topics.ts → `lek-przed-ciemnoscia` heroImage      |
+| `theme-przedszkole.png`         | topics.ts → `adaptacja-przedszkolna` heroImage    |
+| `theme-zlosc.png`               | topics.ts → `napady-zlosci` heroImage             |
+| `theme-zazdrosc-rodzenstwo.png` | topics.ts → `nowe-rodzenstwo` heroImage           |
+| `theme-strata-bliskiej.png`     | (do dodania jako nowy temat lub blog cover)       |
+| `theme-rozwod.png`              | topics.ts → `rozwod-rodzicow` heroImage           |
+| `theme-dzielenie-zabawkami.png` | topics.ts → `dzielenie-sie` heroImage             |
+| `theme-jedzenie.png`            | topics.ts → `wybiorczos-pokarmowa` heroImage      |
+| `theme-spanie-samodzielne.png`  | topics.ts → `samodzielne-zasypianie` heroImage    |
+| `theme-szkola.png`              | (do dodania jako blog/temat starszych dzieci)     |
+| `theme-egzaminy.png`            | (do dodania jako blog/temat starszych dzieci)     |
+| `theme-strata-zwierzaka.png`    | (do dodania jako blog/temat)                      |
+| `theme-rozstanie.png`           | topics.ts → `lek-separacyjny` heroImage           |
+| `theme-niepowodzenie.png`       | topics.ts → `odpornosc-na-porazke` heroImage      |
+| `theme-burza.png`               | topics.ts → `nadwrazliwosc-sensoryczna` heroImage |
+| `theme-bohaterowie.png`         | topics.ts → `niska-samoocena` heroImage           |
+| `theme-lekarz.png`              | topics.ts → `lek-przed-lekarzem` heroImage        |
+| `theme-niesmialosc.png`         | topics.ts → `niesmialosci` heroImage              |
+| `theme-rodzenstwo-klotnia.png`  | topics.ts → `rywalizacja-rodzenstwo` heroImage    |
+| `theme-przeprowadzka.png`       | topics.ts → `przeprowadzka` heroImage             |
 
 ---
 

@@ -15,10 +15,10 @@ const STEPS = [
 ] as const;
 
 const PRINCIPLES = [
-  { key: 'selfReference', emoji: '🧠' },
-  { key: 'safeDistance', emoji: '🛡️' },
-  { key: 'wiseGuide', emoji: '🧙' },
-  { key: 'therapeuticStructure', emoji: '📚' },
+  { key: 'selfReference', emoji: '🧠', image: '/illustrations/why-01-self.png' },
+  { key: 'safeDistance', emoji: '🛡️', image: '/illustrations/why-02-distance.png' },
+  { key: 'wiseGuide', emoji: '🧙', image: '/illustrations/why-03-guide.png' },
+  { key: 'therapeuticStructure', emoji: '📚', image: '/illustrations/why-04-structure.png' },
 ] as const;
 
 const TESTIMONIALS = [
@@ -214,15 +214,22 @@ export function HomePage() {
             {PRINCIPLES.map((p) => (
               <div
                 key={p.key}
-                className="bg-white/10 backdrop-blur rounded-3xl p-8 border border-white/10"
+                className="bg-white/10 backdrop-blur rounded-3xl p-8 border border-white/10 flex flex-col sm:flex-row gap-6 items-start"
               >
-                <div className="text-4xl mb-4">{p.emoji}</div>
-                <h3 className="text-xl font-bold mb-3 text-magic-400">
-                  {t(`whyItWorks.cards.${p.key}.title`)}
-                </h3>
-                <p className="text-calm-100 leading-relaxed">
-                  {t(`whyItWorks.cards.${p.key}.description`)}
-                </p>
+                <img
+                  src={p.image}
+                  alt={t(`whyItWorks.cards.${p.key}.title`)}
+                  className="w-28 h-28 sm:w-32 sm:h-32 object-cover rounded-2xl shadow-md flex-shrink-0"
+                  loading="lazy"
+                />
+                <div>
+                  <h3 className="text-xl font-bold mb-3 text-magic-400">
+                    {t(`whyItWorks.cards.${p.key}.title`)}
+                  </h3>
+                  <p className="text-calm-100 leading-relaxed">
+                    {t(`whyItWorks.cards.${p.key}.description`)}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
@@ -239,6 +246,15 @@ export function HomePage() {
             <h2 className="text-3xl sm:text-4xl font-extrabold text-calm-900 mb-4">
               {t('story.title')}
             </h2>
+          </div>
+
+          <div className="flex justify-center mb-8">
+            <img
+              src="/illustrations/story-founders.png"
+              alt={t('story.title')}
+              className="w-full max-w-sm aspect-square object-cover rounded-3xl shadow-xl"
+              loading="lazy"
+            />
           </div>
 
           <div className="bg-white rounded-3xl shadow-xl p-8 sm:p-12 space-y-6 text-lg leading-relaxed text-slate-700">
@@ -349,7 +365,12 @@ export function HomePage() {
       <section className="py-20 md:py-28">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="bg-gradient-to-br from-calm-100 via-white to-calm-50 rounded-3xl shadow-xl p-10 sm:p-16">
-            <div className="text-5xl mb-6">📖✨</div>
+            <img
+              src="/illustrations/cta-bedtime.png"
+              alt={t('finalCta.title')}
+              className="w-40 h-40 sm:w-48 sm:h-48 object-cover rounded-3xl shadow-lg mx-auto mb-8"
+              loading="lazy"
+            />
             <h2 className="text-3xl sm:text-4xl font-extrabold text-calm-900 mb-6">
               {t('finalCta.title')}
             </h2>
