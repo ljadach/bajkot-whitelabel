@@ -11,14 +11,51 @@ import { resolveAgeBracket } from './ageBracket';
 import { buildPageSequence, splitBeatText, type PageSpec as BajkotPageSpec } from './pageSequence';
 import { dlaName } from './childNameInflect';
 
-function formatParentCard(pc: ParentCard | undefined | string): string {
-  if (!pc) return '';
-  if (typeof pc === 'string') return pc;
+/**
+ * Mirrors `drawParentCardPage` in bookComposer.ts: prefer A3 parentCard, fall
+ * back to A2 blueprint fields when A3 didn't emit them. Without these
+ * fallbacks the parent_card page renders empty for orders whose A3 prompt
+ * skipped parentCard altogether.
+ */
+function formatParentCard(args: {
+  parentCard: ParentCard | undefined | string;
+  blueprint: StoryBlueprint | null;
+  childName: string;
+}): string {
+  const { parentCard, blueprint, childName } = args;
+  const pc = typeof parentCard === 'string' ? null : parentCard;
+  if (typeof parentCard === 'string' && parentCard.trim()) return parentCard;
+
+  const introDla = dlaName(childName);
+  const introFallback = introDla
+    ? `Ta bajka została stworzona ${introDla}. Poniżej znajdziesz pytania, które możesz zadać dziecku po wspólnym czytaniu.`
+    : `Ta bajka jest spersonalizowana — jej bohaterem jest ${childName}. Poniżej znajdziesz pytania, które możesz zadać dziecku po wspólnym czytaniu.`;
+  const intro = pc?.introPl?.trim() || introFallback;
+
+  const blueprintAny = blueprint as
+    | (Record<string, unknown> & { parentQuestions?: string[]; parent_questions?: string[] })
+    | null;
+  const blueprintQuestions = blueprintAny?.parentQuestions ?? blueprintAny?.parent_questions ?? [];
+  const questions: string[] =
+    pc?.questions && pc.questions.length > 0 ? pc.questions : blueprintQuestions;
+
+  const takeawayAny = (blueprintAny?.actionableTakeaway ??
+    (blueprintAny as Record<string, unknown> | null)?.actionable_takeaway) as
+    | { howToPl?: string; how_to_pl?: string }
+    | undefined;
+  const activity = pc?.activityPl?.trim() || takeawayAny?.howToPl || takeawayAny?.how_to_pl || '';
+
   const parts: string[] = [];
-  if (pc.title) parts.push(pc.title);
-  if (pc.introPl) parts.push(pc.introPl);
-  if (pc.questions?.length) parts.push(pc.questions.map((q) => `• ${q}`).join('\n'));
-  if (pc.activityPl) parts.push(pc.activityPl);
+  if (pc?.title) parts.push(pc.title);
+  parts.push(intro);
+  if (questions.length > 0) {
+    parts.push('Pytania do rozmowy:');
+    parts.push(questions.map((q, i) => `${i + 1}. ${q}`).join('\n'));
+  }
+  if (activity) {
+    parts.push('Aktywność:');
+    parts.push(activity);
+  }
   return parts.join('\n\n');
 }
 
@@ -110,7 +147,11 @@ export function buildRenderBrief(input: BuildBriefInput): RenderBrief {
       }
       out.text = text || `[brak tekstu dla beatu ${spec.beatId}]`;
     } else if (spec.kind === 'parent_card') {
-      out.text = formatParentCard(draft.parentCard);
+      out.text = formatParentCard({
+        parentCard: draft.parentCard,
+        blueprint,
+        childName: order.childName,
+      });
     }
 
     return out;
