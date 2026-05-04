@@ -24,10 +24,10 @@ interface BookPdfFlipbookProps {
 // Square pages — the composer emits 595x595pt PDFs (210mm). Keep the on-
 // screen size in sync so each canvas page hits the flipbook with no extra
 // letterboxing.
-const DESKTOP_WIDTH = 360;
-const DESKTOP_HEIGHT = 360;
-const MOBILE_WIDTH = 280;
-const MOBILE_HEIGHT = 280;
+const DESKTOP_WIDTH = 720;
+const DESKTOP_HEIGHT = 720;
+const MOBILE_WIDTH = 560;
+const MOBILE_HEIGHT = 560;
 
 export function BookPdfFlipbook({ pdfUrl }: BookPdfFlipbookProps) {
   const [numPages, setNumPages] = useState<number>(0);

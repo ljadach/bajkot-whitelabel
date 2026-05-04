@@ -118,6 +118,19 @@ export const retryOrder = internalAction({
   },
 });
 
+// ── DEV: force paywall view by clearing the skipStripe flag ──
+export const setUnpaid = internalMutation({
+  args: { orderId: v.id('bookOrders') },
+  returns: v.null(),
+  handler: async (ctx, { orderId }) => {
+    await ctx.db.patch(orderId, {
+      skipStripe: false,
+      paymentStatus: 'pending' as const,
+    });
+    return null;
+  },
+});
+
 // ── Resolve short ID suffix to full order ID ────────────────
 
 export const resolveOrderId = internalQuery({
