@@ -27,7 +27,10 @@ export interface PageSpec {
   kind: PageKind;
   illustrationId?: string; // for kind=illustration/mood_opening/mood_closing/cover
   beatId?: string; // for kind=text
-  textPart?: 1 | 2; // when a beat is split across two text pages
+  /** When a beat is split across multiple text pages: 1..N. Omitted when N=1. */
+  textPart?: number;
+  /** Total parts in the beat this page belongs to — handy for "last part" checks. */
+  textPartCount?: number;
 }
 
 interface BeatLayout {
@@ -73,9 +76,17 @@ function beatLayout(bracket: AgeBracket): BeatLayout[] {
 
 /**
  * Build the full deterministic page sequence for the given bracket.
- * Page counts match the spec: 24 (3-5), 27 (6-8), 31 (9+).
+ * Default page counts: 24 (3-5), 27 (6-8), 31 (9+).
+ *
+ * `partsPerBeat` (optional) maps beatId → number of text pages that beat
+ * needs. When omitted, a beat with one illustration gets one text page,
+ * a beat with two illustrations gets two — matching the original spec.
+ * Pass a higher count when the beat's prose exceeds a single page.
  */
-export function buildPageSequence(bracket: AgeBracket): PageSpec[] {
+export function buildPageSequence(
+  bracket: AgeBracket,
+  partsPerBeat?: Map<string, number>,
+): PageSpec[] {
   const pages: Omit<PageSpec, 'pageNumber'>[] = [];
 
   pages.push({ kind: 'cover', illustrationId: 'cover' });
@@ -85,14 +96,28 @@ export function buildPageSequence(bracket: AgeBracket): PageSpec[] {
   }
 
   for (const beat of beatLayout(bracket)) {
+    const defaultParts = beat.illustrationIds.length;
+    const requested = partsPerBeat?.get(beat.beatId) ?? defaultParts;
+    const parts = Math.max(defaultParts, requested);
+    const splitTextPage = (part: number): Omit<PageSpec, 'pageNumber'> => ({
+      kind: 'text',
+      beatId: beat.beatId,
+      textPart: parts > 1 ? part : undefined,
+      textPartCount: parts > 1 ? parts : undefined,
+    });
+
     if (beat.illustrationIds.length === 1) {
       pages.push({ kind: 'illustration', illustrationId: beat.illustrationIds[0] });
-      pages.push({ kind: 'text', beatId: beat.beatId });
+      for (let i = 1; i <= parts; i++) pages.push(splitTextPage(i));
     } else {
+      // Two illustrations — distribute text pages evenly around them, with
+      // any odd-numbered remainder going BEFORE the second illustration.
+      const before = Math.ceil(parts / 2);
+      const after = parts - before;
       pages.push({ kind: 'illustration', illustrationId: beat.illustrationIds[0] });
-      pages.push({ kind: 'text', beatId: beat.beatId, textPart: 1 });
+      for (let i = 1; i <= before; i++) pages.push(splitTextPage(i));
       pages.push({ kind: 'illustration', illustrationId: beat.illustrationIds[1] });
-      pages.push({ kind: 'text', beatId: beat.beatId, textPart: 2 });
+      for (let i = 1; i <= after; i++) pages.push(splitTextPage(before + i));
     }
   }
 
@@ -157,4 +182,78 @@ export function splitBeatText(text: string): [string, string] {
   if (words.length < 2) return [trimmed, ''];
   const mid = Math.floor(words.length / 2);
   return [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
+}
+
+/**
+ * Approx character budget per A5 portrait page for the booklet layout.
+ * Empirically chosen to leave a comfortable bottom margin on most pages
+ * (the Typst template applies a small font-shrink fallback for outliers).
+ */
+export function charBudgetFor(bracket: AgeBracket): number {
+  if (bracket === '3-5') return 600;
+  if (bracket === '6-8') return 900;
+  return 1100;
+}
+
+/**
+ * Pack a beat's prose into N chunks, each ≤ charBudget characters.
+ * Greedy: keeps paragraphs together when they fit; splits long paragraphs
+ * on sentence boundaries; falls back to whole-paragraph emission when a
+ * single sentence exceeds the budget (Typst still renders, font-shrink
+ * fallback handles the squeeze).
+ *
+ * Always returns at least one element. For text within budget, returns
+ * `[text]` — caller can treat that as a single text page.
+ */
+export function splitBeatTextDynamic(text: string, charBudget: number): string[] {
+  const trimmed = text.trim();
+  if (!trimmed) return [''];
+  if (trimmed.length <= charBudget) return [trimmed];
+
+  const paragraphs = trimmed
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+  // Atomize: each atom is one paragraph (small enough) or one sentence
+  // (when paragraph alone exceeds budget). Keeping atoms maximally large
+  // produces more natural breaks than always splitting per sentence.
+  const atoms: string[] = [];
+  for (const p of paragraphs) {
+    if (p.length <= charBudget) {
+      atoms.push(p);
+      continue;
+    }
+    const sentences = p.match(/[^.!?]+[.!?]+(\s+|$)/g);
+    if (!sentences || sentences.length === 0) {
+      atoms.push(p);
+      continue;
+    }
+    let buf = '';
+    for (const s of sentences) {
+      const candidate = buf ? buf + s : s;
+      if (candidate.length <= charBudget) {
+        buf = candidate;
+      } else {
+        if (buf) atoms.push(buf.trim());
+        buf = s;
+      }
+    }
+    if (buf.trim()) atoms.push(buf.trim());
+  }
+
+  // Pack atoms into chunks separated by blank lines.
+  const chunks: string[] = [];
+  let cur = '';
+  for (const atom of atoms) {
+    const candidate = cur ? cur + '\n\n' + atom : atom;
+    if (!cur || candidate.length <= charBudget) {
+      cur = candidate;
+    } else {
+      chunks.push(cur);
+      cur = atom;
+    }
+  }
+  if (cur) chunks.push(cur);
+  return chunks.length > 0 ? chunks : [trimmed];
 }

@@ -8,7 +8,12 @@ import type { Doc } from '../_generated/dataModel';
 import { parseArtifact } from './bookTypes';
 import type { ParentCard, StoryDraft, StoryBlueprint } from './bookTypes';
 import { resolveAgeBracket } from './ageBracket';
-import { buildPageSequence, splitBeatText, type PageSpec as BajkotPageSpec } from './pageSequence';
+import {
+  buildPageSequence,
+  charBudgetFor,
+  splitBeatTextDynamic,
+  type PageSpec as BajkotPageSpec,
+} from './pageSequence';
 import { dlaName } from './childNameInflect';
 
 /**
@@ -69,7 +74,8 @@ export interface BriefPageSpec {
   kind: BajkotPageSpec['kind'];
   illustrationId?: string;
   beatId?: string;
-  textPart?: 1 | 2;
+  textPart?: number;
+  textPartCount?: number;
   text?: string;
 }
 
@@ -85,6 +91,8 @@ export interface RenderBrief {
   illustrations: BriefIllustration[];
   outputKey: string;
   maxPages?: number;
+  /** Bypass R2 cache lookup on the render service. */
+  force?: boolean;
 }
 
 export interface BuildBriefInput {
@@ -94,6 +102,7 @@ export interface BuildBriefInput {
   illustrations: Array<{ illustrationId: string; url: string }>;
   outputKey: string;
   maxPages?: number;
+  force?: boolean;
 }
 
 export function buildRenderBrief(input: BuildBriefInput): RenderBrief {
@@ -105,7 +114,6 @@ export function buildRenderBrief(input: BuildBriefInput): RenderBrief {
     : null;
 
   const bracket = resolveAgeBracket(order);
-  const sequence = buildPageSequence(bracket);
 
   const beatTextById = new Map<string, string>();
   for (const page of draft.pages ?? []) {
@@ -113,12 +121,19 @@ export function buildRenderBrief(input: BuildBriefInput): RenderBrief {
     if (key && !beatTextById.has(key)) beatTextById.set(key, page.text || '');
   }
 
-  const splitsByBeatId = new Map<string, [string, string]>();
-  for (const p of sequence) {
-    if (p.kind === 'text' && p.textPart && p.beatId && !splitsByBeatId.has(p.beatId)) {
-      splitsByBeatId.set(p.beatId, splitBeatText(beatTextById.get(p.beatId) ?? ''));
-    }
+  // First pass: split each beat into N parts according to the bracket budget.
+  // The split feeds both the partsPerBeat hint to buildPageSequence (so the
+  // sequence has enough text-page slots) and the per-page text resolver.
+  const charBudget = charBudgetFor(bracket);
+  const partsByBeatId = new Map<string, string[]>();
+  const partsPerBeat = new Map<string, number>();
+  for (const [beatId, text] of beatTextById) {
+    const parts = splitBeatTextDynamic(text, charBudget);
+    partsByBeatId.set(beatId, parts);
+    partsPerBeat.set(beatId, parts.length);
   }
+
+  const sequence = buildPageSequence(bracket, partsPerBeat);
 
   const titleFallback = dlaName(order.childName)
     ? `Książeczka ${dlaName(order.childName)}`
@@ -134,15 +149,20 @@ export function buildRenderBrief(input: BuildBriefInput): RenderBrief {
     if (spec.illustrationId) out.illustrationId = spec.illustrationId;
     if (spec.beatId) out.beatId = spec.beatId;
     if (spec.textPart) out.textPart = spec.textPart;
+    if (spec.textPartCount) out.textPartCount = spec.textPartCount;
 
     if (spec.kind === 'text' && spec.beatId) {
       let text = '';
-      const split = splitsByBeatId.get(spec.beatId);
-      if (split && spec.textPart) text = split[spec.textPart - 1] ?? '';
-      else text = beatTextById.get(spec.beatId) ?? '';
+      const parts = partsByBeatId.get(spec.beatId);
+      if (parts && spec.textPart) {
+        text = parts[spec.textPart - 1] ?? '';
+      } else {
+        text = beatTextById.get(spec.beatId) ?? '';
+      }
 
-      // B6 last-page sentinel — same as bookComposer.
-      if (spec.beatId === '6' && (spec.textPart === undefined || spec.textPart === 2)) {
+      // B6 last-page sentinel — applied to the FINAL part of beat 6 only.
+      const isLastPart = spec.textPart === undefined || spec.textPart === (spec.textPartCount ?? 1);
+      if (spec.beatId === '6' && isLastPart) {
         text = `${text}\n\n*Koniec*`;
       }
       out.text = text || `[brak tekstu dla beatu ${spec.beatId}]`;
@@ -170,5 +190,6 @@ export function buildRenderBrief(input: BuildBriefInput): RenderBrief {
   if (subtitle) brief.subtitle = subtitle;
   if (dedication) brief.dedication = dedication;
   if (input.maxPages) brief.maxPages = input.maxPages;
+  if (input.force) brief.force = true;
   return brief;
 }

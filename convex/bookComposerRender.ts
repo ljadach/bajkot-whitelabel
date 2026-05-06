@@ -22,9 +22,13 @@ interface RenderResponse {
 }
 
 export const generatePdfViaRender = internalAction({
-  args: { orderId: v.id('bookOrders') },
+  args: {
+    orderId: v.id('bookOrders'),
+    /** Bypass typst-render's R2 cache — useful for DTP iteration. */
+    force: v.optional(v.boolean()),
+  },
   returns: v.null(),
-  handler: async (ctx, { orderId }): Promise<null> => {
+  handler: async (ctx, { orderId, force }): Promise<null> => {
     const log = (msg: string, data?: Record<string, unknown>) => {
       console.log(`[A9:render] ${msg}`, data ? JSON.stringify(data) : '');
     };
@@ -62,6 +66,7 @@ export const generatePdfViaRender = internalAction({
           illustrations: briefIllustrations,
           outputKey: r2OutputKeyFor(orderId, kind),
           maxPages: kind === 'preview' ? PREVIEW_PAGE_COUNT : undefined,
+          force,
         });
 
       const fullBrief = briefFor('full');

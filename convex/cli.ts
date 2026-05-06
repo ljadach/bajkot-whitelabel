@@ -131,8 +131,11 @@ export const recomposeWithRender = internalAction({
     if (!order) throw new Error('Order not found');
     if (!order.storyDraft) throw new Error('Order has no storyDraft — cannot recompose');
 
-    await ctx.scheduler.runAfter(0, internal.bookComposerRender.generatePdfViaRender, { orderId });
-    return `Scheduled typst recompose for order ${orderId}`;
+    await ctx.scheduler.runAfter(0, internal.bookComposerRender.generatePdfViaRender, {
+      orderId,
+      force: true,
+    });
+    return `Scheduled typst recompose for order ${orderId} (force=true)`;
   },
 });
 
