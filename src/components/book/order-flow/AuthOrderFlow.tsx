@@ -71,11 +71,11 @@ export function AuthOrderFlow() {
         });
         const result = await startOrder({
           ...baseArgs,
-          // DEV: admin shortcuts. Server enforces admin gate.
+          // DEV shortcuts — pre-launch they're honored for every caller.
           // TODO(c3z): pre-launch cleanup
-          skipStripe: isAdmin && skipStripe ? true : undefined,
-          skipQaReviews: isAdmin && skipQa ? true : undefined,
-          fastImage: isAdmin && fastImage ? true : undefined,
+          skipStripe: skipStripe ? true : undefined,
+          skipQaReviews: skipQa ? true : undefined,
+          fastImage: fastImage ? true : undefined,
         });
         const orderId = result.orderId;
         // Stamp bookOrderId on every subsequent event for this device so
@@ -88,7 +88,7 @@ export function AuthOrderFlow() {
         return null;
       }
     },
-    [intake, startOrder, isAdmin, skipStripe, skipQa, fastImage, t],
+    [intake, startOrder, skipStripe, skipQa, fastImage, t],
   );
 
   // Admin shortcut: clicking the Preview CTA with `skipStripe` ON submits
@@ -148,7 +148,6 @@ export function AuthOrderFlow() {
           onChangeFormat={handleChangeFormat}
           onContinue={() => void handlePreviewContinue()}
           onBack={() => setScreen('wizard')}
-          isAdmin={isAdmin}
           skipStripe={skipStripe}
           skipQa={skipQa}
           fastImage={fastImage}

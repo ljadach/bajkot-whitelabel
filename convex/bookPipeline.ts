@@ -110,13 +110,13 @@ export const startOrder = action({
     if (!identity) throw new Error('Not authenticated');
     const clerkUserId = identity.subject;
 
-    // Only admins can flip dev shortcut flags (skipQa, skipStripe, fastImage).
-    // DEV: remove these flags before launch.
+    // DEV shortcut flags (skipQa, skipStripe, fastImage). Pre-launch we honor
+    // them for every caller so testers without admin role can bypass payment
+    // and QA. Remove or re-gate before launch.
     // TODO(c3z): pre-launch cleanup
-    const adminUser = (identity as any).isAdmin === true;
-    const skipQaReviews = adminUser ? args.skipQaReviews : undefined;
-    const skipStripe = adminUser ? args.skipStripe : undefined;
-    const fastImage = adminUser ? args.fastImage : undefined;
+    const skipQaReviews = args.skipQaReviews;
+    const skipStripe = args.skipStripe;
+    const fastImage = args.fastImage;
 
     const ageBracket = deriveAgeBracket({
       ageBracket: args.ageBracket,
@@ -692,14 +692,13 @@ export const startLandingOrder = action({
     // }
     void args.accessToken;
 
-    // Honor dev shortcut flags only if the caller is signed in as admin.
-    // The order is still recorded under LANDING_USER_ID so it stays in the
-    // landing flow's data model.
-    const identity = await ctx.auth.getUserIdentity();
-    const adminUser = identity ? (identity as { isAdmin?: boolean }).isAdmin === true : false;
-    const skipQaReviews = adminUser ? args.skipQaReviews : undefined;
-    const skipStripe = adminUser ? args.skipStripe : undefined;
-    const fastImage = adminUser ? args.fastImage : undefined;
+    // DEV shortcut flags. Pre-launch we honor them for every caller (testers
+    // without admin role need to bypass payment and QA). The order is recorded
+    // under LANDING_USER_ID so it stays in the landing data model regardless.
+    // TODO(c3z): pre-launch cleanup
+    const skipQaReviews = args.skipQaReviews;
+    const skipStripe = args.skipStripe;
+    const fastImage = args.fastImage;
 
     validateOrderInput(args);
     const cleaned = sanitizeOrderTextFields(args);

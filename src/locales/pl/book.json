@@ -185,7 +185,7 @@
     "submitting": "Uruchamiam pipeline...",
     "back": "Wróć",
     "secureNote": "Bajka generuje się od razu — płatność za PDF dopiero po wygenerowaniu, na ekranie wyniku z podglądem 3 stron.",
-    "devHeading": "Dev tools (admin only)",
+    "devHeading": "Tryb deweloperski",
     "devSkipStripe": "Omiń Stripe",
     "devSkipQa": "Tryb fast (omiń QA)",
     "devSkipVisual": "SKIP visual (rastered ASCII)",

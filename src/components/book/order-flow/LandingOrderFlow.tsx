@@ -80,11 +80,11 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
         const result = await startLandingOrder({
           accessToken: getAccessToken() ?? '',
           ...baseArgs,
-          // DEV: admin shortcuts. Server enforces admin gate.
+          // DEV shortcuts — pre-launch they're honored for every caller.
           // TODO(c3z): pre-launch cleanup
-          skipStripe: isAdmin && skipStripe ? true : undefined,
-          skipQaReviews: isAdmin && skipQa ? true : undefined,
-          fastImage: isAdmin && fastImage ? true : undefined,
+          skipStripe: skipStripe ? true : undefined,
+          skipQaReviews: skipQa ? true : undefined,
+          fastImage: fastImage ? true : undefined,
         });
         const orderId = result.orderId;
         setFunnelSuperProperties({ bookOrderId: orderId, flow: 'landing' });
@@ -95,7 +95,7 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
         return null;
       }
     },
-    [intake, startLandingOrder, isAdmin, skipStripe, skipQa, fastImage, t],
+    [intake, startLandingOrder, skipStripe, skipQa, fastImage, t],
   );
 
   // Admin shortcut on Preview CTA: skipStripe ON → submit directly.
@@ -154,7 +154,6 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
           onChangeFormat={handleChangeFormat}
           onContinue={() => void handlePreviewContinue()}
           onBack={() => setScreen('wizard')}
-          isAdmin={isAdmin}
           skipStripe={skipStripe}
           skipQa={skipQa}
           fastImage={fastImage}

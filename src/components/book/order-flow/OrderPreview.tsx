@@ -9,8 +9,6 @@ interface Props {
   onChangeFormat: (fmt: OrderFormat) => void;
   onContinue: () => void;
   onBack: () => void;
-  /** Shows the admin diagnostic checkboxes under the CTA. */
-  isAdmin?: boolean;
   /** Default true. When checked AND admin clicks CTA, skip Stripe entirely. */
   skipStripe?: boolean;
   /** Default true. Propagates `skipQaReviews` to the backend (fast mode). */
@@ -31,7 +29,6 @@ export function OrderPreview({
   onChangeFormat,
   onContinue,
   onBack,
-  isAdmin = false,
   skipStripe = false,
   skipQa = false,
   fastImage = false,
@@ -174,48 +171,47 @@ export function OrderPreview({
               </button>
             </div>
 
-            {/* DEV: admin-only diagnostic checkboxes under the CTA. */}
+            {/* DEV: diagnostic checkboxes under the CTA. Pre-launch we surface
+                these to every visitor (testers without admin role). */}
             {/* TODO(c3z): pre-launch cleanup */}
-            {isAdmin && (
-              <div className="rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-4 space-y-2">
-                <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
-                  {t('checkout.devHeading')}
-                </p>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={skipStripe}
-                    onChange={(e) => onChangeSkipStripe?.(e.target.checked)}
-                    className="w-5 h-5"
-                  />
-                  <span className="text-sm text-amber-900 font-semibold">
-                    {t('checkout.devSkipStripe')}
-                  </span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={skipQa}
-                    onChange={(e) => onChangeSkipQa?.(e.target.checked)}
-                    className="w-5 h-5"
-                  />
-                  <span className="text-sm text-amber-900 font-semibold">
-                    {t('checkout.devSkipQa')}
-                  </span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={fastImage}
-                    onChange={(e) => onChangeFastImage?.(e.target.checked)}
-                    className="w-5 h-5"
-                  />
-                  <span className="text-sm text-amber-900 font-semibold">
-                    {t('checkout.devSkipVisual')}
-                  </span>
-                </label>
-              </div>
-            )}
+            <div className="rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-4 space-y-2">
+              <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
+                {t('checkout.devHeading')}
+              </p>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={skipStripe}
+                  onChange={(e) => onChangeSkipStripe?.(e.target.checked)}
+                  className="w-5 h-5"
+                />
+                <span className="text-sm text-amber-900 font-semibold">
+                  {t('checkout.devSkipStripe')}
+                </span>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={skipQa}
+                  onChange={(e) => onChangeSkipQa?.(e.target.checked)}
+                  className="w-5 h-5"
+                />
+                <span className="text-sm text-amber-900 font-semibold">
+                  {t('checkout.devSkipQa')}
+                </span>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={fastImage}
+                  onChange={(e) => onChangeFastImage?.(e.target.checked)}
+                  className="w-5 h-5"
+                />
+                <span className="text-sm text-amber-900 font-semibold">
+                  {t('checkout.devSkipVisual')}
+                </span>
+              </label>
+            </div>
           </div>
         </div>
 
