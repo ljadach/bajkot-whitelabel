@@ -14,6 +14,7 @@ import type { AgeBracket } from './ageBracket';
 
 export type PageKind =
   | 'cover'
+  | 'blank'
   | 'title'
   | 'mood_opening'
   | 'mood_closing'
@@ -90,15 +91,22 @@ export function buildPageSequence(
   const pages: Omit<PageSpec, 'pageNumber'>[] = [];
 
   pages.push({ kind: 'cover', illustrationId: 'cover' });
+  // Blank page after the cover so the first opened spread shows
+  // cover | blank instead of cover | title.
+  pages.push({ kind: 'blank' });
   pages.push({ kind: 'title' });
   if (bracket === '3-5') {
     pages.push({ kind: 'mood_opening', illustrationId: 'mood_opening' });
   }
 
   for (const beat of beatLayout(bracket)) {
-    const defaultParts = beat.illustrationIds.length;
-    const requested = partsPerBeat?.get(beat.beatId) ?? defaultParts;
-    const parts = Math.max(defaultParts, requested);
+    // When the caller passed a partsPerBeat map (typst-render path via
+    // buildRenderBrief) we honor that count exactly — including the case
+    // where a 2-illustration beat needs only one text page. Without a map
+    // (legacy pdfkit composer) we fall back to the original spec where
+    // illustration count == text-page count.
+    const requested = partsPerBeat?.get(beat.beatId) ?? beat.illustrationIds.length;
+    const parts = Math.max(1, requested);
     const splitTextPage = (part: number): Omit<PageSpec, 'pageNumber'> => ({
       kind: 'text',
       beatId: beat.beatId,
@@ -109,8 +117,13 @@ export function buildPageSequence(
     if (beat.illustrationIds.length === 1) {
       pages.push({ kind: 'illustration', illustrationId: beat.illustrationIds[0] });
       for (let i = 1; i <= parts; i++) pages.push(splitTextPage(i));
+    } else if (parts === 1) {
+      // 2 illustrations + single text page → sandwich: illus1, text, illus2.
+      pages.push({ kind: 'illustration', illustrationId: beat.illustrationIds[0] });
+      pages.push(splitTextPage(1));
+      pages.push({ kind: 'illustration', illustrationId: beat.illustrationIds[1] });
     } else {
-      // Two illustrations — distribute text pages evenly around them, with
+      // 2 illustrations + multiple text pages — distribute around them, with
       // any odd-numbered remainder going BEFORE the second illustration.
       const before = Math.ceil(parts / 2);
       const after = parts - before;
