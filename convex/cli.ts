@@ -118,6 +118,24 @@ export const retryOrder = internalAction({
   },
 });
 
+// ── DEV: recompose PDF for an existing order via typst-render ─
+// Designed for DTP iteration on the Typst template — re-runs A9 only,
+// bypassing dedication gate, story regeneration, and image generation.
+// The order keeps its existing storyDraft, characterProfile, illustrations.
+
+export const recomposeWithRender = internalAction({
+  args: { orderId: v.id('bookOrders') },
+  returns: v.string(),
+  handler: async (ctx, { orderId }): Promise<string> => {
+    const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
+    if (!order) throw new Error('Order not found');
+    if (!order.storyDraft) throw new Error('Order has no storyDraft — cannot recompose');
+
+    await ctx.scheduler.runAfter(0, internal.bookComposerRender.generatePdfViaRender, { orderId });
+    return `Scheduled typst recompose for order ${orderId}`;
+  },
+});
+
 // ── DEV: force paywall view by clearing the skipStripe flag ──
 export const setUnpaid = internalMutation({
   args: { orderId: v.id('bookOrders') },

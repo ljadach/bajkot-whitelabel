@@ -504,6 +504,26 @@ program
     }
   });
 
+// ── recompose ───────────────────────────────────────────────
+
+program
+  .command('recompose')
+  .description('Re-run only A9 (PDF composition) via typst-render for an existing order with content')
+  .argument('<orderId>', 'Order ID (full or short suffix)')
+  .option('-w, --watch', 'Watch pipeline progress after scheduling')
+  .action(async (rawId, opts) => {
+    const orderId = resolveId(rawId);
+    const raw = convexRun('cli:recomposeWithRender', { orderId });
+    const result = parseResult(raw);
+    console.log(`\x1b[32m✓ ${result}\x1b[0m`);
+    console.log(
+      `\x1b[2m  Tip: \`npm run cli -- detail ${orderId}\` to see r2FullKey / r2PreviewKey when done\x1b[0m`,
+    );
+    if (opts.watch) {
+      await watchOrder(orderId);
+    }
+  });
+
 // ── presets ──────────────────────────────────────────────────
 
 program
