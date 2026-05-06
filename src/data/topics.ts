@@ -137,8 +137,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'moje dziecko bije innych?',
     intro:
       'Pomóż dziecku opanować złość dzięki bajce, w której to ONO jest bohaterem. Odkryj spersonalizowaną bajkoterapię. Naucz malucha radzenia sobie z trudnymi emocjami bez krzyku i stresu – w bezpiecznym świecie wyobraźni.',
-    heroImage:
-      'https://images.unsplash.com/photo-1544365558-35aa4afcf11f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-bicie-innych.png',
     heroImageAlt: 'Uśmiechnięte dziecko czytające magiczną książkę, styl 3D Pixar',
     painHeadline: 'Znasz to uczucie bezradności, gdy emocje wymykają się spod kontroli?',
     painEmpathy:
@@ -194,8 +193,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'dziecko zaczęło słuchać i współpracować?',
     intro:
       'Nie!, Sam! i rzucanie się na podłogę to normalne etapy – ale można przez nie przejść łagodniej. Bajka, w której Twoje dziecko jest bohaterem, uczy autonomii i granic bez walki o władzę.',
-    heroImage:
-      'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-bunt.png',
     heroImageAlt: 'Dziecko uczące się samodzielności w wesołej atmosferze',
     painHeadline: 'Znasz to uczucie bezsilności, gdy każda prośba zamienia się w wojnę?',
     painEmpathy:
@@ -251,8 +249,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'dziecko budzi się w nocy?',
     intro:
       'Koniec z nocnymi wstawaniami. Pomóż dziecku poczuć się bezpiecznie w ciemności dzięki bajce, w której ONO jest bohaterem. Bajkoterapia uczy malucha, że noc jest przyjazna – bez krzyku, bez walki.',
-    heroImage:
-      'https://images.unsplash.com/photo-1555252333-9f8e92e65df9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-pobudki-nocne.png',
     heroImageAlt: 'Spokojnie śpiące dziecko w przytulnym łóżku',
     painHeadline: 'Znasz uczucie, gdy wstajesz po raz trzeci tej nocy, bo maluch znowu płacze?',
     painEmpathy:
@@ -308,8 +305,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'przygodą, a nie codzienną bitwą?',
     intro:
       'Ucieczki, płacz, zaciśnięte usta – wiemy jak to wygląda. Bajka, w której Twoje dziecko jest bohaterem, zamienia szczoteczkę w magiczne narzędzie i mycie zębów w ekscytującą misję.',
-    heroImage:
-      'https://images.unsplash.com/photo-1559329007-40df8a9345d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-mycie-zebow.png',
     heroImageAlt: 'Dziecko szczęśliwie myjące zęby jak bohater',
     painHeadline: 'Znasz ten wieczorny rytuał: Nie! Nie chcę myć zębów!?',
     painEmpathy:
@@ -532,8 +528,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'odpieluchowanie utknęło w miejscu?',
     intro:
       'Bez presji, bez stresu. Bajka, w której Twoje dziecko jest bohaterem, zamienia nocnik w fascynującą przygodę i buduje pewność siebie małego odkrywcy. Naturalnie i we własnym tempie.',
-    heroImage:
-      'https://images.unsplash.com/photo-1526399232581-2ab5608b6336?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-odpieluchowanie.png',
     heroImageAlt: 'Małe dziecko uczące się nowych umiejętności z uśmiechem',
     painHeadline:
       'Znasz to uczucie, gdy inne dzieci już dawno są bez pieluszki, a Twoje się wzbrania?',
@@ -758,8 +753,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'dziecko zaśnie szybko i spokojnie',
     intro:
       'Gdy dziecko nie chce spać i wstaje po dziesięć razy – bajkoterapia zmienia wszystko. Bajka, w której Twoje dziecko jest bohaterem, zamienia czas snu w magiczną przygodę i buduje zdrowy rytuał wieczorny.',
-    heroImage:
-      'https://images.unsplash.com/photo-1567016432779-094069958ea5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-trudnosci-zasypianie.png',
     heroImageAlt: 'Dziecko śpiące spokojnie z pluszową zabawką',
     painHeadline: 'Znasz to uczucie, gdy kładziesz dziecko o 20:00, a ono wstaje do 22:00?',
     painEmpathy:
@@ -871,8 +865,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'wstrzymuje siusiu i kupę?',
     intro:
       'Wstrzymywanie potrzeb to częstszy problem, niż myślisz. Bajka, w której Twoje dziecko jest bohaterem, pomoże oswoić się z ciałem i toaletą — bez bólu, bez wstydu, bez walki.',
-    heroImage:
-      'https://images.unsplash.com/photo-1526399232581-2ab5608b6336?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-wstrzymywanie-potrzeb.png',
     heroImageAlt: 'Spokojne dziecko w łazience uczące się słuchać swojego ciała',
     painHeadline: 'Znasz to uczucie bezradności, gdy dziecko godzinami trzyma w sobie potrzeby?',
     painEmpathy:
@@ -928,8 +921,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'boi się wody i mycia głowy?',
     intro:
       'Panika przy kąpieli, wrzask na widok prysznica. Bajka, w której Twoje dziecko jest bohaterem, zamieni strach w zabawę i pokaże, że woda potrafi być przyjaznym żywiołem.',
-    heroImage:
-      'https://images.unsplash.com/photo-1559329007-40df8a9345d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-lek-kapiela.png',
     heroImageAlt: 'Roześmiane dziecko w wannie pełnej baniek mydlanych',
     painHeadline: 'Znasz to uczucie, gdy każda kąpiel to wieczorny dramat?',
     painEmpathy:
@@ -985,8 +977,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'rano nic nie idzie na czas?',
     intro:
       'Ubieranie trwa wieczność, buty znikają w najmniej spodziewanym miejscu. Bajka, w której Twoje dziecko jest bohaterem, nauczy malucha porannego planu — bez popędzania i nerwów.',
-    heroImage:
-      'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-poranna-organizacja.png',
     heroImageAlt: 'Dziecko ubierające się samodzielnie z uśmiechem',
     painHeadline: 'Znasz to uczucie, gdy każdego ranka prosisz o to samo dziesięć razy?',
     painEmpathy:
@@ -1041,8 +1032,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'nie chce odłożyć tableta?',
     intro:
       'Wyłączenie ekranu kończy się płaczem i awanturą? Bajka, w której Twoje dziecko jest bohaterem, pokaże, że świat poza ekranem jest pełen równie fajnych przygód.',
-    heroImage:
-      'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-czas-ekranowy.png',
     heroImageAlt: 'Dziecko bawiące się klockami zamiast trzymania tabletu',
     painHeadline: 'Znasz to uczucie, gdy odebranie tableta wywołuje histerię?',
     painEmpathy:
@@ -1098,8 +1088,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'dziecko nie wyobraża sobie życia bez niego?',
     intro:
       'Smoczek dał bezpieczeństwo, ale nadchodzi czas, by go puścić. Bajka, w której Twoje dziecko jest bohaterem, zamieni pożegnanie w odważną przygodę — bez straty, bez dramatu.',
-    heroImage:
-      'https://images.unsplash.com/photo-1526399232581-2ab5608b6336?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-smoczek.png',
     heroImageAlt: 'Uśmiechnięte dziecko trzymające pluszaka, dumne z dorastania',
     painHeadline: 'Znasz to uczucie, gdy każda próba odstawienia smoczka kończy się łzami?',
     painEmpathy:
@@ -1264,8 +1253,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'rozumieć uczucia innych?',
     intro:
       'Empatia to umiejętność, której można się nauczyć. Bajka, w której Twoje dziecko jest bohaterem, pokaże mu świat oczami innych — i pomoże dostrzec, co czują koledzy, rodzeństwo, rodzice.',
-    heroImage:
-      'https://images.unsplash.com/photo-1517026575980-3e1e2dedeab4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-empatia.png',
     heroImageAlt: 'Dziecko pocieszające płaczącego kolegę z troską w oczach',
     painHeadline: 'Znasz to uczucie, gdy Twoje dziecko nie zauważa, że ktoś obok jest smutny?',
     painEmpathy:
@@ -1320,8 +1308,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'budować pierwsze przyjaźnie?',
     intro:
       'Nawiązywanie relacji z rówieśnikami to pierwsze duże wyzwanie społeczne. Bajka, w której Twoje dziecko jest bohaterem, pokaże mu, że pierwszy krok jest najważniejszy — i naprawdę prosty.',
-    heroImage:
-      'https://images.unsplash.com/photo-1517026575980-3e1e2dedeab4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-pierwsze-przyjaznie.png',
     heroImageAlt: 'Dwoje dzieci wesoło bawiących się razem na placu zabaw',
     painHeadline: 'Znasz to uczucie, gdy dziecko stoi z boku i nie wie, jak dołączyć?',
     painEmpathy:
@@ -1711,8 +1698,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'zmyśla, konfabuluje i mija się z prawdą?',
     intro:
       'Konfabulacje to często czysta kreatywność, nie złośliwość. Bajka, w której Twoje dziecko jest bohaterem, pokaże mu różnicę między bogatą wyobraźnią a prawdą — bez wstydu, bez kary.',
-    heroImage:
-      'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-klamstwa.png',
     heroImageAlt: 'Dziecko z radością opowiadające bajkę i odkrywające moc prawdy',
     painHeadline:
       'Znasz to uczucie zaskoczenia, gdy dziecko spokojnie zmyśla niesamowite historie?',
@@ -1768,8 +1754,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'ktoś bliski odszedł na zawsze?',
     intro:
       'Śmierć bliskiej osoby to najtrudniejszy temat dla dziecka. Bajka, w której Twoje dziecko jest bohaterem, delikatnie pomoże mu zrozumieć, że ci, których kochamy, zostają w naszym sercu — na zawsze.',
-    heroImage:
-      'https://images.unsplash.com/photo-1484665754804-74b091211472?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-strata-bliskiej.png',
     heroImageAlt: 'Dziecko trzymane czule przez rodzica, w spokojnym, ciepłym świetle',
     painHeadline: 'Znasz tę chwilę, gdy musisz powiedzieć dziecku, że ktoś już nie wróci?',
     painEmpathy:
@@ -1824,8 +1809,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'ktoś w rodzinie poważnie choruje?',
     intro:
       'Choroba kogoś bliskiego budzi w dziecku lęk, którego nie umie nazwać. Bajka, w której Twoje dziecko jest bohaterem, pokaże mu, że można być dzielnym i czuć się bezpiecznie nawet wtedy, gdy świat się zmienia.',
-    heroImage:
-      'https://images.unsplash.com/photo-1484665754804-74b091211472?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-choroba-rodzinie.png',
     heroImageAlt: 'Dziecko trzymające za rękę chorego rodzica z czułością',
     painHeadline: 'Znasz to uczucie bezradności, gdy dziecko pyta, czy mama wyzdrowieje?',
     painEmpathy:
@@ -1880,8 +1864,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'choruje i musi być dzielne?',
     intro:
       'Pobyt w szpitalu, leki, badania, długie dni w łóżku. Bajka, w której Twoje dziecko jest bohaterem, da mu siłę i pokaże, że bycie chorym nie oznacza bycia samotnym — wręcz przeciwnie.',
-    heroImage:
-      'https://images.unsplash.com/photo-1484665754804-74b091211472?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-choroba-dziecka.png',
     heroImageAlt: 'Dziecko w łóżku szpitalnym czytające książkę z uśmiechem',
     painHeadline: 'Znasz to uczucie bezsilności, gdy patrzysz na chore dziecko w szpitalu?',
     painEmpathy:
@@ -1937,8 +1920,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'czuje, że jest inne niż rówieśnicy?',
     intro:
       'Autyzm, ADHD, nadwrażliwość, a może po prostu inny temperament. Bajka, w której Twoje dziecko jest bohaterem, pokaże, że bycie wyjątkowym to nie wada — to prawdziwa supermoc.',
-    heroImage:
-      'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-akceptacja-siebie.png',
     heroImageAlt: 'Dziecko stojące dumnie w słońcu, świadome swojej wyjątkowości',
     painHeadline: 'Znasz to ścisnięcie serca, gdy dziecko pyta „dlaczego jestem inny"?',
     painEmpathy:
@@ -1993,8 +1975,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'inni mogą być inni — i to jest okej?',
     intro:
       'Dziecko na wózku w przedszkolu, kolega z aparatem słuchowym, koleżanka z autyzmem. Bajka, w której Twoje dziecko jest bohaterem, zbuduje zrozumienie, otwartość i serdeczną ciekawość.',
-    heroImage:
-      'https://images.unsplash.com/photo-1517026575980-3e1e2dedeab4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-akceptacja-rowiesnikow.png',
     heroImageAlt: 'Dzieci o różnym wyglądzie i sprawności bawiące się razem',
     painHeadline: 'Znasz to uczucie zakłopotania, gdy dziecko głośno pyta o czyjąś inność?',
     painEmpathy:
@@ -2049,8 +2030,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'czuje się wykluczone w grupie rówieśniczej?',
     intro:
       'Wykluczenie boli. Bajka, w której Twoje dziecko jest bohaterem, pomoże mu odzyskać wiarę w siebie i znaleźć swoje miejsce — także w grupach, które wcześniej go odrzucały.',
-    heroImage:
-      'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-wykluczenie.png',
     heroImageAlt: 'Dziecko odważnie podchodzące do nowej grupy z uśmiechem',
     painHeadline: 'Znasz to bolesne wyznanie: „Mamo, nikt nie chce się ze mną bawić"?',
     painEmpathy:
@@ -2106,8 +2086,7 @@ export const TOPICS: Topic[] = [
     headlineAccent: 'nauka to przygoda, a nie kara?',
     intro:
       'Po co mi to wszystko? Bajka, w której Twoje dziecko jest bohaterem, pokaże mu, że uczenie się to nie obowiązek — to klucz do skarbów świata, które same czekają na odkrycie.',
-    heroImage:
-      'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    heroImage: '/illustrations/theme-szkola.png',
     heroImageAlt: 'Dziecko z otwartą książką, w oczach iskra ciekawości',
     painHeadline: 'Znasz to pytanie zniechęcenia: „Mamo, po co mi ta cała szkoła?"',
     painEmpathy:

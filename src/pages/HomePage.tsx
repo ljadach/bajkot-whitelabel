@@ -127,26 +127,17 @@ export function HomePage() {
             </div>
 
             <div className="relative flex items-center justify-center">
-              <div className="relative w-full max-w-md mx-auto">
-                <div className="bg-gradient-to-br from-calm-100 via-calm-50 to-white rounded-3xl shadow-xl p-6 sm:p-8 text-center hp-float">
-                  <img
-                    src="/illustrations/hero.png"
-                    alt={t('hero.book.title')}
-                    className="w-full aspect-square object-cover rounded-2xl mb-4"
-                    loading="eager"
-                  />
-                  <div className="text-calm-800 font-bold text-lg mb-1">{t('hero.book.title')}</div>
-                  <div className="text-sm text-slate-500">{t('hero.book.subtitle')}</div>
+              <div className="relative w-full max-w-md mx-auto text-center hp-float">
+                <img
+                  src="/illustrations/hero.png"
+                  alt={t('hero.book.title')}
+                  className="w-full aspect-square object-contain"
+                  loading="eager"
+                />
+                <div className="text-calm-800 font-bold text-lg mt-4 mb-1">
+                  {t('hero.book.title')}
                 </div>
-                <div className="absolute -top-4 -right-4 bg-magic-400 text-white w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center text-2xl hp-float-delay">
-                  ✨
-                </div>
-                <div className="absolute -bottom-3 -left-3 bg-calm-500 text-white w-12 h-12 rounded-xl shadow-lg flex items-center justify-center text-xl hp-float">
-                  🧸
-                </div>
-                <div className="absolute top-1/2 -right-6 bg-pink-100 text-pink-500 w-10 h-10 rounded-full shadow flex items-center justify-center text-lg hp-float-delay">
-                  💛
-                </div>
+                <div className="text-sm text-slate-500">{t('hero.book.subtitle')}</div>
               </div>
             </div>
           </div>
@@ -164,14 +155,11 @@ export function HomePage() {
 
           <div className="grid md:grid-cols-3 gap-8">
             {STEPS.map((step, i) => (
-              <div
-                key={step.key}
-                className="bg-white rounded-3xl shadow-xl p-8 text-center hover:shadow-2xl transition-shadow"
-              >
+              <div key={step.key} className="text-center">
                 <img
                   src={step.image}
                   alt={t(`howItWorks.steps.${step.key}.title`)}
-                  className="w-32 h-32 sm:w-40 sm:h-40 object-cover rounded-2xl mx-auto mb-5 shadow-md"
+                  className="w-48 h-48 sm:w-56 sm:h-56 object-contain mx-auto mb-5"
                   loading="lazy"
                 />
                 <div className="sr-only">{step.emoji}</div>
@@ -212,14 +200,11 @@ export function HomePage() {
 
           <div className="grid sm:grid-cols-2 gap-8">
             {PRINCIPLES.map((p) => (
-              <div
-                key={p.key}
-                className="bg-white/10 backdrop-blur rounded-3xl p-8 border border-white/10 flex flex-col sm:flex-row gap-6 items-start"
-              >
+              <div key={p.key} className="flex flex-col sm:flex-row gap-6 items-start">
                 <img
                   src={p.image}
                   alt={t(`whyItWorks.cards.${p.key}.title`)}
-                  className="w-28 h-28 sm:w-32 sm:h-32 object-cover rounded-2xl shadow-md flex-shrink-0"
+                  className="w-40 h-40 sm:w-44 sm:h-44 object-contain flex-shrink-0"
                   loading="lazy"
                 />
                 <div>
@@ -252,7 +237,7 @@ export function HomePage() {
             <img
               src="/illustrations/story-founders.png"
               alt={t('story.title')}
-              className="w-full max-w-sm aspect-square object-cover rounded-3xl shadow-xl"
+              className="w-full max-w-md aspect-square object-contain"
               loading="lazy"
             />
           </div>
@@ -368,7 +353,7 @@ export function HomePage() {
             <img
               src="/illustrations/cta-bedtime.png"
               alt={t('finalCta.title')}
-              className="w-40 h-40 sm:w-48 sm:h-48 object-cover rounded-3xl shadow-lg mx-auto mb-8"
+              className="w-56 h-56 sm:w-64 sm:h-64 object-contain mx-auto mb-8"
               loading="lazy"
             />
             <h2 className="text-3xl sm:text-4xl font-extrabold text-calm-900 mb-6">

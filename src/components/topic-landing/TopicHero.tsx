@@ -39,14 +39,12 @@ export function TopicHero({ topic }: { topic: Topic }) {
 
         <div className="relative flex justify-center py-10">
           <div className="relative w-full max-w-md">
-            <div className="aspect-[4/5] md:aspect-square bg-white rounded-3xl shadow-2xl overflow-hidden border-8 border-white transform rotate-3 hover:rotate-0 transition duration-500">
-              <img
-                src={topic.heroImage}
-                alt={topic.heroImageAlt}
-                className="w-full h-full object-cover"
-                loading="eager"
-              />
-            </div>
+            <img
+              src={topic.heroImage}
+              alt={topic.heroImageAlt}
+              className="w-full aspect-square object-contain"
+              loading="eager"
+            />
             <div
               className="absolute -bottom-6 -left-6 bg-white p-4 rounded-2xl shadow-xl border border-gray-50 flex items-center gap-4 animate-bounce"
               style={{ animationDuration: '3s' }}
