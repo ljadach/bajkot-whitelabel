@@ -1,41 +1,63 @@
-Bajkoterapia — therapeutic children's book illustration style
+Bajkoterapia v2 — photorealistic photo inside a polaroid frame with cartoon stickers
 
-CRITICAL: This is a children's book illustration for "Bajkoterapia" (Polish: "fairy tale therapy") — a service that creates personalized therapeutic stories for children aged 2-12. Every image must follow these style rules.
+CRITICAL: Every image must follow this composition exactly. The reference image attached alongside this prompt is the visual anchor — match its aesthetic.
 
-VISUAL STYLE:
-- Warm, soft watercolor children's book illustration
-- Hand-painted feel, gentle ink outlines, slight paper texture
-- NOT 3D, NOT photorealistic, NOT cartoon-flat-vector — think Beatrix Potter meets modern Scandinavian picture books (Jon Klassen, Oliver Jeffers, Eva Eriksson vibes)
-- Square 1:1 aspect ratio
+OVERALL VISUAL CONCEPT — three layers:
 
-COLOR PALETTE (strict):
-- Primary: soft sky blue (#bae6fd), deeper twilight blue (#0284c7), midnight navy (#0c4a6e)
-- Accent magic: warm amber gold (#fbbf24), candle yellow (#fde68a)
-- Soft accents: blush pink (#fbcfe8), cream (#fef3c7), warm peach
-- Avoid: harsh saturated colors, neon, pure black, gray-only palettes
+LAYER 1 — The photograph itself (photorealistic):
+- Cinematic, warm, lifestyle photography of real children and parents in real cozy domestic settings
+- Shot on a 50mm lens, shallow depth of field, soft natural light (golden hour or warm lamp light)
+- Documentary / candid feel — never staged stock-photo, never overly posed
+- Annie Leibovitz family editorial meets cozy Scandinavian Instagram parenting accounts
+- NOT illustration, NOT cartoon, NOT 3D render, NOT painted — actual photographic realism
 
-MOOD:
-- Cozy, safe, warm, magical, calming
-- Gentle bedtime / twilight / candlelight quality of light
-- Always emotionally hopeful — even when depicting a difficult emotion (fear, sadness, anger), the composition suggests a path toward calm
+LAYER 2 — The polaroid frame:
+- The photograph sits inside a classic white polaroid border (thicker bottom edge)
+- Slight rotation: -3 to +3 degrees, randomized per image (for natural feel)
+- Soft realistic drop shadow underneath the polaroid, suggesting it rests on a surface
+- Background behind the polaroid: soft, blurred, off-white / cream / warm pastel — like a tabletop or wall
 
-CHARACTERS (children):
-- Diverse: vary hair color, skin tone, age (2-10yo), and gender presentation
-- Cute but not saccharine — round faces, expressive eyes, gentle proportions
-- Children appear safe, accompanied (parent, magical friend, or animal companion) — never lonely-distressed
-- NO logos, NO text, NO writing on books or signs
+LAYER 3 — Cartoon decorative overlays (around the polaroid, NOT inside the photo):
+- Cute hand-drawn cartoon stickers floating around the corners of the polaroid
+- Standard set: a small plush teddy bear (bottom-left or side), a soft pink or red heart (right side), a few small golden magical sparkles or stars (top-right)
+- Sometimes vary: small moon, tiny butterfly, a small blue book, tiny crown — pick what fits the scene
+- Style of these overlays: simple, rounded, warm cartoon — like a children's book sticker pack
+- These overlays partially overlap the polaroid edge for depth — they sit "in front" of and "next to" the photo
 
-RECURRING MOTIFS (use freely where they fit):
-- Open glowing storybook with magical light spilling out
-- Stars, crescent moon, fireflies, soft sparkles
-- Cozy interiors: bedrooms, reading nooks, blanket forts
-- Forest/meadow at twilight with friendly creatures
-- Teddy bears, plush companions
+CHILDREN IN THE PHOTOS:
+- Vary across images: age (2 to 10), hair color (blonde, brown, dark, red), skin tone (fair, olive, brown), gender presentation
+- Real, natural-looking children — never uncanny, never overly perfect
+- Always emotionally safe — even when depicting a difficult moment, there is warmth and care in the frame (a parent's hand, soft lighting)
+- Real, genuine expressions — laughing, curious, sleepy, thoughtful, peaceful
 
-TECHNICAL:
-- 1:1 aspect ratio
-- Composition leaves visual breathing room (avoid edge-to-edge clutter)
-- Clear focal point — one main scene, not collage
-- No text, no captions, no watermarks, no signatures, no Polish or English letters
-- In the style of contemporary European picture books, NOT Disney
-- Clear soft features, no creepy eyes, picture-book quality faces
+PARENTS / ADULTS WHEN PRESENT:
+- Warm, gentle, approachable — diverse ages and ethnicities
+- Often shown partially: a hand, a shoulder, a profile from behind, a knee with a child on it — focus stays on the child
+- When fully visible, parents look loving and present, not distracted
+
+INTERIORS:
+- Cozy, lived-in: child's bedroom with bookshelves and plush toys, soft rug, warm bedding
+- Sunlit kitchen tables, reading nooks, blanket forts, gardens at dusk
+- Decor in calm, warm palette: cream, soft sage, dusty blue, warm wood, peach
+- Real life, slightly imperfect — books on the floor, a soft blanket askew
+
+THE PERSONALIZED BAJKOTERAPIA BOOK (when it appears):
+- A real hardcover children's book, slightly thick
+- Cover shows a magical illustrated scene (a glowing forest, a starry sky, a friendly creature) — NOT readable Polish text
+- If a title-like element appears, it must be ornamental decorative lettering that does not try to spell real words
+- The book often emits a very soft, subtle warm glow from its pages — magic hint, not heavy effect
+
+LIGHTING & MOOD:
+- Always warm, hopeful, tender
+- Golden hour, warm lamp light, soft window light — never harsh
+- Slight magical sparkle accents are OK inside the photo too (a small bokeh light, a faint glow on the book)
+
+ASPECT RATIO:
+- Square 1:1
+- The polaroid composition fills the frame with comfortable margin
+
+DO NOT:
+- Do not add any readable text, captions, watermarks, signatures, or logos
+- Do not use harsh contrast, neon colors, or clinical/cold lighting
+- Do not generate uncanny faces — if a face looks slightly off, fix it
+- Do not make it look like AI art — this should look like a real photo with cute scrapbook decorations

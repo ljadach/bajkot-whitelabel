@@ -85,10 +85,17 @@ def generate_filename(description: str, extension: str = "png") -> str:
     return f"{timestamp}_{safe_desc}.{extension}"
 
 
-def generate_with_gemini(prompt: str, style_desc: str, output_path: Path) -> bool:
-    """Generate image using Gemini API with specified style."""
+def generate_with_gemini(
+    prompt: str, style_desc: str, output_path: Path, reference_path: Path | None = None
+) -> bool:
+    """Generate image using Gemini API with specified style.
+
+    If reference_path is provided, the image is sent as a visual style reference
+    alongside the text prompt (multi-modal input).
+    """
     try:
         from google import genai
+        from PIL import Image
 
         # Get API key
         api_key = load_api_key()
@@ -105,9 +112,18 @@ Subject/Scene: {prompt}"""
 
         logger.info(f"Prompt: {prompt[:80]}{'...' if len(prompt) > 80 else ''}")
 
+        contents: list = [full_prompt]
+        if reference_path is not None:
+            if not reference_path.exists():
+                logger.error(f"Reference image not found: {reference_path}")
+                return False
+            ref_img = Image.open(str(reference_path))
+            contents.append(ref_img)
+            logger.info(f"Reference image: {reference_path}")
+
         response = client.models.generate_content(
             model="gemini-2.5-flash-image",
-            contents=[full_prompt],
+            contents=contents,
         )
 
         # Process response
@@ -176,6 +192,7 @@ Examples:
     )
     parser.add_argument("--output", "-o", help="Output path (default: ~/c3z-brain/900_Archives/cezos/processing/images/)")
     parser.add_argument("--copy-to", help="Copy result to this path after generation")
+    parser.add_argument("--reference", "-r", help="Path to a reference image to send alongside the prompt as a visual style anchor")
     parser.add_argument("--list-styles", action="store_true", help="List available styles")
     parser.add_argument("--verbose", "-v", action="store_true", help="Show full style descriptions")
 
@@ -204,7 +221,8 @@ Examples:
     filename = generate_filename(args.prompt, "png")
     output_path = Path(args.output) if args.output else PROCESSING_DIR / filename
 
-    success = generate_with_gemini(args.prompt, style_desc, output_path)
+    reference_path = Path(args.reference).expanduser().resolve() if args.reference else None
+    success = generate_with_gemini(args.prompt, style_desc, output_path, reference_path)
 
     if success:
         if args.copy_to:

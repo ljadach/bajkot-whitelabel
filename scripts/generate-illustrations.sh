@@ -21,6 +21,14 @@ OUT_DIR="$ROOT/public/illustrations"
 GENERATOR="$ROOT/.claude/skills/mag-visual-generate/scripts/generate_image.py"
 STYLE="bajkot"
 
+# Optional reference image (visual anchor passed alongside every prompt).
+# Read from prompts.json _meta.reference (path relative to repo root).
+REFERENCE_REL="$(jq -r '._meta.reference // empty' "$PROMPTS" 2>/dev/null || true)"
+REFERENCE_ABS=""
+if [[ -n "$REFERENCE_REL" ]]; then
+  REFERENCE_ABS="$ROOT/$REFERENCE_REL"
+fi
+
 if [[ ! -f "$PROMPTS" ]]; then
   echo "ERROR: prompts file not found: $PROMPTS" >&2
   exit 1
@@ -68,7 +76,11 @@ generate_one() {
   fi
 
   echo "[gen]  $key"
-  "$GENERATOR" "$prompt" --style "$STYLE" --output "$out"
+  if [[ -n "$REFERENCE_ABS" && -f "$REFERENCE_ABS" ]]; then
+    "$GENERATOR" "$prompt" --style "$STYLE" --output "$out" --reference "$REFERENCE_ABS"
+  else
+    "$GENERATOR" "$prompt" --style "$STYLE" --output "$out"
+  fi
 }
 
 # --- arg parsing ---
@@ -116,9 +128,14 @@ if [[ ${#KEYS[@]} -eq 0 ]]; then
   KEYS=("${ALL_KEYS[@]}")
 fi
 
-echo "Output: $OUT_DIR"
-echo "Style:  $STYLE"
-echo "Keys:   ${#KEYS[@]}"
+echo "Output:    $OUT_DIR"
+echo "Style:     $STYLE"
+if [[ -n "$REFERENCE_ABS" && -f "$REFERENCE_ABS" ]]; then
+  echo "Reference: $REFERENCE_REL"
+elif [[ -n "$REFERENCE_REL" ]]; then
+  echo "Reference: $REFERENCE_REL (NOT FOUND — generating without)"
+fi
+echo "Keys:      ${#KEYS[@]}"
 echo
 
 failed=0
