@@ -16,7 +16,7 @@ import { STATUS_COLORS } from '../statusColors';
 
 type ValidationResult = { index: number; profile: BatchProfile; valid: boolean; errors: string[] };
 
-type Tab = 'launch' | 'orders' | 'prompts';
+type Tab = 'launch' | 'orders' | 'prompts' | 'dtp';
 
 const AGENT_LIST = ['A0', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11'];
 
@@ -52,7 +52,8 @@ function downloadJson(content: string, filename: string) {
 export function BookBatch() {
   const [searchParams, setSearchParams] = useSearchParams();
   const urlTab = searchParams.get('tab');
-  const activeTab: Tab = urlTab === 'orders' || urlTab === 'prompts' ? urlTab : 'launch';
+  const activeTab: Tab =
+    urlTab === 'orders' || urlTab === 'prompts' || urlTab === 'dtp' ? urlTab : 'launch';
 
   const switchTab = (tab: Tab) =>
     setSearchParams(tab === 'launch' ? {} : { tab }, { replace: true });
@@ -73,6 +74,7 @@ export function BookBatch() {
             ['launch', 'Launch'],
             ['orders', 'Orders'],
             ['prompts', 'Prompts'],
+            ['dtp', 'DTP Lab'],
           ] as [Tab, string][]
         ).map(([tab, label]) => (
           <button
@@ -92,6 +94,7 @@ export function BookBatch() {
       {activeTab === 'launch' && <LaunchTab />}
       {activeTab === 'orders' && <OrdersTab />}
       {activeTab === 'prompts' && <PromptsTab />}
+      {activeTab === 'dtp' && <DtpLabTab />}
     </div>
   );
 }
@@ -1342,5 +1345,209 @@ function VersionRow({
         </tr>
       )}
     </>
+  );
+}
+
+// ════════════════════════════════════════════════════════════
+// DTP Lab Tab — sandbox for trying experimental layouts on existing
+// orders without touching production output. Renders a fresh PDF under
+// experiments/<orderId>/<timestamp>.pdf in R2 and opens it in a new tab.
+// ════════════════════════════════════════════════════════════
+
+const PROBLEM_THEME_PRESETS: { label: string; color: string }[] = [
+  { label: 'Domyślny (pomarańcz)', color: '' },
+  { label: 'Lęk (indigo)', color: '#4a6fa5' },
+  { label: 'Emocje (czerwień)', color: '#c0392b' },
+  { label: 'Relacje (zieleń)', color: '#27ae60' },
+  { label: 'Codzienność (fiolet)', color: '#8e44ad' },
+  { label: 'Zmiana (pomarańcz)', color: '#e67e22' },
+  { label: 'Spokój (turkus)', color: '#16a085' },
+];
+
+function DtpLabTab() {
+  const orders = useQuery(api.admin.bookBatch.listOrders);
+  const composeAction = useAction(api.admin.bookBatch.composeExperimentalPdf);
+
+  const [orderId, setOrderId] = useState<string>('');
+  const [dropCaps, setDropCaps] = useState(true);
+  const [themeColor, setThemeColor] = useState<string>('#4a6fa5');
+  const [composing, setComposing] = useState(false);
+  const [lastResult, setLastResult] = useState<{
+    url: string;
+    pages: number;
+    sizeKb: number;
+    durationMs: number;
+    timestamp: number;
+  } | null>(null);
+
+  const eligibleOrders = (orders ?? []).filter((o) => o.status === 'completed');
+
+  const handleCompose = async () => {
+    if (!orderId) {
+      toast.error('Wybierz zamówienie');
+      return;
+    }
+    setComposing(true);
+    setLastResult(null);
+    try {
+      const result = await composeAction({
+        orderId: orderId as Id<'bookOrders'>,
+        options: {
+          dropCaps,
+          themeColor: themeColor || undefined,
+        },
+      });
+      setLastResult({
+        url: result.presignedUrl,
+        pages: result.pages,
+        sizeKb: result.sizeKb,
+        durationMs: result.durationMs,
+        timestamp: Date.now(),
+      });
+      window.open(result.presignedUrl, '_blank', 'noopener,noreferrer');
+      toast.success(
+        `Wygenerowano ${result.pages} kartek w ${(result.durationMs / 1000).toFixed(1)}s`,
+      );
+    } catch (err) {
+      toast.error(`Render padł: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setComposing(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-amber-700 mb-1">
+          DTP Lab · sandbox
+        </h2>
+        <p className="text-xs text-amber-700/80">
+          Renderuje PDF z eksperymentalnym layoutem (drop cap, kolor akcentu) na podstawie
+          istniejącego, ukończonego zamówienia. Wynik trafia do osobnego klucza w R2 (
+          <code className="font-mono">experiments/&lt;orderId&gt;/&lt;timestamp&gt;.pdf</code>) i
+          NIE nadpisuje produkcyjnego PDF-a klienta.
+        </p>
+      </div>
+
+      <div className="rounded-xl border border-neutral-200 bg-white p-6 space-y-5">
+        {/* Order picker */}
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-1.5">
+            Zamówienie (tylko ukończone)
+          </label>
+          {!orders ? (
+            <div className="w-5 h-5 spinner" />
+          ) : (
+            <select
+              value={orderId}
+              onChange={(e) => setOrderId(e.target.value)}
+              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm font-mono"
+            >
+              <option value="">— wybierz —</option>
+              {eligibleOrders.map((o) => (
+                <option key={o._id} value={o._id as string}>
+                  {(o._id as string).slice(-12)} · {o.childName} ·{' '}
+                  {new Date(o.createdAt).toLocaleDateString('pl-PL')}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        {/* Drop caps */}
+        <div>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={dropCaps}
+              onChange={(e) => setDropCaps(e.target.checked)}
+              className="w-4 h-4"
+            />
+            <span className="text-sm font-medium text-neutral-700">
+              Drop cap (pierwsza litera w akcencie, 2.6×)
+            </span>
+          </label>
+        </div>
+
+        {/* Theme color */}
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-1.5">
+            Kolor akcentu
+          </label>
+          <div className="flex gap-3 flex-wrap">
+            {PROBLEM_THEME_PRESETS.map((p) => (
+              <button
+                key={p.color || 'default'}
+                onClick={() => setThemeColor(p.color)}
+                className={`flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs ${
+                  themeColor === p.color
+                    ? 'border-neutral-800 bg-neutral-100'
+                    : 'border-neutral-300 hover:border-neutral-500'
+                }`}
+              >
+                <span
+                  className="inline-block w-3 h-3 rounded-full border"
+                  style={{ background: p.color || '#E65100' }}
+                />
+                {p.label}
+              </button>
+            ))}
+          </div>
+          <input
+            type="text"
+            value={themeColor}
+            onChange={(e) => setThemeColor(e.target.value)}
+            placeholder="#4a6fa5 (pusty = domyślny)"
+            className="mt-2 w-44 rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-mono"
+          />
+        </div>
+
+        {/* Submit */}
+        <div className="flex items-center gap-3 pt-2 border-t">
+          <button
+            onClick={() => void handleCompose()}
+            disabled={composing || !orderId}
+            className="rounded-md bg-amber-600 px-5 py-2 text-sm font-bold text-white hover:bg-amber-500 disabled:opacity-40"
+          >
+            {composing ? 'Składam...' : 'Złóż test'}
+          </button>
+          {lastResult && (
+            <a
+              href={lastResult.url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs text-neutral-500 hover:text-neutral-800 underline"
+            >
+              Otwórz ostatni ({lastResult.pages} kartek, {lastResult.sizeKb}KB,{' '}
+              {(lastResult.durationMs / 1000).toFixed(1)}s)
+            </a>
+          )}
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-neutral-200 bg-white p-4">
+        <h3 className="text-xs font-bold uppercase tracking-wide text-neutral-400 mb-2">
+          Co ten lab robi
+        </h3>
+        <ul className="text-xs text-neutral-600 space-y-1 list-disc pl-5">
+          <li>
+            Drop cap: pierwsza litera pierwszej strony tekstu beatu rośnie do ~2.6× rozmiaru i
+            dostaje kolor akcentu — efekt "rozdziału książki".
+          </li>
+          <li>
+            Kolor akcentu: nadpisuje pomarańcz (#E65100) używany w separatorach (parent card) i drop
+            cap. Tytuł, brown text, fonty zostają bez zmian.
+          </li>
+          <li>
+            Każdy klik "Złóż test" generuje nowy plik (timestamp w nazwie). Stare wersje też zostają
+            w R2 — można porównywać.
+          </li>
+          <li>
+            <span className="font-semibold">Produkcyjna ścieżka A9 jest nietknięta</span> — order
+            klienta dalej ma swój oryginalny <code className="font-mono">r2FullKey</code>.
+          </li>
+        </ul>
+      </div>
+    </div>
   );
 }

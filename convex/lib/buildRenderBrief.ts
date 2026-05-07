@@ -125,6 +125,16 @@ export interface RenderBrief {
   maxPages?: number;
   /** Bypass R2 cache lookup on the render service. */
   force?: boolean;
+  /** DTP Lab opt-in features. Omitted = production layout. */
+  experimental?: ExperimentalLayoutOptions;
+}
+
+export interface ExperimentalLayoutOptions {
+  dropCaps?: boolean;
+  /** Hex color, e.g. '#4a6fa5'. Overrides accent color in Typst. */
+  themeColor?: string;
+  /** Reserved for future per-beat title overrides. */
+  beatTitles?: Record<string, string>;
 }
 
 export interface BuildBriefInput {
@@ -135,6 +145,7 @@ export interface BuildBriefInput {
   outputKey: string;
   maxPages?: number;
   force?: boolean;
+  experimental?: ExperimentalLayoutOptions;
 }
 
 export function buildRenderBrief(input: BuildBriefInput): RenderBrief {
@@ -223,5 +234,6 @@ export function buildRenderBrief(input: BuildBriefInput): RenderBrief {
   if (dedication) brief.dedication = dedication;
   if (input.maxPages) brief.maxPages = input.maxPages;
   if (input.force) brief.force = true;
+  if (input.experimental) brief.experimental = input.experimental;
   return brief;
 }

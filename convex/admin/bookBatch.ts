@@ -428,6 +428,102 @@ export const regeneratePdf = action({
   },
 });
 
+// ── DTP Lab: experimental render ──────────────────────────────
+// Builds a brief with the requested experimental flags, calls typst-render
+// directly, stores the result under experiments/<orderId>/<timestamp>.pdf
+// in R2 and returns a presigned URL. Crucially: does NOT touch the order's
+// r2FullKey/r2PreviewKey, so the production PDF the parent eventually
+// downloads is left exactly as the pipeline produced it.
+
+const EXPERIMENT_PREFIX = 'experiments';
+
+export const composeExperimentalPdf = action({
+  args: {
+    orderId: v.id('bookOrders'),
+    options: v.object({
+      dropCaps: v.optional(v.boolean()),
+      themeColor: v.optional(v.string()),
+    }),
+  },
+  returns: v.object({
+    outputKey: v.string(),
+    presignedUrl: v.string(),
+    pages: v.number(),
+    sizeKb: v.number(),
+    durationMs: v.number(),
+  }),
+  handler: async (ctx, { orderId, options }) => {
+    await assertAdmin(ctx);
+
+    const renderUrl = process.env.RENDER_SERVICE_URL;
+    const renderSecret = process.env.RENDER_SHARED_SECRET;
+    if (!renderUrl || !renderSecret) {
+      throw new Error('RENDER_SERVICE_URL or RENDER_SHARED_SECRET missing');
+    }
+
+    const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
+    if (!order?.storyDraft) throw new Error('Order has no storyDraft — cannot compose');
+
+    const illustrations = await ctx.runQuery(internal.bookPipelineHelpers.getIllustrations, {
+      orderId,
+    });
+    const briefIllustrations = await Promise.all(
+      illustrations.map(async (i) => {
+        const url = await ctx.storage.getUrl(i.storageId);
+        if (!url) throw new Error(`Illustration ${i.illustrationId} has no URL`);
+        return { illustrationId: i.illustrationId, url };
+      }),
+    );
+
+    const { buildRenderBrief } = await import('../lib/buildRenderBrief');
+    const ts = Date.now();
+    const outputKey = `${EXPERIMENT_PREFIX}/${orderId}/${ts}.pdf`;
+
+    const brief = buildRenderBrief({
+      jobId: `exp-${orderId}-${ts}`,
+      mode: 'full',
+      order,
+      illustrations: briefIllustrations,
+      outputKey,
+      force: true,
+      experimental: {
+        dropCaps: options.dropCaps,
+        themeColor: options.themeColor,
+      },
+    });
+
+    const ac = new AbortController();
+    const timer = setTimeout(() => ac.abort(), 120_000);
+    let result: { outputKey: string; sizeBytes: number; pages: number; durationMs: number };
+    try {
+      const res = await fetch(`${renderUrl.replace(/\/$/, '')}/render`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${renderSecret}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(brief),
+        signal: ac.signal,
+      });
+      if (!res.ok) {
+        const txt = await res.text().catch(() => '');
+        throw new Error(`render ${res.status}: ${txt.slice(0, 500)}`);
+      }
+      result = await res.json();
+    } finally {
+      clearTimeout(timer);
+    }
+
+    const { presignR2GetUrl } = await import('../lib/r2Presign');
+    const presignedUrl = await presignR2GetUrl(result.outputKey);
+
+    return {
+      outputKey: result.outputKey,
+      presignedUrl,
+      pages: result.pages,
+      sizeKb: Math.round(result.sizeBytes / 1024),
+      durationMs: result.durationMs,
+    };
+  },
+});
+
 // ── Resolve admin download URL ──────────────────────────────
 // Mirrors public resolveR2DownloadUrl but without ownership check —
 // admins can download any order's PDF. Falls back to Convex storage
