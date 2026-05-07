@@ -1354,37 +1354,66 @@ function VersionRow({
 // experiments/<orderId>/<timestamp>.pdf in R2 and opens it in a new tab.
 // ════════════════════════════════════════════════════════════
 
-const PROBLEM_THEME_PRESETS: { label: string; color: string }[] = [
-  { label: 'Domyślny (pomarańcz)', color: '' },
-  { label: 'Lęk (indigo)', color: '#4a6fa5' },
-  { label: 'Emocje (czerwień)', color: '#c0392b' },
-  { label: 'Relacje (zieleń)', color: '#27ae60' },
-  { label: 'Codzienność (fiolet)', color: '#8e44ad' },
-  { label: 'Zmiana (pomarańcz)', color: '#e67e22' },
-  { label: 'Spokój (turkus)', color: '#16a085' },
-];
+function Toggle({
+  label,
+  hint,
+  checked,
+  onChange,
+}: {
+  label: string;
+  hint?: string;
+  checked: boolean;
+  onChange: (next: boolean) => void;
+}) {
+  return (
+    <label className="flex items-start gap-3 cursor-pointer py-1">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="w-4 h-4 mt-0.5"
+      />
+      <div>
+        <div className="text-sm font-medium text-neutral-700">{label}</div>
+        {hint && <div className="text-xs text-neutral-400 mt-0.5">{hint}</div>}
+      </div>
+    </label>
+  );
+}
 
 function DtpLabTab() {
   const orders = useQuery(api.admin.bookBatch.listOrders);
   const composeAction = useAction(api.admin.bookBatch.composeExperimentalPdf);
 
   const [orderId, setOrderId] = useState<string>('');
+  // Typography
   const [dropCaps, setDropCaps] = useState(true);
-  const [themeColor, setThemeColor] = useState<string>('#4a6fa5');
+  const [widerMargins, setWiderMargins] = useState(true);
+  const [looseLineGap, setLooseLineGap] = useState(true);
+  const [noPageNumbers, setNoPageNumbers] = useState(true);
+  // Color
+  const [autoCategoryTheme, setAutoCategoryTheme] = useState(true);
+  const [themeColor, setThemeColor] = useState<string>('');
+  // Sequence
+  const [singleBlankAfterCover, setSingleBlankAfterCover] = useState(true);
+  const [removeKoniecSentinel, setRemoveKoniecSentinel] = useState(true);
+  const [chapterHeaders, setChapterHeaders] = useState(true);
+  // Imposition
+  const [printFormat, setPrintFormat] = useState<'booklet' | 'single'>('booklet');
+
   const [composing, setComposing] = useState(false);
   const [lastResult, setLastResult] = useState<{
     url: string;
     pages: number;
     sizeKb: number;
     durationMs: number;
-    timestamp: number;
   } | null>(null);
 
   const eligibleOrders = (orders ?? []).filter((o) => o.status === 'completed');
 
   const handleCompose = async () => {
     if (!orderId) {
-      toast.error('Wybierz zamówienie');
+      toast.error('Wybierz zamowienie');
       return;
     }
     setComposing(true);
@@ -1394,7 +1423,15 @@ function DtpLabTab() {
         orderId: orderId as Id<'bookOrders'>,
         options: {
           dropCaps,
+          widerMargins,
+          looseLineGap,
+          noPageNumbers,
           themeColor: themeColor || undefined,
+          autoCategoryTheme,
+          singleBlankAfterCover,
+          removeKoniecSentinel,
+          chapterHeaders,
+          printFormat,
         },
       });
       setLastResult({
@@ -1402,17 +1439,40 @@ function DtpLabTab() {
         pages: result.pages,
         sizeKb: result.sizeKb,
         durationMs: result.durationMs,
-        timestamp: Date.now(),
       });
       window.open(result.presignedUrl, '_blank', 'noopener,noreferrer');
       toast.success(
-        `Wygenerowano ${result.pages} kartek w ${(result.durationMs / 1000).toFixed(1)}s`,
+        `Wygenerowano ${result.pages} stron w ${(result.durationMs / 1000).toFixed(1)}s`,
       );
     } catch (err) {
-      toast.error(`Render padł: ${err instanceof Error ? err.message : String(err)}`);
+      toast.error(`Render padl: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setComposing(false);
     }
+  };
+
+  const enableAll = () => {
+    setDropCaps(true);
+    setWiderMargins(true);
+    setLooseLineGap(true);
+    setNoPageNumbers(true);
+    setAutoCategoryTheme(true);
+    setThemeColor('');
+    setSingleBlankAfterCover(true);
+    setRemoveKoniecSentinel(true);
+    setChapterHeaders(true);
+  };
+
+  const disableAll = () => {
+    setDropCaps(false);
+    setWiderMargins(false);
+    setLooseLineGap(false);
+    setNoPageNumbers(false);
+    setAutoCategoryTheme(false);
+    setThemeColor('');
+    setSingleBlankAfterCover(false);
+    setRemoveKoniecSentinel(false);
+    setChapterHeaders(false);
   };
 
   return (
@@ -1422,18 +1482,18 @@ function DtpLabTab() {
           DTP Lab · sandbox
         </h2>
         <p className="text-xs text-amber-700/80">
-          Renderuje PDF z eksperymentalnym layoutem (drop cap, kolor akcentu) na podstawie
-          istniejącego, ukończonego zamówienia. Wynik trafia do osobnego klucza w R2 (
-          <code className="font-mono">experiments/&lt;orderId&gt;/&lt;timestamp&gt;.pdf</code>) i
-          NIE nadpisuje produkcyjnego PDF-a klienta.
+          Renderuje PDF z eksperymentalnym layoutem na podstawie istniejacego, ukonczonego
+          zamowienia. Wynik trafia do{' '}
+          <code className="font-mono">experiments/&lt;orderId&gt;/&lt;timestamp&gt;.pdf</code> w R2
+          i <span className="font-semibold">nie nadpisuje produkcyjnego PDF-a</span>. Pipeline
+          klienta (A0..A11) i email z linkiem do bajki dzialaja bez zmian.
         </p>
       </div>
 
-      <div className="rounded-xl border border-neutral-200 bg-white p-6 space-y-5">
-        {/* Order picker */}
+      <div className="rounded-xl border border-neutral-200 bg-white p-6 space-y-6">
         <div>
           <label className="block text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-1.5">
-            Zamówienie (tylko ukończone)
+            Zamowienie (tylko ukonczone)
           </label>
           {!orders ? (
             <div className="w-5 h-5 spinner" />
@@ -1454,62 +1514,146 @@ function DtpLabTab() {
           )}
         </div>
 
-        {/* Drop caps */}
-        <div>
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={dropCaps}
-              onChange={(e) => setDropCaps(e.target.checked)}
-              className="w-4 h-4"
-            />
-            <span className="text-sm font-medium text-neutral-700">
-              Drop cap (pierwsza litera w akcencie, 2.6×)
-            </span>
-          </label>
+        <div className="flex gap-2 text-xs">
+          <button
+            onClick={enableAll}
+            className="rounded-md border border-neutral-300 px-3 py-1 hover:bg-neutral-50"
+          >
+            Wlacz wszystko
+          </button>
+          <button
+            onClick={disableAll}
+            className="rounded-md border border-neutral-300 px-3 py-1 hover:bg-neutral-50"
+          >
+            Wylacz wszystko
+          </button>
         </div>
 
-        {/* Theme color */}
-        <div>
-          <label className="block text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-1.5">
-            Kolor akcentu
-          </label>
-          <div className="flex gap-3 flex-wrap">
-            {PROBLEM_THEME_PRESETS.map((p) => (
+        <fieldset className="border-t pt-4">
+          <legend className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
+            Typografia
+          </legend>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+            <Toggle
+              label="Drop cap"
+              hint="Pierwsza litera tekstu beatu × 3.2, w kolorze akcentu"
+              checked={dropCaps}
+              onChange={setDropCaps}
+            />
+            <Toggle
+              label="Szersze marginesy"
+              hint="42pt (~15mm) zamiast 18pt — bezpieczniej do druku"
+              checked={widerMargins}
+              onChange={setWiderMargins}
+            />
+            <Toggle
+              label="Luzniejsza interlinia"
+              hint="leading 1.4em zamiast sztywnego pt"
+              checked={looseLineGap}
+              onChange={setLooseLineGap}
+            />
+            <Toggle
+              label="Bez numerow stron"
+              hint="Dla malych dzieci numer w rogu rozprasza"
+              checked={noPageNumbers}
+              onChange={setNoPageNumbers}
+            />
+          </div>
+        </fieldset>
+
+        <fieldset className="border-t pt-4">
+          <legend className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
+            Kolor i nastroj
+          </legend>
+          <Toggle
+            label="Auto-dobor koloru z kategorii problemu"
+            hint="leki=indigo, emocje=amber, relacje=emerald, codziennosc=violet, zmiana=rose"
+            checked={autoCategoryTheme}
+            onChange={setAutoCategoryTheme}
+          />
+          <div className="mt-3 flex items-center gap-2">
+            <input
+              type="text"
+              value={themeColor}
+              onChange={(e) => setThemeColor(e.target.value)}
+              placeholder="lub wlasny hex, np. #4a6fa5"
+              className="w-48 rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-mono"
+            />
+            {themeColor && (
+              <span
+                className="inline-block w-5 h-5 rounded border border-neutral-300"
+                style={{ background: themeColor }}
+              />
+            )}
+            <span className="text-xs text-neutral-400">
+              {themeColor
+                ? '(pole nadpisuje auto-dobor)'
+                : autoCategoryTheme
+                  ? '(domyslnie auto)'
+                  : '(domyslny pomarancz)'}
+            </span>
+          </div>
+        </fieldset>
+
+        <fieldset className="border-t pt-4">
+          <legend className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
+            Sekwencja stron
+          </legend>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+            <Toggle
+              label="1 blank po okladce"
+              hint="Domyslnie 2; przy 1 spread #2 = blank | title czysto"
+              checked={singleBlankAfterCover}
+              onChange={setSingleBlankAfterCover}
+            />
+            <Toggle
+              label='Bez "*Koniec*"'
+              hint="Colophon i tak ma 'Koniec' — sentinel jest duplikatem"
+              checked={removeKoniecSentinel}
+              onChange={setRemoveKoniecSentinel}
+            />
+            <Toggle
+              label="Strony rozdzialow"
+              hint="Polstronicowy header z ornamentem przed kazdym beatem"
+              checked={chapterHeaders}
+              onChange={setChapterHeaders}
+            />
+          </div>
+        </fieldset>
+
+        <fieldset className="border-t pt-4">
+          <legend className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
+            Format wyjscia
+          </legend>
+          <div className="flex gap-3">
+            {(
+              [
+                ['booklet', 'A4 landscape 2-up (do druku w domu)'],
+                ['single', 'A5 portrait single-page (do drukarni / Printul)'],
+              ] as [typeof printFormat, string][]
+            ).map(([val, label]) => (
               <button
-                key={p.color || 'default'}
-                onClick={() => setThemeColor(p.color)}
-                className={`flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs ${
-                  themeColor === p.color
-                    ? 'border-neutral-800 bg-neutral-100'
+                key={val}
+                onClick={() => setPrintFormat(val)}
+                className={`rounded-md border px-3 py-2 text-xs ${
+                  printFormat === val
+                    ? 'border-neutral-800 bg-neutral-100 font-semibold'
                     : 'border-neutral-300 hover:border-neutral-500'
                 }`}
               >
-                <span
-                  className="inline-block w-3 h-3 rounded-full border"
-                  style={{ background: p.color || '#E65100' }}
-                />
-                {p.label}
+                {label}
               </button>
             ))}
           </div>
-          <input
-            type="text"
-            value={themeColor}
-            onChange={(e) => setThemeColor(e.target.value)}
-            placeholder="#4a6fa5 (pusty = domyślny)"
-            className="mt-2 w-44 rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-mono"
-          />
-        </div>
+        </fieldset>
 
-        {/* Submit */}
-        <div className="flex items-center gap-3 pt-2 border-t">
+        <div className="flex items-center gap-3 pt-4 border-t">
           <button
             onClick={() => void handleCompose()}
             disabled={composing || !orderId}
             className="rounded-md bg-amber-600 px-5 py-2 text-sm font-bold text-white hover:bg-amber-500 disabled:opacity-40"
           >
-            {composing ? 'Składam...' : 'Złóż test'}
+            {composing ? 'Skladam...' : 'Zloz test'}
           </button>
           {lastResult && (
             <a
@@ -1518,7 +1662,7 @@ function DtpLabTab() {
               rel="noreferrer"
               className="text-xs text-neutral-500 hover:text-neutral-800 underline"
             >
-              Otwórz ostatni ({lastResult.pages} kartek, {lastResult.sizeKb}KB,{' '}
+              Otworz ostatni ({lastResult.pages} stron, {lastResult.sizeKb}KB,{' '}
               {(lastResult.durationMs / 1000).toFixed(1)}s)
             </a>
           )}
@@ -1527,26 +1671,19 @@ function DtpLabTab() {
 
       <div className="rounded-xl border border-neutral-200 bg-white p-4">
         <h3 className="text-xs font-bold uppercase tracking-wide text-neutral-400 mb-2">
-          Co ten lab robi
+          Jak zlozyc ksiazke po wydruku
         </h3>
-        <ul className="text-xs text-neutral-600 space-y-1 list-disc pl-5">
-          <li>
-            Drop cap: pierwsza litera pierwszej strony tekstu beatu rośnie do ~2.6× rozmiaru i
-            dostaje kolor akcentu — efekt "rozdziału książki".
-          </li>
-          <li>
-            Kolor akcentu: nadpisuje pomarańcz (#E65100) używany w separatorach (parent card) i drop
-            cap. Tytuł, brown text, fonty zostają bez zmian.
-          </li>
-          <li>
-            Każdy klik "Złóż test" generuje nowy plik (timestamp w nazwie). Stare wersje też zostają
-            w R2 — można porównywać.
-          </li>
-          <li>
-            <span className="font-semibold">Produkcyjna ścieżka A9 jest nietknięta</span> — order
-            klienta dalej ma swój oryginalny <code className="font-mono">r2FullKey</code>.
-          </li>
-        </ul>
+        <p className="text-xs text-neutral-600">
+          Instrukcja na osobnej stronie:{' '}
+          <a
+            href="/jak-zlozyc-ksiazke"
+            target="_blank"
+            rel="noreferrer"
+            className="text-amber-700 hover:underline font-semibold"
+          >
+            /jak-zlozyc-ksiazke
+          </a>
+        </p>
       </div>
     </div>
   );

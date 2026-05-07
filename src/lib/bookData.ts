@@ -37,6 +37,59 @@ export const PROBLEM_CATEGORIES = {
 
 export type ProblemCategory = keyof typeof PROBLEM_CATEGORIES;
 
+/**
+ * Visual theme per problem category — used by the DTP Lab to drive the
+ * accent color, ornament glyph and tagline on title pages and chapter
+ * headers. Production pipeline doesn't apply these unless the experimental
+ * flag is set explicitly.
+ */
+export interface CategoryTheme {
+  color: string; // hex, used as themeColor in the brief
+  ornament: string; // unicode glyph for chapter headers
+  bgTitle: string; // hex, soft background tint for cover/title pages
+  tagline: string; // appears above subtitle on title page
+}
+
+export const CATEGORY_THEMES: Record<ProblemCategory, CategoryTheme> = {
+  fears: {
+    color: '#5B6FA8',
+    ornament: '✦', // ✦
+    bgTitle: '#EEF2FF',
+    tagline: 'Bajka o odwadze',
+  },
+  emotions: {
+    color: '#D97706',
+    ornament: '❧', // ❧
+    bgTitle: '#FFFBEB',
+    tagline: 'Bajka o uczuciach',
+  },
+  social: {
+    color: '#059669',
+    ornament: '✿', // ✿
+    bgTitle: '#ECFDF5',
+    tagline: 'Bajka o przyjaźni',
+  },
+  routine: {
+    color: '#7C3AED',
+    ornament: '◆', // ◆
+    bgTitle: '#F5F3FF',
+    tagline: 'Bajka o codzienności',
+  },
+  change: {
+    color: '#DC2626',
+    ornament: '♦', // ♦
+    bgTitle: '#FFF1F2',
+    tagline: 'Bajka o zmianie',
+  },
+};
+
+export function categoryThemeFor(problemId: string | undefined): CategoryTheme | null {
+  if (!problemId) return null;
+  const problem = (PROBLEMS as Record<string, { category: ProblemCategory }>)[problemId];
+  if (!problem) return null;
+  return CATEGORY_THEMES[problem.category] ?? null;
+}
+
 export const AGE_BRACKETS = ['3-5', '6-8', '9+'] as const;
 export type AgeBracket = (typeof AGE_BRACKETS)[number];
 
