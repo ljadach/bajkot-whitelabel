@@ -22,6 +22,36 @@ import { dlaName } from './childNameInflect';
  * fallbacks the parent_card page renders empty for orders whose A3 prompt
  * skipped parentCard altogether.
  */
+/**
+ * LLM outputs occasionally violate the contracted shape — A2 has been seen
+ * emitting parent_questions as `[{ question: "…" }, …]` instead of plain
+ * strings. Normalize anything reasonable to a string array so the parent
+ * card never renders "[object Object]".
+ */
+function normalizeQuestions(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  const out: string[] = [];
+  for (const item of raw) {
+    if (typeof item === 'string') {
+      const trimmed = item.trim();
+      if (trimmed) out.push(trimmed);
+      continue;
+    }
+    if (item && typeof item === 'object') {
+      const obj = item as Record<string, unknown>;
+      const candidate =
+        (typeof obj.question === 'string' && obj.question) ||
+        (typeof obj.q === 'string' && obj.q) ||
+        (typeof obj.text === 'string' && obj.text) ||
+        (typeof obj.pytanie === 'string' && obj.pytanie) ||
+        '';
+      const trimmed = String(candidate).trim();
+      if (trimmed) out.push(trimmed);
+    }
+  }
+  return out;
+}
+
 function formatParentCard(args: {
   parentCard: ParentCard | undefined | string;
   blueprint: StoryBlueprint | null;
@@ -38,11 +68,13 @@ function formatParentCard(args: {
   const intro = pc?.introPl?.trim() || introFallback;
 
   const blueprintAny = blueprint as
-    | (Record<string, unknown> & { parentQuestions?: string[]; parent_questions?: string[] })
+    | (Record<string, unknown> & { parentQuestions?: unknown; parent_questions?: unknown })
     | null;
-  const blueprintQuestions = blueprintAny?.parentQuestions ?? blueprintAny?.parent_questions ?? [];
+  const blueprintQuestionsRaw =
+    blueprintAny?.parentQuestions ?? blueprintAny?.parent_questions ?? [];
+  const draftQuestions = normalizeQuestions(pc?.questions);
   const questions: string[] =
-    pc?.questions && pc.questions.length > 0 ? pc.questions : blueprintQuestions;
+    draftQuestions.length > 0 ? draftQuestions : normalizeQuestions(blueprintQuestionsRaw);
 
   const takeawayAny = (blueprintAny?.actionableTakeaway ??
     (blueprintAny as Record<string, unknown> | null)?.actionable_takeaway) as
