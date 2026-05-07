@@ -109,6 +109,8 @@ export interface BriefPageSpec {
   textPart?: number;
   textPartCount?: number;
   text?: string;
+  /** Chapter title for kind=chapter_header. */
+  title?: string;
 }
 
 export interface RenderBrief {
@@ -130,11 +132,28 @@ export interface RenderBrief {
 }
 
 export interface ExperimentalLayoutOptions {
+  // Typography
   dropCaps?: boolean;
+  widerMargins?: boolean;
+  looseLineGap?: boolean;
+  noPageNumbers?: boolean;
+  // Color
   /** Hex color, e.g. '#4a6fa5'. Overrides accent color in Typst. */
   themeColor?: string;
-  /** Reserved for future per-beat title overrides. */
-  beatTitles?: Record<string, string>;
+  /** Hex bg color for title page (replaces default cream). */
+  bgTitleOverride?: string;
+  /** Unicode glyph for chapter ornaments — e.g. ❧, ✦, ◆. */
+  ornament?: string;
+  // Sequence
+  singleBlankAfterCover?: boolean;
+  removeKoniecSentinel?: boolean;
+  chapterHeaders?: boolean;
+  /** Map beatId → chapter title. Used when chapterHeaders=true. */
+  chapterTitles?: Record<string, string>;
+  /** Subtitle line under main title (e.g. 'Bajka o odwadze'). */
+  categoryTagline?: string;
+  // Imposition
+  printFormat?: 'booklet' | 'single';
 }
 
 export interface BuildBriefInput {
@@ -176,7 +195,11 @@ export function buildRenderBrief(input: BuildBriefInput): RenderBrief {
     partsPerBeat.set(beatId, parts.length);
   }
 
-  const sequence = buildPageSequence(bracket, partsPerBeat);
+  const sequence = buildPageSequence(bracket, partsPerBeat, {
+    singleBlankAfterCover: input.experimental?.singleBlankAfterCover,
+    chapterHeaders: input.experimental?.chapterHeaders,
+    chapterTitles: input.experimental?.chapterTitles,
+  });
 
   const titleFallback = dlaName(order.childName)
     ? `Książeczka ${dlaName(order.childName)}`
@@ -193,6 +216,7 @@ export function buildRenderBrief(input: BuildBriefInput): RenderBrief {
     if (spec.beatId) out.beatId = spec.beatId;
     if (spec.textPart) out.textPart = spec.textPart;
     if (spec.textPartCount) out.textPartCount = spec.textPartCount;
+    if (spec.title) out.title = spec.title;
 
     if (spec.kind === 'text' && spec.beatId) {
       let text = '';
@@ -205,7 +229,8 @@ export function buildRenderBrief(input: BuildBriefInput): RenderBrief {
 
       // B6 last-page sentinel — applied to the FINAL part of beat 6 only.
       const isLastPart = spec.textPart === undefined || spec.textPart === (spec.textPartCount ?? 1);
-      if (spec.beatId === '6' && isLastPart) {
+      const skipKoniec = input.experimental?.removeKoniecSentinel === true;
+      if (spec.beatId === '6' && isLastPart && !skipKoniec) {
         text = `${text}\n\n*Koniec*`;
       }
       out.text = text || `[brak tekstu dla beatu ${spec.beatId}]`;

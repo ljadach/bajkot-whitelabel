@@ -441,8 +441,22 @@ export const composeExperimentalPdf = action({
   args: {
     orderId: v.id('bookOrders'),
     options: v.object({
+      // Typography
       dropCaps: v.optional(v.boolean()),
+      widerMargins: v.optional(v.boolean()),
+      looseLineGap: v.optional(v.boolean()),
+      noPageNumbers: v.optional(v.boolean()),
+      // Color (manual override or auto-from-category)
       themeColor: v.optional(v.string()),
+      bgTitleOverride: v.optional(v.string()),
+      ornament: v.optional(v.string()),
+      autoCategoryTheme: v.optional(v.boolean()),
+      // Sequence
+      singleBlankAfterCover: v.optional(v.boolean()),
+      removeKoniecSentinel: v.optional(v.boolean()),
+      chapterHeaders: v.optional(v.boolean()),
+      // Imposition
+      printFormat: v.optional(v.union(v.literal('booklet'), v.literal('single'))),
     }),
   },
   returns: v.object({
@@ -476,8 +490,24 @@ export const composeExperimentalPdf = action({
     );
 
     const { buildRenderBrief } = await import('../lib/buildRenderBrief');
+    const { categoryThemeFor } = await import('../../src/lib/bookData');
     const ts = Date.now();
     const outputKey = `${EXPERIMENT_PREFIX}/${orderId}/${ts}.pdf`;
+
+    // Resolve theme: explicit themeColor wins; fallback to auto-from-category.
+    let resolvedThemeColor = options.themeColor;
+    let resolvedBg = options.bgTitleOverride;
+    let resolvedOrnament = options.ornament;
+    let categoryTagline: string | undefined;
+    if (options.autoCategoryTheme && !resolvedThemeColor) {
+      const theme = categoryThemeFor(order.problemId);
+      if (theme) {
+        resolvedThemeColor = theme.color;
+        resolvedBg = resolvedBg ?? theme.bgTitle;
+        resolvedOrnament = resolvedOrnament ?? theme.ornament;
+        categoryTagline = theme.tagline;
+      }
+    }
 
     const brief = buildRenderBrief({
       jobId: `exp-${orderId}-${ts}`,
@@ -488,7 +518,17 @@ export const composeExperimentalPdf = action({
       force: true,
       experimental: {
         dropCaps: options.dropCaps,
-        themeColor: options.themeColor,
+        widerMargins: options.widerMargins,
+        looseLineGap: options.looseLineGap,
+        noPageNumbers: options.noPageNumbers,
+        themeColor: resolvedThemeColor,
+        bgTitleOverride: resolvedBg,
+        ornament: resolvedOrnament,
+        categoryTagline,
+        singleBlankAfterCover: options.singleBlankAfterCover,
+        removeKoniecSentinel: options.removeKoniecSentinel,
+        chapterHeaders: options.chapterHeaders,
+        printFormat: options.printFormat,
       },
     });
 
