@@ -460,9 +460,11 @@ function OrderDetailPanel({ orderId }: { orderId: Id<'bookOrders'> }) {
   const retryOrder = useAction(api.admin.bookBatch.retryOrder);
   const cancelOrderAction = useAction(api.admin.bookBatch.cancelOrder);
   const regeneratePdfAction = useAction(api.admin.bookBatch.regeneratePdf);
+  const resolveDownloadUrl = useAction(api.admin.bookBatch.resolveDownloadUrl);
   const [retrying, setRetrying] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [retryAgent, setRetryAgent] = useState('');
   const [openArtifacts, setOpenArtifacts] = useState<Set<string>>(new Set());
   const [timelineOpen, setTimelineOpen] = useState(false);
@@ -490,6 +492,22 @@ function OrderDetailPanel({ orderId }: { orderId: Id<'bookOrders'> }) {
       // Error visible in order status
     } finally {
       setCancelling(false);
+    }
+  };
+
+  const handleDownloadPdf = async (kind: 'full' | 'preview' = 'full') => {
+    setDownloading(true);
+    try {
+      const url = await resolveDownloadUrl({ orderId, kind });
+      if (!url) {
+        toast.error('Brak PDF — zamówienie jeszcze nie ma wygenerowanego pliku');
+        return;
+      }
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      toast.error(`Pobieranie nie udało się: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -733,15 +751,23 @@ function OrderDetailPanel({ orderId }: { orderId: Id<'bookOrders'> }) {
 
       {/* PDF */}
       <div className="flex items-center gap-3">
-        {detail.pdfUrl && (
-          <a
-            href={detail.pdfUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-500"
+        {(detail.r2FullKey || detail.pdfUrl) && (
+          <button
+            onClick={() => void handleDownloadPdf('full')}
+            disabled={downloading}
+            className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-40"
           >
-            Pobierz PDF
-          </a>
+            {downloading ? 'Pobieram...' : 'Pobierz PDF'}
+          </button>
+        )}
+        {detail.r2PreviewKey && (
+          <button
+            onClick={() => void handleDownloadPdf('preview')}
+            disabled={downloading}
+            className="inline-flex items-center gap-1 rounded-md bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-800 hover:bg-blue-200 disabled:opacity-40"
+          >
+            Podgląd (3 strony)
+          </button>
         )}
         {detail.storyDraft && (
           <button

@@ -304,6 +304,8 @@ export const getOrderDetail = query({
       styleVoteUrlA,
       styleVoteUrlB,
       pdfUrl,
+      r2FullKey: order.r2FullKey ?? null,
+      r2PreviewKey: order.r2PreviewKey ?? null,
     };
   },
 });
@@ -423,6 +425,33 @@ export const regeneratePdf = action({
 
     await ctx.scheduler.runAfter(0, internal.bookAgents.composePdf, { orderId });
     return null;
+  },
+});
+
+// ── Resolve admin download URL ──────────────────────────────
+// Mirrors public resolveR2DownloadUrl but without ownership check —
+// admins can download any order's PDF. Falls back to Convex storage
+// for orders predating the typst-render path (pdfStorageId only).
+
+export const resolveDownloadUrl = action({
+  args: {
+    orderId: v.id('bookOrders'),
+    kind: v.optional(v.union(v.literal('full'), v.literal('preview'))),
+  },
+  returns: v.union(v.string(), v.null()),
+  handler: async (ctx, { orderId, kind }): Promise<string | null> => {
+    await assertAdmin(ctx);
+    const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
+    if (!order) return null;
+
+    const which = kind ?? 'full';
+    const { presignR2GetUrl, r2KeyFor } = await import('../lib/r2Presign');
+    const r2Key = r2KeyFor(order, which);
+    if (r2Key) return presignR2GetUrl(r2Key);
+
+    // Legacy fallback — orders composed via the in-Convex pdfkit path.
+    const storageId = which === 'preview' ? order.previewPdfStorageId : order.pdfStorageId;
+    return storageId ? await ctx.storage.getUrl(storageId) : null;
   },
 });
 
