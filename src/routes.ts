@@ -4,6 +4,7 @@ export default [
   // Public marketing routes (Polish, root level)
   index('routes/home.tsx', { id: 'home' }),
   route('katalog', 'routes/catalog.tsx', { id: 'catalog' }),
+  route('cennik', 'routes/cennik.tsx', { id: 'cennik' }),
   route('about/contact', 'routes/contact.tsx', { id: 'contact' }),
   route('support/faq', 'routes/faq.tsx', { id: 'faq' }),
   route('problem/:slug', 'routes/topic.tsx', { id: 'topic' }),

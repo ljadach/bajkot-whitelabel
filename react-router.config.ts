@@ -3,7 +3,7 @@ import { vercelPreset } from '@vercel/react-router/vite';
 import { TOPIC_SLUGS } from './src/data/topics';
 
 // Contact page excluded from prerender — ContactForm uses useAction (requires ConvexProvider)
-const MARKETING_PATHS = ['/', '/katalog', '/support/faq'];
+const MARKETING_PATHS = ['/', '/katalog', '/cennik', '/support/faq'];
 const TOPIC_PATHS = TOPIC_SLUGS.map((slug) => `/problem/${slug}`);
 
 export default {
