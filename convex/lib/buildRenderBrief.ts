@@ -196,7 +196,11 @@ export function buildRenderBrief(input: BuildBriefInput): RenderBrief {
   }
 
   const sequence = buildPageSequence(bracket, partsPerBeat, {
-    singleBlankAfterCover: input.experimental?.singleBlankAfterCover,
+    // Default to a single blank after the cover. The two-blank spread was a
+    // booklet-mode convention (back-of-cover + facing-page so spread #2 read
+    // blank | title); in single-A4 production it just prints as two empty
+    // pages. Callers can still opt back into two blanks via experimental.
+    singleBlankAfterCover: input.experimental?.singleBlankAfterCover ?? true,
     chapterHeaders: input.experimental?.chapterHeaders,
     chapterTitles: input.experimental?.chapterTitles,
   });

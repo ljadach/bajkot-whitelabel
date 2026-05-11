@@ -223,14 +223,16 @@ export function splitBeatText(text: string): [string, string] {
 }
 
 /**
- * Approx character budget per A5 portrait page for the booklet layout.
- * Empirically chosen to leave a comfortable bottom margin on most pages
- * (the Typst template applies a small font-shrink fallback for outliers).
+ * Approx character budget per page. Sized for the production single-A4
+ * portrait format (the booklet A5 mode is now opt-in); A4 single has ~67%
+ * more text area than the booklet A5 page, so budgets are raised
+ * accordingly. The Typst template still applies a small font-shrink
+ * fallback for outlier paragraphs.
  */
 export function charBudgetFor(bracket: AgeBracket): number {
-  if (bracket === '3-5') return 600;
-  if (bracket === '6-8') return 900;
-  return 1100;
+  if (bracket === '3-5') return 1000;
+  if (bracket === '6-8') return 1500;
+  return 1800;
 }
 
 /**
@@ -281,17 +283,31 @@ export function splitBeatTextDynamic(text: string, charBudget: number): string[]
   }
 
   // Pack atoms into chunks separated by blank lines.
-  const chunks: string[] = [];
-  let cur = '';
-  for (const atom of atoms) {
-    const candidate = cur ? cur + '\n\n' + atom : atom;
-    if (!cur || candidate.length <= charBudget) {
-      cur = candidate;
-    } else {
-      chunks.push(cur);
-      cur = atom;
+  const pack = (budget: number): string[] => {
+    const out: string[] = [];
+    let cur = '';
+    for (const atom of atoms) {
+      const candidate = cur ? cur + '\n\n' + atom : atom;
+      if (!cur || candidate.length <= budget) {
+        cur = candidate;
+      } else {
+        out.push(cur);
+        cur = atom;
+      }
     }
-  }
-  if (cur) chunks.push(cur);
-  return chunks.length > 0 ? chunks : [trimmed];
+    if (cur) out.push(cur);
+    return out;
+  };
+
+  const greedy = pack(charBudget);
+  if (greedy.length <= 1) return greedy.length > 0 ? greedy : [trimmed];
+
+  // Balance: avoid a tiny last chunk (which prints as a near-empty page) by
+  // repacking against a budget = ceil(total / chunk-count). Same chunk count,
+  // chars distributed more evenly across pages.
+  const totalChars = atoms.reduce((s, a) => s + a.length, 0);
+  const balanced = pack(Math.ceil(totalChars / greedy.length));
+  // If balancing somehow produced fewer chunks (atoms+separators math edge),
+  // keep the more conservative greedy result.
+  return balanced.length === greedy.length ? balanced : greedy;
 }
