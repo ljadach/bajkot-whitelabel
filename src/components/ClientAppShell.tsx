@@ -4,7 +4,7 @@
  * and should ONLY be loaded via React.lazy() — never during SSR.
  */
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { UserButton, useUser } from '@clerk/clerk-react';
 import { Authenticated, Unauthenticated } from 'convex/react';
 import { useTranslation } from 'react-i18next';
@@ -30,6 +30,11 @@ export function HeaderActions() {
 }
 
 function AuthenticatedActions() {
+  // While the user is already inside the book-order wizard / pipeline, a
+  // second "Stwórz bajkę" CTA in the header is just noise — hide it.
+  const { pathname } = useLocation();
+  const inBookFlow = pathname.startsWith('/book/');
+
   return (
     <div className="flex items-center gap-2">
       <Link
@@ -38,12 +43,14 @@ function AuthenticatedActions() {
       >
         Panel
       </Link>
-      <Link
-        to="/book/order"
-        className="text-sm font-medium text-white bg-neutral-900 hover:bg-neutral-800 px-3 py-1.5 rounded-lg transition-colors"
-      >
-        Stwórz bajkę
-      </Link>
+      {!inBookFlow && (
+        <Link
+          to="/book/order"
+          className="text-sm font-medium text-white bg-neutral-900 hover:bg-neutral-800 px-3 py-1.5 rounded-lg transition-colors"
+        >
+          Stwórz bajkę
+        </Link>
+      )}
       <UserButton
         appearance={{
           elements: {

@@ -6,6 +6,7 @@ import {
   Scripts,
   ScrollRestoration,
   isRouteErrorResponse,
+  useLocation,
   useRouteError,
 } from 'react-router';
 import { Toaster } from 'sonner';
@@ -77,13 +78,22 @@ export function Layout({ children }: { children: ReactNode }) {
   );
 }
 
+// Marketing routes render their own <TopicNav> chrome and should not stack the
+// generic <Header> on top — that would produce two navigation bars.
+function isMarketingRoute(pathname: string): boolean {
+  if (pathname === '/' || pathname === '/katalog' || pathname === '/cennik') return true;
+  return pathname.startsWith('/problem/');
+}
+
 export default function Root() {
   useEffect(() => captureTokenFromUrl(), []);
+  const { pathname } = useLocation();
+  const showGlobalHeader = !isMarketingRoute(pathname);
 
   return (
     <div className="h-screen flex flex-col bg-white">
       <ScrollToTop />
-      <Header />
+      {showGlobalHeader && <Header />}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         <main className="flex-1 overflow-auto bg-neutral-50">
           <Outlet />
