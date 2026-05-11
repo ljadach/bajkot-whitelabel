@@ -348,6 +348,11 @@ export const markOrderComplete = internalMutation({
       completedAt: Date.now(),
       updatedAt: Date.now(),
     });
+    // Pipeline finished and PDF is now persisted — send the delivery email.
+    // Scheduled so a Resend hiccup doesn't roll back the status flip.
+    await ctx.scheduler.runAfter(0, internal.email.sendBookReady, {
+      bookOrderId: orderId,
+    });
     return null;
   },
 });

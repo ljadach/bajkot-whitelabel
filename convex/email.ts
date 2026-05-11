@@ -9,18 +9,76 @@
 import { internalAction } from './_generated/server';
 import { internal } from './_generated/api';
 import { v } from 'convex/values';
-import { sendEmail, buildBookReadyEmail } from './lib/email';
+import {
+  buildBookReadyEmail,
+  buildOrderConfirmationEmail,
+  formatOrderNumber,
+  sendEmail,
+  type BookFormat,
+} from './lib/email';
+import { PROBLEMS } from './lib/bookData';
+
+function resolveProblemTitle(problemId: string): string {
+  const problem = PROBLEMS[problemId];
+  if (problem) return problem.title_pl;
+  // Fallback: humanize the raw id so the customer doesn't see "fear_of_dark".
+  return problemId.replace(/_/g, ' ');
+}
+
+function resolveFormat(format: string | undefined | null): BookFormat {
+  return format === 'pdf_print' ? 'pdf_print' : 'pdf';
+}
 
 /**
- * Send the post-payment "Twoja bajka jest gotowa" email. Looks up the
- * order, generates a fresh download URL (Convex storage URLs are
- * signed and short-lived) and ships the templated email through Resend.
+ * Send the post-payment confirmation email — "Mamy Twoje zamówienie".
+ * Triggered immediately after Stripe webhook flips paymentStatus to
+ * 'completed' (see billing.ts:markBookOrderPaid). No PDF is expected at
+ * this point — the pipeline is still working.
  *
  * No-ops gracefully when:
  *   - the order is missing
- *   - the parent never supplied an email (legacy admin orders)
- *   - the PDF isn't actually composed yet
- *   - RESEND_API_KEY is not configured (handled inside sendEmail)
+ *   - the parent never supplied an email
+ *   - RESEND_API_KEY is not configured
+ */
+export const sendOrderConfirmation = internalAction({
+  args: { bookOrderId: v.id('bookOrders') },
+  returns: v.null(),
+  handler: async (ctx, { bookOrderId }) => {
+    const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, {
+      orderId: bookOrderId,
+    });
+    if (!order) {
+      console.warn('[email.sendOrderConfirmation] order not found', bookOrderId);
+      return null;
+    }
+    if (!order.email) {
+      console.warn('[email.sendOrderConfirmation] no email on order', bookOrderId);
+      return null;
+    }
+
+    const { subject, html, text } = buildOrderConfirmationEmail({
+      childName: order.childName,
+      childAge: order.ageNumber ?? order.ageBracket ?? null,
+      problemTitle: resolveProblemTitle(order.problemId),
+      format: resolveFormat(order.format),
+      orderNumber: formatOrderNumber(bookOrderId),
+    });
+
+    await sendEmail({ to: order.email, subject, html, text });
+    return null;
+  },
+});
+
+/**
+ * Send the "Twoja bajka jest gotowa" email with a download link. Triggered
+ * from markOrderComplete once the pipeline produces a final PDF.
+ *
+ * No-ops gracefully when:
+ *   - the order is missing
+ *   - the parent never supplied an email
+ *   - the PDF isn't actually composed yet (defensive — shouldn't happen
+ *     when called from markOrderComplete, but kept for safety)
+ *   - RESEND_API_KEY is not configured
  */
 export const sendBookReady = internalAction({
   args: { bookOrderId: v.id('bookOrders') },
@@ -71,6 +129,8 @@ export const sendBookReady = internalAction({
       bookTitle,
       downloadUrl,
       resultUrl,
+      format: resolveFormat(order.format),
+      orderCreatedAtMs: order.createdAt,
     });
 
     await sendEmail({ to: order.email, subject, html, text });
