@@ -10,6 +10,7 @@ import { trackEvent } from '@lib/telemetry';
 import { BookErrorScreen, BookPausedScreen, ProgressJourney } from './ProgressJourney';
 import { StyleVoteCards } from './BookStyleVote';
 import { DedicationForm } from './DedicationForm';
+import { BrandFooter } from '../BrandFooter';
 
 type InlinePhase = 'progress' | 'vote' | 'dedication';
 export type ProgressFlow = 'auth' | 'landing';
@@ -183,32 +184,42 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
 
   if (!orderId) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
-        <p className="text-sm text-gray-500">{t('progress.notFound')}</p>
-      </div>
+      <ProgressLayout>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
+          <p className="text-sm text-gray-500">{t('progress.notFound')}</p>
+        </div>
+      </ProgressLayout>
     );
   }
 
   if (!progress) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-6 h-6 spinner" />
-      </div>
+      <ProgressLayout>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="w-6 h-6 spinner" />
+        </div>
+      </ProgressLayout>
     );
   }
 
   if (progress.status === 'failed') {
     return (
-      <BookErrorScreen
-        error={friendlyBookError(progress.error)}
-        retryLabel={t(cfg.retryLabelKey)}
-        onRetry={() => void navigate(cfg.retryNav)}
-      />
+      <ProgressLayout>
+        <BookErrorScreen
+          error={friendlyBookError(progress.error)}
+          retryLabel={t(cfg.retryLabelKey)}
+          onRetry={() => void navigate(cfg.retryNav)}
+        />
+      </ProgressLayout>
     );
   }
 
   if (progress.status === 'paused') {
-    return <BookPausedScreen />;
+    return (
+      <ProgressLayout>
+        <BookPausedScreen />
+      </ProgressLayout>
+    );
   }
 
   // Inline: dedication form (after vote submitted).
@@ -228,10 +239,12 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
       setPhase('progress');
     };
     return (
-      <DedicationForm
-        onSubmit={handleDedicationSubmit}
-        onSkip={() => void handleDedicationSkip()}
-      />
+      <ProgressLayout>
+        <DedicationForm
+          onSubmit={handleDedicationSubmit}
+          onSkip={() => void handleDedicationSkip()}
+        />
+      </ProgressLayout>
     );
   }
 
@@ -265,27 +278,29 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
     };
 
     return (
-      <StyleVoteCards
-        imageUrlA={styleVoteImages.imageUrlA ?? null}
-        imageUrlB={styleVoteImages.imageUrlB ?? null}
-        selected={selected}
-        onSelect={setSelected}
-        onConfirm={() => void handleVote()}
-        isSubmitting={isSubmitting}
-        error={voteError}
-        labels={{
-          kicker: t('vote.kicker'),
-          heading: t('vote.heading'),
-          description: t('vote.description'),
-          styleA: t('vote.styleA'),
-          styleADesc: t('vote.styleADesc'),
-          styleB: t('vote.styleB'),
-          styleBDesc: t('vote.styleBDesc'),
-          confirm: t('vote.confirm'),
-          confirming: t('vote.confirming'),
-          chooseFirst: t('vote.chooseFirst'),
-        }}
-      />
+      <ProgressLayout>
+        <StyleVoteCards
+          imageUrlA={styleVoteImages.imageUrlA ?? null}
+          imageUrlB={styleVoteImages.imageUrlB ?? null}
+          selected={selected}
+          onSelect={setSelected}
+          onConfirm={() => void handleVote()}
+          isSubmitting={isSubmitting}
+          error={voteError}
+          labels={{
+            kicker: t('vote.kicker'),
+            heading: t('vote.heading'),
+            description: t('vote.description'),
+            styleA: t('vote.styleA'),
+            styleADesc: t('vote.styleADesc'),
+            styleB: t('vote.styleB'),
+            styleBDesc: t('vote.styleBDesc'),
+            confirm: t('vote.confirm'),
+            confirming: t('vote.confirming'),
+            chooseFirst: t('vote.chooseFirst'),
+          }}
+        />
+      </ProgressLayout>
     );
   }
 
@@ -293,15 +308,26 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
   // no step list, no internal stage names — to keep the magic intact.
   const isLanding = flow === 'landing';
   return (
-    <ProgressJourney
-      status={progress.status}
-      pipelineSteps={PIPELINE_STEPS}
-      events={isLanding ? undefined : (events ?? undefined)}
-      childName={progress.childName}
-      ageNumber={progress.ageNumber}
-      problemId={progress.problemId}
-      showStages={!isLanding}
-      showStageLabel={!isLanding}
-    />
+    <ProgressLayout>
+      <ProgressJourney
+        status={progress.status}
+        pipelineSteps={PIPELINE_STEPS}
+        events={isLanding ? undefined : (events ?? undefined)}
+        childName={progress.childName}
+        ageNumber={progress.ageNumber}
+        problemId={progress.problemId}
+        showStages={!isLanding}
+        showStageLabel={!isLanding}
+      />
+    </ProgressLayout>
+  );
+}
+
+function ProgressLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      {children}
+      <BrandFooter />
+    </>
   );
 }
