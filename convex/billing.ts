@@ -98,10 +98,11 @@ export const markBookOrderPaid = internalMutation({
       stripeSessionId: args.stripeSessionId,
       updatedAt: Date.now(),
     });
-    // Hand off the "Twoja bajka jest gotowa" email to the email action.
-    // Scheduled rather than awaited so a Resend hiccup doesn't fail the
-    // webhook (Stripe would retry, double-flipping paid status).
-    await ctx.scheduler.runAfter(0, internal.email.sendBookReady, {
+    // Hand off the "Mamy Twoje zamówienie" confirmation email. The PDF isn't
+    // ready yet — that mail is sent later from markOrderComplete. Scheduled
+    // rather than awaited so a Resend hiccup doesn't fail the webhook
+    // (Stripe would retry, double-flipping paid status).
+    await ctx.scheduler.runAfter(0, internal.email.sendOrderConfirmation, {
       bookOrderId: args.bookOrderId,
     });
     return null;
