@@ -78,6 +78,44 @@ function sanitizeOrderTextFields<
   };
 }
 
+/**
+ * Run the two pre-pipeline LLM guards (moderation + debrand) before we
+ * accept the order into the pipeline. Moderation rejects throw — the
+ * frontend catches `Error.message` and surfaces it as the inline form
+ * error so the parent can fix the offending field and retry. Debrand is
+ * non-blocking: it rewrites `outfit` / `favoriteToy` in place because
+ * the image generator's brand filter would otherwise reject the prompts.
+ */
+async function runIntakeGuards(
+  ctx: import('./_generated/server').ActionCtx,
+  args: {
+    clerkUserId: string;
+    childName: string;
+    problemDetail?: string;
+    favoriteToy?: string;
+    outfit: string;
+  },
+): Promise<{ outfit: string; favoriteToy?: string }> {
+  const verdict = await ctx.runAction(internal.bookIntakeGuard.moderateIntake, {
+    clerkUserId: args.clerkUserId,
+    childName: args.childName,
+    problemDetail: args.problemDetail,
+    favoriteToy: args.favoriteToy,
+    outfit: args.outfit,
+  });
+  if (!verdict.ok) {
+    throw new Error(
+      verdict.reason ?? 'Treść zamówienia nie przeszła moderacji — popraw pola i spróbuj ponownie.',
+    );
+  }
+
+  return ctx.runAction(internal.bookIntakeGuard.debrandVisualFields, {
+    clerkUserId: args.clerkUserId,
+    outfit: args.outfit,
+    favoriteToy: args.favoriteToy,
+  });
+}
+
 // ── Start a new book order ─────────────────────────────────
 
 export const startOrder = action({
@@ -133,6 +171,17 @@ export const startOrder = action({
     validateOrderInput(args);
     const cleaned = sanitizeOrderTextFields(args);
 
+    // Pre-pipeline guards: block disallowed content before we burn money on
+    // A0-A11, and rewrite brand/IP references in visual fields so the image
+    // generator's brand filter doesn't reject the prompts downstream.
+    const guarded = await runIntakeGuards(ctx, {
+      clerkUserId,
+      childName: cleaned.childName,
+      problemDetail: cleaned.problemDetail,
+      favoriteToy: cleaned.favoriteToy,
+      outfit: args.outfit,
+    });
+
     // Create order in DB
     const orderId: Id<'bookOrders'> = await ctx.runMutation(internal.bookPipeline.createOrder, {
       clerkUserId,
@@ -142,13 +191,13 @@ export const startOrder = action({
       gender: args.gender,
       problemId: args.problemId,
       problemDetail: cleaned.problemDetail,
-      favoriteToy: cleaned.favoriteToy,
+      favoriteToy: guarded.favoriteToy,
       glasses: args.glasses,
       hairColor: args.hairColor,
       hairStyle: args.hairStyle,
       eyeColor: args.eyeColor,
       skinTone: args.skinTone,
-      outfit: args.outfit,
+      outfit: guarded.outfit,
       email: args.email,
       skipQaReviews,
       skipStripe,
@@ -709,6 +758,16 @@ export const startLandingOrder = action({
     });
     const format = args.format ?? 'pdf';
 
+    // Same guards as the auth flow — moderation blocks disallowed content,
+    // debrand rewrites trademark references in visual fields.
+    const guarded = await runIntakeGuards(ctx, {
+      clerkUserId: LANDING_USER_ID,
+      childName: cleaned.childName,
+      problemDetail: cleaned.problemDetail,
+      favoriteToy: cleaned.favoriteToy,
+      outfit: args.outfit,
+    });
+
     const orderId: Id<'bookOrders'> = await ctx.runMutation(internal.bookPipeline.createOrder, {
       clerkUserId: LANDING_USER_ID,
       childName: cleaned.childName,
@@ -717,13 +776,13 @@ export const startLandingOrder = action({
       gender: args.gender,
       problemId: args.problemId,
       problemDetail: cleaned.problemDetail,
-      favoriteToy: cleaned.favoriteToy,
+      favoriteToy: guarded.favoriteToy,
       glasses: args.glasses,
       hairColor: args.hairColor,
       hairStyle: args.hairStyle,
       eyeColor: args.eyeColor,
       skinTone: args.skinTone,
-      outfit: args.outfit,
+      outfit: guarded.outfit,
       email: args.email,
       format,
       shippingAddress: format === 'pdf_print' ? args.shippingAddress : undefined,

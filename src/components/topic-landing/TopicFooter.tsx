@@ -55,16 +55,7 @@ export function TopicFooter() {
                   onClick={() => setShowPrivacy(true)}
                   className="hover:text-magic-400 transition-colors text-left"
                 >
-                  Polityka Prywatności
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => setShowPrivacy(true)}
-                  className="hover:text-magic-400 transition-colors text-left"
-                >
-                  RODO
+                  Polityka Prywatności i RODO
                 </button>
               </li>
             </ul>
