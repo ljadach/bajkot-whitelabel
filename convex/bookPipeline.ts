@@ -755,19 +755,17 @@ export const startLandingOrder = action({
   },
   returns: v.object({ orderId: v.id('bookOrders'), accessToken: v.string() }),
   handler: async (ctx, args): Promise<{ orderId: Id<'bookOrders'>; accessToken: string }> => {
-    // Intake gate. Fail-closed in production: when LANDING_ACCESS_TOKEN is
-    // not set, the action refuses all landing intake. The dev fallback only
-    // applies when CONVEX_CLOUD_URL hints we're on a non-prod deployment.
-    const expectedToken = process.env.LANDING_ACCESS_TOKEN;
-    const isProd = (process.env.CONVEX_CLOUD_URL ?? '').includes('wonderful-egret');
-    if (!expectedToken) {
-      if (isProd) throw new Error('Landing intake disabled');
-    } else if (args.accessToken !== expectedToken) {
-      throw new Error('Invalid access token');
-    }
+    // Landing intake gate intentionally disabled — re-enabling it locked
+    // legitimate visitors out of the public funnel (Convex sanitizes
+    // `throw new Error()` to "Server Error" in prod, so the gate looked
+    // like a generic crash). The accessToken arg is kept on the contract
+    // for backward compatibility but no longer validated here.
+    // Defence remains via: (a) per-order tokens (C2) on every read/write,
+    // (b) global rate limit below, (c) Stripe paywall on the PDF unlock.
+    void args.accessToken;
 
     // Global cap on anonymous landing intake — guards against runaway LLM
-    // / image-gen costs if the gate token leaks or is brute-forced.
+    // / image-gen costs even without the env-token gate above.
     await ctx.runMutation(internal.rateLimitMutation.checkAndRecordLandingStart, {});
 
     validateOrderInput(args);
