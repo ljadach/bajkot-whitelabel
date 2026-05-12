@@ -68,8 +68,24 @@ export function r2KeyFor(order: Doc<'bookOrders'>, kind: R2Kind): string | undef
   return kind === 'preview' ? order.r2PreviewKey : order.r2FullKey;
 }
 
-/** Compute the canonical R2 outputKey for an order. Render service writes here, frontend reads from here. */
-export function r2OutputKeyFor(orderId: Id<'bookOrders'>, kind: R2Kind): string {
+/**
+ * Compute the canonical R2 outputKey for an order. Render service writes
+ * here, frontend reads from here.
+ *
+ * For previews we bake the page count into the path. Typst-render caches
+ * by outputKey: when we bumped PREVIEW_PAGE_COUNT from 3 to 7, the cache
+ * kept returning the old 3-page PDF because the key never changed. Naming
+ * the variant (`preview-7p.pdf`) forces a cache miss for every count
+ * change and keeps old artifacts addressable for legacy orders.
+ */
+export function r2OutputKeyFor(
+  orderId: Id<'bookOrders'>,
+  kind: R2Kind,
+  previewPageCount?: number,
+): string {
+  if (kind === 'preview' && previewPageCount) {
+    return `orders/${orderId}/preview-${previewPageCount}p.pdf`;
+  }
   return `orders/${orderId}/${kind}.pdf`;
 }
 

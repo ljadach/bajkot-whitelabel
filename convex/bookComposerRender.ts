@@ -69,7 +69,11 @@ export const generatePdfViaRender = internalAction({
           mode: kind,
           order,
           illustrations: briefIllustrations,
-          outputKey: r2OutputKeyFor(orderId, kind),
+          outputKey: r2OutputKeyFor(
+            orderId,
+            kind,
+            kind === 'preview' ? PREVIEW_PAGE_COUNT : undefined,
+          ),
           maxPages: kind === 'preview' ? PREVIEW_PAGE_COUNT : undefined,
           force,
         });
