@@ -49,6 +49,7 @@ lerna-debug.log*
 .superset/
 graphify-out/
 out/
+.claude/
 
 # Configuration
 settings.local.json

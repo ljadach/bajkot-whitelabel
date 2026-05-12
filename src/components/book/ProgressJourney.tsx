@@ -106,7 +106,6 @@ export function ProgressJourney({
     const zNameStr = zName(trimmed) ?? 'z dzieckiem';
     const params = { name, ageNumber: ageValue, problemTitle, zName: zNameStr };
     return [
-      { emoji: '💡', text: t('progress.tip1', params) },
       { emoji: '🧠', text: t('progress.tip2', params) },
       { emoji: '🌟', text: t('progress.tip3', params) },
       { emoji: '📖', text: t('progress.tip4', params) },

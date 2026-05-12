@@ -8,6 +8,7 @@ import plCookies from '@/locales/pl/cookies.json';
 import plContact from '@/locales/pl/contact.json';
 import plFaq from '@/locales/pl/faq.json';
 import plBook from '@/locales/pl/book.json';
+import plFeedback from '@/locales/pl/feedback.json';
 
 const resources = {
   pl: {
@@ -17,6 +18,7 @@ const resources = {
     contact: plContact,
     faq: plFaq,
     book: plBook,
+    feedback: plFeedback,
   },
 };
 
@@ -26,7 +28,7 @@ void i18n.use(initReactI18next).init({
   fallbackLng: 'pl',
   supportedLngs: ['pl'],
 
-  ns: ['common', 'app', 'cookies', 'contact', 'faq', 'book'],
+  ns: ['common', 'app', 'cookies', 'contact', 'faq', 'book', 'feedback'],
   defaultNS: 'common',
 
   interpolation: {

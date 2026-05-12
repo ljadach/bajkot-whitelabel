@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "title": "Opinie — Bajkoterapia",
+    "description": "Zostaw nam opinię o Bajkoterapii. Każda wiadomość trafia bezpośrednio do zespołu."
+  },
+  "navLabel": "Opinie",
+  "pageTitle": "Zostaw opinię",
+  "pageHeading": "Powiedz nam, co myślisz",
+  "pageBody": "Każda opinia trafia bezpośrednio do zespołu Bajkoterapii. Zostaw email i — jeśli chcesz — numer telefonu, jeżeli wolisz, żebyśmy oddzwonili.",
+  "form": {
+    "email": "Twój email",
+    "emailPlaceholder": "imie@nazwisko.pl",
+    "phone": "Telefon (opcjonalnie)",
+    "phonePlaceholder": "+48 ...",
+    "message": "Wiadomość",
+    "messagePlaceholder": "Co działa? Co Ci się nie podoba? Czego brakuje?",
+    "submit": "Wyślij",
+    "submitting": "Wysyłam...",
+    "error": "Nie udało się wysłać. Spróbuj ponownie za chwilę."
+  },
+  "success": {
+    "heading": "Dziękujemy!",
+    "body": "Twoja wiadomość trafiła do nas. Jeśli prosi o odpowiedź — odezwiemy się w ciągu 1-2 dni roboczych."
+  }
+}

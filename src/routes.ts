@@ -6,6 +6,7 @@ export default [
   route('katalog', 'routes/catalog.tsx', { id: 'catalog' }),
   route('cennik', 'routes/cennik.tsx', { id: 'cennik' }),
   route('about/contact', 'routes/contact.tsx', { id: 'contact' }),
+  route('opinie', 'routes/feedback.tsx', { id: 'feedback' }),
   route('support/faq', 'routes/faq.tsx', { id: 'faq' }),
   route('problem/:slug', 'routes/topic.tsx', { id: 'topic' }),
   route('jak-zlozyc-ksiazke', 'routes/jak-zlozyc-ksiazke.tsx', { id: 'fold-guide' }),

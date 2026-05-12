@@ -58,6 +58,11 @@ export function TopicFooter() {
                   Polityka Prywatności i RODO
                 </button>
               </li>
+              <li>
+                <a href="/opinie" className="hover:text-magic-400 transition-colors">
+                  Zostaw opinię
+                </a>
+              </li>
             </ul>
           </div>
         </div>

@@ -111,6 +111,20 @@ const applicationTables = {
     .index('by_created', ['createdAt'])
     .index('by_email_and_created', ['email', 'createdAt']),
 
+  // Lightweight feedback form (header + footer link). Separate table from
+  // contactSubmissions because the shape is intentionally minimal — email +
+  // optional phone + message. Every submission also fires off an email to
+  // bajkoterapia.org@gmail.com via Resend.
+  feedbackSubmissions: defineTable({
+    email: v.string(),
+    phone: v.optional(v.string()),
+    message: v.string(),
+    language: v.string(),
+    createdAt: v.number(),
+  })
+    .index('by_created', ['createdAt'])
+    .index('by_email_and_created', ['email', 'createdAt']),
+
   // ============================================
   // Book Pipeline (Bajkoterapia)
   // ============================================

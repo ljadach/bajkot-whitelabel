@@ -28,6 +28,7 @@ import type * as config from '../config.js';
 import type * as contact from '../contact.js';
 import type * as crons from '../crons.js';
 import type * as email from '../email.js';
+import type * as feedback from '../feedback.js';
 import type * as http from '../http.js';
 import type * as leads from '../leads.js';
 import type * as lib_actionHelpers from '../lib/actionHelpers.js';
@@ -94,6 +95,7 @@ declare const fullApi: ApiFromModules<{
   contact: typeof contact;
   crons: typeof crons;
   email: typeof email;
+  feedback: typeof feedback;
   http: typeof http;
   leads: typeof leads;
   'lib/actionHelpers': typeof lib_actionHelpers;
