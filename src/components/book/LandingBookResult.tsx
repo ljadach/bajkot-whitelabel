@@ -3,14 +3,14 @@ import { useAction, useQuery } from 'convex/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
-import { getLandingOrderToken } from '../../hooks/useLandingOrderToken';
+import { captureLandingOrderTokenFromUrl } from '../../hooks/useLandingOrderToken';
 import { useResolvedR2Url } from '../../hooks/useResolvedR2Url';
 import { BookSuccessScreen, BookPreviewScreen } from './BookResult';
 
 export function LandingBookResult() {
   const { t } = useTranslation('book');
   const { orderId } = useParams<{ orderId: string }>();
-  const accessToken = getLandingOrderToken(orderId);
+  const accessToken = captureLandingOrderTokenFromUrl(orderId);
 
   const data = useQuery(
     api.bookPipeline.getLandingDownloadUrl,
@@ -47,6 +47,7 @@ export function LandingBookResult() {
         preview={preview}
         bookOrderId={orderId}
         flow="landing"
+        accessToken={accessToken}
         onUnlock={async () => {
           const session = await createLandingCheckoutSession({
             bookOrderId: orderId as Id<'bookOrders'>,

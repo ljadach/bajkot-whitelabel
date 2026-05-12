@@ -121,11 +121,20 @@ export const sendBookReady = internalAction({
     // Landing orders live under /landing/book/<id>/result, auth orders under
     // /book/<id>/result. We don't store flow metadata explicitly — derive
     // from the synthetic landing user id (matches assertLandingOrder).
+    //
+    // Cross-device handoff: append `?t=<rawToken>` for landing orders so the
+    // parent can open the email on a device that never saw the intake (mom
+    // orders on laptop, opens email on phone — localStorage doesn't carry
+    // between browsers). Frontend captures the token from the URL, saves it
+    // to localStorage, and strips it from the address bar.
     const isLanding = order.clerkUserId === 'landing-user';
     const appUrl = process.env.APP_URL || 'https://bajkoterapia.org';
-    const resultUrl = isLanding
-      ? `${appUrl}/landing/book/${bookOrderId}/result`
-      : `${appUrl}/book/${bookOrderId}/result`;
+    const resultPath = isLanding
+      ? `/landing/book/${bookOrderId}/result`
+      : `/book/${bookOrderId}/result`;
+    const tokenQuery =
+      isLanding && order.accessTokenRaw ? `?t=${encodeURIComponent(order.accessTokenRaw)}` : '';
+    const resultUrl = `${appUrl}${resultPath}${tokenQuery}`;
 
     const bookTitle = extractBookTitle(order.storyDraft);
     const { subject, html, text } = buildBookReadyEmail({

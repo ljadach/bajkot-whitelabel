@@ -264,6 +264,8 @@ interface BookPreviewScreenProps {
   bookOrderId: string;
   flow: 'auth' | 'landing';
   onUnlock: () => Promise<void>;
+  /** Required for landing flow — capability token bound to the order. */
+  accessToken?: string | null;
 }
 
 /**
@@ -276,6 +278,7 @@ export function BookPreviewScreen({
   bookOrderId,
   flow,
   onUnlock,
+  accessToken,
 }: BookPreviewScreenProps) {
   const { t } = useTranslation('book');
   const [redirecting, setRedirecting] = useState(false);
@@ -287,6 +290,7 @@ export function BookPreviewScreen({
     kind: 'preview',
     r2Key: preview?.r2PreviewKey ?? null,
     directUrl: preview?.previewPdfUrl ?? null,
+    accessToken,
   });
 
   useEffect(() => {

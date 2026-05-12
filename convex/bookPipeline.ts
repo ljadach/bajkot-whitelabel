@@ -233,6 +233,8 @@ export const createOrder = internalMutation({
     pauseForPrint: v.optional(v.boolean()),
     /** Per-order landing access token (sha256 hex). Only set for landing orders. */
     accessTokenHash: v.optional(v.string()),
+    /** Raw landing token (capability) — embedded in transactional email URLs. */
+    accessTokenRaw: v.optional(v.string()),
     /**
      * Pipeline behavior toggles — internal-only, never accepted from public
      * actions (C1). Trusted callers (startLandingOrder, CLI, admin batch)
@@ -262,6 +264,7 @@ export const createOrder = internalMutation({
       format: args.format,
       shippingAddress: args.shippingAddress,
       accessTokenHash: args.accessTokenHash,
+      accessTokenRaw: args.accessTokenRaw,
       skipQaReviews: args.skipQaReviews,
       fastImage: args.fastImage,
       status: args.pauseForPrint ? 'paused' : 'intake',
@@ -824,6 +827,7 @@ export const startLandingOrder = action({
       shippingAddress: format === 'pdf_print' ? args.shippingAddress : undefined,
       pauseForPrint: format === 'pdf_print',
       accessTokenHash,
+      accessTokenRaw: rawToken,
       // Landing flow is the conversion funnel — skip QA passes (A4/A6 etc.)
       // for speed and cost. `fastImage` stays off: that flag swaps Gemini
       // for an ASCII raster (admin-only smoke test path), not what real

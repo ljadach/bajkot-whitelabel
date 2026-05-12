@@ -7,7 +7,7 @@ import { Id } from '../../../convex/_generated/dataModel';
 import { PIPELINE_STEPS } from '@lib/bookData';
 import { friendlyBookError } from '@lib/bookErrors';
 import { trackEvent } from '@lib/telemetry';
-import { getLandingOrderToken } from '../../hooks/useLandingOrderToken';
+import { captureLandingOrderTokenFromUrl } from '../../hooks/useLandingOrderToken';
 import { BookErrorScreen, BookPausedScreen, ProgressJourney } from './ProgressJourney';
 import { StyleVoteCards } from './BookStyleVote';
 import { DedicationForm } from './DedicationForm';
@@ -110,7 +110,7 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
   // Landing flow attaches a per-order capability token to every call. Auth
   // flow leans on Clerk's identity and passes no extra args. The conditional
   // builder below keeps the rest of the shell ignorant of which flow it's in.
-  const landingToken = flow === 'landing' ? getLandingOrderToken(orderId) : null;
+  const landingToken = flow === 'landing' ? captureLandingOrderTokenFromUrl(orderId) : null;
   const buildArgs = <T extends { orderId: Id<'bookOrders'> }>(
     base: T,
   ): T | (T & { accessToken: string }) =>

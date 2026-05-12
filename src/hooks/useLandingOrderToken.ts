@@ -46,3 +46,29 @@ export function clearLandingOrderToken(orderId: string): void {
   delete map[orderId];
   writeMap(map);
 }
+
+/**
+ * Pick up a `?t=<rawToken>` query param the email link planted on us and
+ * persist it under the given orderId. The token is removed from the URL so
+ * it doesn't sit in browser history, referrer headers, or screenshots.
+ * Returns the resolved token (URL takes precedence, then localStorage) so
+ * consumers can use it synchronously on the same render.
+ *
+ * Idempotent: safe to call on every mount of a `/landing/book/:id/*` route.
+ * No-op on SSR or when no `?t=` is present and no order is given.
+ */
+export function captureLandingOrderTokenFromUrl(orderId: string | undefined | null): string | null {
+  if (typeof window === 'undefined') return getLandingOrderToken(orderId);
+  if (!orderId) return null;
+  const url = new URL(window.location.href);
+  const fromUrl = url.searchParams.get('t');
+  if (fromUrl) {
+    saveLandingOrderToken(orderId, fromUrl);
+    url.searchParams.delete('t');
+    const cleaned =
+      url.pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : '');
+    window.history.replaceState({}, '', cleaned);
+    return fromUrl;
+  }
+  return getLandingOrderToken(orderId);
+}

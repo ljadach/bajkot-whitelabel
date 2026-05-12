@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
 import { trackEvent } from '@lib/telemetry';
-import { getLandingOrderToken } from '../../hooks/useLandingOrderToken';
+import { captureLandingOrderTokenFromUrl } from '../../hooks/useLandingOrderToken';
 
 interface Props {
   variant: 'auth' | 'landing';
@@ -18,7 +18,7 @@ interface Props {
 export function PrintThanks({ variant }: Props) {
   const { t } = useTranslation('book');
   const { orderId } = useParams<{ orderId: string }>();
-  const accessToken = variant === 'landing' ? getLandingOrderToken(orderId) : null;
+  const accessToken = variant === 'landing' ? captureLandingOrderTokenFromUrl(orderId) : null;
 
   useEffect(() => {
     trackEvent('print_thanks_viewed', { flow: variant, bookOrderId: orderId });

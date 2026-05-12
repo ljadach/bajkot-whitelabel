@@ -280,6 +280,14 @@ const applicationTables = {
     // gate have no hash and are rejected by assertLandingOrder.
     accessTokenHash: v.optional(v.string()),
 
+    // Raw landing access token. Stored so transactional emails can embed it
+    // in the `?t=` query parameter on `/landing/book/:id/*` URLs, enabling
+    // cross-device handoff (mom orders on laptop, opens email link on phone
+    // — localStorage wouldn't carry the token between them). Server-side
+    // validation always compares against accessTokenHash; the raw column is
+    // strictly a recovery channel for the parent who owns the email.
+    accessTokenRaw: v.optional(v.string()),
+
     // Timestamps
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
