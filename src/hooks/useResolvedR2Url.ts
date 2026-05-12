@@ -18,8 +18,10 @@ export function useResolvedR2Url(opts: {
   kind: 'full' | 'preview';
   r2Key: string | null | undefined;
   directUrl: string | null | undefined;
+  /** Required for landing flow — capability token bound to the order. */
+  accessToken?: string | null;
 }): string | null {
-  const { orderId, flow, kind, r2Key, directUrl } = opts;
+  const { orderId, flow, kind, r2Key, directUrl, accessToken } = opts;
   const [resolved, setResolved] = useState<string | null>(null);
   const resolveAuth = useAction(api.bookPipeline.resolveR2DownloadUrl);
   const resolveLanding = useAction(api.bookPipeline.resolveLandingR2DownloadUrl);
@@ -29,9 +31,16 @@ export function useResolvedR2Url(opts: {
       setResolved(null);
       return;
     }
+    if (flow === 'landing' && !accessToken) {
+      setResolved(null);
+      return;
+    }
     let cancelled = false;
-    const resolver = flow === 'landing' ? resolveLanding : resolveAuth;
-    resolver({ orderId, kind })
+    const promise =
+      flow === 'landing'
+        ? resolveLanding({ orderId, kind, accessToken: accessToken ?? '' })
+        : resolveAuth({ orderId, kind });
+    promise
       .then((url) => {
         if (!cancelled) setResolved(url);
       })
@@ -41,7 +50,7 @@ export function useResolvedR2Url(opts: {
     return () => {
       cancelled = true;
     };
-  }, [orderId, r2Key, kind, flow, resolveAuth, resolveLanding]);
+  }, [orderId, r2Key, kind, flow, accessToken, resolveAuth, resolveLanding]);
 
   if (directUrl) return directUrl;
   return resolved;

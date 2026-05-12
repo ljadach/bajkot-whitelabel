@@ -21,11 +21,7 @@ import { ConvexError } from 'convex/values';
  */
 export const checkAndRecordLLMRateLimit = internalMutation({
   args: {
-    actionType: v.union(
-      v.literal('llm_call'),
-      v.literal('profile_update'),
-      v.literal('landing_order'),
-    ),
+    actionType: v.union(v.literal('llm_call'), v.literal('profile_update')),
     clerkUserId: v.string(),
   },
   returns: v.object({
@@ -51,6 +47,42 @@ export const checkAndRecordLLMRateLimit = internalMutation({
       remaining: result.remaining,
       resetAt: result.resetAt,
       clerkUserId,
+    };
+  },
+});
+
+/**
+ * Global rate limit for anonymous landing intake. There's no Clerk identity
+ * to scope per-user, so every landing start consumes one slot from a single
+ * shared bucket keyed by LANDING_RATE_LIMIT_KEY. The cap is intentionally
+ * conservative because each landing start triggers the full LLM/image
+ * pipeline downstream.
+ */
+export const checkAndRecordLandingStart = internalMutation({
+  args: {},
+  returns: v.object({
+    allowed: v.boolean(),
+    remaining: v.number(),
+    resetAt: v.number(),
+  }),
+  handler: async (ctx) => {
+    const { LANDING_RATE_LIMIT_KEY } = await import('./lib/rateLimiter');
+    const result = await checkRateLimit(ctx, LANDING_RATE_LIMIT_KEY, 'landing_start');
+
+    if (!result.allowed) {
+      throw new ConvexError({
+        code: 'RATE_LIMIT_EXCEEDED',
+        message:
+          result.message || 'Zbyt wiele zamówień w krótkim czasie. Spróbuj ponownie później.',
+        resetAt: result.resetAt,
+        remaining: result.remaining,
+      });
+    }
+
+    return {
+      allowed: result.allowed,
+      remaining: result.remaining,
+      resetAt: result.resetAt,
     };
   },
 });

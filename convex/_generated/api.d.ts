@@ -47,6 +47,7 @@ import type * as lib_dbHelpers from '../lib/dbHelpers.js';
 import type * as lib_email from '../lib/email.js';
 import type * as lib_geminiImageGen from '../lib/geminiImageGen.js';
 import type * as lib_jsonUtils from '../lib/jsonUtils.js';
+import type * as lib_landingToken from '../lib/landingToken.js';
 import type * as lib_langfuse from '../lib/langfuse.js';
 import type * as lib_langfusePrompts from '../lib/langfusePrompts.js';
 import type * as lib_langfuseRest from '../lib/langfuseRest.js';
@@ -112,6 +113,7 @@ declare const fullApi: ApiFromModules<{
   'lib/email': typeof lib_email;
   'lib/geminiImageGen': typeof lib_geminiImageGen;
   'lib/jsonUtils': typeof lib_jsonUtils;
+  'lib/landingToken': typeof lib_landingToken;
   'lib/langfuse': typeof lib_langfuse;
   'lib/langfusePrompts': typeof lib_langfusePrompts;
   'lib/langfuseRest': typeof lib_langfuseRest;

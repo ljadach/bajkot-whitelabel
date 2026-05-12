@@ -52,10 +52,10 @@ export const createOrder = internalMutation({
       chosenStyle: args.chosenStyle ?? 'A',
       skipQaReviews: args.skipQaReviews ?? true,
       fastImage: args.fastImage ?? false,
-      // CLI bypasses Stripe — `isPaid()` honours skipStripe, so the result
-      // page won't paywall the PDF. Dedication is also auto-decided so A9
-      // doesn't park in `awaiting_dedication` waiting for a UI submit.
-      skipStripe: true,
+      // CLI bypasses Stripe by stamping paymentStatus as completed at insert
+      // time — `isPaid()` only trusts paymentStatus now, no separate flag.
+      // Dedication is auto-decided so A9 doesn't park in awaiting_dedication.
+      paymentStatus: 'completed' as const,
       dedicationDecided: true,
       email: args.email,
       useRenderService: args.useRenderService ?? false,
@@ -139,13 +139,12 @@ export const recomposeWithRender = internalAction({
   },
 });
 
-// ── DEV: force paywall view by clearing the skipStripe flag ──
+// ── DEV: force paywall view by resetting paymentStatus ──────
 export const setUnpaid = internalMutation({
   args: { orderId: v.id('bookOrders') },
   returns: v.null(),
   handler: async (ctx, { orderId }) => {
     await ctx.db.patch(orderId, {
-      skipStripe: false,
       paymentStatus: 'pending' as const,
     });
     return null;

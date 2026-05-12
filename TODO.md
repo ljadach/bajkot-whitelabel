@@ -1,22 +1,22 @@
 # TODO — pre-launch security holes
 
-> **STATUS:** Po zamknięciu #1 zostaje #2 (PII). Stripe spięty end-to-end (dev + prod).
+> **STATUS po 2026-05-12: #1 zamknięty (audit C1/C2/C3 + H3 + H1 deps). #2 dalej otwarty.**
 
 ---
 
-## ✅ #1 — LANDING ACCESS TOKEN GATE — CLOSED 2026-05-12
+## ~~🔥🔥🔥 #1 — LANDING ACCESS TOKEN GATE JEST WYŁĄCZONY~~ ✅ ZAMKNIĘTE 2026-05-12
 
-Zostawiamy obecny model UX (pipeline darmowy, paywall na PDF) i chronimy intake przez **token + rate limit** zamiast pay-first.
+Zamknięte w ramach security audit (C1/C2/C3/H3) + override iteracji nad PR #44. Stan po fix:
 
-Zmiany:
+- **Intake gate (C3)** — `startLandingOrder` wymaga `LANDING_ACCESS_TOKEN` w env. **Fail-closed w prod** (deployment `wonderful-egret`): brak env var = action rzuca `'Landing intake disabled'`. Dev (`proficient-anaconda-129`) wpuszcza bez tokena dla smoke testów.
+- **Rate limit (C3)** — globalny cap 60 starts/h przez `checkAndRecordLandingStart` (klucz `__landing_global__`). Każda generacja konsumuje slot.
+- **Per-order tokeny (C2)** — każde landing order ma `accessTokenHash` (sha256 hex). Raw token zwracany raz z `startLandingOrder`, zapisywany w localStorage (`bajkot_landing_order_tokens` mapa), dołączany do każdego późniejszego wywołania (progress / vote / dedication / preview / download / print-thanks / Stripe checkout). `assertLandingOrder` weryfikuje przez timing-safe compare i fail-closes gdy hash brak (legacy data).
+- **`skipStripe` killed (C1)** — public actions już nie przyjmują flagi. `isPaid()` patrzy tylko na `paymentStatus === 'completed'`. UI panel diagnostyczny zniknął.
+- **H3** — `createLandingCheckoutSession` używa per-order tokena (eliminuje fail-open scenario PR #44, gdzie endpoint był otwarty dla każdego z orderId).
 
-- `convex/bookPipeline.ts:763-786` — odkomentowany gate, dwa osobne errory (missing config vs invalid token).
-- `convex/lib/rateLimiter.ts` — nowy `landing_order` actionType, 10 calls / 1h (globalny ceiling, bo wszystkie landing dziele LANDING_USER_ID).
-- `convex/rateLimitMutation.ts` — `landing_order` w validatorze.
+Świadomy UX trade-off: parent który wraca z emaila na innym browserze nie ma tokena w localStorage → musi przejść przez magic link albo support. Akceptujemy: ochrona danych dziecka > comfort cross-device.
 
-Atak DoS-na-portfel kapuje po ~10 generacjach (≈$3) zanim hard-stop.
-
-Devlog: `docs/devlog/2026-05-12.md`.
+Devlog: `docs/devlog/2026-05-12.md`. Audit doc: `docs/security-audit-2026-05-12.md` (PR #43).
 
 ---
 
@@ -53,6 +53,6 @@ Devlog: `docs/devlog/2026-05-12.md`.
 
 ## Notatki
 
-- #1 zamknięte 2026-05-12. Zostaje #2 (PII).
-- Przed publicznym launchem #2 MUSI być zamknięte (RODO ryzyko).
+- #1 zamknięte 2026-05-12 (security audit + override merge na PR #44).
+- Zostaje #2 (PII w Langfuse + llmLogs) — realne ryzyko prawne + RODO. Przed publicznym launchem MUSI być zamknięte.
 - Status checkujemy NA POCZĄTKU KAŻDEJ SESJI (instrukcja w CLAUDE.md).

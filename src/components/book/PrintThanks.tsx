@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
 import { trackEvent } from '@lib/telemetry';
+import { getLandingOrderToken } from '../../hooks/useLandingOrderToken';
 
 interface Props {
   variant: 'auth' | 'landing';
@@ -17,18 +18,22 @@ interface Props {
 export function PrintThanks({ variant }: Props) {
   const { t } = useTranslation('book');
   const { orderId } = useParams<{ orderId: string }>();
+  const accessToken = variant === 'landing' ? getLandingOrderToken(orderId) : null;
 
   useEffect(() => {
     trackEvent('print_thanks_viewed', { flow: variant, bookOrderId: orderId });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const queryFn =
+  const authArgs = orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip';
+  const landingArgs =
+    orderId && accessToken ? { orderId: orderId as Id<'bookOrders'>, accessToken } : 'skip';
+  const order = useQuery(
     variant === 'auth'
       ? api.bookPipeline.getPrintThanksOrder
-      : api.bookPipeline.getLandingPrintThanksOrder;
-
-  const order = useQuery(queryFn, orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip');
+      : api.bookPipeline.getLandingPrintThanksOrder,
+    variant === 'auth' ? authArgs : landingArgs,
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-12 sm:px-6">

@@ -3,18 +3,14 @@
  * Entry points: startOrder, getOrderProgress, getStyleVoteImages, submitStyleVote, getDownloadUrl
  */
 
-import { action, internalMutation, mutation, query } from './_generated/server';
+import { action, internalMutation, internalQuery, mutation, query } from './_generated/server';
 import { internal } from './_generated/api';
 import { v } from 'convex/values';
 import { Id } from './_generated/dataModel';
-import {
-  assertOrderOwner,
-  assertLandingOrder,
-  isAdmin as isAdminRole,
-  LANDING_USER_ID,
-} from './lib/roles';
+import { assertOrderOwner, assertLandingOrder, LANDING_USER_ID } from './lib/roles';
 import { toAgeBracket, type AgeBracket } from './lib/ageBracket';
 import { sanitizeUserText, sanitizeRequiredUserText } from './lib/security';
+import { generateLandingAccessToken, sha256Hex } from './lib/landingToken';
 
 // Schema validators reused across entry-point mutations.
 const ageBracketValidator = v.union(v.literal('3-5'), v.literal('6-8'), v.literal('9+'));
@@ -139,11 +135,6 @@ export const startOrder = action({
     skinTone: v.optional(v.string()),
     outfit: v.string(),
     email: v.optional(v.string()),
-    skipQaReviews: v.optional(v.boolean()),
-    // DEV: remove these flags before launch.
-    // TODO(c3z): pre-launch cleanup
-    skipStripe: v.optional(v.boolean()),
-    fastImage: v.optional(v.boolean()),
     format: v.optional(formatValidator),
     shippingAddress: v.optional(shippingAddressValidator),
   },
@@ -152,14 +143,6 @@ export const startOrder = action({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error('Not authenticated');
     const clerkUserId = identity.subject;
-
-    // Diagnostic flags are admin-only. Non-admin callers (regular parents)
-    // get prod defaults: payment required, QA on, fast image on. Anything
-    // they pass over the wire is silently discarded.
-    const callerIsAdmin = await isAdminRole(ctx);
-    const skipQaReviews = callerIsAdmin ? args.skipQaReviews : undefined;
-    const skipStripe = callerIsAdmin ? args.skipStripe : undefined;
-    const fastImage = callerIsAdmin ? args.fastImage : true;
 
     const ageBracket = deriveAgeBracket({
       ageBracket: args.ageBracket,
@@ -204,9 +187,6 @@ export const startOrder = action({
       skinTone: args.skinTone,
       outfit: guarded.outfit,
       email: args.email,
-      skipQaReviews,
-      skipStripe,
-      fastImage,
       format,
       shippingAddress: format === 'pdf_print' ? args.shippingAddress : undefined,
       pauseForPrint: format === 'pdf_print',
@@ -243,15 +223,12 @@ export const createOrder = internalMutation({
     skinTone: v.optional(v.string()),
     outfit: v.string(),
     email: v.optional(v.string()),
-    skipQaReviews: v.optional(v.boolean()),
-    // DEV: remove these flags before launch.
-    // TODO(c3z): pre-launch cleanup
-    skipStripe: v.optional(v.boolean()),
-    fastImage: v.optional(v.boolean()),
     format: v.optional(formatValidator),
     shippingAddress: v.optional(shippingAddressValidator),
     /** When true (PDF+Print), order starts in 'paused' instead of 'intake'. */
     pauseForPrint: v.optional(v.boolean()),
+    /** Per-order landing access token (sha256 hex). Only set for landing orders. */
+    accessTokenHash: v.optional(v.string()),
   },
   returns: v.id('bookOrders'),
   handler: async (ctx, args) => {
@@ -271,11 +248,9 @@ export const createOrder = internalMutation({
       skinTone: args.skinTone,
       outfit: args.outfit,
       email: args.email,
-      skipQaReviews: args.skipQaReviews,
-      skipStripe: args.skipStripe,
-      fastImage: args.fastImage,
       format: args.format,
       shippingAddress: args.shippingAddress,
+      accessTokenHash: args.accessTokenHash,
       status: args.pauseForPrint ? 'paused' : 'intake',
       createdAt: Date.now(),
     });
@@ -489,10 +464,10 @@ export const submitParentDedication = mutation({
 });
 
 export const submitLandingParentDedication = mutation({
-  args: { orderId: v.id('bookOrders'), dedication: v.string() },
+  args: { orderId: v.id('bookOrders'), accessToken: v.string(), dedication: v.string() },
   returns: v.null(),
-  handler: async (ctx, { orderId, dedication }) => {
-    const order = await assertLandingOrder(ctx, orderId);
+  handler: async (ctx, { orderId, accessToken, dedication }) => {
+    const order = await assertLandingOrder(ctx, orderId, accessToken);
     assertDedicationWindow(order);
     await applyDedicationDecision(ctx, orderId, {
       parentDedication: normalizeDedication(dedication),
@@ -513,10 +488,10 @@ export const skipParentDedication = mutation({
 });
 
 export const skipLandingParentDedication = mutation({
-  args: { orderId: v.id('bookOrders') },
+  args: { orderId: v.id('bookOrders'), accessToken: v.string() },
   returns: v.null(),
-  handler: async (ctx, { orderId }) => {
-    const order = await assertLandingOrder(ctx, orderId);
+  handler: async (ctx, { orderId, accessToken }) => {
+    const order = await assertLandingOrder(ctx, orderId, accessToken);
     assertDedicationWindow(order);
     await applyDedicationDecision(ctx, orderId, {});
     return null;
@@ -533,12 +508,12 @@ const paymentStatusReturnValidator = v.union(
 );
 
 /**
- * Download URL is gated by paymentStatus — the preview screen has to lock
- * the PDF until the parent has paid. `skipStripe` (admin shortcut) bypasses
- * the gate so internal test orders still produce a download.
+ * Download URL is gated by paymentStatus — only the Stripe webhook flips
+ * this to 'completed'. Internal test orders (CLI, admin batch) bypass
+ * payment by setting paymentStatus='completed' directly at insert time;
+ * no separate client-controlled bypass flag is honored.
  */
-function isPaid(order: { paymentStatus?: string; skipStripe?: boolean }): boolean {
-  if (order.skipStripe === true) return true;
+function isPaid(order: { paymentStatus?: string }): boolean {
   return order.paymentStatus === 'completed';
 }
 
@@ -555,7 +530,7 @@ interface PreviewResult {
   illustrations: Array<{ illustrationId: string; url: string | null }>;
   excerptPl: string | null;
   /**
-   * URL to the 7-page preview PDF embedded in the result-page flipbook.
+   * URL to the 3-page preview PDF embedded in the result-page flipbook.
    * Null for legacy orders whose composer ran before the preview was added —
    * the frontend falls back to the cover/scene illustration grid.
    */
@@ -607,7 +582,6 @@ async function buildPreviewResult(
     childName: string;
     storyDraft?: string;
     paymentStatus?: 'pending' | 'completed' | 'failed';
-    skipStripe?: boolean;
     pdfStorageId?: Id<'_storage'>;
     previewPdfStorageId?: Id<'_storage'>;
     r2FullKey?: string;
@@ -653,10 +627,10 @@ export const getOrderPreview = query({
 });
 
 export const getLandingOrderPreview = query({
-  args: { orderId: v.id('bookOrders') },
+  args: { orderId: v.id('bookOrders'), accessToken: v.string() },
   returns: previewReturnValidator,
-  handler: async (ctx, { orderId }) => {
-    const order = await assertLandingOrder(ctx, orderId);
+  handler: async (ctx, { orderId, accessToken }) => {
+    const order = await assertLandingOrder(ctx, orderId, accessToken);
     return buildPreviewResult(ctx, order);
   },
 });
@@ -703,8 +677,7 @@ async function presignForOrder(
   const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
   if (!order || !isAllowedOwner(order.clerkUserId)) return null;
   if (kind === 'full') {
-    const paid = (order.paymentStatus ?? null) === 'completed' || order.skipStripe === true;
-    if (!paid) return null;
+    if ((order.paymentStatus ?? null) !== 'completed') return null;
   }
   const { presignR2GetUrl, r2KeyFor, bookPdfFilename } = await import('./lib/r2Presign');
   const key = r2KeyFor(order, kind);
@@ -728,11 +701,34 @@ export const resolveR2DownloadUrl = action({
 export const resolveLandingR2DownloadUrl = action({
   args: {
     orderId: v.id('bookOrders'),
+    accessToken: v.string(),
     kind: v.optional(v.union(v.literal('full'), v.literal('preview'))),
   },
   returns: v.union(v.string(), v.null()),
-  handler: async (ctx, { orderId, kind }): Promise<string | null> =>
-    presignForOrder(ctx, orderId, kind ?? 'full', (uid) => uid === LANDING_USER_ID),
+  handler: async (ctx, { orderId, accessToken, kind }): Promise<string | null> => {
+    // Validate the per-order landing token before presigning — the URL is a
+    // capability, so we treat resolution as a sensitive landing read.
+    const ok = await ctx.runQuery(internal.bookPipeline.verifyLandingTokenInternal, {
+      orderId,
+      accessToken,
+    });
+    if (!ok) return null;
+    return presignForOrder(ctx, orderId, kind ?? 'full', (uid) => uid === LANDING_USER_ID);
+  },
+});
+
+/** Internal helper so action callers can verify the landing token via DB. */
+export const verifyLandingTokenInternal = internalQuery({
+  args: { orderId: v.id('bookOrders'), accessToken: v.string() },
+  returns: v.boolean(),
+  handler: async (ctx, { orderId, accessToken }) => {
+    try {
+      await assertLandingOrder(ctx, orderId, accessToken);
+      return true;
+    } catch {
+      return false;
+    }
+  },
 });
 
 // ── Landing page order (no auth, token-gated) ───────────────
@@ -756,47 +752,23 @@ export const startLandingOrder = action({
     email: v.optional(v.string()),
     format: v.optional(formatValidator),
     shippingAddress: v.optional(shippingAddressValidator),
-    // DEV: admin-only shortcuts. Server gates these on the Clerk identity
-    // even though the order itself is recorded against LANDING_USER_ID.
-    // TODO(c3z): pre-launch cleanup
-    skipQaReviews: v.optional(v.boolean()),
-    skipStripe: v.optional(v.boolean()),
-    fastImage: v.optional(v.boolean()),
   },
-  returns: v.object({ orderId: v.id('bookOrders') }),
-  handler: async (ctx, args): Promise<{ orderId: Id<'bookOrders'> }> => {
-    // Access token gate. The landing flow is the only public endpoint that
-    // burns LLM/image budget without Clerk auth — without this, anyone with
-    // the Convex URL could spam generations on our dime. Misconfig (unset
-    // env) fails closed: surface "configuration missing" so ops sees the
-    // distinction from a wrong-token attack in logs.
+  returns: v.object({ orderId: v.id('bookOrders'), accessToken: v.string() }),
+  handler: async (ctx, args): Promise<{ orderId: Id<'bookOrders'>; accessToken: string }> => {
+    // Intake gate. Fail-closed in production: when LANDING_ACCESS_TOKEN is
+    // not set, the action refuses all landing intake. The dev fallback only
+    // applies when CONVEX_CLOUD_URL hints we're on a non-prod deployment.
     const expectedToken = process.env.LANDING_ACCESS_TOKEN;
+    const isProd = (process.env.CONVEX_CLOUD_URL ?? '').includes('wonderful-egret');
     if (!expectedToken) {
-      throw new Error('Landing access token not configured');
-    }
-    if (args.accessToken !== expectedToken) {
+      if (isProd) throw new Error('Landing intake disabled');
+    } else if (args.accessToken !== expectedToken) {
       throw new Error('Invalid access token');
     }
 
-    // Global ceiling on landing-flow intake (all share LANDING_USER_ID). Layered
-    // *after* the token check so missing/wrong-token traffic doesn't even count
-    // against the budget — the rate limit is the safety net, the token is the
-    // gate.
-    await ctx.runMutation(internal.rateLimitMutation.checkAndRecordLLMRateLimit, {
-      actionType: 'landing_order',
-      clerkUserId: LANDING_USER_ID,
-    });
-
-    // Landing callers have no Clerk identity (orders are recorded under
-    // LANDING_USER_ID) and so by definition aren't admins — discard any
-    // diagnostic flags they passed and pin prod defaults. `fastImage` is
-    // forced on for landing visitors because that's the cheap codepath.
-    const skipQaReviews = undefined;
-    const skipStripe = undefined;
-    const fastImage = true;
-    void args.skipQaReviews;
-    void args.skipStripe;
-    void args.fastImage;
+    // Global cap on anonymous landing intake — guards against runaway LLM
+    // / image-gen costs if the gate token leaks or is brute-forced.
+    await ctx.runMutation(internal.rateLimitMutation.checkAndRecordLandingStart, {});
 
     validateOrderInput(args);
     const cleaned = sanitizeOrderTextFields(args);
@@ -817,6 +789,11 @@ export const startLandingOrder = action({
       outfit: args.outfit,
     });
 
+    // Per-order access token. Raw token is returned to the caller once and
+    // every subsequent landing call requires it. Only the hash is persisted.
+    const rawToken = generateLandingAccessToken();
+    const accessTokenHash = await sha256Hex(rawToken);
+
     const orderId: Id<'bookOrders'> = await ctx.runMutation(internal.bookPipeline.createOrder, {
       clerkUserId: LANDING_USER_ID,
       childName: cleaned.childName,
@@ -836,22 +813,20 @@ export const startLandingOrder = action({
       format,
       shippingAddress: format === 'pdf_print' ? args.shippingAddress : undefined,
       pauseForPrint: format === 'pdf_print',
-      skipQaReviews,
-      skipStripe,
-      fastImage,
+      accessTokenHash,
     });
 
     if (format === 'pdf_print') {
-      return { orderId };
+      return { orderId, accessToken: rawToken };
     }
 
     await ctx.scheduler.runAfter(0, internal.bookAgents.intake, { orderId });
-    return { orderId };
+    return { orderId, accessToken: rawToken };
   },
 });
 
 export const getLandingOrderProgress = query({
-  args: { orderId: v.id('bookOrders') },
+  args: { orderId: v.id('bookOrders'), accessToken: v.string() },
   returns: v.object({
     status: v.string(),
     currentAgent: v.union(v.string(), v.null()),
@@ -866,8 +841,8 @@ export const getLandingOrderProgress = query({
     ageNumber: v.union(v.number(), v.null()),
     problemId: v.string(),
   }),
-  handler: async (ctx, { orderId }) => {
-    const order = await assertLandingOrder(ctx, orderId);
+  handler: async (ctx, { orderId, accessToken }) => {
+    const order = await assertLandingOrder(ctx, orderId, accessToken);
 
     return {
       status: order.status,
@@ -887,7 +862,7 @@ export const getLandingOrderProgress = query({
 });
 
 export const getLandingOrderEvents = query({
-  args: { orderId: v.id('bookOrders') },
+  args: { orderId: v.id('bookOrders'), accessToken: v.string() },
   returns: v.array(
     v.object({
       _id: v.id('bookPipelineEvents'),
@@ -900,8 +875,8 @@ export const getLandingOrderEvents = query({
       timestamp: v.number(),
     }),
   ),
-  handler: async (ctx, { orderId }) => {
-    const order = await assertLandingOrder(ctx, orderId);
+  handler: async (ctx, { orderId, accessToken }) => {
+    await assertLandingOrder(ctx, orderId, accessToken);
 
     const events = await ctx.db
       .query('bookPipelineEvents')
@@ -913,7 +888,7 @@ export const getLandingOrderEvents = query({
 });
 
 export const getLandingDownloadUrl = query({
-  args: { orderId: v.id('bookOrders') },
+  args: { orderId: v.id('bookOrders'), accessToken: v.string() },
   returns: v.object({
     url: v.union(v.string(), v.null()),
     childName: v.string(),
@@ -923,8 +898,8 @@ export const getLandingDownloadUrl = query({
     hasPdf: v.boolean(),
     r2FullKey: v.union(v.string(), v.null()),
   }),
-  handler: async (ctx, { orderId }) => {
-    const order = await assertLandingOrder(ctx, orderId);
+  handler: async (ctx, { orderId, accessToken }) => {
+    const order = await assertLandingOrder(ctx, orderId, accessToken);
     const paid = isPaid(order);
     const url = paid && order.pdfStorageId ? await ctx.storage.getUrl(order.pdfStorageId) : null;
     return {
@@ -942,11 +917,12 @@ export const getLandingDownloadUrl = query({
 export const submitLandingStyleVote = mutation({
   args: {
     orderId: v.id('bookOrders'),
+    accessToken: v.string(),
     choice: v.union(v.literal('A'), v.literal('B')),
   },
   returns: v.null(),
-  handler: async (ctx, { orderId, choice }) => {
-    const order = await assertLandingOrder(ctx, orderId);
+  handler: async (ctx, { orderId, accessToken, choice }) => {
+    const order = await assertLandingOrder(ctx, orderId, accessToken);
     if (order.chosenStyle) return null;
     if (!order.styleVoteImageA || !order.styleVoteImageB)
       throw new Error('Style vote images not ready');
@@ -965,15 +941,15 @@ export const submitLandingStyleVote = mutation({
 });
 
 export const getLandingStyleVoteImages = query({
-  args: { orderId: v.id('bookOrders') },
+  args: { orderId: v.id('bookOrders'), accessToken: v.string() },
   returns: v.object({
     imageUrlA: v.union(v.string(), v.null()),
     imageUrlB: v.union(v.string(), v.null()),
     status: v.string(),
     chosenStyle: v.union(v.string(), v.null()),
   }),
-  handler: async (ctx, { orderId }) => {
-    const order = await assertLandingOrder(ctx, orderId);
+  handler: async (ctx, { orderId, accessToken }) => {
+    const order = await assertLandingOrder(ctx, orderId, accessToken);
 
     let imageUrlA: string | null = null;
     let imageUrlB: string | null = null;
@@ -1012,10 +988,10 @@ export const getPrintThanksOrder = query({
 });
 
 export const getLandingPrintThanksOrder = query({
-  args: { orderId: v.id('bookOrders') },
+  args: { orderId: v.id('bookOrders'), accessToken: v.string() },
   returns: printThanksReturn,
-  handler: async (ctx, { orderId }) => {
-    const order = await assertLandingOrder(ctx, orderId);
+  handler: async (ctx, { orderId, accessToken }) => {
+    const order = await assertLandingOrder(ctx, orderId, accessToken);
     if (order.format !== 'pdf_print') return null;
     return {
       childName: order.childName,

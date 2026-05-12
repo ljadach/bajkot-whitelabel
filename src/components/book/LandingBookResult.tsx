@@ -3,16 +3,18 @@ import { useAction, useQuery } from 'convex/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
+import { getLandingOrderToken } from '../../hooks/useLandingOrderToken';
 import { useResolvedR2Url } from '../../hooks/useResolvedR2Url';
 import { BookSuccessScreen, BookPreviewScreen } from './BookResult';
 
 export function LandingBookResult() {
   const { t } = useTranslation('book');
   const { orderId } = useParams<{ orderId: string }>();
+  const accessToken = getLandingOrderToken(orderId);
 
   const data = useQuery(
     api.bookPipeline.getLandingDownloadUrl,
-    orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip',
+    orderId && accessToken ? { orderId: orderId as Id<'bookOrders'>, accessToken } : 'skip',
   );
   const fullDownloadUrl = useResolvedR2Url({
     orderId: orderId as Id<'bookOrders'> | undefined,
@@ -20,15 +22,18 @@ export function LandingBookResult() {
     kind: 'full',
     r2Key: data?.r2FullKey ?? null,
     directUrl: data?.url ?? null,
+    accessToken,
   });
   const showPreview = data?.hasPdf === true && data?.paid === false;
   const preview = useQuery(
     api.bookPipeline.getLandingOrderPreview,
-    orderId && showPreview ? { orderId: orderId as Id<'bookOrders'> } : 'skip',
+    orderId && accessToken && showPreview
+      ? { orderId: orderId as Id<'bookOrders'>, accessToken }
+      : 'skip',
   );
   const createLandingCheckoutSession = useAction(api.stripe.createLandingCheckoutSession);
 
-  if (!orderId) {
+  if (!orderId || !accessToken) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <p className="text-sm text-gray-500">{t('progress.notFound')}</p>
@@ -45,6 +50,7 @@ export function LandingBookResult() {
         onUnlock={async () => {
           const session = await createLandingCheckoutSession({
             bookOrderId: orderId as Id<'bookOrders'>,
+            accessToken,
             returnPath: `/landing/book/${orderId}/result`,
           });
           if (typeof window !== 'undefined') window.location.assign(session.url);

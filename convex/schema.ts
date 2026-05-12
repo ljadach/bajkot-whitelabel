@@ -260,6 +260,12 @@ const applicationTables = {
     ),
     stripeSessionId: v.optional(v.string()),
 
+    // Per-order landing access token, sha256 hex of the raw token. The raw
+    // token is returned to the caller once (on order creation) and required
+    // for every subsequent landing read/write. Legacy orders predating this
+    // gate have no hash and are rejected by assertLandingOrder.
+    accessTokenHash: v.optional(v.string()),
+
     // Timestamps
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),

@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useAction, useQuery } from 'convex/react';
+import { useAction } from 'convex/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../../convex/_generated/api';
 // Stripe checkout has moved to the result screen (post-pipeline preview).
@@ -29,18 +29,11 @@ export function AuthOrderFlow() {
   const { t } = useTranslation('book');
   const navigate = useNavigate();
   const startOrder = useAction(api.bookPipeline.startOrder);
-  const isAdmin = useQuery(api.auth.isAdmin) ?? false;
 
   const [screen, setScreen] = useState<Screen>('catalog');
   const [intake, setIntake] = useState<IntakeState>(INITIAL_INTAKE);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  // Admin-only diagnostic flags. Defaults match prod: payment required, QA
-  // on, fast image on. Backend ignores these for non-admin callers.
-  const [skipStripe, setSkipStripe] = useState(false);
-  const [skipQa, setSkipQa] = useState(false);
-  const [fastImage, setFastImage] = useState(true);
 
   const handleSelectTopic = useCallback((topic: SelectedTopic) => {
     setIntake((prev) => ({ ...prev, topic }));
@@ -68,14 +61,7 @@ export function AuthOrderFlow() {
           format: checkoutPayload?.format ?? intake.format,
           shippingAddress: checkoutPayload?.shippingAddress,
         });
-        const result = await startOrder({
-          ...baseArgs,
-          // DEV shortcuts — pre-launch they're honored for every caller.
-          // TODO(c3z): pre-launch cleanup
-          skipStripe: skipStripe ? true : undefined,
-          skipQaReviews: skipQa ? true : undefined,
-          fastImage: fastImage ? true : undefined,
-        });
+        const result = await startOrder(baseArgs);
         const orderId = result.orderId;
         // Stamp bookOrderId on every subsequent event for this device so
         // PostHog can stitch the full funnel together (spec section 7.1).
@@ -87,26 +73,13 @@ export function AuthOrderFlow() {
         return null;
       }
     },
-    [intake, startOrder, skipStripe, skipQa, fastImage, t],
+    [intake, startOrder, t],
   );
 
-  // Admin shortcut: clicking the Preview CTA with `skipStripe` ON submits
-  // the order directly (no checkout step, no Stripe). Skip-QA is also wired
-  // through. PDF+Print still routes to the trapdoor thank-you regardless.
-  const handlePreviewContinue = useCallback(async () => {
-    if (isAdmin && skipStripe) {
-      const result = await submitOrder(null);
-      if (!result) return;
-      if (result.format === 'pdf_print') {
-        void navigate(`/book/${result.orderId}/print-thanks`);
-        return;
-      }
-      void navigate(`/book/${result.orderId}/progress`);
-      return;
-    }
+  const handlePreviewContinue = useCallback(() => {
     setScreen('checkout');
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [isAdmin, skipStripe, submitOrder, navigate]);
+  }, []);
 
   const handleCheckoutSubmit = useCallback(
     async (payload: CheckoutSubmitPayload) => {
@@ -145,15 +118,8 @@ export function AuthOrderFlow() {
         <OrderPreview
           intake={intake}
           onChangeFormat={handleChangeFormat}
-          onContinue={() => void handlePreviewContinue()}
+          onContinue={handlePreviewContinue}
           onBack={() => setScreen('wizard')}
-          isAdmin={isAdmin}
-          skipStripe={skipStripe}
-          skipQa={skipQa}
-          fastImage={fastImage}
-          onChangeSkipStripe={setSkipStripe}
-          onChangeSkipQa={setSkipQa}
-          onChangeFastImage={setFastImage}
         />
       )}
       {screen === 'checkout' && (

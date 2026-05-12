@@ -7,6 +7,7 @@ import { Id } from '../../../convex/_generated/dataModel';
 import { PIPELINE_STEPS } from '@lib/bookData';
 import { friendlyBookError } from '@lib/bookErrors';
 import { trackEvent } from '@lib/telemetry';
+import { getLandingOrderToken } from '../../hooks/useLandingOrderToken';
 import { BookErrorScreen, BookPausedScreen, ProgressJourney } from './ProgressJourney';
 import { StyleVoteCards } from './BookStyleVote';
 import { DedicationForm } from './DedicationForm';
@@ -106,9 +107,19 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Landing flow attaches a per-order capability token to every call. Auth
+  // flow leans on Clerk's identity and passes no extra args. The conditional
+  // builder below keeps the rest of the shell ignorant of which flow it's in.
+  const landingToken = flow === 'landing' ? getLandingOrderToken(orderId) : null;
+  const buildArgs = <T extends { orderId: Id<'bookOrders'> }>(
+    base: T,
+  ): T | (T & { accessToken: string }) =>
+    flow === 'landing' && landingToken ? { ...base, accessToken: landingToken } : base;
+  const landingReady = flow !== 'landing' || !!landingToken;
+
   const progress = useQuery(
     cfg.queries.progress,
-    orderId ? { orderId: orderId as Id<'bookOrders'> } : 'skip',
+    orderId && landingReady ? buildArgs({ orderId: orderId as Id<'bookOrders'> }) : 'skip',
   );
 
   // Landing flow hides the timeline section, so skip the events query
@@ -120,8 +131,8 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
 
   const styleVoteImages = useQuery(
     cfg.queries.styleVoteImages,
-    orderId && progress?.hasStyleVoteImages && !progress?.chosenStyle
-      ? { orderId: orderId as Id<'bookOrders'> }
+    orderId && landingReady && progress?.hasStyleVoteImages && !progress?.chosenStyle
+      ? buildArgs({ orderId: orderId as Id<'bookOrders'> })
       : 'skip',
   );
 
@@ -192,6 +203,19 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
     );
   }
 
+  // Landing flow without a stored token can't authenticate to read the order.
+  // Different browser or cleared localStorage — surface the not-found state
+  // rather than hanging on a spinner.
+  if (flow === 'landing' && !landingToken) {
+    return (
+      <ProgressLayout flow={flow}>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
+          <p className="text-sm text-gray-500">{t('progress.notFound')}</p>
+        </div>
+      </ProgressLayout>
+    );
+  }
+
   if (!progress) {
     return (
       <ProgressLayout flow={flow}>
@@ -226,7 +250,11 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
   if (phase === 'dedication') {
     const handleDedicationSubmit = async (dedication: string) => {
       if (!orderId) return;
-      await submitDedication({ orderId: orderId as Id<'bookOrders'>, dedication });
+      const args = buildArgs({ orderId: orderId as Id<'bookOrders'> });
+      // Mutation signatures differ across auth/landing by the optional
+      // accessToken arg — both accept `dedication`, but the discriminated
+      // union confuses TS at the call site. Cast keeps the JS identical.
+      await submitDedication({ ...args, dedication } as Parameters<typeof submitDedication>[0]);
       trackEvent('dedication_submitted', { flow, bookOrderId: orderId });
       setPhase('progress');
     };
@@ -234,7 +262,7 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
       if (!orderId) return;
       // Even when skipped, the backend needs to know the parent has decided —
       // otherwise the composer waits forever in `awaiting_dedication`.
-      await skipDedication({ orderId: orderId as Id<'bookOrders'> });
+      await skipDedication(buildArgs({ orderId: orderId as Id<'bookOrders'> }));
       trackEvent('dedication_skipped', { flow, bookOrderId: orderId });
       setPhase('progress');
     };
@@ -255,10 +283,8 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
       setIsSubmitting(true);
       setVoteError(null);
       try {
-        await submitVote({
-          orderId: orderId as Id<'bookOrders'>,
-          choice: selected,
-        });
+        const args = buildArgs({ orderId: orderId as Id<'bookOrders'> });
+        await submitVote({ ...args, choice: selected } as Parameters<typeof submitVote>[0]);
         trackEvent('style_vote_submitted', {
           flow,
           bookOrderId: orderId,

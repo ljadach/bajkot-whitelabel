@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useAction, useQuery } from 'convex/react';
+import { useAction } from 'convex/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../../convex/_generated/api';
 import { captureTokenFromUrl, getAccessToken } from '../../../hooks/useAccessToken';
+import { saveLandingOrderToken } from '../../../hooks/useLandingOrderToken';
 import type { Topic } from '../../../data/topics';
 import { setFunnelSuperProperties, trackEvent } from '../../../lib/telemetry';
 import { OrderWizard } from './OrderWizard';
@@ -21,7 +22,6 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
   const { t } = useTranslation('book');
   const navigate = useNavigate();
   const startLandingOrder = useAction(api.bookPipeline.startLandingOrder);
-  const isAdmin = useQuery(api.auth.isAdmin) ?? false;
 
   const [screen, setScreen] = useState<Screen>('wizard');
   const [intake, setIntake] = useState<IntakeState>(() => ({
@@ -31,15 +31,7 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Admin-only diagnostic flags. Defaults match prod: payment required, QA
-  // on, fast image on. Backend ignores these for non-admin callers so the
-  // toggle is purely cosmetic for landing visitors (it shouldn't reach them
-  // — OrderPreview hides the box on isAdmin=false anyway).
-  const [skipStripe, setSkipStripe] = useState(false);
-  const [skipQa, setSkipQa] = useState(false);
-  const [fastImage, setFastImage] = useState(true);
-
-  // Capture access token on mount (preserves landing-flow token gate).
+  // Capture access token on mount (preserves landing-flow intake gate).
   useEffect(() => captureTokenFromUrl(), []);
 
   // Topic is preselected via URL — record a `topic_selected` per spec
@@ -81,13 +73,12 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
         const result = await startLandingOrder({
           accessToken: getAccessToken() ?? '',
           ...baseArgs,
-          // DEV shortcuts — pre-launch they're honored for every caller.
-          // TODO(c3z): pre-launch cleanup
-          skipStripe: skipStripe ? true : undefined,
-          skipQaReviews: skipQa ? true : undefined,
-          fastImage: fastImage ? true : undefined,
         });
         const orderId = result.orderId;
+        // Persist the per-order capability token so subsequent screens can
+        // read the order. Without this, even the same browser would be
+        // locked out of progress/result/vote/dedication.
+        saveLandingOrderToken(orderId, result.accessToken);
         setFunnelSuperProperties({ bookOrderId: orderId, flow: 'landing' });
         return { orderId, format: checkoutPayload?.format ?? intake.format };
       } catch (err) {
@@ -96,24 +87,13 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
         return null;
       }
     },
-    [intake, startLandingOrder, skipStripe, skipQa, fastImage, t],
+    [intake, startLandingOrder, t],
   );
 
-  // Admin shortcut on Preview CTA: skipStripe ON → submit directly.
-  const handlePreviewContinue = useCallback(async () => {
-    if (isAdmin && skipStripe) {
-      const result = await submitOrder(null);
-      if (!result) return;
-      if (result.format === 'pdf_print') {
-        void navigate(`/landing/book/${result.orderId}/print-thanks`);
-        return;
-      }
-      void navigate(`/landing/book/${result.orderId}/progress`);
-      return;
-    }
+  const handlePreviewContinue = useCallback(() => {
     setScreen('checkout');
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [isAdmin, skipStripe, submitOrder, navigate]);
+  }, []);
 
   const handleCheckoutSubmit = useCallback(
     async (payload: CheckoutSubmitPayload) => {
@@ -153,15 +133,8 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
         <OrderPreview
           intake={intake}
           onChangeFormat={handleChangeFormat}
-          onContinue={() => void handlePreviewContinue()}
+          onContinue={handlePreviewContinue}
           onBack={() => setScreen('wizard')}
-          isAdmin={isAdmin}
-          skipStripe={skipStripe}
-          skipQa={skipQa}
-          fastImage={fastImage}
-          onChangeSkipStripe={setSkipStripe}
-          onChangeSkipQa={setSkipQa}
-          onChangeFastImage={setFastImage}
         />
       )}
       {screen === 'checkout' && (

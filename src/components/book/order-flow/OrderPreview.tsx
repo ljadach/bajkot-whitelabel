@@ -9,36 +9,13 @@ interface Props {
   onChangeFormat: (fmt: OrderFormat) => void;
   onContinue: () => void;
   onBack: () => void;
-  /** Admin-only diagnostic toggles. Box is hidden entirely for regular users. */
-  isAdmin?: boolean;
-  /** When checked AND admin clicks CTA, skip Stripe entirely. */
-  skipStripe?: boolean;
-  /** Propagates `skipQaReviews` to the backend (fast mode). */
-  skipQa?: boolean;
-  /** Replaces Gemini image gen with rasterized ASCII PNG. */
-  fastImage?: boolean;
-  onChangeSkipStripe?: (next: boolean) => void;
-  onChangeSkipQa?: (next: boolean) => void;
-  onChangeFastImage?: (next: boolean) => void;
 }
 
 /**
  * "Co otrzymasz?" preview screen — mirrors `#screen-preview` from
  * docs/protos_v2/Bajkoterapia-Nowy-Flow.html.
  */
-export function OrderPreview({
-  intake,
-  onChangeFormat,
-  onContinue,
-  onBack,
-  isAdmin = false,
-  skipStripe = false,
-  skipQa = false,
-  fastImage = false,
-  onChangeSkipStripe,
-  onChangeSkipQa,
-  onChangeFastImage,
-}: Props) {
+export function OrderPreview({ intake, onChangeFormat, onContinue, onBack }: Props) {
   const { t } = useTranslation('book');
 
   useEffect(() => {
@@ -173,50 +150,6 @@ export function OrderPreview({
                 <i className="fa-solid fa-wand-magic-sparkles mr-2" /> {cta}
               </button>
             </div>
-
-            {/* Admin-only diagnostic toggles. Hidden in production for regular
-                users — exposing skipStripe to anonymous landing visitors meant
-                anyone could trigger a pipeline without paying. */}
-            {isAdmin && (
-              <div className="rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-4 space-y-2">
-                <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
-                  {t('checkout.devHeading')}
-                </p>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={skipStripe}
-                    onChange={(e) => onChangeSkipStripe?.(e.target.checked)}
-                    className="w-5 h-5"
-                  />
-                  <span className="text-sm text-amber-900 font-semibold">
-                    {t('checkout.devSkipStripe')}
-                  </span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={skipQa}
-                    onChange={(e) => onChangeSkipQa?.(e.target.checked)}
-                    className="w-5 h-5"
-                  />
-                  <span className="text-sm text-amber-900 font-semibold">
-                    {t('checkout.devSkipQa')}
-                  </span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={fastImage}
-                    onChange={(e) => onChangeFastImage?.(e.target.checked)}
-                    className="w-5 h-5"
-                  />
-                  <span className="text-sm text-amber-900 font-semibold">
-                    {t('checkout.devSkipVisual')}
-                  </span>
-                </label>
-              </div>
-            )}
           </div>
         </div>
 

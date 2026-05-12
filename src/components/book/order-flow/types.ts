@@ -78,8 +78,7 @@ export function resolveProblemId(topic: SelectedTopic): string {
  * (`startOrder`) and landing (`startLandingOrder`) Convex actions.
  *
  * Caller is responsible for adding flow-specific fields:
- *   - auth flow:    skipStripe / skipQaReviews
- *   - landing flow: accessToken
+ *   - landing flow: accessToken (intake gate, separate from per-order token)
  */
 export interface IntakeOrderArgs {
   childName: string;
