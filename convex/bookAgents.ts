@@ -49,6 +49,10 @@ import { resolveAgeBracket } from './lib/ageBracket';
 import { buildChildPortrait } from './lib/childPortrait';
 import { getNarrative } from './bookPipelineEvents';
 
+// How long to park an order in awaiting_dedication before auto-skipping with
+// an empty dedication. Parent abandoning the tab shouldn't strand the order.
+const DEDICATION_TIMEOUT_MS = 5 * 60 * 1000;
+
 /**
  * Record a pipeline event with the current Langfuse trace ID auto-attached.
  * Lets admin debugging join `bookPipelineEvents` rows ↔ `llmLogs` rows ↔
@@ -1242,6 +1246,13 @@ export const composePdf = internalAction({
           event: 'info',
           narrative: 'Czekam na dedykację rodzica przed złożeniem PDF...',
         });
+        // Safety net: if the parent never comes back, fall through with an
+        // empty dedication after 5 minutes so the book actually gets built.
+        await ctx.scheduler.runAfter(
+          DEDICATION_TIMEOUT_MS,
+          internal.bookPipeline.autoSkipStaleDedication,
+          { orderId },
+        );
         return null;
       }
 
