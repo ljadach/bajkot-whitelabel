@@ -95,6 +95,15 @@ Polluje co 5 sekund, kończy na `completed`/`failed`/`paused`/`style_vote`.
 npm run cli -- watch <orderId>
 ```
 
+### `skip-dedication` — Odblokuj orderu z `awaiting_dedication`
+
+Ratunek dla orderów, w których rodzic porzucił krok dedykacji. Patchuje `dedicationDecided=true` i odpala `composePdf`. Działa też gdy order nie wisi (po prostu ustawia flagę).
+
+```bash
+npm run cli -- skip-dedication <orderId>
+npm run cli -- skip-dedication <orderId> -w   # + watch
+```
+
 ### `presets` — Dostępne wartości
 
 Wypisuje wszystkie dopuszczalne klucze dla pól orderu.

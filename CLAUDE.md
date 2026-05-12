@@ -68,6 +68,7 @@ npm run cli -- <command>          # or: npx tsx cli/index.ts <command>
 | `download <orderId> [-o]`               | PDF download URL. `-o` opens in browser                                          |
 | `watch <orderId>`                       | Poll order progress every 5s until terminal state                                |
 | `retry <orderId> [-w]`                  | Restart a failed order from its `currentAgent`. `-w` watches after retry         |
+| `skip-dedication <orderId> [-w]`        | Force-skip dedication for orders stuck in `awaiting_dedication`                  |
 | `presets`                               | List valid keys for problems, appearance, outfits                                |
 | `prompts list`                          | List all pipeline prompts with DB status and version count                       |
 | `prompts get <key>`                     | Show full prompt content by key (e.g. `bookStoryWriter`)                         |

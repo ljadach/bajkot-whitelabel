@@ -152,6 +152,26 @@ export const setUnpaid = internalMutation({
   },
 });
 
+// ── Force-skip dedication (ops escape hatch) ────────────────
+// Mirrors public skipParentDedication but without Clerk auth — used when
+// a parent abandoned the dedication step and the order is stuck in
+// `awaiting_dedication`. See applyDedicationDecision in bookPipeline.ts.
+
+export const forceSkipDedication = internalMutation({
+  args: { orderId: v.id('bookOrders') },
+  returns: v.string(),
+  handler: async (ctx, { orderId }) => {
+    const order = await ctx.db.get(orderId);
+    if (!order) throw new Error('Order not found');
+    await ctx.db.patch(orderId, { dedicationDecided: true, updatedAt: Date.now() });
+    if (order.status === 'awaiting_dedication') {
+      await ctx.scheduler.runAfter(0, internal.bookAgents.composePdf, { orderId });
+      return `Unstuck ${orderId} from awaiting_dedication, composePdf scheduled`;
+    }
+    return `Patched dedicationDecided=true on ${orderId} (status was ${order.status})`;
+  },
+});
+
 // ── Resolve short ID suffix to full order ID ────────────────
 
 export const resolveOrderId = internalQuery({

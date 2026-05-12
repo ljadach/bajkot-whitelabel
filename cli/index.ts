@@ -524,6 +524,23 @@ program
     }
   });
 
+// ── skip-dedication ─────────────────────────────────────────
+
+program
+  .command('skip-dedication')
+  .description('Force-skip dedication for an order stuck in awaiting_dedication')
+  .argument('<orderId>', 'Order ID (full or short suffix)')
+  .option('-w, --watch', 'Watch pipeline progress after skipping')
+  .action(async (rawId, opts) => {
+    const orderId = resolveId(rawId);
+    const raw = convexRun('cli:forceSkipDedication', { orderId });
+    const result = parseResult(raw);
+    console.log(`\x1b[32m✓ ${result}\x1b[0m`);
+    if (opts.watch) {
+      await watchOrder(orderId);
+    }
+  });
+
 // ── presets ──────────────────────────────────────────────────
 
 program
