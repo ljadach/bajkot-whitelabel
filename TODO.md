@@ -1,6 +1,6 @@
 # TODO — pre-launch security holes
 
-> **STATUS po 2026-05-12: #1 częściowo (audit C1/C2/H3/H1). C3 gate cofnięte — public intake otwarty, broniony tylko rate limitem + Stripe paywallem na PDF. #2 dalej otwarty.**
+> **STATUS po 2026-05-12: #1 częściowo (audit C1/C2/H3/H1). C3 cofnięte CAŁOŚCIOWO — public intake otwarty bez gate'u i bez rate limitu. Idziemy na produkcję świadomie z ryzykiem DoS-na-budżet. #2 dalej otwarty.**
 
 ---
 
@@ -8,8 +8,9 @@
 
 Zamknięte w ramach security audit (C1/C2/C3/H3) + override iteracji nad PR #44. Stan po fix:
 
-- ~~**Intake gate (C3)**~~ — **COFNIĘTE 2026-05-12 hotfix**. Re-enable blokowało legit visitors w prod ("Server Error"), bo Convex sanityzuje `throw new Error()`. Bez fixu UX (ConvexError + frontend handling + magic-link dla cross-device) nie wracamy. `args.accessToken` kept w contracie, ale nie walidowany.
-- **Rate limit (C3 zachowane)** — globalny cap 10 starts/h przez `checkAndRecordLandingStart` (klucz `__landing_global__`). Każda generacja konsumuje slot. To główna obrona przed DoS-na-budżet w trybie open-intake.
+- ~~**Intake gate (C3)**~~ — **COFNIĘTE 2026-05-12 hotfix**. Re-enable blokowało legit visitors w prod ("Server Error"). Bez fixu UX (ConvexError + frontend handling + magic-link dla cross-device) nie wracamy.
+- ~~**Rate limit (C3)**~~ — **COFNIĘTE 2026-05-12 follow-up**. 10/h globalnie było za ciasne na realny ruch. Infrastructure (`checkAndRecordLandingStart`, `landing_start` config) zostaje jako dead code — jednolinijkowy revert gdy będziemy mieli per-IP klucz albo Stripe gate na intake.
+- **Aktualna obrona przed DoS-na-budżet:** żadna. Świadome ryzyko na czas pre-launch. Przed kampanią marketingową: pay-first albo per-IP rate limit MUSI wrócić.
 - **Per-order tokeny (C2)** — każde landing order ma `accessTokenHash` (sha256 hex). Raw token zwracany raz z `startLandingOrder`, zapisywany w localStorage (`bajkot_landing_order_tokens` mapa), dołączany do każdego późniejszego wywołania (progress / vote / dedication / preview / download / print-thanks / Stripe checkout). `assertLandingOrder` weryfikuje przez timing-safe compare i fail-closes gdy hash brak (legacy data).
 - **`skipStripe` killed (C1)** — public actions już nie przyjmują flagi. `isPaid()` patrzy tylko na `paymentStatus === 'completed'`. UI panel diagnostyczny zniknął.
 - **H3** — `createLandingCheckoutSession` używa per-order tokena (eliminuje fail-open scenario PR #44, gdzie endpoint był otwarty dla każdego z orderId).

@@ -755,18 +755,17 @@ export const startLandingOrder = action({
   },
   returns: v.object({ orderId: v.id('bookOrders'), accessToken: v.string() }),
   handler: async (ctx, args): Promise<{ orderId: Id<'bookOrders'>; accessToken: string }> => {
-    // Landing intake gate intentionally disabled — re-enabling it locked
-    // legitimate visitors out of the public funnel (Convex sanitizes
-    // `throw new Error()` to "Server Error" in prod, so the gate looked
-    // like a generic crash). The accessToken arg is kept on the contract
-    // for backward compatibility but no longer validated here.
-    // Defence remains via: (a) per-order tokens (C2) on every read/write,
-    // (b) global rate limit below, (c) Stripe paywall on the PDF unlock.
+    // C3 intentionally disabled — env-token gate locked legit visitors out
+    // (Convex sanitizes `throw new Error()` to "Server Error" in prod) and
+    // the global rate limit's 10/hour cap chokes any real traffic spike.
+    // `args.accessToken` is kept on the contract for backward compatibility
+    // but no longer validated. `checkAndRecordLandingStart` mutation stays
+    // in the codebase so re-enabling is a one-line revert once we have a
+    // proper UX (ConvexError + frontend handling + magic-link recovery)
+    // and a non-global rate-limit key.
+    // Defence remains via: per-order tokens (C2) on every read/write,
+    // C1 bypass-flag removal, and the Stripe paywall on PDF unlock.
     void args.accessToken;
-
-    // Global cap on anonymous landing intake — guards against runaway LLM
-    // / image-gen costs even without the env-token gate above.
-    await ctx.runMutation(internal.rateLimitMutation.checkAndRecordLandingStart, {});
 
     validateOrderInput(args);
     const cleaned = sanitizeOrderTextFields(args);
