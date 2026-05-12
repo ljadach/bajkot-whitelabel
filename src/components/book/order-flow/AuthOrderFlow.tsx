@@ -36,12 +36,11 @@ export function AuthOrderFlow() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // DEV: admin diagnostic flags. Default true so smoke tests are fast.
-  // fastImage default OFF — non-obvious UX, opt-in only.
-  // TODO(c3z): pre-launch cleanup
-  const [skipStripe, setSkipStripe] = useState(true);
-  const [skipQa, setSkipQa] = useState(true);
-  const [fastImage, setFastImage] = useState(false);
+  // Admin-only diagnostic flags. Defaults match prod: payment required, QA
+  // on, fast image on. Backend ignores these for non-admin callers.
+  const [skipStripe, setSkipStripe] = useState(false);
+  const [skipQa, setSkipQa] = useState(false);
+  const [fastImage, setFastImage] = useState(true);
 
   const handleSelectTopic = useCallback((topic: SelectedTopic) => {
     setIntake((prev) => ({ ...prev, topic }));
@@ -148,6 +147,7 @@ export function AuthOrderFlow() {
           onChangeFormat={handleChangeFormat}
           onContinue={() => void handlePreviewContinue()}
           onBack={() => setScreen('wizard')}
+          isAdmin={isAdmin}
           skipStripe={skipStripe}
           skipQa={skipQa}
           fastImage={fastImage}

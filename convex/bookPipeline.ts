@@ -7,7 +7,12 @@ import { action, internalMutation, mutation, query } from './_generated/server';
 import { internal } from './_generated/api';
 import { v } from 'convex/values';
 import { Id } from './_generated/dataModel';
-import { assertOrderOwner, assertLandingOrder, LANDING_USER_ID } from './lib/roles';
+import {
+  assertOrderOwner,
+  assertLandingOrder,
+  isAdmin as isAdminRole,
+  LANDING_USER_ID,
+} from './lib/roles';
 import { toAgeBracket, type AgeBracket } from './lib/ageBracket';
 import { sanitizeUserText, sanitizeRequiredUserText } from './lib/security';
 
@@ -148,13 +153,13 @@ export const startOrder = action({
     if (!identity) throw new Error('Not authenticated');
     const clerkUserId = identity.subject;
 
-    // DEV shortcut flags (skipQa, skipStripe, fastImage). Pre-launch we honor
-    // them for every caller so testers without admin role can bypass payment
-    // and QA. Remove or re-gate before launch.
-    // TODO(c3z): pre-launch cleanup
-    const skipQaReviews = args.skipQaReviews;
-    const skipStripe = args.skipStripe;
-    const fastImage = args.fastImage;
+    // Diagnostic flags are admin-only. Non-admin callers (regular parents)
+    // get prod defaults: payment required, QA on, fast image on. Anything
+    // they pass over the wire is silently discarded.
+    const callerIsAdmin = await isAdminRole(ctx);
+    const skipQaReviews = callerIsAdmin ? args.skipQaReviews : undefined;
+    const skipStripe = callerIsAdmin ? args.skipStripe : undefined;
+    const fastImage = callerIsAdmin ? args.fastImage : true;
 
     const ageBracket = deriveAgeBracket({
       ageBracket: args.ageBracket,
@@ -550,7 +555,7 @@ interface PreviewResult {
   illustrations: Array<{ illustrationId: string; url: string | null }>;
   excerptPl: string | null;
   /**
-   * URL to the 3-page preview PDF embedded in the result-page flipbook.
+   * URL to the 7-page preview PDF embedded in the result-page flipbook.
    * Null for legacy orders whose composer ran before the preview was added —
    * the frontend falls back to the cover/scene illustration grid.
    */
@@ -760,20 +765,38 @@ export const startLandingOrder = action({
   },
   returns: v.object({ orderId: v.id('bookOrders') }),
   handler: async (ctx, args): Promise<{ orderId: Id<'bookOrders'> }> => {
-    // Access token gate disabled — kept for future re-enable
-    // const expectedToken = process.env.LANDING_ACCESS_TOKEN;
-    // if (!expectedToken || args.accessToken !== expectedToken) {
-    //   throw new Error('Invalid access token');
-    // }
-    void args.accessToken;
+    // Access token gate. The landing flow is the only public endpoint that
+    // burns LLM/image budget without Clerk auth — without this, anyone with
+    // the Convex URL could spam generations on our dime. Misconfig (unset
+    // env) fails closed: surface "configuration missing" so ops sees the
+    // distinction from a wrong-token attack in logs.
+    const expectedToken = process.env.LANDING_ACCESS_TOKEN;
+    if (!expectedToken) {
+      throw new Error('Landing access token not configured');
+    }
+    if (args.accessToken !== expectedToken) {
+      throw new Error('Invalid access token');
+    }
 
-    // DEV shortcut flags. Pre-launch we honor them for every caller (testers
-    // without admin role need to bypass payment and QA). The order is recorded
-    // under LANDING_USER_ID so it stays in the landing data model regardless.
-    // TODO(c3z): pre-launch cleanup
-    const skipQaReviews = args.skipQaReviews;
-    const skipStripe = args.skipStripe;
-    const fastImage = args.fastImage;
+    // Global ceiling on landing-flow intake (all share LANDING_USER_ID). Layered
+    // *after* the token check so missing/wrong-token traffic doesn't even count
+    // against the budget — the rate limit is the safety net, the token is the
+    // gate.
+    await ctx.runMutation(internal.rateLimitMutation.checkAndRecordLLMRateLimit, {
+      actionType: 'landing_order',
+      clerkUserId: LANDING_USER_ID,
+    });
+
+    // Landing callers have no Clerk identity (orders are recorded under
+    // LANDING_USER_ID) and so by definition aren't admins — discard any
+    // diagnostic flags they passed and pin prod defaults. `fastImage` is
+    // forced on for landing visitors because that's the cheap codepath.
+    const skipQaReviews = undefined;
+    const skipStripe = undefined;
+    const fastImage = true;
+    void args.skipQaReviews;
+    void args.skipStripe;
+    void args.fastImage;
 
     validateOrderInput(args);
     const cleaned = sanitizeOrderTextFields(args);

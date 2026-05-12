@@ -13,7 +13,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
 /**
  * Embedded flipbook PDF viewer for the result-page preview. Renders the
- * 3-page preview PDF with realistic page-flip animation. Mobile falls back
+ * preview PDF with realistic page-flip animation. Mobile falls back
  * to single-page portrait mode (the underlying StPageFlip handles that
  * automatically when `usePortrait=true`).
  */
@@ -21,34 +21,44 @@ interface BookPdfFlipbookProps {
   pdfUrl: string;
 }
 
-// Square pages — the composer emits 595x595pt PDFs (210mm). Keep the on-
-// screen size in sync so each canvas page hits the flipbook with no extra
-// letterboxing.
-const DESKTOP_WIDTH = 720;
-const DESKTOP_HEIGHT = 720;
-const MOBILE_WIDTH = 560;
-const MOBILE_HEIGHT = 560;
+// Square pages — the composer emits 595x595pt PDFs (210mm). Width is
+// measured from the parent container so the book never overflows its
+// card; height tracks width to preserve the 1:1 aspect ratio.
+const MAX_WIDTH = 640;
+const MIN_WIDTH = 280;
 
 export function BookPdfFlipbook({ pdfUrl }: BookPdfFlipbookProps) {
   const [numPages, setNumPages] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(0);
-  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [containerWidth, setContainerWidth] = useState<number>(MAX_WIDTH);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const flipBookRef = useRef<unknown>(null);
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 640);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
+    if (typeof window === 'undefined') return;
+    const node = containerRef.current;
+    if (!node) return;
+    // ResizeObserver keeps the flipbook in lockstep with the parent card —
+    // accounts for both viewport resize and sidebar/devtools-induced reflow.
+    const measure = (w: number) => {
+      const usable = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, Math.floor(w)));
+      setContainerWidth(usable);
+    };
+    measure(node.clientWidth);
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) measure(entry.contentRect.width);
+    });
+    ro.observe(node);
+    return () => ro.disconnect();
   }, []);
 
   // react-pdf needs a stable file reference — wrapping in useMemo keeps
   // the Document from re-fetching on every render.
   const file = useMemo(() => ({ url: pdfUrl }), [pdfUrl]);
 
-  const width = isMobile ? MOBILE_WIDTH : DESKTOP_WIDTH;
-  const height = isMobile ? MOBILE_HEIGHT : DESKTOP_HEIGHT;
+  const width = containerWidth;
+  const height = containerWidth; // 1:1 aspect — composer emits square pages.
 
   const goPrev = () => {
     const fb = flipBookRef.current as { pageFlip?: () => { flipPrev?: () => void } } | null;
@@ -81,7 +91,7 @@ export function BookPdfFlipbook({ pdfUrl }: BookPdfFlipbookProps) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div ref={containerRef} className="flex flex-col items-center gap-4 w-full">
       <Document
         file={file}
         onLoadSuccess={({ numPages: n }) => setNumPages(n)}
@@ -102,10 +112,10 @@ export function BookPdfFlipbook({ pdfUrl }: BookPdfFlipbookProps) {
             width={width}
             height={height}
             size="fixed"
-            minWidth={MOBILE_WIDTH}
-            maxWidth={DESKTOP_WIDTH}
-            minHeight={MOBILE_WIDTH}
-            maxHeight={DESKTOP_HEIGHT}
+            minWidth={MIN_WIDTH}
+            maxWidth={MAX_WIDTH}
+            minHeight={MIN_WIDTH}
+            maxHeight={MAX_WIDTH}
             drawShadow
             flippingTime={700}
             usePortrait

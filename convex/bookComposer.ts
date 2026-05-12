@@ -225,27 +225,19 @@ export const generatePdf = internalAction({
         pdfStorageId,
       });
 
-      // Generate 3-page preview PDF for the result-page flipbook. The full
+      // Generate 7-page preview PDF for the result-page flipbook. The full
       // PDF stays paywalled; this teaser ships unconditionally so the parent
       // can flip through real pages before paying.
       try {
-        const previewPagesRaw = expandedSequence.slice(0, 3);
-        const previewPages =
-          previewPagesRaw.length > 0
-            ? previewPagesRaw
-            : expandedSequence; // edge case — book shorter than 3 pages, take all
-        if (previewPagesRaw.length < 3) {
-          log('Preview shorter than 3 pages — using full sequence', {
+        const previewPagesRaw = expandedSequence.slice(0, 7);
+        const previewPages = previewPagesRaw.length > 0 ? previewPagesRaw : expandedSequence; // edge case — book shorter than 7 pages, take all
+        if (previewPagesRaw.length < 7) {
+          log('Preview shorter than 7 pages — using full sequence', {
             available: previewPagesRaw.length,
             total: expandedSequence.length,
           });
         }
-        const previewBuffer = await renderPagesToPdfBuffer(
-          previewPages,
-          renderCtx,
-          regular,
-          bold,
-        );
+        const previewBuffer = await renderPagesToPdfBuffer(previewPages, renderCtx, regular, bold);
         log('Preview ready', {
           sizeKb: Math.round(previewBuffer.length / 1024),
           pages: previewPages.length,

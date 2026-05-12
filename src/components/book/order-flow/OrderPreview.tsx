@@ -9,11 +9,13 @@ interface Props {
   onChangeFormat: (fmt: OrderFormat) => void;
   onContinue: () => void;
   onBack: () => void;
-  /** Default true. When checked AND admin clicks CTA, skip Stripe entirely. */
+  /** Admin-only diagnostic toggles. Box is hidden entirely for regular users. */
+  isAdmin?: boolean;
+  /** When checked AND admin clicks CTA, skip Stripe entirely. */
   skipStripe?: boolean;
-  /** Default true. Propagates `skipQaReviews` to the backend (fast mode). */
+  /** Propagates `skipQaReviews` to the backend (fast mode). */
   skipQa?: boolean;
-  /** Default false. Replaces Gemini image gen with rasterized ASCII PNG. */
+  /** Replaces Gemini image gen with rasterized ASCII PNG. */
   fastImage?: boolean;
   onChangeSkipStripe?: (next: boolean) => void;
   onChangeSkipQa?: (next: boolean) => void;
@@ -29,6 +31,7 @@ export function OrderPreview({
   onChangeFormat,
   onContinue,
   onBack,
+  isAdmin = false,
   skipStripe = false,
   skipQa = false,
   fastImage = false,
@@ -171,47 +174,49 @@ export function OrderPreview({
               </button>
             </div>
 
-            {/* DEV: diagnostic checkboxes under the CTA. Pre-launch we surface
-                these to every visitor (testers without admin role). */}
-            {/* TODO(c3z): pre-launch cleanup */}
-            <div className="rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-4 space-y-2">
-              <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
-                {t('checkout.devHeading')}
-              </p>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={skipStripe}
-                  onChange={(e) => onChangeSkipStripe?.(e.target.checked)}
-                  className="w-5 h-5"
-                />
-                <span className="text-sm text-amber-900 font-semibold">
-                  {t('checkout.devSkipStripe')}
-                </span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={skipQa}
-                  onChange={(e) => onChangeSkipQa?.(e.target.checked)}
-                  className="w-5 h-5"
-                />
-                <span className="text-sm text-amber-900 font-semibold">
-                  {t('checkout.devSkipQa')}
-                </span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={fastImage}
-                  onChange={(e) => onChangeFastImage?.(e.target.checked)}
-                  className="w-5 h-5"
-                />
-                <span className="text-sm text-amber-900 font-semibold">
-                  {t('checkout.devSkipVisual')}
-                </span>
-              </label>
-            </div>
+            {/* Admin-only diagnostic toggles. Hidden in production for regular
+                users — exposing skipStripe to anonymous landing visitors meant
+                anyone could trigger a pipeline without paying. */}
+            {isAdmin && (
+              <div className="rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-4 space-y-2">
+                <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
+                  {t('checkout.devHeading')}
+                </p>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={skipStripe}
+                    onChange={(e) => onChangeSkipStripe?.(e.target.checked)}
+                    className="w-5 h-5"
+                  />
+                  <span className="text-sm text-amber-900 font-semibold">
+                    {t('checkout.devSkipStripe')}
+                  </span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={skipQa}
+                    onChange={(e) => onChangeSkipQa?.(e.target.checked)}
+                    className="w-5 h-5"
+                  />
+                  <span className="text-sm text-amber-900 font-semibold">
+                    {t('checkout.devSkipQa')}
+                  </span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={fastImage}
+                    onChange={(e) => onChangeFastImage?.(e.target.checked)}
+                    className="w-5 h-5"
+                  />
+                  <span className="text-sm text-amber-900 font-semibold">
+                    {t('checkout.devSkipVisual')}
+                  </span>
+                </label>
+              </div>
+            )}
           </div>
         </div>
 

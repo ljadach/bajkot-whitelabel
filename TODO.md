@@ -1,45 +1,22 @@
 # TODO — pre-launch security holes
 
-> **STATUS: GOLI. Tu są dziury, które musimy zaknąć ZANIM zaczniemy reklamować generowanie publicznie.**
-> **Na razie pod testy ok, ale po włączeniu płatnego generowania — fixy poniżej są krytyczne.**
+> **STATUS:** Po zamknięciu #1 zostaje #2 (PII). Stripe spięty end-to-end (dev + prod).
 
 ---
 
-## 🔥🔥🔥 #1 — LANDING ACCESS TOKEN GATE JEST WYŁĄCZONY!!!
+## ✅ #1 — LANDING ACCESS TOKEN GATE — CLOSED 2026-05-12
 
-**Plik:** `convex/bookPipeline.ts:422-428`
+Zostawiamy obecny model UX (pipeline darmowy, paywall na PDF) i chronimy intake przez **token + rate limit** zamiast pay-first.
 
-**Co jest:**
+Zmiany:
 
-```ts
-// Access token gate disabled — kept for future re-enable
-// const expectedToken = process.env.LANDING_ACCESS_TOKEN;
-// if (!expectedToken || args.accessToken !== expectedToken) {
-//   throw new Error('Invalid access token');
-// }
-void args.accessToken;
-```
+- `convex/bookPipeline.ts:763-786` — odkomentowany gate, dwa osobne errory (missing config vs invalid token).
+- `convex/lib/rateLimiter.ts` — nowy `landing_order` actionType, 10 calls / 1h (globalny ceiling, bo wszystkie landing dziele LANDING_USER_ID).
+- `convex/rateLimitMutation.ts` — `landing_order` w validatorze.
 
-**Konsekwencje:**
+Atak DoS-na-portfel kapuje po ~10 generacjach (≈$3) zanim hard-stop.
 
-- `startLandingOrder` to PUBLIC ACTION bez auth.
-- BRAK rate-limitu (auth flow ma `checkAndRecordLLMRateLimit`, landing — NIE).
-- Każdy kto zna URL Convex deployment może odpalać generowanie książki w pętli.
-- Każda generacja = realne $$ za Gemini API.
-- NIE MA NIC co go zatrzyma. Atak DoS-a-portfela = trywialny.
-
-**Plan rozwiązania (docelowy):**
-
-- Po podłączeniu Stripe do landing flow każda generacja będzie wymagała payment, więc token gate stanie się zbędny — wallet będzie gate'em.
-- DO TEGO CZASU: nie robimy publicznej kampanii. Trzymamy URL prywatny.
-
-**Co robić tymczasowo, jeśli zaczniemy testy publicznie:**
-
-- Odkomentuj gate w `bookPipeline.ts:422-428`.
-- Ustaw `LANDING_ACCESS_TOKEN` w Convex env (prod).
-- Komuniku token tylko zaufanym testerom.
-
-**KIEDY ZDJĄĆ Z TODO:** Gdy `startLandingOrder` wymaga payment session OR token check.
+Devlog: `docs/devlog/2026-05-12.md`.
 
 ---
 
@@ -76,6 +53,6 @@ void args.accessToken;
 
 ## Notatki
 
-- Te dwa punkty TO NIE JEST kosmetyka. To są realne dziury z konsekwencjami $$ (#1) i prawnymi (#2).
-- Przed publicznym launchem: oba MUSZĄ być zamknięte.
+- #1 zamknięte 2026-05-12. Zostaje #2 (PII).
+- Przed publicznym launchem #2 MUSI być zamknięte (RODO ryzyko).
 - Status checkujemy NA POCZĄTKU KAŻDEJ SESJI (instrukcja w CLAUDE.md).

@@ -21,7 +21,11 @@ import { ConvexError } from 'convex/values';
  */
 export const checkAndRecordLLMRateLimit = internalMutation({
   args: {
-    actionType: v.union(v.literal('llm_call'), v.literal('profile_update')),
+    actionType: v.union(
+      v.literal('llm_call'),
+      v.literal('profile_update'),
+      v.literal('landing_order'),
+    ),
     clerkUserId: v.string(),
   },
   returns: v.object({

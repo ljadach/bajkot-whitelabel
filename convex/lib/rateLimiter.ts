@@ -27,6 +27,13 @@ export const RATE_LIMIT_CONFIG = {
     maxCalls: 60,
     windowMs: 60 * 1000, // 1 minute — generous but prevents runaway
   },
+  // Global ceiling for the landing flow. All landing orders share LANDING_USER_ID
+  // so this caps the entire public-facing intake. 10/hour leaves headroom for
+  // legit double-attempts (form errors, retries) while killing botnet abuse.
+  landing_order: {
+    maxCalls: 10,
+    windowMs: 60 * 60 * 1000, // 1 hour
+  },
 } as const;
 
 export type ActionType = keyof typeof RATE_LIMIT_CONFIG;

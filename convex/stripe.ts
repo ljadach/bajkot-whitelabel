@@ -95,15 +95,20 @@ export const createCheckoutSession = action({
 
 /**
  * Landing-flow Stripe Checkout. Mirrors `createCheckoutSession` but skips
- * the Clerk identity check — instead the caller proves access by passing
- * the `LANDING_ACCESS_TOKEN`. The webhook handler is identity-agnostic
+ * the Clerk identity check — the order itself proves provenance via its
+ * `clerkUserId === LANDING_USER_ID`. The webhook handler is identity-agnostic
  * (it uses `bookOrderId` from session metadata), so a landing payment
  * unlocks the same `markBookOrderPaid` path as an authenticated one.
+ *
+ * The landing token gates *intake* (`startLandingOrder`), because that's
+ * where LLM/image budget burns. Checkout itself is free to create — the
+ * Stripe session call costs nothing — so requiring a token here just
+ * blocks legit parents who land on `/landing/book/:id/result` without
+ * having visited a `?token=...` URL first.
  */
 export const createLandingCheckoutSession = action({
   args: {
     bookOrderId: v.id('bookOrders'),
-    accessToken: v.string(),
     returnPath: v.optional(v.string()),
   },
   returns: v.object({
@@ -111,15 +116,6 @@ export const createLandingCheckoutSession = action({
     sessionId: v.string(),
   }),
   handler: async (ctx, args): Promise<{ url: string; sessionId: string }> => {
-    const expectedToken = process.env.LANDING_ACCESS_TOKEN;
-    // Match landing intake gating: when the env var is set, require it.
-    // When unset (current state), allow the flow so dev environments
-    // still work end-to-end. Defence in depth still happens via
-    // clerkUserId === LANDING_USER_ID below.
-    if (expectedToken && args.accessToken !== expectedToken) {
-      throw new Error('Invalid access token');
-    }
-
     const order = await ctx.runQuery(internal.billing.getLandingBookOrderForCheckout, {
       bookOrderId: args.bookOrderId,
     });
