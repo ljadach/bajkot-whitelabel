@@ -444,6 +444,32 @@ async function applyDedicationDecision(
   }
 }
 
+/**
+ * Auto-skip dedication for orders that sat in `awaiting_dedication` past the
+ * grace window — e.g. parent closed the tab and never came back. Scheduled
+ * by composePdf when it parks an order. Idempotent: no-ops if the parent
+ * already decided or the order moved past awaiting_dedication on its own.
+ */
+export const autoSkipStaleDedication = internalMutation({
+  args: { orderId: v.id('bookOrders') },
+  returns: v.null(),
+  handler: async (ctx, { orderId }) => {
+    const order = await ctx.db.get(orderId);
+    if (!order) return null;
+    if (order.dedicationDecided) return null;
+    if (order.status !== 'awaiting_dedication') return null;
+    await ctx.db.patch(orderId, { dedicationDecided: true, updatedAt: Date.now() });
+    await ctx.runMutation(internal.bookPipelineEvents.recordEvent, {
+      orderId,
+      agent: 'A8',
+      event: 'info',
+      narrative: 'Auto-skip dedykacji po 5 minutach bez decyzji rodzica.',
+    });
+    await ctx.scheduler.runAfter(0, internal.bookAgents.composePdf, { orderId });
+    return null;
+  },
+});
+
 export const submitParentDedication = mutation({
   args: { orderId: v.id('bookOrders'), dedication: v.string() },
   returns: v.null(),
