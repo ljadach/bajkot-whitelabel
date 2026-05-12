@@ -10,7 +10,7 @@ import { trackEvent } from '@lib/telemetry';
 import { BookErrorScreen, BookPausedScreen, ProgressJourney } from './ProgressJourney';
 import { StyleVoteCards } from './BookStyleVote';
 import { DedicationForm } from './DedicationForm';
-import { BrandFooter } from '../BrandFooter';
+import { BrandFooter, BrandHeader } from '../BrandFooter';
 
 type InlinePhase = 'progress' | 'vote' | 'dedication';
 export type ProgressFlow = 'auth' | 'landing';
@@ -184,7 +184,7 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
 
   if (!orderId) {
     return (
-      <ProgressLayout>
+      <ProgressLayout flow={flow}>
         <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
           <p className="text-sm text-gray-500">{t('progress.notFound')}</p>
         </div>
@@ -194,7 +194,7 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
 
   if (!progress) {
     return (
-      <ProgressLayout>
+      <ProgressLayout flow={flow}>
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="w-6 h-6 spinner" />
         </div>
@@ -204,7 +204,7 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
 
   if (progress.status === 'failed') {
     return (
-      <ProgressLayout>
+      <ProgressLayout flow={flow}>
         <BookErrorScreen
           error={friendlyBookError(progress.error)}
           retryLabel={t(cfg.retryLabelKey)}
@@ -216,7 +216,7 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
 
   if (progress.status === 'paused') {
     return (
-      <ProgressLayout>
+      <ProgressLayout flow={flow}>
         <BookPausedScreen />
       </ProgressLayout>
     );
@@ -239,7 +239,7 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
       setPhase('progress');
     };
     return (
-      <ProgressLayout>
+      <ProgressLayout flow={flow}>
         <DedicationForm
           onSubmit={handleDedicationSubmit}
           onSkip={() => void handleDedicationSkip()}
@@ -278,7 +278,7 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
     };
 
     return (
-      <ProgressLayout>
+      <ProgressLayout flow={flow}>
         <StyleVoteCards
           imageUrlA={styleVoteImages.imageUrlA ?? null}
           imageUrlB={styleVoteImages.imageUrlB ?? null}
@@ -308,7 +308,7 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
   // no step list, no internal stage names — to keep the magic intact.
   const isLanding = flow === 'landing';
   return (
-    <ProgressLayout>
+    <ProgressLayout flow={flow}>
       <ProgressJourney
         status={progress.status}
         pipelineSteps={PIPELINE_STEPS}
@@ -323,9 +323,14 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
   );
 }
 
-function ProgressLayout({ children }: { children: React.ReactNode }) {
+function ProgressLayout({ children, flow }: { children: React.ReactNode; flow: ProgressFlow }) {
+  // Auth flow keeps the global <Header> (Panel + avatar are useful there).
+  // Landing flow hides the global header in root.tsx and renders this
+  // wordmark-only BrandHeader instead — no menu, no CTA, no auth chrome.
+  const isLanding = flow === 'landing';
   return (
     <>
+      {isLanding && <BrandHeader />}
       {children}
       <BrandFooter />
     </>

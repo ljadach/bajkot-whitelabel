@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { trackEvent } from '../../../lib/telemetry';
 import { genitiveOrSelf } from '../../../lib/childNameInflect';
@@ -112,6 +112,15 @@ export function OrderCheckout({
 
   const displayError = externalError || error;
 
+  // Submit lives below the fold, so a validation error at the top of the form
+  // would otherwise stay invisible. Scroll the message into view (and announce
+  // it to screen readers via aria-live below) whenever it changes.
+  const errorRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!displayError) return;
+    errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [displayError]);
+
   return (
     <section className="pt-28 pb-20 px-6 bg-gray-50 min-h-screen">
       <div className="max-w-2xl mx-auto">
@@ -127,7 +136,12 @@ export function OrderCheckout({
 
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-10 space-y-8">
           {displayError && (
-            <div className="rounded-2xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-700 font-medium">
+            <div
+              ref={errorRef}
+              role="alert"
+              aria-live="polite"
+              className="rounded-2xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-700 font-medium"
+            >
               {displayError}
             </div>
           )}
