@@ -377,8 +377,8 @@ export const getDownloadUrl = internalAction({
     const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
     if (!order) return null;
     if (order.r2FullKey) {
-      const { presignR2GetUrl } = await import('./lib/r2Presign');
-      return presignR2GetUrl(order.r2FullKey);
+      const { presignR2GetUrl, bookPdfFilename } = await import('./lib/r2Presign');
+      return presignR2GetUrl(order.r2FullKey, undefined, bookPdfFilename(order, 'full'));
     }
     if (!order.pdfStorageId) return null;
     return ctx.storage.getUrl(order.pdfStorageId);

@@ -48,9 +48,15 @@ function getClient(): { config: R2Config; client: AwsClient } {
 export async function presignR2GetUrl(
   key: string,
   ttlSeconds = DEFAULT_TTL_SECONDS,
+  filename?: string,
 ): Promise<string> {
   const { config, client } = getClient();
-  const url = `${config.endpoint.replace(/\/$/, '')}/${config.bucket}/${encodeKey(key)}?X-Amz-Expires=${ttlSeconds}`;
+  const params: string[] = [`X-Amz-Expires=${ttlSeconds}`];
+  if (filename) {
+    const disposition = `attachment; filename="${filename}"`;
+    params.push(`response-content-disposition=${encodeURIComponent(disposition)}`);
+  }
+  const url = `${config.endpoint.replace(/\/$/, '')}/${config.bucket}/${encodeKey(key)}?${params.join('&')}`;
   const signed = await client.sign(url, { method: 'GET', aws: { signQuery: true } });
   return signed.url;
 }
@@ -69,4 +75,54 @@ export function r2OutputKeyFor(orderId: Id<'bookOrders'>, kind: R2Kind): string 
 
 function encodeKey(key: string): string {
   return key.split('/').map(encodeURIComponent).join('/');
+}
+
+// ── Filename for downloads ─────────────────────────────────
+// Browsers and email clients pick the filename from R2's Content-Disposition
+// (set via the signed response-content-disposition param) — without this every
+// PDF lands on disk as `full.pdf` because that's the R2 object key.
+
+const POLISH_TRANSLIT: Record<string, string> = {
+  ą: 'a',
+  ć: 'c',
+  ę: 'e',
+  ł: 'l',
+  ń: 'n',
+  ó: 'o',
+  ś: 's',
+  ź: 'z',
+  ż: 'z',
+  Ą: 'A',
+  Ć: 'C',
+  Ę: 'E',
+  Ł: 'L',
+  Ń: 'N',
+  Ó: 'O',
+  Ś: 'S',
+  Ź: 'Z',
+  Ż: 'Z',
+};
+
+function transliteratePolish(input: string): string {
+  return input.replace(/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/g, (ch) => POLISH_TRANSLIT[ch] ?? ch);
+}
+
+function sanitizeNameForFilename(name: string): string {
+  const ascii = transliteratePolish(name)
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '');
+  const cleaned = ascii.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  return cleaned.slice(0, 40);
+}
+
+/**
+ * Build a human-friendly download name for an order's PDF, e.g.
+ * `Bajka_Zosia_ABCD1234EF56.pdf`. Falls back gracefully when the child
+ * name is empty or strips to nothing after sanitization.
+ */
+export function bookPdfFilename(order: Doc<'bookOrders'>, kind: R2Kind = 'full'): string {
+  const tail = (order._id as string).slice(-12).toUpperCase();
+  const safeName = sanitizeNameForFilename(order.childName ?? '');
+  const stem = safeName ? `Bajka_${safeName}_${tail}` : `Bajka_${tail}`;
+  return kind === 'preview' ? `${stem}_preview.pdf` : `${stem}.pdf`;
 }
