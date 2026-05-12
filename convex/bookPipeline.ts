@@ -5,7 +5,7 @@
 
 import { action, internalMutation, internalQuery, mutation, query } from './_generated/server';
 import { internal } from './_generated/api';
-import { v } from 'convex/values';
+import { ConvexError, v } from 'convex/values';
 import { Id } from './_generated/dataModel';
 import { assertOrderOwner, assertLandingOrder, LANDING_USER_ID } from './lib/roles';
 import { toAgeBracket, type AgeBracket } from './lib/ageBracket';
@@ -105,7 +105,10 @@ async function runIntakeGuards(
     outfit: args.outfit,
   });
   if (!verdict.ok) {
-    throw new Error(
+    // Throw ConvexError, not Error — plain Error.message gets sanitized to
+    // "Server Error" by Convex before reaching the client. The parent needs
+    // to see *which* field tripped moderation so they can fix it.
+    throw new ConvexError(
       verdict.reason ?? 'Treść zamówienia nie przeszła moderacji — popraw pola i spróbuj ponownie.',
     );
   }

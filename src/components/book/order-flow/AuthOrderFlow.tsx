@@ -7,6 +7,7 @@ import { api } from '../../../../convex/_generated/api';
 // AuthOrderFlow no longer redirects to Stripe — pipeline starts immediately
 // and the result page shows the unlock-PDF CTA after a real preview.
 import { setFunnelSuperProperties } from '../../../lib/telemetry';
+import { extractErrorMessage } from '../../../lib/convexErrors';
 import { OrderCatalog } from './OrderCatalog';
 import { OrderWizard } from './OrderWizard';
 import { OrderPreview } from './OrderPreview';
@@ -68,7 +69,7 @@ export function AuthOrderFlow() {
         setFunnelSuperProperties({ bookOrderId: orderId, flow: 'auth' });
         return { orderId, format: checkoutPayload?.format ?? intake.format };
       } catch (err) {
-        setSubmitError(err instanceof Error ? err.message : t('flow.errorGeneric'));
+        setSubmitError(extractErrorMessage(err, t('flow.errorGeneric')));
         setSubmitting(false);
         return null;
       }

@@ -7,6 +7,7 @@ import { captureTokenFromUrl, getAccessToken } from '../../../hooks/useAccessTok
 import { saveLandingOrderToken } from '../../../hooks/useLandingOrderToken';
 import type { Topic } from '../../../data/topics';
 import { setFunnelSuperProperties, trackEvent } from '../../../lib/telemetry';
+import { extractErrorMessage } from '../../../lib/convexErrors';
 import { OrderWizard } from './OrderWizard';
 import { OrderPreview } from './OrderPreview';
 import { OrderCheckout, type CheckoutSubmitPayload } from './OrderCheckout';
@@ -82,7 +83,7 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
         setFunnelSuperProperties({ bookOrderId: orderId, flow: 'landing' });
         return { orderId, format: checkoutPayload?.format ?? intake.format };
       } catch (err) {
-        setSubmitError(err instanceof Error ? err.message : t('flow.errorGeneric'));
+        setSubmitError(extractErrorMessage(err, t('flow.errorGeneric')));
         setSubmitting(false);
         return null;
       }
