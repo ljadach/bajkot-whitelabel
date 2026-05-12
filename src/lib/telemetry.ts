@@ -157,14 +157,15 @@ export type ConsentStatus = 'accepted' | 'rejected' | 'custom' | 'dismissed' | n
 export function useConsent() {
   const posthog = usePostHog();
 
-  // Read localStorage post-mount only — touching it during render breaks SSR
-  // (prerender of marketing routes) and would cause a hydration mismatch if
-  // we returned different values server-side vs client-side.
-  const [consentStatus, setConsentStatus] = useState<ConsentStatus>(null);
+  // `undefined` = pre-hydration (don't render the banner yet to avoid a
+  // flash on routes where the user already consented). `null` = hydrated
+  // and never consented. Concrete strings = user's decision. Reading
+  // localStorage during render would break SSR prerender + hydration.
+  const [consentStatus, setConsentStatus] = useState<ConsentStatus | undefined>(undefined);
   const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);
 
   useEffect(() => {
-    setConsentStatus(localStorage.getItem(CONSENT_KEY) as ConsentStatus);
+    setConsentStatus((localStorage.getItem(CONSENT_KEY) as ConsentStatus) ?? null);
     setIsAnalyticsEnabled(localStorage.getItem(ANALYTICS_KEY) === 'true');
   }, []);
 

@@ -1,44 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useConsent } from '@lib/telemetry';
 
 export function CookieBanner() {
   const { t } = useTranslation('cookies');
-  const [isVisible, setIsVisible] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const { consentStatus, acceptAll, rejectAll, setCustomConsent, dismiss, isAnalyticsEnabled } =
     useConsent();
 
-  useEffect(() => {
-    // Show banner if no consent has been given
-    if (!consentStatus) {
-      setIsVisible(true);
-    }
-  }, [consentStatus]);
-
-  const handleAccept = () => {
-    acceptAll();
-    setIsVisible(false);
-  };
-
-  const handleReject = () => {
-    rejectAll();
-    setIsVisible(false);
-  };
-
+  const handleAccept = () => acceptAll();
+  const handleReject = () => rejectAll();
   const handleSaveSettings = (analytics: boolean) => {
     setCustomConsent(analytics);
-    setIsVisible(false);
     setShowSettings(false);
   };
-
   const handleDismiss = () => {
     dismiss();
-    setIsVisible(false);
     setShowSettings(false);
   };
 
-  if (!isVisible) return null;
+  // Visibility is derived from consentStatus — no local mirror state that
+  // could fall out of sync. `undefined` = pre-hydration (skip the banner to
+  // avoid a flash before localStorage is read). Anything other than `null`
+  // means the user already decided. Banner shows only when status === null.
+  if (consentStatus !== null) return null;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t-2 border-line shadow-lg">
