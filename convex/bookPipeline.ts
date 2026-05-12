@@ -626,10 +626,10 @@ async function presignForOrder(
     const paid = (order.paymentStatus ?? null) === 'completed' || order.skipStripe === true;
     if (!paid) return null;
   }
-  const { presignR2GetUrl, r2KeyFor } = await import('./lib/r2Presign');
+  const { presignR2GetUrl, r2KeyFor, bookPdfFilename } = await import('./lib/r2Presign');
   const key = r2KeyFor(order, kind);
   if (!key) return null;
-  return presignR2GetUrl(key);
+  return presignR2GetUrl(key, undefined, bookPdfFilename(order, kind));
 }
 
 export const resolveR2DownloadUrl = action({

@@ -104,8 +104,12 @@ export const sendBookReady = internalAction({
     // so users following the email later still hit a live link.
     let downloadUrl: string | null;
     if (order.r2FullKey) {
-      const { presignR2GetUrl } = await import('./lib/r2Presign');
-      downloadUrl = await presignR2GetUrl(order.r2FullKey, 24 * 60 * 60);
+      const { presignR2GetUrl, bookPdfFilename } = await import('./lib/r2Presign');
+      downloadUrl = await presignR2GetUrl(
+        order.r2FullKey,
+        24 * 60 * 60,
+        bookPdfFilename(order, 'full'),
+      );
     } else {
       downloadUrl = await ctx.storage.getUrl(order.pdfStorageId!);
     }
