@@ -7,8 +7,8 @@
  * (`STRIPE_BOOK_PRICE_ID`) are the actual billed amounts — these constants
  * are display-only.
  */
-export const BOOK_PRICE_PDF_PLN = 39;
-export const BOOK_PRICE_PRINT_PLN = 59;
+export const BOOK_PRICE_PDF_PLN = 29;
+export const BOOK_PRICE_PRINT_PLN = 49;
 
 export function formatPricePLN(value: number): string {
   return `${value} zł`;

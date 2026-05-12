@@ -21,8 +21,8 @@ const DEFAULT_REPLY_TO = 'info@bajkoterapia.org';
 
 // Display-only prices. Stripe is the source of truth via STRIPE_BOOK_PRICE_ID.
 // Mirrors src/lib/pricing.ts — if one changes, change the other.
-const BOOK_PRICE_PDF_PLN = 39;
-const BOOK_PRICE_PRINT_PLN = 59;
+const BOOK_PRICE_PDF_PLN = 29;
+const BOOK_PRICE_PRINT_PLN = 49;
 
 const DOWNLOAD_LINK_TTL_DAYS = 30;
 
