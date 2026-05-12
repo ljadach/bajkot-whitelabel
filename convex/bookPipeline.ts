@@ -229,6 +229,13 @@ export const createOrder = internalMutation({
     pauseForPrint: v.optional(v.boolean()),
     /** Per-order landing access token (sha256 hex). Only set for landing orders. */
     accessTokenHash: v.optional(v.string()),
+    /**
+     * Pipeline behavior toggles — internal-only, never accepted from public
+     * actions (C1). Trusted callers (startLandingOrder, CLI, admin batch)
+     * pre-set them to optimize for cost/speed vs. quality.
+     */
+    skipQaReviews: v.optional(v.boolean()),
+    fastImage: v.optional(v.boolean()),
   },
   returns: v.id('bookOrders'),
   handler: async (ctx, args) => {
@@ -251,6 +258,8 @@ export const createOrder = internalMutation({
       format: args.format,
       shippingAddress: args.shippingAddress,
       accessTokenHash: args.accessTokenHash,
+      skipQaReviews: args.skipQaReviews,
+      fastImage: args.fastImage,
       status: args.pauseForPrint ? 'paused' : 'intake',
       createdAt: Date.now(),
     });
@@ -811,6 +820,12 @@ export const startLandingOrder = action({
       shippingAddress: format === 'pdf_print' ? args.shippingAddress : undefined,
       pauseForPrint: format === 'pdf_print',
       accessTokenHash,
+      // Landing flow is the conversion funnel — optimized for speed/cost over
+      // quality. QA reviews and slow Gemini image gen burn budget and time
+      // without measurably improving stories at this stage. Trusted server
+      // default; clients never touch these flags.
+      skipQaReviews: true,
+      fastImage: true,
     });
 
     if (format === 'pdf_print') {
