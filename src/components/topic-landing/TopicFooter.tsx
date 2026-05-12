@@ -39,6 +39,11 @@ export function TopicFooter() {
                 info@bajkoterapia.org
               </a>
             </p>
+            <p className="text-sm mt-2">
+              <a href="/opinie" className="hover:text-magic-400 transition-colors font-semibold">
+                Zostaw opinię lub zadaj pytanie →
+              </a>
+            </p>
           </div>
 
           <div>
@@ -57,11 +62,6 @@ export function TopicFooter() {
                 >
                   Polityka Prywatności i RODO
                 </button>
-              </li>
-              <li>
-                <a href="/opinie" className="hover:text-magic-400 transition-colors">
-                  Zostaw opinię
-                </a>
               </li>
             </ul>
           </div>

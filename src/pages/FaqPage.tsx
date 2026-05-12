@@ -181,9 +181,9 @@ export function FaqPage() {
           },
         }}
         secondaryCta={{
-          label: t('cta.trial'),
+          label: t('cta.feedback'),
           onClick: () => {
-            void navigate(`/${lang}/`, { state: { showSignIn: true } });
+            void navigate('/opinie');
             document.querySelector('main')?.scrollTo(0, 0);
           },
         }}
