@@ -190,6 +190,10 @@ export const startOrder = action({
       format,
       shippingAddress: format === 'pdf_print' ? args.shippingAddress : undefined,
       pauseForPrint: format === 'pdf_print',
+      // Auth flow runs same FAST default as landing: skip QA passes for
+      // speed/cost, but keep real Gemini image gen. Admin batch / CLI
+      // override on internal paths when full QA is wanted.
+      skipQaReviews: true,
     });
 
     // PDF+Print trapdoor: do NOT start the pipeline. Manual contact flow.
@@ -820,12 +824,12 @@ export const startLandingOrder = action({
       shippingAddress: format === 'pdf_print' ? args.shippingAddress : undefined,
       pauseForPrint: format === 'pdf_print',
       accessTokenHash,
-      // Landing flow is the conversion funnel — optimized for speed/cost over
-      // quality. QA reviews and slow Gemini image gen burn budget and time
-      // without measurably improving stories at this stage. Trusted server
-      // default; clients never touch these flags.
+      // Landing flow is the conversion funnel — skip QA passes (A4/A6 etc.)
+      // for speed and cost. `fastImage` stays off: that flag swaps Gemini
+      // for an ASCII raster (admin-only smoke test path), not what real
+      // users should ever see. Trusted server default; clients never touch
+      // these flags.
       skipQaReviews: true,
-      fastImage: true,
     });
 
     if (format === 'pdf_print') {
