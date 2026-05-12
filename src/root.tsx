@@ -78,17 +78,20 @@ export function Layout({ children }: { children: ReactNode }) {
   );
 }
 
-// Marketing routes render their own <TopicNav> chrome and should not stack the
-// generic <Header> on top — that would produce two navigation bars.
-function isMarketingRoute(pathname: string): boolean {
+// Pages that render their own chrome (TopicNav on marketing routes, BrandHeader
+// on the landing book flow) should not stack the generic <Header> on top —
+// that would produce two navigation bars.
+function pageHasOwnHeader(pathname: string): boolean {
   if (pathname === '/' || pathname === '/katalog' || pathname === '/cennik') return true;
-  return pathname.startsWith('/problem/');
+  if (pathname.startsWith('/problem/')) return true;
+  if (pathname.startsWith('/landing/book/')) return true;
+  return false;
 }
 
 export default function Root() {
   useEffect(() => captureTokenFromUrl(), []);
   const { pathname } = useLocation();
-  const showGlobalHeader = !isMarketingRoute(pathname);
+  const showGlobalHeader = !pageHasOwnHeader(pathname);
 
   return (
     <div className="h-screen flex flex-col bg-white">
