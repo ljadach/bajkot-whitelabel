@@ -83,6 +83,7 @@ export function Layout({ children }: { children: ReactNode }) {
 // that would produce two navigation bars.
 function pageHasOwnHeader(pathname: string): boolean {
   if (pathname === '/' || pathname === '/katalog' || pathname === '/cennik') return true;
+  if (pathname === '/opinie') return true;
   if (pathname.startsWith('/problem/')) return true;
   if (pathname.startsWith('/landing/book/')) return true;
   return false;
