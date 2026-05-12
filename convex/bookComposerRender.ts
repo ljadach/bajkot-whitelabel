@@ -10,7 +10,12 @@ import { r2OutputKeyFor, type R2Kind } from './lib/r2Presign';
 import { getNarrative } from './bookPipelineEvents';
 
 const RENDER_TIMEOUT_MS = 120_000;
-const PREVIEW_PAGE_COUNT = 3;
+// Preview teaser size: 7 pages (bumped from 3). Bajka ma 24-31 stron, więc
+// 7 = ~1/4 — wystarczy żeby user zobaczył strukturę i pierwszy beat,
+// nie tak dużo żeby zniechęcić do płatności. Typst-render service musi
+// honorować `maxPages` z briefu — jeśli template ignoruje, render zwróci
+// pełną sekwencję mimo to.
+const PREVIEW_PAGE_COUNT = 7;
 
 interface RenderResponse {
   jobId: string;
