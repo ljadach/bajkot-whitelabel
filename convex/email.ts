@@ -10,6 +10,7 @@ import { internalAction } from './_generated/server';
 import { internal } from './_generated/api';
 import { v } from 'convex/values';
 import {
+  buildAdminPrintAlertEmail,
   buildBookReadyEmail,
   buildOrderConfirmationEmail,
   formatOrderNumber,
@@ -17,6 +18,8 @@ import {
   type BookFormat,
 } from './lib/email';
 import { PROBLEMS } from './lib/bookData';
+
+const ADMIN_PRINT_ALERT_RECIPIENT = 'bajkoterapia.org@gmail.com';
 
 function resolveProblemTitle(problemId: string): string {
   const problem = PROBLEMS[problemId];
@@ -147,6 +150,51 @@ export const sendBookReady = internalAction({
     });
 
     await sendEmail({ to: order.email, subject, html, text });
+    return null;
+  },
+});
+
+/**
+ * Internal admin alert: customer paid for the PDF+Print variant, fulfillment
+ * team needs to print + ship a physical book in 3-5 working days. Triggered
+ * exclusively from billing.markBookOrderPaid when format === 'pdf_print'.
+ *
+ * No-ops gracefully when:
+ *   - the order is missing
+ *   - format is not 'pdf_print' (defensive — should be filtered upstream)
+ *   - RESEND_API_KEY is not configured
+ */
+export const sendAdminPrintAlert = internalAction({
+  args: { bookOrderId: v.id('bookOrders') },
+  returns: v.null(),
+  handler: async (ctx, { bookOrderId }) => {
+    const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, {
+      orderId: bookOrderId,
+    });
+    if (!order) {
+      console.warn('[email.sendAdminPrintAlert] order not found', bookOrderId);
+      return null;
+    }
+    if (order.format !== 'pdf_print') {
+      console.warn(
+        `[email.sendAdminPrintAlert] order format is ${order.format ?? 'pdf'}, skipping`,
+        bookOrderId,
+      );
+      return null;
+    }
+
+    const appUrl = process.env.APP_URL || 'https://bajkoterapia.org';
+    const { subject, html, text } = buildAdminPrintAlertEmail({
+      orderId: bookOrderId,
+      orderNumber: formatOrderNumber(bookOrderId),
+      childName: order.childName,
+      problemTitle: resolveProblemTitle(order.problemId),
+      customerEmail: order.email ?? null,
+      shippingAddress: order.shippingAddress ?? null,
+      adminUrl: `${appUrl}/admin/batch?tab=orders&orderId=${bookOrderId}`,
+    });
+
+    await sendEmail({ to: ADMIN_PRINT_ALERT_RECIPIENT, subject, html, text });
     return null;
   },
 });

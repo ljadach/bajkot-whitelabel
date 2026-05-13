@@ -100,12 +100,8 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
     async (payload: CheckoutSubmitPayload) => {
       const result = await submitOrder(payload);
       if (!result) return;
-      // PDF+Print → landing trapdoor thank-you (manual fulfillment via mail).
-      if (payload.format === 'pdf_print') {
-        void navigate(`/landing/book/${result.orderId}/print-thanks`);
-        return;
-      }
-      // Stripe payment moved to the result page (post-pipeline preview).
+      // Both PDF and PDF+Print run the pipeline; payment (29 vs 49 PLN) and
+      // print-shipping are handled post-pipeline on the result page.
       void navigate(`/landing/book/${result.orderId}/progress`);
     },
     [submitOrder, navigate],

@@ -176,10 +176,6 @@ export function buildOrderConfirmationEmail(params: OrderConfirmationParams): {
               </div>${printRow}
             </div>
 
-            <div style="background:#fefce8;border-left:3px solid #f59e0b;padding:14px 18px;border-radius:8px;margin:24px 0;font-size:14px;">
-              <strong style="color:#92400e;">📄 Faktura VAT</strong> — wystawimy ją automatycznie i dołączymy do maila z gotową bajką. Jeśli potrzebujesz danych firmowych, odpisz na tego maila do końca dnia.
-            </div>
-
             <p style="margin:24px 0 0 0;">
               Coś się nie zgadza? Chcesz zmienić temat lub zaktualizować dane bohatera? Po prostu odpisz na tę wiadomość — Łukasz albo Andrzej zajmiemy się Wami osobiście.
             </p>
@@ -203,7 +199,7 @@ export function buildOrderConfirmationEmail(params: OrderConfirmationParams): {
 </html>`;
 
   const printStep =
-    format === 'pdf_print' ? '3. Drukowana książeczka wyruszy kurierem w 3–5 dni roboczych.\n' : '';
+    format === 'pdf_print' ? '3. Drukowana książeczka wyruszy kurierem w 3–5 dni roboczych.' : null;
   const text = [
     `Cześć!`,
     '',
@@ -219,8 +215,7 @@ export function buildOrderConfirmationEmail(params: OrderConfirmationParams): {
     'CO TERAZ?',
     '1. Tworzymy Twoją bajkę — to zajmie około 15 minut.',
     '2. Wyślemy Ci PDF mailem na ten sam adres.',
-    printStep +
-      'FAKTURA VAT — wystawimy ją automatycznie. Potrzebujesz danych firmowych? Odpisz na tę wiadomość do końca dnia.',
+    ...(printStep ? [printStep] : []),
     '',
     'Coś się nie zgadza? Po prostu odpisz na tę wiadomość — zajmiemy się Wami osobiście.',
     '',
@@ -382,6 +377,130 @@ export function buildBookReadyEmail(params: BookReadyParams): {
     'Bajkoterapia by Trustee Interactive',
     'Plac Inwalidów 10, 01-552 Warszawa',
     'info@bajkoterapia.org · bajkoterapia.org',
+  ].join('\n');
+
+  return { subject, html, text };
+}
+
+// ────────────────────────────────────────────────────────────────
+// Email 3 — Internal admin alert: customer ordered the printed book.
+// Sent to bajkoterapia.org@gmail.com after Stripe confirms payment,
+// only when order.format === 'pdf_print'. Includes shipping address +
+// contact so the fulfillment team can ship without digging into admin.
+// ────────────────────────────────────────────────────────────────
+
+export interface AdminPrintAlertParams {
+  orderId: string;
+  orderNumber: string;
+  childName: string;
+  problemTitle: string;
+  customerEmail: string | null;
+  shippingAddress: {
+    fullName: string;
+    phone: string;
+    street: string;
+    zip: string;
+    city: string;
+  } | null;
+  adminUrl: string;
+}
+
+export function buildAdminPrintAlertEmail(params: AdminPrintAlertParams): {
+  subject: string;
+  html: string;
+  text: string;
+} {
+  const { orderNumber, childName, problemTitle, customerEmail, shippingAddress, adminUrl } = params;
+  const childEsc = escapeHtml(childName);
+  const problemEsc = escapeHtml(problemTitle);
+  const subject = `📦 DRUK — nowe zamówienie ${orderNumber} (${childName})`;
+
+  const addressRows = shippingAddress
+    ? `
+        <tr><td style="padding:4px 0;color:#64748b;width:120px;">Imię i nazwisko</td><td style="font-weight:700;color:#0c4a6e;">${escapeHtml(shippingAddress.fullName)}</td></tr>
+        <tr><td style="padding:4px 0;color:#64748b;">Telefon</td><td style="font-weight:700;color:#0c4a6e;">${escapeHtml(shippingAddress.phone)}</td></tr>
+        <tr><td style="padding:4px 0;color:#64748b;">Ulica</td><td style="font-weight:700;color:#0c4a6e;">${escapeHtml(shippingAddress.street)}</td></tr>
+        <tr><td style="padding:4px 0;color:#64748b;">Kod / miasto</td><td style="font-weight:700;color:#0c4a6e;">${escapeHtml(shippingAddress.zip)} ${escapeHtml(shippingAddress.city)}</td></tr>`
+    : `<tr><td colspan="2" style="padding:8px 0;color:#dc2626;font-weight:700;">⚠️ Brak adresu wysyłki — sprawdź w adminie!</td></tr>`;
+
+  const html = `<!doctype html>
+<html lang="pl">
+  <head><meta charset="utf-8"></head>
+  <body style="margin:0;padding:0;background:#F5F7FA;font-family:Nunito,Arial,sans-serif;color:#334155;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F7FA;padding:32px 16px;">
+      <tr><td align="center">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:12px;box-shadow:0 8px 24px -8px rgba(15,23,42,0.12);overflow:hidden;">
+          <tr><td style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);padding:24px 28px;border-bottom:2px solid #f59e0b;">
+            <div style="font-size:24px;font-weight:900;color:#92400e;">📦 Druk + Wysyłka</div>
+            <div style="font-size:14px;color:#78350f;margin-top:4px;">Klient opłacił zamówienie i czeka na drukowaną książeczkę</div>
+          </td></tr>
+
+          <tr><td style="padding:28px;font-size:15px;line-height:1.6;color:#334155;">
+            <p style="margin:0 0 16px 0;">Cześć,</p>
+            <p style="margin:0 0 20px 0;">Klient opłacił bajkę dla <strong>${childEsc}</strong> w wariancie <strong>PDF + Druk</strong>. PDF został już wysłany automatycznie — wasze zadanie to wydrukować i wysłać fizyczną książeczkę w ciągu <strong>3–5 dni roboczych</strong>.</p>
+
+            <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:18px;margin:20px 0;">
+              <div style="font-size:11px;font-weight:800;color:#92400e;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;">Zamówienie</div>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;">
+                <tr><td style="padding:4px 0;color:#64748b;width:120px;">Numer</td><td style="font-weight:700;color:#0c4a6e;">${escapeHtml(orderNumber)}</td></tr>
+                <tr><td style="padding:4px 0;color:#64748b;">Bohater</td><td style="font-weight:700;color:#0c4a6e;">${childEsc}</td></tr>
+                <tr><td style="padding:4px 0;color:#64748b;">Temat</td><td style="font-weight:700;color:#0c4a6e;">${problemEsc}</td></tr>
+                <tr><td style="padding:4px 0;color:#64748b;">Kontakt</td><td style="font-weight:700;color:#0c4a6e;">${customerEmail ? `<a href="mailto:${escapeAttr(customerEmail)}" style="color:#0284c7;">${escapeHtml(customerEmail)}</a>` : '<span style="color:#dc2626;">brak</span>'}</td></tr>
+              </table>
+            </div>
+
+            <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;padding:18px;margin:20px 0;">
+              <div style="font-size:11px;font-weight:800;color:#075985;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;">Adres wysyłki</div>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;">
+                ${addressRows}
+              </table>
+            </div>
+
+            <div style="text-align:center;margin:28px 0;">
+              <a href="${escapeAttr(adminUrl)}" style="display:inline-block;background:#0c4a6e;color:#ffffff;font-weight:800;font-size:15px;padding:12px 28px;border-radius:8px;text-decoration:none;">
+                🔧 Otwórz w adminie
+              </a>
+            </div>
+
+            <p style="margin:20px 0 0 0;font-size:13px;color:#64748b;">PDF gotowy do druku znajdziesz w panelu adminskim (zakładka „Książki" → szczegóły zamówienia → Pobierz pełny PDF).</p>
+          </td></tr>
+
+          <tr><td style="background:#f8fafc;padding:18px;text-align:center;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;">
+            Bajkoterapia · automatyczne powiadomienie wewnętrzne
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+</html>`;
+
+  const addressText = shippingAddress
+    ? [
+        `Imię i nazwisko: ${shippingAddress.fullName}`,
+        `Telefon: ${shippingAddress.phone}`,
+        `Ulica: ${shippingAddress.street}`,
+        `Kod / miasto: ${shippingAddress.zip} ${shippingAddress.city}`,
+      ].join('\n')
+    : '⚠️ BRAK ADRESU WYSYŁKI — sprawdź w adminie!';
+
+  const text = [
+    'NOWE ZAMÓWIENIE PDF + DRUK',
+    '',
+    `Klient opłacił bajkę dla ${childName} w wariancie PDF + Druk.`,
+    'PDF wysłany automatycznie. Wasze zadanie: wydrukować i wysłać w 3-5 dni roboczych.',
+    '',
+    'ZAMÓWIENIE',
+    `- Numer: ${orderNumber}`,
+    `- Bohater: ${childName}`,
+    `- Temat: ${problemTitle}`,
+    `- Kontakt: ${customerEmail ?? 'brak'}`,
+    '',
+    'ADRES WYSYŁKI',
+    addressText,
+    '',
+    `Admin: ${adminUrl}`,
+    '',
+    'PDF do druku w panelu adminskim → Książki → szczegóły zamówienia → Pobierz pełny PDF.',
   ].join('\n');
 
   return { subject, html, text };

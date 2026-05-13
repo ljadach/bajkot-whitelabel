@@ -133,7 +133,7 @@
     "include4Title": "Oryginalne ilustracje",
     "include4Body": "z postacią dziecka",
     "include5Title": "Pytania do dyskusji",
-    "include5Body": "po każdym rozdziale",
+    "include5Body": "po przeczytaniu książki",
     "formatHeading": "Wybierz format",
     "formatPdf": "PDF — do czytania na ekranie",
     "formatPdfHint": "Bajka gotowa do czytania w 15 minut",
@@ -182,7 +182,7 @@
     "addressCityPlaceholder": "Warszawa",
     "consent": "Akceptuję regulamin i wyrażam zgodę na przetwarzanie danych osobowych w celu realizacji zamówienia.",
     "submit": "Generuj bajkę",
-    "submitting": "Uruchamiam pipeline...",
+    "submitting": "Uruchamiam tworzenie książki...",
     "back": "Wróć",
     "secureNote": "Bajka generuje się od razu — płatność za PDF dopiero po wygenerowaniu, na ekranie wyniku z podglądem 3 stron.",
     "devHeading": "Tryb deweloperski",
@@ -196,12 +196,6 @@
   "flow": {
     "errorMissingData": "Brakuje danych — wróć do kreatora.",
     "errorGeneric": "Wystąpił błąd. Spróbuj ponownie."
-  },
-  "printThanks": {
-    "heading": "Dziękujemy za zainteresowanie wersją drukowaną!",
-    "body": "Skontaktujemy się z Tobą wkrótce, żeby ustalić szczegóły wysyłki i płatności.",
-    "emailNote": "Potwierdzenie wysłaliśmy na adres: {{email}}",
-    "ctaHome": "Wróć na stronę główną"
   },
   "preview": {
     "kicker": "Co otrzymasz?",
@@ -217,7 +211,7 @@
     "include4Title": "Oryginalne ilustracje",
     "include4Body": "Z postacią Twojego dziecka.",
     "include5Title": "Pytania do rozmowy",
-    "include5Body": "Po każdym rozdziale, by pogłębić efekt."
+    "include5Body": "Po przeczytaniu książki, by pogłębić efekt."
   },
   "progress": {
     "kicker": "Trwa magia",
@@ -281,13 +275,14 @@
     "upsellBody": "Twoje dziecko może mieć całą kolekcję spersonalizowanych bajek terapeutycznych."
   },
   "paywall": {
-    "kicker": "Twoja bajka jest gotowa",
     "heading": "„{{bookTitle}}\"",
     "headingFallback": "Twoja bajka jest gotowa",
-    "description": "Tak będzie wyglądać bajka {{nameGen}}. Odblokuj pełny PDF, żeby pobrać całą książkę z ilustracjami i historią.",
-    "excerptKicker": "Pierwsza strona",
+    "previewLabel": "Podgląd pierwszych 7 stron",
+    "usageHint": "Przewracaj strony strzałkami po bokach.",
+    "openInNewTab": "Otwórz PDF w nowej karcie",
     "unlockHeading": "Odblokuj pełną bajkę",
     "unlockBody": "Płatność jednorazowa za PDF. Po odblokowaniu możesz pobrać i wydrukować bajkę w dowolnej chwili.",
+    "unlockBodyPrint": "Płatność jednorazowa: PDF dostajesz od razu po opłacie, a profesjonalnie wydrukowaną książeczkę wyślemy kurierem w 3-5 dni roboczych.",
     "unlockCta": "Odblokuj PDF ({{price}})",
     "redirecting": "Przekierowuję do Stripe...",
     "secureNote": "Bezpieczna płatność przez Stripe. Twoje dane są chronione.",

@@ -23,6 +23,32 @@ function getAppUrl() {
   return appUrl;
 }
 
+/**
+ * Resolve the Stripe Price ID for a given order format.
+ *
+ * Two distinct Products live in the Stripe dashboard ("Bajka terapeutyczna — PDF"
+ * and "Bajka terapeutyczna — PDF + Druk"), each with its own one-time Price in
+ * PLN with tax_behavior=inclusive. The Price IDs are wired in via env vars so
+ * the same code runs in dev (test mode) and prod (live mode) without changes.
+ *
+ * Legacy orders without an explicit format default to PDF — safer than
+ * accidentally charging 49 PLN for a missing-format edge case.
+ */
+function resolvePriceId(format: 'pdf' | 'pdf_print' | null): string {
+  const pdfPriceId = process.env.STRIPE_BOOK_PRICE_ID;
+  const printPriceId = process.env.STRIPE_BOOK_PRINT_PRICE_ID;
+  if (!pdfPriceId) {
+    throw new Error('STRIPE_BOOK_PRICE_ID is not configured');
+  }
+  if (format === 'pdf_print') {
+    if (!printPriceId) {
+      throw new Error('STRIPE_BOOK_PRINT_PRICE_ID is not configured');
+    }
+    return printPriceId;
+  }
+  return pdfPriceId;
+}
+
 export const createCheckoutSession = action({
   args: {
     bookOrderId: v.id('bookOrders'),
@@ -53,26 +79,24 @@ export const createCheckoutSession = action({
 
     const stripe = getStripeClient();
     const appUrl = getAppUrl();
-    const priceId = process.env.STRIPE_BOOK_PRICE_ID;
-    if (!priceId) {
-      throw new Error('STRIPE_BOOK_PRICE_ID is not configured');
-    }
 
     const returnPath = args.returnPath ?? `/book/${args.bookOrderId}/result`;
     const session: Stripe.Checkout.Session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: [{ price: resolvePriceId(order.format), quantity: 1 }],
       billing_address_collection: 'auto',
       automatic_tax: { enabled: true },
       client_reference_id: args.bookOrderId,
       metadata: {
         clerkUserId: identity.subject,
         bookOrderId: args.bookOrderId,
+        format: order.format ?? 'pdf',
       },
       payment_intent_data: {
         metadata: {
           clerkUserId: identity.subject,
           bookOrderId: args.bookOrderId,
+          format: order.format ?? 'pdf',
         },
       },
       success_url: `${appUrl}${returnPath}?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
@@ -138,26 +162,24 @@ export const createLandingCheckoutSession = action({
 
     const stripe = getStripeClient();
     const appUrl = getAppUrl();
-    const priceId = process.env.STRIPE_BOOK_PRICE_ID;
-    if (!priceId) {
-      throw new Error('STRIPE_BOOK_PRICE_ID is not configured');
-    }
 
     const returnPath = args.returnPath ?? `/landing/book/${args.bookOrderId}/progress`;
     const session: Stripe.Checkout.Session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: [{ price: resolvePriceId(order.format), quantity: 1 }],
       billing_address_collection: 'auto',
       automatic_tax: { enabled: true },
       client_reference_id: args.bookOrderId,
       metadata: {
         bookOrderId: args.bookOrderId,
         landing: 'true',
+        format: order.format ?? 'pdf',
       },
       payment_intent_data: {
         metadata: {
           bookOrderId: args.bookOrderId,
           landing: 'true',
+          format: order.format ?? 'pdf',
         },
       },
       success_url: `${appUrl}${returnPath}?checkout=success&session_id={CHECKOUT_SESSION_ID}`,

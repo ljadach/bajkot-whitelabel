@@ -192,19 +192,15 @@ export const startOrder = action({
       email: args.email,
       format,
       shippingAddress: format === 'pdf_print' ? args.shippingAddress : undefined,
-      pauseForPrint: format === 'pdf_print',
       // Auth flow runs same FAST default as landing: skip QA passes for
       // speed/cost, but keep real Gemini image gen. Admin batch / CLI
       // override on internal paths when full QA is wanted.
       skipQaReviews: true,
     });
 
-    // PDF+Print trapdoor: do NOT start the pipeline. Manual contact flow.
-    if (format === 'pdf_print') {
-      return { orderId };
-    }
-
-    // Schedule A0 (intake)
+    // Schedule A0 (intake) — both PDF and PDF+Print run the same pipeline.
+    // Physical print fulfillment is triggered by Stripe webhook (admin alert
+    // email after payment confirms format === 'pdf_print').
     await ctx.scheduler.runAfter(0, internal.bookAgents.intake, { orderId });
 
     return { orderId };
@@ -232,8 +228,6 @@ export const createOrder = internalMutation({
     email: v.optional(v.string()),
     format: v.optional(formatValidator),
     shippingAddress: v.optional(shippingAddressValidator),
-    /** When true (PDF+Print), order starts in 'paused' instead of 'intake'. */
-    pauseForPrint: v.optional(v.boolean()),
     /** Per-order landing access token (sha256 hex). Only set for landing orders. */
     accessTokenHash: v.optional(v.string()),
     /** Raw landing token (capability) — embedded in transactional email URLs. */
@@ -270,28 +264,9 @@ export const createOrder = internalMutation({
       accessTokenRaw: args.accessTokenRaw,
       skipQaReviews: args.skipQaReviews,
       fastImage: args.fastImage,
-      status: args.pauseForPrint ? 'paused' : 'intake',
+      status: 'intake',
       createdAt: Date.now(),
     });
-
-    // Trapdoor: PDF+Print orders never enter the pipeline. We log a narrative
-    // event so admins can find them in the audit timeline.
-    if (args.pauseForPrint) {
-      await ctx.db.insert('bookPipelineEvents', {
-        orderId,
-        agent: 'system',
-        event: 'info',
-        narrative: 'Klient wybrał wersję drukowaną — wymagany kontakt manualny',
-        details: JSON.stringify({
-          format: args.format,
-          shippingAddress: args.shippingAddress,
-          email: args.email,
-          childName: args.childName,
-          problemId: args.problemId,
-        }),
-        timestamp: Date.now(),
-      });
-    }
 
     return orderId;
   },
@@ -546,6 +521,8 @@ interface PreviewResult {
   paid: boolean;
   hasPdf: boolean;
   paymentStatus: 'pending' | 'completed' | 'failed' | null;
+  /** 'pdf' or 'pdf_print' — drives the unlock CTA price (29 vs 49 PLN) + shipping copy. */
+  format: 'pdf' | 'pdf_print';
   illustrations: Array<{ illustrationId: string; url: string | null }>;
   excerptPl: string | null;
   /**
@@ -564,6 +541,7 @@ const previewReturnValidator = v.object({
   paid: v.boolean(),
   hasPdf: v.boolean(),
   paymentStatus: paymentStatusReturnValidator,
+  format: v.union(v.literal('pdf'), v.literal('pdf_print')),
   illustrations: v.array(
     v.object({ illustrationId: v.string(), url: v.union(v.string(), v.null()) }),
   ),
@@ -605,6 +583,7 @@ async function buildPreviewResult(
     previewPdfStorageId?: Id<'_storage'>;
     r2FullKey?: string;
     r2PreviewKey?: string;
+    format?: 'pdf' | 'pdf_print';
     _id: Id<'bookOrders'>;
   },
 ): Promise<PreviewResult> {
@@ -629,6 +608,7 @@ async function buildPreviewResult(
     paid: isPaid(order),
     hasPdf: !!order.pdfStorageId || !!order.r2FullKey,
     paymentStatus: order.paymentStatus ?? null,
+    format: order.format ?? 'pdf',
     illustrations: previewIllustrations,
     excerptPl: extractFirstBeatExcerpt(order.storyDraft),
     previewPdfUrl,
@@ -828,7 +808,6 @@ export const startLandingOrder = action({
       email: args.email,
       format,
       shippingAddress: format === 'pdf_print' ? args.shippingAddress : undefined,
-      pauseForPrint: format === 'pdf_print',
       accessTokenHash,
       accessTokenRaw: rawToken,
       // Landing flow is the conversion funnel — skip QA passes (A4/A6 etc.)
@@ -838,10 +817,6 @@ export const startLandingOrder = action({
       // these flags.
       skipQaReviews: true,
     });
-
-    if (format === 'pdf_print') {
-      return { orderId, accessToken: rawToken };
-    }
 
     await ctx.scheduler.runAfter(0, internal.bookAgents.intake, { orderId });
     return { orderId, accessToken: rawToken };
@@ -984,45 +959,6 @@ export const getLandingStyleVoteImages = query({
 });
 
 // ── Get user's orders ──────────────────────────────────────
-
-// ── PDF+Print trapdoor — thank you page queries ───────────
-
-const printThanksReturn = v.union(
-  v.null(),
-  v.object({
-    childName: v.string(),
-    format: v.string(),
-    email: v.union(v.string(), v.null()),
-  }),
-);
-
-export const getPrintThanksOrder = query({
-  args: { orderId: v.id('bookOrders') },
-  returns: printThanksReturn,
-  handler: async (ctx, { orderId }) => {
-    const order = await assertOrderOwner(ctx, orderId);
-    if (order.format !== 'pdf_print') return null;
-    return {
-      childName: order.childName,
-      format: order.format,
-      email: order.email ?? null,
-    };
-  },
-});
-
-export const getLandingPrintThanksOrder = query({
-  args: { orderId: v.id('bookOrders'), accessToken: v.string() },
-  returns: printThanksReturn,
-  handler: async (ctx, { orderId, accessToken }) => {
-    const order = await assertLandingOrder(ctx, orderId, accessToken);
-    if (order.format !== 'pdf_print') return null;
-    return {
-      childName: order.childName,
-      format: order.format,
-      email: order.email ?? null,
-    };
-  },
-});
 
 export const getMyOrders = query({
   args: {},

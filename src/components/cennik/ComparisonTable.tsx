@@ -56,7 +56,7 @@ export function ComparisonTable() {
         </div>
 
         <p className="text-center text-sm text-slate-500 mt-6">
-          Wszystkie ceny zawierają 23% VAT. Faktura na firmę dostępna na życzenie.
+          Wszystkie ceny są cenami końcowymi.
         </p>
       </div>
     </section>

@@ -5,13 +5,13 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
 import { trackEvent } from '@lib/telemetry';
-import { BOOK_PRICE_PDF_PLN, formatPricePLN } from '@lib/pricing';
+import { BOOK_PRICE_PDF_PLN, BOOK_PRICE_PRINT_PLN, formatPricePLN } from '@lib/pricing';
 import { ClientOnly } from '../ClientOnly';
 import { genitiveOrSelf } from '@lib/childNameInflect';
 import { useResolvedR2Url } from '../../hooks/useResolvedR2Url';
 
-// PDF viewer is heavy (pdfjs-dist + react-pdf + react-pageflip ~500KB gz).
-// Lazy-load so the success-screen path (post-payment) doesn't pull it in.
+// PDF viewer is heavy (pdfjs-dist + react-pdf). Lazy-load so the
+// success-screen path (post-payment) doesn't pull it in.
 const BookPdfFlipbook = lazy(() =>
   import('./BookPdfFlipbook').then((m) => ({ default: m.BookPdfFlipbook })),
 );
@@ -256,6 +256,7 @@ interface BookPreviewScreenProps {
         childName: string;
         bookTitle: string | null;
         excerptPl: string | null;
+        format: 'pdf' | 'pdf_print';
         illustrations: Array<{ illustrationId: string; url: string | null }>;
         previewPdfUrl: string | null;
         r2PreviewKey: string | null;
@@ -315,26 +316,21 @@ export function BookPreviewScreen({
     : t('paywall.headingFallback');
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-12 sm:px-6">
-      <div className="max-w-3xl mx-auto space-y-8">
+    <div className="min-h-screen bg-gray-50 px-4 py-10 sm:px-6">
+      <div className="max-w-2xl mx-auto space-y-6">
         <div className="text-center">
-          <span className="text-magic-500 font-bold uppercase tracking-widest text-sm mb-2 block">
-            {t('paywall.kicker')}
-          </span>
-          <h1 className="text-3xl md:text-4xl font-black text-calm-900 mb-3">{heading}</h1>
-          <p className="text-gray-600 text-base md:text-lg max-w-md mx-auto">
-            {t('paywall.description', { nameGen: genitiveOrSelf(preview?.childName) })}
-          </p>
+          <h1 className="text-2xl md:text-3xl font-black text-calm-900">{heading}</h1>
+          <p className="text-sm text-gray-500 mt-2">{t('paywall.previewLabel')}</p>
         </div>
 
-        {/* Preview — embedded flipbook of the first 3 PDF pages. Falls back
+        {/* Preview — single-page PDF viewer with overlay arrows. Falls back
             to the legacy 3-image grid for legacy orders whose composer ran
             before the preview PDF feature shipped (previewPdfUrl === null). */}
         {previewPdfUrl ? (
-          <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-6 md:p-8">
+          <div className="space-y-3">
             <ClientOnly
               fallback={
-                <div className="flex items-center justify-center gap-2 py-12">
+                <div className="aspect-[5/7] w-full max-w-[560px] mx-auto rounded-2xl bg-gradient-to-br from-calm-50 via-white to-magic-50 flex items-center justify-center gap-2">
                   <div className="w-5 h-5 spinner" />
                   <span className="text-sm text-gray-500">Ładowanie podglądu...</span>
                 </div>
@@ -342,7 +338,7 @@ export function BookPreviewScreen({
             >
               <Suspense
                 fallback={
-                  <div className="flex items-center justify-center gap-2 py-12">
+                  <div className="aspect-[5/7] w-full max-w-[560px] mx-auto rounded-2xl bg-gradient-to-br from-calm-50 via-white to-magic-50 flex items-center justify-center gap-2">
                     <div className="w-5 h-5 spinner" />
                     <span className="text-sm text-gray-500">Ładowanie podglądu...</span>
                   </div>
@@ -351,6 +347,19 @@ export function BookPreviewScreen({
                 <BookPdfFlipbook pdfUrl={previewPdfUrl} />
               </Suspense>
             </ClientOnly>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-x-4 gap-y-1 text-xs sm:text-sm text-gray-500 text-center">
+              <span>{t('paywall.usageHint')}</span>
+              <a
+                href={previewPdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-1.5 font-semibold text-magic-600 hover:text-magic-700 underline underline-offset-2"
+                onClick={() => trackEvent('preview_open_in_new_tab', { flow, bookOrderId })}
+              >
+                <i className="fa-solid fa-arrow-up-right-from-square" />
+                {t('paywall.openInNewTab')}
+              </a>
+            </div>
           </div>
         ) : (
           <>
@@ -389,43 +398,39 @@ export function BookPreviewScreen({
           </>
         )}
 
-        {/* Excerpt teaser */}
-        {preview?.excerptPl && (
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8">
-            <p className="text-xs font-bold uppercase tracking-wider text-magic-500 mb-3">
-              {t('paywall.excerptKicker')}
-            </p>
-            <p className="text-base md:text-lg text-calm-900 leading-relaxed font-medium">
-              „{preview.excerptPl}"
-            </p>
-          </div>
-        )}
-
-        {/* Unlock CTA */}
-        <div className="bg-white rounded-3xl shadow-xl border-2 border-magic-200 p-6 md:p-10 text-center space-y-4">
-          <div className="text-5xl">🔒</div>
-          <h2 className="text-xl md:text-2xl font-black text-calm-900">
-            {t('paywall.unlockHeading')}
-          </h2>
-          <p className="text-gray-600 max-w-md mx-auto">{t('paywall.unlockBody')}</p>
-          {error && (
-            <div role="alert" className="text-sm text-red-600 font-medium">
-              {error}
+        {/* Unlock CTA — price + body adapt to the order's format. pdf_print
+            shows the 49 PLN total and the shipping reassurance line. */}
+        {(() => {
+          const isPrint = preview?.format === 'pdf_print';
+          const priceValue = isPrint ? BOOK_PRICE_PRINT_PLN : BOOK_PRICE_PDF_PLN;
+          const unlockBody = isPrint ? t('paywall.unlockBodyPrint') : t('paywall.unlockBody');
+          return (
+            <div className="bg-white rounded-3xl shadow-xl border-2 border-magic-200 p-6 md:p-10 text-center space-y-4">
+              <div className="text-5xl">{isPrint ? '📦' : '🔒'}</div>
+              <h2 className="text-xl md:text-2xl font-black text-calm-900">
+                {t('paywall.unlockHeading')}
+              </h2>
+              <p className="text-gray-600 max-w-md mx-auto">{unlockBody}</p>
+              {error && (
+                <div role="alert" className="text-sm text-red-600 font-medium">
+                  {error}
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => void handleUnlock()}
+                disabled={redirecting}
+                className="inline-flex items-center justify-center gap-2 bg-magic-500 hover:bg-magic-600 text-white font-extrabold px-8 py-4 rounded-2xl text-lg shadow-xl shadow-magic-500/30 transition transform hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                <i className="fa-solid fa-lock-open" />
+                {redirecting
+                  ? t('paywall.redirecting')
+                  : t('paywall.unlockCta', { price: formatPricePLN(priceValue) })}
+              </button>
+              <p className="text-xs text-gray-500">{t('paywall.secureNote')}</p>
             </div>
-          )}
-          <button
-            type="button"
-            onClick={() => void handleUnlock()}
-            disabled={redirecting}
-            className="inline-flex items-center justify-center gap-2 bg-magic-500 hover:bg-magic-600 text-white font-extrabold px-8 py-4 rounded-2xl text-lg shadow-xl shadow-magic-500/30 transition transform hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            <i className="fa-solid fa-lock-open" />
-            {redirecting
-              ? t('paywall.redirecting')
-              : t('paywall.unlockCta', { price: formatPricePLN(BOOK_PRICE_PDF_PLN) })}
-          </button>
-          <p className="text-xs text-gray-500">{t('paywall.secureNote')}</p>
-        </div>
+          );
+        })()}
       </div>
     </div>
   );

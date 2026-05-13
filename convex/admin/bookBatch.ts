@@ -102,6 +102,13 @@ export const listOrders = query({
       error: v.union(v.string(), v.null()),
       chosenStyle: v.union(v.string(), v.null()),
       skipQaReviews: v.boolean(),
+      format: v.union(v.literal('pdf'), v.literal('pdf_print'), v.null()),
+      paymentStatus: v.union(
+        v.literal('pending'),
+        v.literal('completed'),
+        v.literal('failed'),
+        v.null(),
+      ),
       createdAt: v.number(),
     }),
   ),
@@ -118,6 +125,8 @@ export const listOrders = query({
       error: o.error ?? null,
       chosenStyle: o.chosenStyle ?? null,
       skipQaReviews: o.skipQaReviews ?? false,
+      format: o.format ?? null,
+      paymentStatus: o.paymentStatus ?? null,
       createdAt: o.createdAt,
     }));
   },

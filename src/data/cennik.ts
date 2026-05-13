@@ -130,12 +130,6 @@ export const FAQ_ITEMS: readonly CennikFaqItem[] = [
       'Akceptujemy BLIK, karty Visa i Mastercard, szybkie przelewy bankowe (Przelewy24), Apple Pay, Google Pay i PayPal. Cała płatność jest szyfrowana protokołem SSL.',
   },
   {
-    id: 'vat-invoice',
-    question: 'Czy mogę otrzymać fakturę VAT na firmę?',
-    answer:
-      'Oczywiście. Podczas zamówienia możesz wpisać dane firmy — fakturę VAT wystawimy automatycznie i wyślemy na Twojego maila razem z bajką.',
-  },
-  {
     id: 'shipping-cost',
     question: 'Ile kosztuje wysyłka drukowanej książki?',
     answer:

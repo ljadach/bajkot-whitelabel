@@ -8,6 +8,8 @@ export const paymentStatusValidator = v.union(
   v.literal('failed'),
 );
 
+export const bookFormatValidator = v.union(v.literal('pdf'), v.literal('pdf_print'));
+
 export const getBookOrderForCheckout = internalQuery({
   args: {
     bookOrderId: v.id('bookOrders'),
@@ -18,6 +20,7 @@ export const getBookOrderForCheckout = internalQuery({
       clerkUserId: v.string(),
       paymentStatus: v.union(paymentStatusValidator, v.null()),
       stripeSessionId: v.union(v.string(), v.null()),
+      format: v.union(bookFormatValidator, v.null()),
     }),
   ),
   handler: async (ctx, args) => {
@@ -27,6 +30,7 @@ export const getBookOrderForCheckout = internalQuery({
       clerkUserId: order.clerkUserId,
       paymentStatus: order.paymentStatus ?? null,
       stripeSessionId: order.stripeSessionId ?? null,
+      format: order.format ?? null,
     };
   },
 });
@@ -48,6 +52,7 @@ export const getLandingBookOrderForCheckout = internalQuery({
       email: v.union(v.string(), v.null()),
       paymentStatus: v.union(paymentStatusValidator, v.null()),
       stripeSessionId: v.union(v.string(), v.null()),
+      format: v.union(bookFormatValidator, v.null()),
     }),
   ),
   handler: async (ctx, args) => {
@@ -58,6 +63,7 @@ export const getLandingBookOrderForCheckout = internalQuery({
       email: order.email ?? null,
       paymentStatus: order.paymentStatus ?? null,
       stripeSessionId: order.stripeSessionId ?? null,
+      format: order.format ?? null,
     };
   },
 });
@@ -105,6 +111,14 @@ export const markBookOrderPaid = internalMutation({
     await ctx.scheduler.runAfter(0, internal.email.sendOrderConfirmation, {
       bookOrderId: args.bookOrderId,
     });
+    // PDF+Print: fire a parallel internal alert to the fulfillment inbox so
+    // the team can start printing/packing while the customer's PDF download
+    // is still in flight. Pipeline already ran — physical book ships in 3–5d.
+    if (order.format === 'pdf_print') {
+      await ctx.scheduler.runAfter(0, internal.email.sendAdminPrintAlert, {
+        bookOrderId: args.bookOrderId,
+      });
+    }
     return null;
   },
 });

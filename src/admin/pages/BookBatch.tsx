@@ -419,6 +419,14 @@ function OrdersTab() {
                           FAST
                         </span>
                       )}
+                      {o.format === 'pdf_print' && (
+                        <span
+                          className="ml-1.5 inline-flex items-center gap-1 text-[10px] font-bold text-orange-700 bg-orange-100 border border-orange-300 px-1.5 py-0.5 rounded-full"
+                          title="Klient zamówił też książkę drukowaną — wymagana wysyłka kurierem"
+                        >
+                          📚 DRUK
+                        </span>
+                      )}
                     </td>
                     <td className="py-2 pr-3">
                       <span
@@ -426,6 +434,14 @@ function OrdersTab() {
                       >
                         {o.status}
                       </span>
+                      {o.paymentStatus === 'completed' && (
+                        <span
+                          className="ml-1.5 inline-block text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-full"
+                          title="Opłacone przez Stripe"
+                        >
+                          OPŁACONE
+                        </span>
+                      )}
                     </td>
                     <td className="py-2 pr-3 text-neutral-500">{o.currentAgent ?? '—'}</td>
                     <td className="py-2 pr-3">{o.chosenStyle ?? '—'}</td>
