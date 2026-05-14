@@ -54,7 +54,10 @@ export type ConsentsRecord = {
   specialData: { accepted: boolean; version: string; clauseText: string; timestampMs: number };
 };
 
-const VERSION_RE = /^[A-Za-z0-9._-]{1,32}$/;
+// `terms.version` packs both doc versions into one tag, e.g.
+// "terms-2026-05-14|privacy-2026-05-14" — so we allow `|` and the longer
+// length. Anything sane (alnum + a few separators) passes.
+const VERSION_RE = /^[A-Za-z0-9._|+-]{1,80}$/;
 const CLAUSE_MIN = 20;
 const CLAUSE_MAX = 1000;
 
