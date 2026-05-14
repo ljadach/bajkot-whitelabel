@@ -76,6 +76,13 @@ export const generatePdfViaRender = internalAction({
           ),
           maxPages: kind === 'preview' ? PREVIEW_PAGE_COUNT : undefined,
           force,
+          // Force a white title page on both preview and production. Default
+          // typst template paints title pages cream (#FFF8E1) which clashed
+          // with the rest of the book + the on-screen flipbook preview the
+          // parent sees on the result screen.
+          experimental: {
+            bgTitleOverride: '#FFFFFF',
+          },
         });
 
       const fullBrief = briefFor('full');

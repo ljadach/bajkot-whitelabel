@@ -45,11 +45,16 @@ const PAGE_H = 595.28;
 const MARGIN = 32; // ~11mm safe margin inside trim
 
 // ── Colors ──────────────────────────────────────────────
+// All backgrounds are plain white. The cream/yellow tones we had earlier
+// (#FFFBF5 / #FFF8E1 / #FFF3E0) looked clean on screen but printed warm
+// and were inconsistent with the typst-render path's white pages — they
+// also crept back into the preview flipbook, which is what the parent
+// sees on the result screen.
 const C = {
-  bgPage: '#FFFBF5',
-  bgTitle: '#FFF8E1',
-  bgParent: '#FFF3E0',
-  bgColophon: '#FAFAFA',
+  bgPage: '#FFFFFF',
+  bgTitle: '#FFFFFF',
+  bgParent: '#FFFFFF',
+  bgColophon: '#FFFFFF',
   textPrimary: '#2D2D2D',
   textSecondary: '#6B6B6B',
   accent: '#E65100',
