@@ -19,6 +19,7 @@ import { ClientOnly } from './components/ClientOnly';
 import { ScrollToTop } from './components/ScrollToTop';
 import { useLangFromUrl } from './hooks/useLangFromUrl';
 import { captureTokenFromUrl } from './hooks/useAccessToken';
+import { GA_MEASUREMENT_ID, trackGaPageview } from './lib/gtag';
 
 const LazyClientUtilities = lazy(() =>
   import('./components/ClientAppShell').then((m) => ({ default: m.ClientUtilities })),
@@ -68,6 +69,29 @@ export function Layout({ children }: { children: ReactNode }) {
             }),
           }}
         />
+        {/* Google Analytics 4 + Consent Mode v2 — defaults to denied so
+            nothing fires until the user accepts in CookieBanner. The
+            `setAnalyticsConsent` helper flips analytics_storage to 'granted'
+            when consent is given. */}
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              window.gtag = gtag;
+              gtag('consent', 'default', {
+                ad_storage: 'denied',
+                analytics_storage: 'denied',
+                ad_user_data: 'denied',
+                ad_personalization: 'denied',
+                wait_for_update: 500
+              });
+              gtag('js', new Date());
+              gtag('config', '${GA_MEASUREMENT_ID}', { anonymize_ip: true });
+            `,
+          }}
+        />
       </head>
       <body>
         {children}
@@ -93,6 +117,13 @@ export default function Root() {
   useEffect(() => captureTokenFromUrl(), []);
   const { pathname } = useLocation();
   const showGlobalHeader = !pageHasOwnHeader(pathname);
+
+  // SPA navigations don't trigger gtag auto page_view — fire it manually
+  // whenever the path changes. Consent gating happens inside gtag (default
+  // deny until CookieBanner accepts), so this is safe before opt-in.
+  useEffect(() => {
+    trackGaPageview(pathname);
+  }, [pathname]);
 
   return (
     <div className="h-screen flex flex-col bg-white">

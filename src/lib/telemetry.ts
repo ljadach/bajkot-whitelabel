@@ -14,6 +14,7 @@ import {
 } from '@posthog/react';
 import posthog from 'posthog-js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { setAnalyticsConsent } from './gtag';
 
 // Re-export React components from @posthog/react
 export { PostHogFeature, PostHogCaptureOnViewed } from '@posthog/react';
@@ -175,7 +176,7 @@ export function useConsent() {
     setConsentStatus('accepted');
     setIsAnalyticsEnabled(true);
     posthog?.opt_in_capturing();
-    console.log('Analytics enabled');
+    setAnalyticsConsent(true);
   }, [posthog]);
 
   const rejectAll = useCallback(() => {
@@ -184,7 +185,7 @@ export function useConsent() {
     setConsentStatus('rejected');
     setIsAnalyticsEnabled(false);
     posthog?.opt_out_capturing();
-    console.log('Analytics disabled');
+    setAnalyticsConsent(false);
   }, [posthog]);
 
   const dismiss = useCallback(() => {
@@ -193,6 +194,7 @@ export function useConsent() {
     setConsentStatus('dismissed');
     setIsAnalyticsEnabled(false);
     posthog?.opt_out_capturing();
+    setAnalyticsConsent(false);
   }, [posthog]);
 
   const setCustomConsent = useCallback(
@@ -201,24 +203,21 @@ export function useConsent() {
       localStorage.setItem(ANALYTICS_KEY, analytics ? 'true' : 'false');
       setConsentStatus('custom');
       setIsAnalyticsEnabled(analytics);
-      if (analytics) {
-        posthog?.opt_in_capturing();
-        console.log('Analytics enabled (custom)');
-      } else {
-        posthog?.opt_out_capturing();
-        console.log('Analytics disabled (custom)');
-      }
+      if (analytics) posthog?.opt_in_capturing();
+      else posthog?.opt_out_capturing();
+      setAnalyticsConsent(analytics);
     },
     [posthog],
   );
 
-  // Apply saved consent on mount
+  // Apply saved consent on mount — both PostHog and GA Consent Mode.
   useEffect(() => {
     const savedConsent = localStorage.getItem(CONSENT_KEY);
     const analyticsEnabled = localStorage.getItem(ANALYTICS_KEY) === 'true';
 
     if (savedConsent && analyticsEnabled) {
       posthog?.opt_in_capturing();
+      setAnalyticsConsent(true);
     }
   }, [posthog]);
 
