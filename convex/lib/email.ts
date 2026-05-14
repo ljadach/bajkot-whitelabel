@@ -105,6 +105,8 @@ export interface OrderConfirmationParams {
   problemTitle: string;
   format: BookFormat;
   orderNumber: string;
+  /** Page where the parent can follow the order (progress + final PDF). */
+  resultUrl: string;
 }
 
 export function buildOrderConfirmationEmail(params: OrderConfirmationParams): {
@@ -112,7 +114,7 @@ export function buildOrderConfirmationEmail(params: OrderConfirmationParams): {
   html: string;
   text: string;
 } {
-  const { childName, childAge, problemTitle, format, orderNumber } = params;
+  const { childName, childAge, problemTitle, format, orderNumber, resultUrl } = params;
   const childNameEsc = escapeHtml(childName);
   const problemEsc = escapeHtml(problemTitle);
   const ageDisplay = childAge != null && childAge !== '' ? String(childAge) : '—';
@@ -176,6 +178,13 @@ export function buildOrderConfirmationEmail(params: OrderConfirmationParams): {
               </div>${printRow}
             </div>
 
+            <div style="text-align:center;margin:28px 0;">
+              <a href="${escapeAttr(resultUrl)}" style="display:inline-block;background:#0c4a6e;color:#ffffff;font-weight:800;font-size:15px;padding:14px 28px;border-radius:999px;text-decoration:none;box-shadow:0 8px 20px -8px rgba(12,74,110,0.4);">
+                📖 Zobacz status swojej bajki
+              </a>
+              <div style="margin-top:10px;font-size:12px;color:#64748b;">Tu pojawi się gotowy PDF — przyciskiem pobierzesz go w kilka sekund.</div>
+            </div>
+
             <p style="margin:24px 0 0 0;">
               Coś się nie zgadza? Chcesz zmienić temat lub zaktualizować dane bohatera? Po prostu odpisz na tę wiadomość — Łukasz albo Andrzej zajmiemy się Wami osobiście.
             </p>
@@ -216,6 +225,8 @@ export function buildOrderConfirmationEmail(params: OrderConfirmationParams): {
     '1. Tworzymy Twoją bajkę — to zajmie około 15 minut.',
     '2. Wyślemy Ci PDF mailem na ten sam adres.',
     ...(printStep ? [printStep] : []),
+    '',
+    `Status zamówienia (tu pojawi się gotowy PDF): ${resultUrl}`,
     '',
     'Coś się nie zgadza? Po prostu odpisz na tę wiadomość — zajmiemy się Wami osobiście.',
     '',

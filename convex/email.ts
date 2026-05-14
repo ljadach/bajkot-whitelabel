@@ -59,12 +59,28 @@ export const sendOrderConfirmation = internalAction({
       return null;
     }
 
+    // Build the order-status URL parents follow from the confirmation
+    // email. Both flows route to the result page (which auto-redirects to
+    // progress if the pipeline is still mid-generation). For landing
+    // orders we append the per-order capability token so cross-device
+    // hand-offs work (mom on laptop, opens email on phone — there's no
+    // localStorage).
+    const isLanding = order.clerkUserId === 'landing-user';
+    const appUrl = process.env.APP_URL || 'https://bajkoterapia.org';
+    const resultPath = isLanding
+      ? `/landing/book/${bookOrderId}/result`
+      : `/book/${bookOrderId}/result`;
+    const tokenQuery =
+      isLanding && order.accessTokenRaw ? `?t=${encodeURIComponent(order.accessTokenRaw)}` : '';
+    const resultUrl = `${appUrl}${resultPath}${tokenQuery}`;
+
     const { subject, html, text } = buildOrderConfirmationEmail({
       childName: order.childName,
       childAge: order.ageNumber ?? order.ageBracket ?? null,
       problemTitle: resolveProblemTitle(order.problemId),
       format: resolveFormat(order.format),
       orderNumber: formatOrderNumber(bookOrderId),
+      resultUrl,
     });
 
     await sendEmail({ to: order.email, subject, html, text });
