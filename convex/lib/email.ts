@@ -168,7 +168,7 @@ export function buildOrderConfirmationEmail(params: OrderConfirmationParams): {
             </div>
 
             <div style="text-align:center;margin:28px 0;">
-              <a href="${escapeAttr(resultUrl)}" style="display:inline-block;background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:#ffffff;font-weight:800;font-size:17px;padding:16px 36px;border-radius:999px;text-decoration:none;box-shadow:0 8px 20px -8px rgba(245,158,11,0.5);">
+              <a href="${escapeAttr(resultUrl)}" style="display:inline-block;background-color:#d97706;background-image:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:#ffffff;font-weight:800;font-size:17px;padding:16px 36px;border-radius:999px;text-decoration:none;box-shadow:0 8px 20px -8px rgba(245,158,11,0.5);mso-padding-alt:0;">
                 ⬇ Pobierz bajkę (PDF)
               </a>
               <div style="margin-top:10px;font-size:13px;color:#64748b;">Otwórz w przeglądarce i kliknij „Pobierz".</div>
@@ -301,7 +301,7 @@ export function buildBookReadyEmail(params: BookReadyParams): {
             <p style="margin:0 0 24px 0;">${titleClause} Plik PDF czeka pod poniższym przyciskiem — pobierzcie go na komputer, telefon albo wydrukujcie w domu.</p>
 
             <div style="text-align:center;margin:28px 0;">
-              <a href="${escapeAttr(downloadUrl)}" style="display:inline-block;background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:#ffffff;font-weight:800;font-size:17px;padding:16px 36px;border-radius:999px;text-decoration:none;box-shadow:0 8px 20px -8px rgba(245,158,11,0.5);">
+              <a href="${escapeAttr(downloadUrl)}" style="display:inline-block;background-color:#d97706;background-image:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:#ffffff;font-weight:800;font-size:17px;padding:16px 36px;border-radius:999px;text-decoration:none;box-shadow:0 8px 20px -8px rgba(245,158,11,0.5);mso-padding-alt:0;">
                 ⬇ Pobierz bajkę (PDF)
               </a>
               <div style="margin-top:10px;font-size:13px;color:#64748b;">Format A5 · PDF</div>
