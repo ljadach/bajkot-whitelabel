@@ -44,6 +44,7 @@ import type * as lib_childNameInflect from '../lib/childNameInflect.js';
 import type * as lib_childPortrait from '../lib/childPortrait.js';
 import type * as lib_config from '../lib/config.js';
 import type * as lib_configClient from '../lib/configClient.js';
+import type * as lib_consents from '../lib/consents.js';
 import type * as lib_dbHelpers from '../lib/dbHelpers.js';
 import type * as lib_email from '../lib/email.js';
 import type * as lib_geminiImageGen from '../lib/geminiImageGen.js';
@@ -111,6 +112,7 @@ declare const fullApi: ApiFromModules<{
   'lib/childPortrait': typeof lib_childPortrait;
   'lib/config': typeof lib_config;
   'lib/configClient': typeof lib_configClient;
+  'lib/consents': typeof lib_consents;
   'lib/dbHelpers': typeof lib_dbHelpers;
   'lib/email': typeof lib_email;
   'lib/geminiImageGen': typeof lib_geminiImageGen;

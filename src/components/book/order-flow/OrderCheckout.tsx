@@ -24,6 +24,11 @@ export interface CheckoutSubmitPayload {
   email: string;
   format: OrderFormat;
   shippingAddress?: ShippingAddress;
+  /** GDPR consent flags — both required for submission to succeed. */
+  consents: {
+    termsAccepted: boolean;
+    specialDataAccepted: boolean;
+  };
 }
 
 interface Props {
@@ -51,7 +56,8 @@ export function OrderCheckout({
 }: Props) {
   const { t } = useTranslation('book');
   const [email, setEmail] = useState('');
-  const [consent, setConsent] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [specialDataAccepted, setSpecialDataAccepted] = useState(false);
   const [address, setAddress] = useState<ShippingAddress>(INITIAL_ADDRESS);
   const [error, setError] = useState('');
 
@@ -84,8 +90,12 @@ export function OrderCheckout({
       setError(t('checkout.errorEmail'));
       return;
     }
-    if (!consent) {
-      setError(t('checkout.errorConsent'));
+    if (!termsAccepted) {
+      setError(t('checkout.errorConsentTerms'));
+      return;
+    }
+    if (!specialDataAccepted) {
+      setError(t('checkout.errorConsentSpecial'));
       return;
     }
     if (isPrint) {
@@ -107,6 +117,7 @@ export function OrderCheckout({
       email: email.trim(),
       format: intake.format,
       shippingAddress: isPrint ? address : undefined,
+      consents: { termsAccepted, specialDataAccepted },
     });
   };
 
@@ -246,18 +257,62 @@ export function OrderCheckout({
             </div>
           )}
 
-          {/* Consent */}
-          <div>
+          {/* Consents — RODO-compliant. Both required to enable submit. */}
+          <fieldset className="rounded-2xl border border-gray-100 bg-gray-50/60 p-5 space-y-4">
+            <legend className="px-2 text-xs font-bold uppercase tracking-widest text-calm-500">
+              {t('checkout.consentsHeading')}
+            </legend>
+
             <label className="flex items-start gap-3 cursor-pointer">
               <input
                 type="checkbox"
-                checked={consent}
-                onChange={(e) => setConsent(e.target.checked)}
-                className="w-5 h-5 mt-1 text-magic-500 border-gray-300 rounded focus:ring-magic-500"
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+                aria-required="true"
+                className="w-5 h-5 mt-1 shrink-0 text-magic-500 border-gray-300 rounded focus:ring-magic-500"
               />
-              <span className="text-sm text-gray-600">{t('checkout.consent')}</span>
+              <span className="text-sm text-gray-700 leading-relaxed">
+                <span className="text-red-500 font-bold mr-1" aria-hidden>
+                  *
+                </span>
+                {t('checkout.consentTermsPrefix')}{' '}
+                <a
+                  href="/regulamin"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-magic-600 font-semibold underline hover:text-magic-700"
+                >
+                  {t('checkout.consentTermsLink')}
+                </a>{' '}
+                {t('checkout.consentTermsMiddle')}{' '}
+                <a
+                  href="/polityka-prywatnosci"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-magic-600 font-semibold underline hover:text-magic-700"
+                >
+                  {t('checkout.consentPrivacyLink')}
+                </a>
+                {t('checkout.consentTermsSuffix')}
+              </span>
             </label>
-          </div>
+
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={specialDataAccepted}
+                onChange={(e) => setSpecialDataAccepted(e.target.checked)}
+                aria-required="true"
+                className="w-5 h-5 mt-1 shrink-0 text-magic-500 border-gray-300 rounded focus:ring-magic-500"
+              />
+              <span className="text-sm text-gray-700 leading-relaxed">
+                <span className="text-red-500 font-bold mr-1" aria-hidden>
+                  *
+                </span>
+                {t('checkout.consentSpecialData')}
+              </span>
+            </label>
+          </fieldset>
 
           {/* Pay button */}
           <div className="flex gap-4">
@@ -272,8 +327,8 @@ export function OrderCheckout({
             <button
               type="button"
               onClick={() => void handleSubmit()}
-              disabled={isSubmitting}
-              className="w-2/3 bg-magic-500 hover:bg-magic-600 text-white font-extrabold py-4 rounded-2xl text-lg shadow-xl shadow-magic-500/30 transition transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isSubmitting || !termsAccepted || !specialDataAccepted}
+              className="w-2/3 bg-magic-500 hover:bg-magic-600 text-white font-extrabold py-4 rounded-2xl text-lg shadow-xl shadow-magic-500/30 transition transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none"
             >
               <i className="fa-solid fa-lock mr-2" />
               {isSubmitting ? t('checkout.submitting') : t('checkout.submit')}

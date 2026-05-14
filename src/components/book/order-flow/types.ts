@@ -4,6 +4,12 @@
  */
 
 import type { Topic, CatalogCategory } from '../../../data/topics';
+import {
+  CONSENT_CLAUSE_SPECIAL_DATA,
+  CONSENT_CLAUSE_TERMS,
+  PRIVACY_VERSION,
+  TERMS_VERSION,
+} from '../../../data/legalDocs';
 
 export type OrderFormat = 'pdf' | 'pdf_print';
 
@@ -80,6 +86,38 @@ export function resolveProblemId(topic: SelectedTopic): string {
  * Caller is responsible for adding flow-specific fields:
  *   - landing flow: accessToken (intake gate, separate from per-order token)
  */
+export interface ConsentField {
+  accepted: boolean;
+  version: string;
+  clauseText: string;
+}
+
+export interface ConsentsPayload {
+  terms: ConsentField;
+  specialData: ConsentField;
+}
+
+/** Use TERMS_VERSION for terms (covers Regulamin + Polityka — both linked from the clause). */
+export function buildConsentsPayload(input: {
+  termsAccepted: boolean;
+  specialDataAccepted: boolean;
+}): ConsentsPayload {
+  return {
+    terms: {
+      accepted: input.termsAccepted,
+      // Polityka Prywatności jest częścią klauzuli — łączymy oba numery wersji
+      // w jedną etykietę, dzięki czemu audit widzi które dokumenty były akceptowane.
+      version: `terms-${TERMS_VERSION}|privacy-${PRIVACY_VERSION}`,
+      clauseText: CONSENT_CLAUSE_TERMS,
+    },
+    specialData: {
+      accepted: input.specialDataAccepted,
+      version: `privacy-${PRIVACY_VERSION}`,
+      clauseText: CONSENT_CLAUSE_SPECIAL_DATA,
+    },
+  };
+}
+
 export interface IntakeOrderArgs {
   childName: string;
   ageNumber: number;
@@ -97,6 +135,7 @@ export interface IntakeOrderArgs {
   email: string;
   format: OrderFormat;
   shippingAddress?: import('./OrderCheckout').ShippingAddress;
+  consents: ConsentsPayload;
 }
 
 /** Intake → Convex action args. Throws if required fields are missing. */
@@ -106,6 +145,7 @@ export function intakeToOrderArgs(
     email: string;
     format: OrderFormat;
     shippingAddress?: IntakeOrderArgs['shippingAddress'];
+    consents: ConsentsPayload;
   },
 ): IntakeOrderArgs {
   if (!intake.topic || intake.age === null || !intake.gender) {
@@ -130,5 +170,6 @@ export function intakeToOrderArgs(
     email: payload.email,
     format: payload.format,
     shippingAddress: payload.shippingAddress,
+    consents: payload.consents,
   };
 }

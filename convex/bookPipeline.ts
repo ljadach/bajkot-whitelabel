@@ -11,6 +11,11 @@ import { assertOrderOwner, assertLandingOrder, LANDING_USER_ID } from './lib/rol
 import { toAgeBracket, type AgeBracket } from './lib/ageBracket';
 import { sanitizeUserText, sanitizeRequiredUserText } from './lib/security';
 import { generateLandingAccessToken, sha256Hex } from './lib/landingToken';
+import {
+  buildConsentsRecord,
+  consentsArgsValidator,
+  consentRecordStoreValidator,
+} from './lib/consents';
 
 // Schema validators reused across entry-point mutations.
 const ageBracketValidator = v.union(v.literal('3-5'), v.literal('6-8'), v.literal('9+'));
@@ -140,12 +145,15 @@ export const startOrder = action({
     email: v.optional(v.string()),
     format: v.optional(formatValidator),
     shippingAddress: v.optional(shippingAddressValidator),
+    consents: consentsArgsValidator,
   },
   returns: v.object({ orderId: v.id('bookOrders') }),
   handler: async (ctx, args): Promise<{ orderId: Id<'bookOrders'> }> => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error('Not authenticated');
     const clerkUserId = identity.subject;
+
+    const consents = buildConsentsRecord(args.consents);
 
     const ageBracket = deriveAgeBracket({
       ageBracket: args.ageBracket,
@@ -192,6 +200,7 @@ export const startOrder = action({
       email: args.email,
       format,
       shippingAddress: format === 'pdf_print' ? args.shippingAddress : undefined,
+      consents,
       // Auth flow runs same FAST default as landing: skip QA passes for
       // speed/cost, but keep real Gemini image gen. Admin batch / CLI
       // override on internal paths when full QA is wanted.
@@ -228,6 +237,8 @@ export const createOrder = internalMutation({
     email: v.optional(v.string()),
     format: v.optional(formatValidator),
     shippingAddress: v.optional(shippingAddressValidator),
+    /** GDPR consent log — required for new orders; optional only for CLI/admin batch. */
+    consents: v.optional(consentRecordStoreValidator),
     /** Per-order landing access token (sha256 hex). Only set for landing orders. */
     accessTokenHash: v.optional(v.string()),
     /** Raw landing token (capability) — embedded in transactional email URLs. */
@@ -260,6 +271,7 @@ export const createOrder = internalMutation({
       email: args.email,
       format: args.format,
       shippingAddress: args.shippingAddress,
+      consents: args.consents,
       accessTokenHash: args.accessTokenHash,
       accessTokenRaw: args.accessTokenRaw,
       skipQaReviews: args.skipQaReviews,
@@ -751,9 +763,11 @@ export const startLandingOrder = action({
     email: v.optional(v.string()),
     format: v.optional(formatValidator),
     shippingAddress: v.optional(shippingAddressValidator),
+    consents: consentsArgsValidator,
   },
   returns: v.object({ orderId: v.id('bookOrders'), accessToken: v.string() }),
   handler: async (ctx, args): Promise<{ orderId: Id<'bookOrders'>; accessToken: string }> => {
+    const consents = buildConsentsRecord(args.consents);
     // C3 intentionally disabled — env-token gate locked legit visitors out
     // (Convex sanitizes `throw new Error()` to "Server Error" in prod) and
     // the global rate limit's 10/hour cap chokes any real traffic spike.
@@ -808,6 +822,7 @@ export const startLandingOrder = action({
       email: args.email,
       format,
       shippingAddress: format === 'pdf_print' ? args.shippingAddress : undefined,
+      consents,
       accessTokenHash,
       accessTokenRaw: rawToken,
       // Landing flow is the conversion funnel — skip QA passes (A4/A6 etc.)

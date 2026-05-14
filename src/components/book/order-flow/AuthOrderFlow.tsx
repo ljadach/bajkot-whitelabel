@@ -14,6 +14,7 @@ import { OrderPreview } from './OrderPreview';
 import { OrderCheckout, type CheckoutSubmitPayload } from './OrderCheckout';
 import {
   INITIAL_INTAKE,
+  buildConsentsPayload,
   intakeToOrderArgs,
   type IntakeState,
   type OrderFormat,
@@ -48,7 +49,7 @@ export function AuthOrderFlow() {
 
   const submitOrder = useCallback(
     async (
-      checkoutPayload: CheckoutSubmitPayload | null,
+      checkoutPayload: CheckoutSubmitPayload,
     ): Promise<{ orderId: string; format: OrderFormat } | null> => {
       if (!intake.topic || !intake.age || !intake.gender) {
         setSubmitError(t('flow.errorMissingData'));
@@ -58,16 +59,17 @@ export function AuthOrderFlow() {
       setSubmitError(null);
       try {
         const baseArgs = intakeToOrderArgs(intake, {
-          email: checkoutPayload?.email,
-          format: checkoutPayload?.format ?? intake.format,
-          shippingAddress: checkoutPayload?.shippingAddress,
+          email: checkoutPayload.email,
+          format: checkoutPayload.format,
+          shippingAddress: checkoutPayload.shippingAddress,
+          consents: buildConsentsPayload(checkoutPayload.consents),
         });
         const result = await startOrder(baseArgs);
         const orderId = result.orderId;
         // Stamp bookOrderId on every subsequent event for this device so
         // PostHog can stitch the full funnel together (spec section 7.1).
         setFunnelSuperProperties({ bookOrderId: orderId, flow: 'auth' });
-        return { orderId, format: checkoutPayload?.format ?? intake.format };
+        return { orderId, format: checkoutPayload.format };
       } catch (err) {
         setSubmitError(extractErrorMessage(err, t('flow.errorGeneric')));
         setSubmitting(false);

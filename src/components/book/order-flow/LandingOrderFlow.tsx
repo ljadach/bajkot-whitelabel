@@ -11,7 +11,13 @@ import { extractErrorMessage } from '../../../lib/convexErrors';
 import { OrderWizard } from './OrderWizard';
 import { OrderPreview } from './OrderPreview';
 import { OrderCheckout, type CheckoutSubmitPayload } from './OrderCheckout';
-import { INITIAL_INTAKE, intakeToOrderArgs, type IntakeState, type OrderFormat } from './types';
+import {
+  INITIAL_INTAKE,
+  buildConsentsPayload,
+  intakeToOrderArgs,
+  type IntakeState,
+  type OrderFormat,
+} from './types';
 
 type Screen = 'wizard' | 'preview' | 'checkout';
 
@@ -57,7 +63,7 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
 
   const submitOrder = useCallback(
     async (
-      checkoutPayload: CheckoutSubmitPayload | null,
+      checkoutPayload: CheckoutSubmitPayload,
     ): Promise<{ orderId: string; format: OrderFormat } | null> => {
       if (!intake.topic || !intake.age || !intake.gender) {
         setSubmitError(t('flow.errorMissingData'));
@@ -67,9 +73,10 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
       setSubmitError(null);
       try {
         const baseArgs = intakeToOrderArgs(intake, {
-          email: checkoutPayload?.email,
-          format: checkoutPayload?.format ?? intake.format,
-          shippingAddress: checkoutPayload?.shippingAddress,
+          email: checkoutPayload.email,
+          format: checkoutPayload.format,
+          shippingAddress: checkoutPayload.shippingAddress,
+          consents: buildConsentsPayload(checkoutPayload.consents),
         });
         const result = await startLandingOrder({
           accessToken: getAccessToken() ?? '',
@@ -81,7 +88,7 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
         // locked out of progress/result/vote/dedication.
         saveLandingOrderToken(orderId, result.accessToken);
         setFunnelSuperProperties({ bookOrderId: orderId, flow: 'landing' });
-        return { orderId, format: checkoutPayload?.format ?? intake.format };
+        return { orderId, format: checkoutPayload.format };
       } catch (err) {
         setSubmitError(extractErrorMessage(err, t('flow.errorGeneric')));
         setSubmitting(false);

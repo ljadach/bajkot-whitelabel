@@ -274,6 +274,27 @@ const applicationTables = {
     ),
     stripeSessionId: v.optional(v.string()),
 
+    // GDPR consent log per order — RODO accountability (art. 7 ust. 1).
+    // Exact wording + document version + server timestamp are persisted so
+    // an audit can reconstruct what the user actually accepted. Optional in
+    // schema for backwards compat with pre-launch orders; new orders set it.
+    consents: v.optional(
+      v.object({
+        terms: v.object({
+          accepted: v.boolean(),
+          version: v.string(),
+          clauseText: v.string(),
+          timestampMs: v.number(),
+        }),
+        specialData: v.object({
+          accepted: v.boolean(),
+          version: v.string(),
+          clauseText: v.string(),
+          timestampMs: v.number(),
+        }),
+      }),
+    ),
+
     // Per-order landing access token, sha256 hex of the raw token. The raw
     // token is returned to the caller once (on order creation) and required
     // for every subsequent landing read/write. Legacy orders predating this
