@@ -1,8 +1,9 @@
 User-agent: *
-Allow: /en/
-Allow: /pl/
-Allow: /de/
+Allow: /
 Disallow: /admin
+Disallow: /admin/
 Disallow: /book/
+Disallow: /landing/book/
+Disallow: /dashboard
 
 Sitemap: https://bajkoterapia.org/sitemap.xml
