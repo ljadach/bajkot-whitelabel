@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAction } from 'convex/react';
+import { useSearchParams } from 'react-router';
 import { api } from '../../convex/_generated/api';
 
 type InquiryType =
@@ -8,7 +9,8 @@ type InquiryType =
   | 'technical_support'
   | 'partnerships'
   | 'press_media'
-  | 'general';
+  | 'general'
+  | 'print_upgrade';
 
 const INQUIRY_TYPES: InquiryType[] = [
   'enterprise_sales',
@@ -16,18 +18,80 @@ const INQUIRY_TYPES: InquiryType[] = [
   'partnerships',
   'press_media',
   'general',
+  'print_upgrade',
 ];
+
+function isInquiryType(value: string | null): value is InquiryType {
+  return (
+    value === 'enterprise_sales' ||
+    value === 'technical_support' ||
+    value === 'partnerships' ||
+    value === 'press_media' ||
+    value === 'general' ||
+    value === 'print_upgrade'
+  );
+}
+
+/**
+ * Build the prefilled question body for a print-upgrade inquiry. The user
+ * arrives here from /book/:id/result with `?type=print_upgrade&orderId=...`
+ * after already paying for the PDF. We only need their phone + shipping
+ * address to fulfill the printed copy, so the message scaffolds those
+ * fields and the operator fills in the rest by email.
+ */
+function buildPrintUpgradePrefill(orderId: string | null, childName: string | null): string {
+  const lines = [
+    'Cześć,',
+    '',
+    'Chciałbym/chciałabym zamówić drukowaną wersję bajki, którą już kupiłem/kupiłam jako PDF.',
+    '',
+    orderId ? `Numer zamówienia: ${orderId}` : null,
+    childName ? `Imię dziecka: ${childName}` : null,
+    '',
+    'Dane do wysyłki (proszę uzupełnić):',
+    '— Imię i nazwisko odbiorcy: ',
+    '— Ulica i numer: ',
+    '— Kod pocztowy i miasto: ',
+    '— Telefon kontaktowy: ',
+    '',
+    'Dziękuję!',
+  ].filter((line): line is string => line !== null);
+  return lines.join('\n');
+}
 
 export function ContactForm() {
   const { t, i18n } = useTranslation('contact');
   const submitContactForm = useAction(api.contact.submitContactForm);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const queryType = searchParams.get('type');
+  const initialInquiryType: InquiryType = isInquiryType(queryType) ? queryType : 'general';
+  const queryOrderId = searchParams.get('orderId');
+  const queryChildName = searchParams.get('childName');
+  const initialQuestion =
+    initialInquiryType === 'print_upgrade'
+      ? buildPrintUpgradePrefill(queryOrderId, queryChildName)
+      : '';
 
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    inquiryType: 'general' as InquiryType,
-    question: '',
+    inquiryType: initialInquiryType,
+    question: initialQuestion,
   });
+
+  // Strip prefill params from URL once the form is mounted so a refresh
+  // doesn't keep re-seeding the textarea (or override edits the user made).
+  useEffect(() => {
+    if (!queryType && !queryOrderId && !queryChildName) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete('type');
+    next.delete('orderId');
+    next.delete('childName');
+    setSearchParams(next, { replace: true });
+    // mount-only — we don't want to keep clearing as the user navigates
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);

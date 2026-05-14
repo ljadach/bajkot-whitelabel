@@ -648,18 +648,24 @@ export const getLandingOrderPreview = query({
 
 // ── Get download URL ───────────────────────────────────────
 
+const downloadUrlReturnValidator = v.object({
+  url: v.union(v.string(), v.null()),
+  childName: v.string(),
+  bookTitle: v.union(v.string(), v.null()),
+  paymentStatus: paymentStatusReturnValidator,
+  paid: v.boolean(),
+  hasPdf: v.boolean(),
+  /** Order's chosen format — drives result-page copy + print upsell branch. */
+  format: v.union(v.literal('pdf'), v.literal('pdf_print')),
+  /** Shipping address for pdf_print orders. Null when format='pdf' or unset. */
+  shippingAddress: v.union(shippingAddressValidator, v.null()),
+  /** When set, frontend should call resolveR2DownloadUrl action for the R2 path. */
+  r2FullKey: v.union(v.string(), v.null()),
+});
+
 export const getDownloadUrl = query({
   args: { orderId: v.id('bookOrders') },
-  returns: v.object({
-    url: v.union(v.string(), v.null()),
-    childName: v.string(),
-    bookTitle: v.union(v.string(), v.null()),
-    paymentStatus: paymentStatusReturnValidator,
-    paid: v.boolean(),
-    hasPdf: v.boolean(),
-    /** When set, frontend should call resolveR2DownloadUrl action for the R2 path. */
-    r2FullKey: v.union(v.string(), v.null()),
-  }),
+  returns: downloadUrlReturnValidator,
   handler: async (ctx, { orderId }) => {
     const order = await assertOrderOwner(ctx, orderId);
     const paid = isPaid(order);
@@ -671,6 +677,8 @@ export const getDownloadUrl = query({
       paymentStatus: order.paymentStatus ?? null,
       paid,
       hasPdf: !!order.pdfStorageId || !!order.r2FullKey,
+      format: order.format ?? 'pdf',
+      shippingAddress: order.shippingAddress ?? null,
       r2FullKey: paid && order.r2FullKey ? order.r2FullKey : null,
     };
   },
@@ -902,15 +910,7 @@ export const getLandingOrderEvents = query({
 
 export const getLandingDownloadUrl = query({
   args: { orderId: v.id('bookOrders'), accessToken: v.string() },
-  returns: v.object({
-    url: v.union(v.string(), v.null()),
-    childName: v.string(),
-    bookTitle: v.union(v.string(), v.null()),
-    paymentStatus: paymentStatusReturnValidator,
-    paid: v.boolean(),
-    hasPdf: v.boolean(),
-    r2FullKey: v.union(v.string(), v.null()),
-  }),
+  returns: downloadUrlReturnValidator,
   handler: async (ctx, { orderId, accessToken }) => {
     const order = await assertLandingOrder(ctx, orderId, accessToken);
     const paid = isPaid(order);
@@ -922,6 +922,8 @@ export const getLandingDownloadUrl = query({
       paymentStatus: order.paymentStatus ?? null,
       paid,
       hasPdf: !!order.pdfStorageId || !!order.r2FullKey,
+      format: order.format ?? 'pdf',
+      shippingAddress: order.shippingAddress ?? null,
       r2FullKey: paid && order.r2FullKey ? order.r2FullKey : null,
     };
   },

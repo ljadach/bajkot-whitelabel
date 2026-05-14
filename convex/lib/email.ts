@@ -96,7 +96,10 @@ function formatPlExpiryDate(createdAtMs: number): string {
 }
 
 // ────────────────────────────────────────────────────────────────
-// Email 1 — Order confirmation, sent immediately after Stripe payment.
+// Email 1 — Payment confirmation, sent after Stripe webhook flips
+// paymentStatus to 'completed'. By that point the PDF already exists
+// (pipeline runs pre-payment), so this is a "dziękujemy + here's your
+// book" thank-you, not an order-receipt placeholder.
 // ────────────────────────────────────────────────────────────────
 
 export interface OrderConfirmationParams {
@@ -105,7 +108,7 @@ export interface OrderConfirmationParams {
   problemTitle: string;
   format: BookFormat;
   orderNumber: string;
-  /** Page where the parent can follow the order (progress + final PDF). */
+  /** Page where the parent can re-download the PDF (auth or landing+token). */
   resultUrl: string;
 }
 
@@ -126,14 +129,13 @@ export function buildOrderConfirmationEmail(params: OrderConfirmationParams): {
   const printRow =
     format === 'pdf_print'
       ? `
-        <div style="display:block;margin-bottom:14px;">
-          <div style="display:inline-block;vertical-align:top;background:#fef3c7;color:#d97706;width:32px;height:32px;border-radius:50%;text-align:center;font-weight:800;line-height:32px;margin-right:14px;">3</div>
-          <div style="display:inline-block;vertical-align:top;width:calc(100% - 60px);"><strong style="color:#0c4a6e;">Drukowana książeczka wyruszy do Was kurierem</strong> w 3–5 dni roboczych.</div>
+        <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:16px 18px;margin:24px 0;font-size:14px;color:#78350f;">
+          <strong>📦 Drukowana wersja w drodze!</strong> Profesjonalnie oprawiona książeczka jest właśnie pakowana — wyślemy ją kurierem w 3–5 dni roboczych na wskazany przez Ciebie adres.
         </div>`
       : '';
 
-  const subject = `Mamy Twoje zamówienie ✨ — bajka ${dlaPhrase} już powstaje`;
-  const preheader = `Numer zamówienia ${orderNumber}. Za ~15 minut wyślemy gotowy PDF.`;
+  const subject = `Dziękujemy za zakup ✨ — bajka ${dlaPhrase} jest Twoja`;
+  const preheader = `Płatność potwierdzona. Numer zamówienia ${orderNumber}.`;
 
   const html = `<!doctype html>
 <html lang="pl">
@@ -148,45 +150,36 @@ export function buildOrderConfirmationEmail(params: OrderConfirmationParams): {
           </td></tr>
 
           <tr><td style="padding:36px 28px;font-size:16px;line-height:1.65;color:#334155;">
-            <h1 style="font-size:28px;font-weight:900;color:#0c4a6e;margin:0 0 20px 0;line-height:1.2;">Cześć! 👋</h1>
+            <h1 style="font-size:28px;font-weight:900;color:#0c4a6e;margin:0 0 20px 0;line-height:1.2;">Dziękujemy! 💙</h1>
 
             <p style="margin:0 0 16px 0;">
-              Mamy Twoje zamówienie i już bierzemy się do pracy. Spersonalizowana bajka <strong>${dlaPhraseEsc}</strong> jest właśnie tworzona — dopisujemy imię, dostosowujemy bohatera do wyglądu Twojego malucha i dobieramy ilustracje pod wybrany temat.
+              Płatność za bajkę <strong>${dlaPhraseEsc}</strong> przeszła — wszystko po Waszej stronie zrobione. Pełną wersję PDF znajdziesz pod przyciskiem niżej, a kopia zawsze czeka na stronie zamówienia.
             </p>
 
             <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:16px;padding:20px;margin:24px 0;">
-              <div style="font-size:12px;font-weight:800;color:#0284c7;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;">Podsumowanie zamówienia</div>
+              <div style="font-size:12px;font-weight:800;color:#0284c7;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;">Potwierdzenie zakupu</div>
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:15px;">
                 <tr><td style="padding:4px 0;color:#64748b;">Numer zamówienia</td><td style="text-align:right;font-weight:700;color:#0c4a6e;">${escapeHtml(orderNumber)}</td></tr>
                 <tr><td style="padding:4px 0;color:#64748b;">Bohater bajki</td><td style="text-align:right;font-weight:700;color:#0c4a6e;">${childNameEsc}, lat ${escapeHtml(ageDisplay)}</td></tr>
                 <tr><td style="padding:4px 0;color:#64748b;">Temat</td><td style="text-align:right;font-weight:700;color:#0c4a6e;">${problemEsc}</td></tr>
                 <tr><td style="padding:4px 0;color:#64748b;">Format</td><td style="text-align:right;font-weight:700;color:#0c4a6e;">${escapeHtml(formatStr)}</td></tr>
-                <tr><td style="padding:4px 0;color:#64748b;">Kwota</td><td style="text-align:right;font-weight:800;color:#d97706;font-size:17px;">${price} zł</td></tr>
+                <tr><td style="padding:4px 0;color:#64748b;">Zapłacono</td><td style="text-align:right;font-weight:800;color:#16a34a;font-size:17px;">${price} zł ✓</td></tr>
               </table>
             </div>
 
-            <h2 style="font-size:18px;font-weight:800;color:#0c4a6e;margin:24px 0 12px 0;">Co teraz?</h2>
-
-            <div style="margin:16px 0;">
-              <div style="display:block;margin-bottom:14px;">
-                <div style="display:inline-block;vertical-align:top;background:#fef3c7;color:#d97706;width:32px;height:32px;border-radius:50%;text-align:center;font-weight:800;line-height:32px;margin-right:14px;">1</div>
-                <div style="display:inline-block;vertical-align:top;width:calc(100% - 60px);"><strong style="color:#0c4a6e;">Tworzymy Twoją bajkę</strong> — to zajmie nam około <strong>15 minut</strong>. Bez pośpiechu, ale szybko.</div>
-              </div>
-              <div style="display:block;margin-bottom:14px;">
-                <div style="display:inline-block;vertical-align:top;background:#fef3c7;color:#d97706;width:32px;height:32px;border-radius:50%;text-align:center;font-weight:800;line-height:32px;margin-right:14px;">2</div>
-                <div style="display:inline-block;vertical-align:top;width:calc(100% - 60px);"><strong style="color:#0c4a6e;">Wyślemy Ci PDF mailem</strong> — dokładnie na ten adres, z którego czytasz tę wiadomość.</div>
-              </div>${printRow}
-            </div>
-
             <div style="text-align:center;margin:28px 0;">
-              <a href="${escapeAttr(resultUrl)}" style="display:inline-block;background:#0c4a6e;color:#ffffff;font-weight:800;font-size:15px;padding:14px 28px;border-radius:999px;text-decoration:none;box-shadow:0 8px 20px -8px rgba(12,74,110,0.4);">
-                📖 Zobacz status swojej bajki
+              <a href="${escapeAttr(resultUrl)}" style="display:inline-block;background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:#ffffff;font-weight:800;font-size:17px;padding:16px 36px;border-radius:999px;text-decoration:none;box-shadow:0 8px 20px -8px rgba(245,158,11,0.5);">
+                ⬇ Pobierz bajkę (PDF)
               </a>
-              <div style="margin-top:10px;font-size:12px;color:#64748b;">Tu pojawi się gotowy PDF — przyciskiem pobierzesz go w kilka sekund.</div>
-            </div>
+              <div style="margin-top:10px;font-size:13px;color:#64748b;">Otwórz w przeglądarce i kliknij „Pobierz".</div>
+            </div>${printRow}
 
             <p style="margin:24px 0 0 0;">
-              Coś się nie zgadza? Chcesz zmienić temat lub zaktualizować dane bohatera? Po prostu odpisz na tę wiadomość — Łukasz albo Andrzej zajmiemy się Wami osobiście.
+              Czytajcie razem, w spokoju, najlepiej wieczorem. Na końcu PDF-u znajdziecie 5 pytań do rozmowy z dzieckiem — sprawdzają się świetnie po pierwszej lekturze.
+            </p>
+
+            <p style="margin:16px 0 0 0;">
+              Coś nie gra? Po prostu odpisz na tę wiadomość — Łukasz albo Andrzej zajmiemy się Wami osobiście.
             </p>
 
             <p style="margin:16px 0 0 0;">
@@ -207,28 +200,28 @@ export function buildOrderConfirmationEmail(params: OrderConfirmationParams): {
   </body>
 </html>`;
 
-  const printStep =
-    format === 'pdf_print' ? '3. Drukowana książeczka wyruszy kurierem w 3–5 dni roboczych.' : null;
+  const printLine =
+    format === 'pdf_print'
+      ? '\nDRUKOWANA WERSJA: Książeczka jest pakowana — wyślemy ją kurierem w 3–5 dni roboczych.\n'
+      : '';
   const text = [
-    `Cześć!`,
+    `Dziękujemy!`,
     '',
-    `Mamy Twoje zamówienie i już bierzemy się do pracy. Spersonalizowana bajka ${dlaPhrase} jest właśnie tworzona — dopisujemy imię, dostosowujemy bohatera do wyglądu Twojego malucha i dobieramy ilustracje pod wybrany temat.`,
+    `Płatność za bajkę ${dlaPhrase} przeszła — wszystko po Waszej stronie zrobione. Pełną wersję PDF pobierzesz spod tego linku:`,
     '',
-    'PODSUMOWANIE ZAMÓWIENIA',
+    `>> POBIERZ BAJKĘ <<`,
+    resultUrl,
+    '',
+    'POTWIERDZENIE ZAKUPU',
     `- Numer zamówienia: ${orderNumber}`,
     `- Bohater bajki: ${childName}, lat ${ageDisplay}`,
     `- Temat: ${problemTitle}`,
     `- Format: ${formatStr}`,
-    `- Kwota: ${price} zł`,
+    `- Zapłacono: ${price} zł`,
+    printLine,
+    'Czytajcie razem, w spokoju. Na końcu PDF-u są 4-5 pytań do rozmowy z dzieckiem — sprawdzają się świetnie po pierwszej lekturze.',
     '',
-    'CO TERAZ?',
-    '1. Tworzymy Twoją bajkę — to zajmie około 15 minut.',
-    '2. Wyślemy Ci PDF mailem na ten sam adres.',
-    ...(printStep ? [printStep] : []),
-    '',
-    `Status zamówienia (tu pojawi się gotowy PDF): ${resultUrl}`,
-    '',
-    'Coś się nie zgadza? Po prostu odpisz na tę wiadomość — zajmiemy się Wami osobiście.',
+    'Coś nie gra? Po prostu odpisz na tę wiadomość.',
     '',
     'Trzymajcie się ciepło,',
     'Andrzej i Łukasz',

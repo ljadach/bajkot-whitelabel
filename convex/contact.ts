@@ -20,6 +20,7 @@ const inquiryTypeValidator = v.union(
   v.literal('partnerships'),
   v.literal('press_media'),
   v.literal('general'),
+  v.literal('print_upgrade'),
 );
 
 /**

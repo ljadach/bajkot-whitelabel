@@ -68,6 +68,8 @@ export function LandingBookResult() {
       upsellTo="/"
       flow="landing"
       bookOrderId={orderId}
+      format={data?.format ?? 'pdf'}
+      shippingAddress={data?.shippingAddress ?? null}
     />
   );
 }

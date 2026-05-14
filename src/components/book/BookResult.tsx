@@ -16,26 +16,28 @@ const BookPdfFlipbook = lazy(() =>
   import('./BookPdfFlipbook').then((m) => ({ default: m.BookPdfFlipbook })),
 );
 
-const PRINT_REQUEST_EMAIL = 'info@bajkoterapia.org';
+/**
+ * Build a deeplink to the contact form, pre-selected to "print upgrade" inquiry
+ * with the order id baked into the prefilled message. The contact form reads
+ * `type` + `orderId` from the query string and seeds the textarea so the user
+ * only has to add phone + address.
+ */
+function buildPrintRequestContactHref(bookOrderId?: string, childName?: string | null): string {
+  const params = new URLSearchParams();
+  params.set('type', 'print_upgrade');
+  if (bookOrderId) params.set('orderId', bookOrderId);
+  if (childName) params.set('childName', childName);
+  return `/about/contact?${params.toString()}`;
+}
 
-function buildPrintRequestMailto(bookOrderId?: string, childName?: string | null): string {
-  const subject = encodeURIComponent('Wydruk bajki — zamówienie wersji drukowanej');
-  const lines = [
-    'Cześć,',
-    '',
-    'Chciałabym/chciałbym zamówić wydrukowaną wersję bajki.',
-    '',
-    childName ? `Imię dziecka: ${childName}` : null,
-    bookOrderId ? `Numer zamówienia: ${bookOrderId}` : null,
-    '',
-    'Adres do wysyłki:',
-    '— Imię i nazwisko:',
-    '— Ulica i numer:',
-    '— Kod pocztowy i miejscowość:',
-    '— Telefon:',
-  ].filter(Boolean);
-  const body = encodeURIComponent(lines.join('\n'));
-  return `mailto:${PRINT_REQUEST_EMAIL}?subject=${subject}&body=${body}`;
+function formatShippingAddress(
+  address: { fullName: string; phone: string; street: string; zip: string; city: string } | null,
+): string | null {
+  if (!address) return null;
+  const parts = [address.fullName, address.street, `${address.zip} ${address.city}`.trim()]
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0);
+  return parts.join(', ');
 }
 
 export function BookResult() {
@@ -93,6 +95,8 @@ export function BookResult() {
       upsellTo="/book/order"
       flow="auth"
       bookOrderId={orderId}
+      format={data?.format ?? 'pdf'}
+      shippingAddress={data?.shippingAddress ?? null}
     />
   );
 }
@@ -111,6 +115,16 @@ interface BookSuccessScreenProps {
   flow?: 'auth' | 'landing';
   /** Order id stamped onto telemetry events. */
   bookOrderId?: string;
+  /** Order format — drives whether we show the print-upsell or print-shipping copy. */
+  format?: 'pdf' | 'pdf_print';
+  /** Shipping address for pdf_print orders — rendered into the delivery tile. */
+  shippingAddress?: {
+    fullName: string;
+    phone: string;
+    street: string;
+    zip: string;
+    city: string;
+  } | null;
 }
 
 /**
@@ -125,12 +139,17 @@ export function BookSuccessScreen({
   upsellTo,
   flow,
   bookOrderId,
+  format = 'pdf',
+  shippingAddress = null,
 }: BookSuccessScreenProps) {
   const { t } = useTranslation('book');
   const headingText =
     childName && bookTitle
       ? t('result.heading', { nameGen: genitiveOrSelf(childName), bookTitle })
       : t('result.headingFallback');
+  const isPrintOrder = format === 'pdf_print';
+  const shippingAddressLine = formatShippingAddress(shippingAddress);
+  const contactHref = buildPrintRequestContactHref(bookOrderId, childName);
 
   useEffect(() => {
     trackEvent('result_viewed', { flow, bookOrderId });
@@ -180,14 +199,16 @@ export function BookSuccessScreen({
                 <i className="fa-solid fa-download" />
                 {t('result.download')}
               </a>
-              <a
-                href={buildPrintRequestMailto(bookOrderId, childName)}
-                onClick={() => trackEvent('print_requested_from_result', { flow, bookOrderId })}
-                className="inline-flex items-center gap-2 rounded-2xl border-2 border-calm-300 bg-white px-6 py-2.5 text-sm font-bold text-calm-800 hover:border-calm-500 transition"
-              >
-                <i className="fa-solid fa-truck" />
-                {t('result.requestPrint')}
-              </a>
+              {!isPrintOrder && (
+                <Link
+                  to={contactHref}
+                  onClick={() => trackEvent('print_requested_from_result', { flow, bookOrderId })}
+                  className="inline-flex items-center gap-2 rounded-2xl border-2 border-calm-300 bg-white px-6 py-2.5 text-sm font-bold text-calm-800 hover:border-calm-500 transition"
+                >
+                  <i className="fa-solid fa-truck" />
+                  {t('result.requestPrint')}
+                </Link>
+              )}
               {printHref && (
                 <Link
                   to={printHref}
@@ -223,9 +244,17 @@ export function BookSuccessScreen({
             </div>
             <div>
               <p className="font-bold text-calm-900 text-sm">{t('result.deliveryPrintHeading')}</p>
-              <p className="text-gray-500 text-xs leading-relaxed">
-                {t('result.deliveryPrintBody')}
-              </p>
+              {isPrintOrder ? (
+                <p className="text-gray-500 text-xs leading-relaxed">
+                  {shippingAddressLine
+                    ? t('result.deliveryPrintBodyShipping', { address: shippingAddressLine })
+                    : t('result.deliveryPrintBodyShippingNoAddress')}
+                </p>
+              ) : (
+                <p className="text-gray-500 text-xs leading-relaxed">
+                  {t('result.deliveryPrintBodyPdfOnly')}
+                </p>
+              )}
             </div>
           </div>
         </div>

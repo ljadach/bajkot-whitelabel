@@ -103,6 +103,7 @@ const applicationTables = {
       v.literal('partnerships'),
       v.literal('press_media'),
       v.literal('general'),
+      v.literal('print_upgrade'),
     ),
     question: v.string(),
     language: v.string(),

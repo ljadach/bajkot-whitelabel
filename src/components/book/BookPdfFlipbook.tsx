@@ -111,19 +111,19 @@ export function BookPdfFlipbook({ pdfUrl }: BookPdfFlipbookProps) {
               type="button"
               onClick={goPrev}
               disabled={!canPrev}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/3 sm:-translate-x-1/2 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm text-magic-600 shadow-md ring-1 ring-black/5 hover:bg-white hover:scale-110 disabled:opacity-0 disabled:pointer-events-none transition flex items-center justify-center z-10"
+              className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm text-magic-600 shadow-lg ring-1 ring-black/10 hover:bg-white hover:scale-110 disabled:opacity-0 disabled:pointer-events-none transition flex items-center justify-center z-10"
               aria-label="Poprzednia strona"
             >
-              <i className="fa-solid fa-chevron-left text-sm" />
+              <i className="fa-solid fa-chevron-left text-base" />
             </button>
             <button
               type="button"
               onClick={goNext}
               disabled={!canNext}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/3 sm:translate-x-1/2 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm text-magic-600 shadow-md ring-1 ring-black/5 hover:bg-white hover:scale-110 disabled:opacity-0 disabled:pointer-events-none transition flex items-center justify-center z-10"
+              className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm text-magic-600 shadow-lg ring-1 ring-black/10 hover:bg-white hover:scale-110 disabled:opacity-0 disabled:pointer-events-none transition flex items-center justify-center z-10"
               aria-label="Następna strona"
             >
-              <i className="fa-solid fa-chevron-right text-sm" />
+              <i className="fa-solid fa-chevron-right text-base" />
             </button>
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-calm-900/85 backdrop-blur-sm text-white text-xs font-semibold tabular-nums px-3 py-1.5 rounded-full shadow-md z-10">
               {currentPage + 1} / {numPages}
