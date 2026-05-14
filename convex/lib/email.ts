@@ -95,6 +95,47 @@ function formatPlExpiryDate(createdAtMs: number): string {
   }).format(expiry);
 }
 
+/**
+ * Bullet-proof email CTA. Outlook Desktop on Windows uses the Word render
+ * engine and silently drops CSS backgrounds on `<a>` elements (and most other
+ * modern styling), so the button "disappears" — white label on a transparent
+ * background. We wrap a VML `<v:roundrect>` in an mso-only conditional comment
+ * which Outlook honors, and gate the real `<a>` tag behind `[if !mso]` so
+ * Outlook never sees both at once. Everywhere else (Gmail, Apple Mail,
+ * mobile) the HTML branch renders normally with the solid fill as a fallback
+ * for clients that don't paint gradients.
+ *
+ * Reference: https://buttons.cm — same pattern Litmus / Email on Acid push.
+ */
+function buildCtaButton({
+  href,
+  label,
+  fillColor = '#d97706',
+  gradient = 'linear-gradient(135deg,#f59e0b 0%,#d97706 100%)',
+  fontFamily = 'Nunito,Arial,sans-serif',
+}: {
+  href: string;
+  label: string;
+  fillColor?: string;
+  gradient?: string;
+  fontFamily?: string;
+}): string {
+  const hrefAttr = escapeAttr(href);
+  const labelHtml = escapeHtml(label);
+  return `
+              <!--[if mso]>
+              <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${hrefAttr}" style="height:52px;v-text-anchor:middle;width:280px;" arcsize="50%" stroke="f" fillcolor="${fillColor}">
+                <w:anchorlock/>
+                <center style="color:#ffffff;font-family:Arial,sans-serif;font-size:17px;font-weight:bold;">${labelHtml}</center>
+              </v:roundrect>
+              <![endif]-->
+              <!--[if !mso]><!-- -->
+              <a href="${hrefAttr}" style="display:inline-block;background-color:${fillColor};background-image:${gradient};color:#ffffff;font-family:${fontFamily};font-weight:800;font-size:17px;line-height:20px;padding:16px 36px;border-radius:999px;text-decoration:none;box-shadow:0 8px 20px -8px rgba(245,158,11,0.5);mso-hide:all;">
+                ${labelHtml}
+              </a>
+              <!--<![endif]-->`;
+}
+
 // ────────────────────────────────────────────────────────────────
 // Email 1 — Payment confirmation, sent after Stripe webhook flips
 // paymentStatus to 'completed'. By that point the PDF already exists
@@ -138,8 +179,12 @@ export function buildOrderConfirmationEmail(params: OrderConfirmationParams): {
   const preheader = `Płatność potwierdzona. Numer zamówienia ${orderNumber}.`;
 
   const html = `<!doctype html>
-<html lang="pl">
-  <head><meta charset="utf-8"></head>
+<html lang="pl" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <!--[if gte mso 9]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
+  </head>
   <body style="margin:0;padding:0;background:#F5F7FA;font-family:Nunito,Arial,sans-serif;color:#334155;">
     <span style="display:none!important;visibility:hidden;mso-hide:all;font-size:1px;color:#F5F7FA;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${escapeHtml(preheader)}</span>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F7FA;padding:32px 16px;">
@@ -167,11 +212,11 @@ export function buildOrderConfirmationEmail(params: OrderConfirmationParams): {
               </table>
             </div>
 
-            <div style="text-align:center;margin:28px 0;">
-              <a href="${escapeAttr(resultUrl)}" style="display:inline-block;background-color:#d97706;background-image:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:#ffffff;font-weight:800;font-size:17px;padding:16px 36px;border-radius:999px;text-decoration:none;box-shadow:0 8px 20px -8px rgba(245,158,11,0.5);mso-padding-alt:0;">
-                ⬇ Pobierz bajkę (PDF)
-              </a>
-              <div style="margin-top:10px;font-size:13px;color:#64748b;">Otwórz w przeglądarce i kliknij „Pobierz".</div>
+            <div style="text-align:center;margin:28px 0;">${buildCtaButton({
+              href: resultUrl,
+              label: '⬇ Pobierz bajkę (PDF)',
+            })}
+              <div style="margin-top:14px;font-size:13px;color:#64748b;">Otwórz w przeglądarce i kliknij „Pobierz".</div>
             </div>${printRow}
 
             <p style="margin:24px 0 0 0;">
@@ -279,8 +324,12 @@ export function buildBookReadyEmail(params: BookReadyParams): {
       : '';
 
   const html = `<!doctype html>
-<html lang="pl">
-  <head><meta charset="utf-8"></head>
+<html lang="pl" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <!--[if gte mso 9]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
+  </head>
   <body style="margin:0;padding:0;background:#F5F7FA;font-family:Nunito,Arial,sans-serif;color:#334155;">
     <span style="display:none!important;visibility:hidden;mso-hide:all;font-size:1px;color:#F5F7FA;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${escapeHtml(preheader)}</span>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F7FA;padding:32px 16px;">
@@ -300,11 +349,11 @@ export function buildBookReadyEmail(params: BookReadyParams): {
             <p style="margin:0 0 16px 0;">Cześć!</p>
             <p style="margin:0 0 24px 0;">${titleClause} Plik PDF czeka pod poniższym przyciskiem — pobierzcie go na komputer, telefon albo wydrukujcie w domu.</p>
 
-            <div style="text-align:center;margin:28px 0;">
-              <a href="${escapeAttr(downloadUrl)}" style="display:inline-block;background-color:#d97706;background-image:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:#ffffff;font-weight:800;font-size:17px;padding:16px 36px;border-radius:999px;text-decoration:none;box-shadow:0 8px 20px -8px rgba(245,158,11,0.5);mso-padding-alt:0;">
-                ⬇ Pobierz bajkę (PDF)
-              </a>
-              <div style="margin-top:10px;font-size:13px;color:#64748b;">Format A5 · PDF</div>
+            <div style="text-align:center;margin:28px 0;">${buildCtaButton({
+              href: downloadUrl,
+              label: '⬇ Pobierz bajkę (PDF)',
+            })}
+              <div style="margin-top:14px;font-size:13px;color:#64748b;">Format A5 · PDF</div>
             </div>
 
             <div style="background:#fef2f2;border-left:3px solid #dc2626;padding:14px 18px;border-radius:8px;margin:24px 0;font-size:14px;color:#7f1d1d;">
@@ -428,8 +477,12 @@ export function buildAdminPrintAlertEmail(params: AdminPrintAlertParams): {
     : `<tr><td colspan="2" style="padding:8px 0;color:#dc2626;font-weight:700;">⚠️ Brak adresu wysyłki — sprawdź w adminie!</td></tr>`;
 
   const html = `<!doctype html>
-<html lang="pl">
-  <head><meta charset="utf-8"></head>
+<html lang="pl" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <!--[if gte mso 9]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
+  </head>
   <body style="margin:0;padding:0;background:#F5F7FA;font-family:Nunito,Arial,sans-serif;color:#334155;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F7FA;padding:32px 16px;">
       <tr><td align="center">
