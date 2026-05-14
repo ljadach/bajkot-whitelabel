@@ -328,9 +328,14 @@ export function OrderCheckout({
               type="button"
               onClick={() => void handleSubmit()}
               disabled={isSubmitting || !termsAccepted || !specialDataAccepted}
+              aria-busy={isSubmitting}
               className="w-2/3 bg-magic-500 hover:bg-magic-600 text-white font-extrabold py-4 rounded-2xl text-lg shadow-xl shadow-magic-500/30 transition transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none"
             >
-              <i className="fa-solid fa-lock mr-2" />
+              {isSubmitting ? (
+                <i className="fa-solid fa-circle-notch fa-spin mr-2" aria-hidden="true" />
+              ) : (
+                <i className="fa-solid fa-lock mr-2" aria-hidden="true" />
+              )}
               {isSubmitting ? t('checkout.submitting') : t('checkout.submit')}
             </button>
           </div>
