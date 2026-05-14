@@ -106,31 +106,34 @@ export function BookPdfFlipbook({ pdfUrl }: BookPdfFlipbookProps) {
         </Document>
 
         {numPages > 0 && (
-          <>
-            <button
-              type="button"
-              onClick={goPrev}
-              disabled={!canPrev}
-              className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm text-magic-600 shadow-lg ring-1 ring-black/10 hover:bg-white hover:scale-110 disabled:opacity-0 disabled:pointer-events-none transition flex items-center justify-center z-10"
-              aria-label="Poprzednia strona"
-            >
-              <i className="fa-solid fa-chevron-left text-base" />
-            </button>
-            <button
-              type="button"
-              onClick={goNext}
-              disabled={!canNext}
-              className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm text-magic-600 shadow-lg ring-1 ring-black/10 hover:bg-white hover:scale-110 disabled:opacity-0 disabled:pointer-events-none transition flex items-center justify-center z-10"
-              aria-label="Następna strona"
-            >
-              <i className="fa-solid fa-chevron-right text-base" />
-            </button>
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-calm-900/85 backdrop-blur-sm text-white text-xs font-semibold tabular-nums px-3 py-1.5 rounded-full shadow-md z-10">
-              {currentPage + 1} / {numPages}
-            </div>
-          </>
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-calm-900/85 backdrop-blur-sm text-white text-xs font-semibold tabular-nums px-3 py-1.5 rounded-full shadow-md z-10">
+            {currentPage + 1} / {numPages}
+          </div>
         )}
       </div>
+
+      {numPages > 0 && (
+        <>
+          <button
+            type="button"
+            onClick={goPrev}
+            disabled={!canPrev}
+            className="absolute left-1 sm:-left-14 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm text-magic-600 shadow-lg ring-1 ring-black/10 hover:bg-white hover:scale-110 disabled:opacity-0 disabled:pointer-events-none transition flex items-center justify-center z-10"
+            aria-label="Poprzednia strona"
+          >
+            <i className="fa-solid fa-chevron-left text-base" />
+          </button>
+          <button
+            type="button"
+            onClick={goNext}
+            disabled={!canNext}
+            className="absolute right-1 sm:-right-14 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm text-magic-600 shadow-lg ring-1 ring-black/10 hover:bg-white hover:scale-110 disabled:opacity-0 disabled:pointer-events-none transition flex items-center justify-center z-10"
+            aria-label="Następna strona"
+          >
+            <i className="fa-solid fa-chevron-right text-base" />
+          </button>
+        </>
+      )}
     </div>
   );
 }

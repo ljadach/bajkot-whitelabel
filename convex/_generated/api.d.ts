@@ -22,7 +22,6 @@ import type * as bookIntakeGuard from '../bookIntakeGuard.js';
 import type * as bookPipeline from '../bookPipeline.js';
 import type * as bookPipelineEvents from '../bookPipelineEvents.js';
 import type * as bookPipelineHelpers from '../bookPipelineHelpers.js';
-import type * as bookPrintView from '../bookPrintView.js';
 import type * as cli from '../cli.js';
 import type * as config from '../config.js';
 import type * as contact from '../contact.js';
@@ -90,7 +89,6 @@ declare const fullApi: ApiFromModules<{
   bookPipeline: typeof bookPipeline;
   bookPipelineEvents: typeof bookPipelineEvents;
   bookPipelineHelpers: typeof bookPipelineHelpers;
-  bookPrintView: typeof bookPrintView;
   cli: typeof cli;
   config: typeof config;
   contact: typeof contact;
