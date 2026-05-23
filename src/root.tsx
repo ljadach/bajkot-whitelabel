@@ -19,6 +19,8 @@ import { ClientOnly } from './components/ClientOnly';
 import { ScrollToTop } from './components/ScrollToTop';
 import { useLangFromUrl } from './hooks/useLangFromUrl';
 import { captureTokenFromUrl } from './hooks/useAccessToken';
+import { captureAttributionFromUrl, getAttributionProps } from './lib/attribution';
+import { setFunnelSuperProperties } from './lib/telemetry';
 import { GA_MEASUREMENT_ID, trackGaPageview } from './lib/gtag';
 
 const LazyClientUtilities = lazy(() =>
@@ -114,7 +116,18 @@ function pageHasOwnHeader(pathname: string): boolean {
 }
 
 export default function Root() {
-  useEffect(() => captureTokenFromUrl(), []);
+  useEffect(() => {
+    captureTokenFromUrl();
+    // Marketing attribution: snapshot gclid / utm_* on first visit and stamp
+    // PostHog so every subsequent event in this session inherits the source.
+    // Stripe round-trips kill document.referrer, so the localStorage snapshot
+    // is what survives back into the result page where conversions fire.
+    captureAttributionFromUrl();
+    const attribution = getAttributionProps();
+    if (Object.keys(attribution).length > 0) {
+      setFunnelSuperProperties(attribution);
+    }
+  }, []);
   const { pathname } = useLocation();
   const showGlobalHeader = !pageHasOwnHeader(pathname);
 
