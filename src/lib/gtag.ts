@@ -14,6 +14,28 @@
 
 export const GA_MEASUREMENT_ID = 'G-3QB3EX66Z2';
 
+/**
+ * Optional Google Ads conversion config. Set via Vite env at build time:
+ *   VITE_GOOGLE_ADS_ID            — full ID, e.g. "AW-1234567890"
+ *   VITE_GOOGLE_ADS_PURCHASE_LABEL — conversion action label, e.g. "abc123XYZ"
+ *
+ * Both must be set for `trackPurchase` to fire a Google Ads conversion;
+ * otherwise only the GA4 `purchase` event ships. The Ads config script is
+ * injected from `root.tsx` so consent gating works the same way as GA4.
+ */
+export const GOOGLE_ADS_ID = (import.meta.env.VITE_GOOGLE_ADS_ID as string | undefined) ?? '';
+export const GOOGLE_ADS_PURCHASE_LABEL =
+  (import.meta.env.VITE_GOOGLE_ADS_PURCHASE_LABEL as string | undefined) ?? '';
+
+/**
+ * Optional default revenue per book in PLN. Used when the Stripe redirect
+ * doesn't carry the paid amount back to the client (it usually doesn't —
+ * `amount_total` lives on the session, not in the success URL). Hardcoded
+ * fallback keeps Google Ads' value-based bidding informed without a
+ * server round-trip.
+ */
+export const DEFAULT_BOOK_VALUE_PLN = Number(import.meta.env.VITE_BOOK_VALUE_PLN ?? '0') || 0;
+
 type GtagFn = (...args: unknown[]) => void;
 
 function getGtag(): GtagFn | null {
@@ -28,6 +50,9 @@ export function setAnalyticsConsent(granted: boolean): void {
   if (!gtag) return;
   gtag('consent', 'update', {
     analytics_storage: granted ? 'granted' : 'denied',
+    ad_storage: granted ? 'granted' : 'denied',
+    ad_user_data: granted ? 'granted' : 'denied',
+    ad_personalization: granted ? 'granted' : 'denied',
   });
 }
 
@@ -39,4 +64,47 @@ export function trackGaPageview(path: string): void {
     page_path: path,
     page_location: typeof window !== 'undefined' ? window.location.href : path,
   });
+}
+
+/**
+ * Fire a purchase event into GA4 + optionally a Google Ads conversion.
+ *
+ * - GA4 always gets the `purchase` event (gated only by Consent Mode v2).
+ * - Google Ads gets a `conversion` event only if both env vars above are
+ *   set at build time. Use `transaction_id` to dedupe — calling twice
+ *   with the same order ID is idempotent on Google's side.
+ *
+ * `value` defaults to `DEFAULT_BOOK_VALUE_PLN`; pass `0` to suppress.
+ */
+export function trackPurchase(args: {
+  transactionId: string;
+  value?: number;
+  currency?: string;
+  itemName?: string;
+}): void {
+  const gtag = getGtag();
+  if (!gtag) return;
+
+  const value = args.value ?? DEFAULT_BOOK_VALUE_PLN;
+  const currency = args.currency ?? 'PLN';
+
+  // GA4 ecommerce event — picked up by the GA4 property automatically once
+  // the `purchase` event is enabled in Admin → Events.
+  gtag('event', 'purchase', {
+    transaction_id: args.transactionId,
+    value,
+    currency,
+    items: [{ item_name: args.itemName ?? 'Bajka' }],
+  });
+
+  // Google Ads conversion — only when configured. `send_to` requires the
+  // full "AW-XXXX/LABEL" form; an unconfigured deploy stays silent.
+  if (GOOGLE_ADS_ID && GOOGLE_ADS_PURCHASE_LABEL) {
+    gtag('event', 'conversion', {
+      send_to: `${GOOGLE_ADS_ID}/${GOOGLE_ADS_PURCHASE_LABEL}`,
+      transaction_id: args.transactionId,
+      value,
+      currency,
+    });
+  }
 }

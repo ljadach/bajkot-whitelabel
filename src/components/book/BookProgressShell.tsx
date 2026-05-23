@@ -7,6 +7,8 @@ import { Id } from '../../../convex/_generated/dataModel';
 import { PIPELINE_STEPS } from '@lib/bookData';
 import { friendlyBookError } from '@lib/bookErrors';
 import { trackEvent } from '@lib/telemetry';
+import { trackPurchase } from '@lib/gtag';
+import { getAttributionProps } from '@lib/attribution';
 import { captureLandingOrderTokenFromUrl } from '../../hooks/useLandingOrderToken';
 import { BookErrorScreen, BookPausedScreen, ProgressJourney } from './ProgressJourney';
 import { StyleVoteCards } from './BookStyleVote';
@@ -94,12 +96,19 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const checkout = params.get('checkout');
-      if (checkout === 'success') {
+      if (checkout === 'success' && orderId) {
+        const sessionId = params.get('session_id');
+        const attribution = getAttributionProps();
         trackEvent('payment_success', {
           flow,
           bookOrderId: orderId,
-          sessionId: params.get('session_id'),
+          sessionId,
+          ...attribution,
         });
+        // Strzelamy GA4 purchase + (opcjonalnie) Google Ads conversion.
+        // Idempotentne po stronie Google'a — `transaction_id` dedupe'uje
+        // przypadek gdy user odświeży stronę sukcesu kilka razy.
+        trackPurchase({ transactionId: orderId });
       } else if (checkout === 'cancelled') {
         trackEvent('payment_cancelled', { flow, bookOrderId: orderId });
       }

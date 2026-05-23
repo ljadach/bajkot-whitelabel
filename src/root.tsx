@@ -21,7 +21,7 @@ import { useLangFromUrl } from './hooks/useLangFromUrl';
 import { captureTokenFromUrl } from './hooks/useAccessToken';
 import { captureAttributionFromUrl, getAttributionProps } from './lib/attribution';
 import { setFunnelSuperProperties } from './lib/telemetry';
-import { GA_MEASUREMENT_ID, trackGaPageview } from './lib/gtag';
+import { GA_MEASUREMENT_ID, GOOGLE_ADS_ID, trackGaPageview } from './lib/gtag';
 
 const LazyClientUtilities = lazy(() =>
   import('./components/ClientAppShell').then((m) => ({ default: m.ClientUtilities })),
@@ -91,6 +91,7 @@ export function Layout({ children }: { children: ReactNode }) {
               });
               gtag('js', new Date());
               gtag('config', '${GA_MEASUREMENT_ID}', { anonymize_ip: true });
+              ${GOOGLE_ADS_ID ? `gtag('config', '${GOOGLE_ADS_ID}');` : ''}
             `,
           }}
         />
