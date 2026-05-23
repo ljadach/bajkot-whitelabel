@@ -94,7 +94,11 @@ export const recentViews = query({
 });
 
 export const summary = query({
-  args: { sinceMs: v.number(), excludeBots: v.optional(v.boolean()) },
+  args: {
+    sinceMs: v.number(),
+    excludeBots: v.optional(v.boolean()),
+    pathPrefix: v.optional(v.string()),
+  },
   returns: v.object({
     totalViews: v.number(),
     uniqueIps: v.number(),
@@ -110,7 +114,15 @@ export const summary = query({
       .withIndex('by_timestamp', (q) => q.gte('timestamp', args.sinceMs))
       .collect();
 
-    const filtered = excludeBots ? rows.filter((r) => !r.isBot) : rows;
+    // Mirror the filter applied to `recentViews` so the summary cards and the
+    // detail table describe the same slice of traffic — otherwise the UI
+    // shows e.g. "Total views 558" alongside a table filtered to /problem/*
+    // and the two numbers disagree on what they're counting.
+    const filtered = rows.filter((r) => {
+      if (excludeBots && r.isBot) return false;
+      if (args.pathPrefix && !r.path.startsWith(args.pathPrefix)) return false;
+      return true;
+    });
 
     const ips = new Set<string>();
     const pathCount = new Map<string, number>();

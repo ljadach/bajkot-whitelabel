@@ -29,7 +29,11 @@ export function AdminAnalytics() {
     pathPrefix: pathPrefix || undefined,
   });
 
-  const summary = useQuery(api.analytics.summary, { sinceMs, excludeBots });
+  const summary = useQuery(api.analytics.summary, {
+    sinceMs,
+    excludeBots,
+    pathPrefix: pathPrefix || undefined,
+  });
 
   return (
     <div className="space-y-6">
