@@ -4,8 +4,18 @@ import { assertAdmin } from './lib/roles';
 
 // Conservative crawler/preview heuristic. UA is attacker-controlled, so this
 // is only a filter for noise in the admin view — never a security check.
+//
+// UA matches: regular crawlers, Google's ad-render bots (DisplayAds-WebRender,
+// AdWords-Express), generic CMS scanners, and the local smoke-test agent.
 const BOT_PATTERN =
-  /bot|crawl|spider|slurp|preview|fetch|http\b|wget|curl|monitor|uptime|headless/i;
+  /bot|crawl|spider|slurp|preview|fetch|http\b|wget|curl|monitor|uptime|headless|adwords|googleads|cms-checker|smoke-test/i;
+
+// Path-based bot detection — catches WordPress / .env / .git / adminer
+// probes that all set perfectly normal Chrome / Firefox / iPhone UAs and
+// would otherwise pollute the "human" view. These paths have no legitimate
+// reason to be hit on this site.
+const SCANNER_PATH_PATTERN =
+  /^\/(?:wp-admin|wp-login|wp-content|wp-includes|wordpress|blog\/wp-|wp\/wp-|old\/wp-|\.env|\.git\b|\.aws\b|adminer|phpmyadmin|app\/\.env|backend\/\.env)/i;
 
 export const recordPageView = internalMutation({
   args: {
@@ -23,7 +33,7 @@ export const recordPageView = internalMutation({
   handler: async (ctx, args) => {
     return await ctx.db.insert('pageViews', {
       ...args,
-      isBot: BOT_PATTERN.test(args.userAgent),
+      isBot: BOT_PATTERN.test(args.userAgent) || SCANNER_PATH_PATTERN.test(args.path),
     });
   },
 });
