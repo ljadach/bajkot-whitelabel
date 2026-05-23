@@ -13,7 +13,7 @@ import { Toaster } from 'sonner';
 import './index.css';
 import './lib/i18n';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Header } from './components/Header';
 import { ClientOnly } from './components/ClientOnly';
 import { ScrollToTop } from './components/ScrollToTop';
@@ -123,6 +123,38 @@ export default function Root() {
   // deny until CookieBanner accepts), so this is safe before opt-in.
   useEffect(() => {
     trackGaPageview(pathname);
+  }, [pathname]);
+
+  // Server-side analytics beacon. The edge middleware logs the initial page
+  // load; React Router swaps everything else client-side and the edge never
+  // sees it. Beacon hits /api/track which forwards to Convex with the shared
+  // secret + IP from Vercel headers. Skip the first effect run (already
+  // covered by edge middleware) to avoid double-counting initial loads.
+  const firstNavRef = useRef(true);
+  useEffect(() => {
+    if (firstNavRef.current) {
+      firstNavRef.current = false;
+      return;
+    }
+    if (typeof navigator === 'undefined' || !navigator.sendBeacon) return;
+    if (
+      pathname.startsWith('/admin') ||
+      pathname.startsWith('/book/') ||
+      pathname.startsWith('/api/')
+    ) {
+      return;
+    }
+    const payload = JSON.stringify({
+      path: pathname,
+      userAgent: navigator.userAgent,
+      referer: document.referrer || undefined,
+    });
+    try {
+      const blob = new Blob([payload], { type: 'application/json' });
+      navigator.sendBeacon('/api/track', blob);
+    } catch {
+      // Beacon failures must never bubble — analytics is best-effort.
+    }
   }, [pathname]);
 
   return (

@@ -60,3 +60,4 @@ playwright-report/
 test-results/
 e2e/auth-failure.png
 e2e/*.png
+analytics-today.html

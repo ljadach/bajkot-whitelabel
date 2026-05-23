@@ -48,6 +48,26 @@ const applicationTables = {
     .index('by_timestamp', ['timestamp'])
     .index('by_level', ['level']),
 
+  // Server-side page-view tracking. Populated by Vercel edge middleware via
+  // POST /track (shared secret). RODO: raw IP retained, retention is manual
+  // (operator runs `convex run analytics:purgeOld` when convenient — no cron).
+  pageViews: defineTable({
+    timestamp: v.number(),
+    ip: v.string(),
+    country: v.optional(v.string()),
+    userAgent: v.string(),
+    path: v.string(),
+    referer: v.optional(v.string()),
+    acceptLanguage: v.optional(v.string()),
+    clerkUserId: v.optional(v.string()),
+    accessTokenHash: v.optional(v.string()),
+    isBot: v.boolean(),
+  })
+    .index('by_timestamp', ['timestamp'])
+    .index('by_ip_and_timestamp', ['ip', 'timestamp'])
+    .index('by_path_and_timestamp', ['path', 'timestamp'])
+    .index('by_isbot_and_timestamp', ['isBot', 'timestamp']),
+
   // ============================================
   // Admin
   // ============================================

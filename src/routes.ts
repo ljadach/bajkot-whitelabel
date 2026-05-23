@@ -13,6 +13,9 @@ export default [
   route('regulamin', 'routes/regulamin.tsx', { id: 'regulamin' }),
   route('polityka-prywatnosci', 'routes/polityka-prywatnosci.tsx', { id: 'polityka-prywatnosci' }),
 
+  // Server-side beacon for SPA navigation tracking (forwards to Convex /track).
+  route('api/track', 'routes/api.track.ts', { id: 'api-track' }),
+
   // Landing book flow (no auth, token-gated via Convex)
   route('landing/book/:orderId/progress', 'routes/landing-book-progress.tsx'),
   route('landing/book/:orderId/vote', 'routes/landing-book-vote.tsx'),

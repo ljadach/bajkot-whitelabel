@@ -5,11 +5,13 @@ import { AdminConfig } from './pages/AdminConfig';
 import { BookBatch } from './pages/BookBatch';
 import { AdminLogs } from './pages/AdminLogs';
 import { AdminStripe } from './pages/AdminStripe';
+import { AdminAnalytics } from './pages/AdminAnalytics';
 
 const NAV_ITEMS = [
   { to: '/admin', label: 'Dashboard', icon: 'grid', end: true },
   { to: '/admin/config', label: 'Config', icon: 'settings' },
   { to: '/admin/batch', label: 'Book Batch', icon: 'stack' },
+  { to: '/admin/analytics', label: 'Analytics', icon: 'chart' },
   { to: '/admin/logs', label: 'Logs', icon: 'logs' },
   { to: '/admin/stripe', label: 'Stripe', icon: 'stripe' },
 ];
@@ -97,6 +99,22 @@ function NavIcon({ icon }: { icon: string }) {
           />
         </svg>
       );
+    case 'chart':
+      return (
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={1.5}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75c0 .621-.504 1.125-1.125 1.125h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"
+          />
+        </svg>
+      );
     default:
       return null;
   }
@@ -144,6 +162,7 @@ export function AdminLayout() {
               <Route index element={<AdminDashboard />} />
               <Route path="config" element={<AdminConfig />} />
               <Route path="batch" element={<BookBatch />} />
+              <Route path="analytics" element={<AdminAnalytics />} />
               <Route path="logs" element={<AdminLogs />} />
               <Route path="stripe" element={<AdminStripe />} />
             </Routes>

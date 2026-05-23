@@ -497,3 +497,74 @@ export const setPromptContent = internalMutation({
     return { ok: true, key, contentLength: content.length };
   },
 });
+
+// ── Analytics (no-auth mirrors of analytics.recentViews / summary) ──
+
+export const analyticsRecent = internalQuery({
+  args: {
+    limit: v.optional(v.number()),
+    pathPrefix: v.optional(v.string()),
+    excludeBots: v.optional(v.boolean()),
+    sinceMs: v.optional(v.number()),
+  },
+  returns: v.array(v.any()),
+  handler: async (ctx, args) => {
+    const limit = Math.min(args.limit ?? 50, 1000);
+    const excludeBots = args.excludeBots ?? true;
+    const rows = await ctx.db
+      .query('pageViews')
+      .withIndex('by_timestamp')
+      .order('desc')
+      .take(limit * 3);
+    return rows
+      .filter((r) => {
+        if (excludeBots && r.isBot) return false;
+        if (args.sinceMs && r.timestamp < args.sinceMs) return false;
+        if (args.pathPrefix && !r.path.startsWith(args.pathPrefix)) return false;
+        return true;
+      })
+      .slice(0, limit);
+  },
+});
+
+export const analyticsSummary = internalQuery({
+  args: { sinceMs: v.number(), excludeBots: v.optional(v.boolean()) },
+  returns: v.object({
+    totalViews: v.number(),
+    uniqueIps: v.number(),
+    topPaths: v.array(v.object({ path: v.string(), count: v.number() })),
+    topCountries: v.array(v.object({ country: v.string(), count: v.number() })),
+    topIps: v.array(v.object({ ip: v.string(), count: v.number() })),
+  }),
+  handler: async (ctx, args) => {
+    const excludeBots = args.excludeBots ?? true;
+    const rows = await ctx.db
+      .query('pageViews')
+      .withIndex('by_timestamp', (q) => q.gte('timestamp', args.sinceMs))
+      .collect();
+    const filtered = excludeBots ? rows.filter((r) => !r.isBot) : rows;
+    const ips = new Set<string>();
+    const pathCount = new Map<string, number>();
+    const countryCount = new Map<string, number>();
+    const ipCount = new Map<string, number>();
+    for (const r of filtered) {
+      ips.add(r.ip);
+      pathCount.set(r.path, (pathCount.get(r.path) ?? 0) + 1);
+      const c = r.country ?? '??';
+      countryCount.set(c, (countryCount.get(c) ?? 0) + 1);
+      if (r.ip) ipCount.set(r.ip, (ipCount.get(r.ip) ?? 0) + 1);
+    }
+    const sortDesc = <K extends string>(m: Map<string, number>, key: K) =>
+      Array.from(m.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([k, count]) => ({ [key]: k, count }) as { [P in K]: string } & { count: number });
+    return {
+      totalViews: filtered.length,
+      uniqueIps: ips.size,
+      topPaths: sortDesc(pathCount, 'path'),
+      topCountries: sortDesc(countryCount, 'country'),
+      topIps: sortDesc(ipCount, 'ip'),
+    };
+  },
+});

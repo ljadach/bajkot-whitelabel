@@ -12,6 +12,8 @@ import type * as admin_bookBatch from '../admin/bookBatch.js';
 import type * as admin_bookPrompts from '../admin/bookPrompts.js';
 import type * as admin_config from '../admin/config.js';
 import type * as admin_stripe from '../admin/stripe.js';
+import type * as analytics from '../analytics.js';
+import type * as analyticsHttp from '../analyticsHttp.js';
 import type * as auth from '../auth.js';
 import type * as backendLogs from '../backendLogs.js';
 import type * as billing from '../billing.js';
@@ -79,6 +81,8 @@ declare const fullApi: ApiFromModules<{
   'admin/bookPrompts': typeof admin_bookPrompts;
   'admin/config': typeof admin_config;
   'admin/stripe': typeof admin_stripe;
+  analytics: typeof analytics;
+  analyticsHttp: typeof analyticsHttp;
   auth: typeof auth;
   backendLogs: typeof backendLogs;
   billing: typeof billing;
