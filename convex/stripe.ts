@@ -83,6 +83,7 @@ export const createCheckoutSession = action({
     const returnPath = args.returnPath ?? `/book/${args.bookOrderId}/result`;
     const session: Stripe.Checkout.Session = await stripe.checkout.sessions.create({
       mode: 'payment',
+      allow_promotion_codes: true,
       line_items: [{ price: resolvePriceId(order.format), quantity: 1 }],
       billing_address_collection: 'auto',
       automatic_tax: { enabled: true },
@@ -166,6 +167,7 @@ export const createLandingCheckoutSession = action({
     const returnPath = args.returnPath ?? `/landing/book/${args.bookOrderId}/progress`;
     const session: Stripe.Checkout.Session = await stripe.checkout.sessions.create({
       mode: 'payment',
+      allow_promotion_codes: true,
       line_items: [{ price: resolvePriceId(order.format), quantity: 1 }],
       billing_address_collection: 'auto',
       automatic_tax: { enabled: true },
