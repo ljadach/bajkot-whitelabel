@@ -47,6 +47,46 @@ Post-processing (§4/§5) to **łatka**. Docelowo problem znika u źródła:
 Gdy oba zrobione: post-processing potrzebny tylko do **retrofitu starych
 zamówień**. Do tego czasu — wybierz jedno z dwóch podejść niżej.
 
+## ⚠️ Pułapka #1: numer strony wpada na linię cięcia
+
+**Złapane na pierwszym zamówieniu (2026-06-17) — dotyczyło OBU naszych plików.**
+
+Typst stawia numer strony na `dy: -10pt` = **3,5 mm od krawędzi strony**. Dla
+pliku bez spadu to jest 3,5 mm od cięcia — granicznie, ale OK. Problem pojawia
+się przy dokładaniu spadu **przez skalowanie treści**:
+
+- **A4 + spad „na pokrycie"** (skalowanie treści ~+1,9% + dosunięcie do spadu),
+- **cover-scale A4 → A5 + spad** (metoda raster/CMYK),
+
+obie **powiększają treść na zewnątrz**, a 2 mm wcięcia TrimBox „zjada" margines
+numeru. Zmierzone (dolna krawędź cyfry, od linii cięcia):
+
+| Plik                     | Od krawędzi media | **Nad linią cięcia** |
+| ------------------------ | ----------------- | -------------------- |
+| System (A4, bez spadu)   | 3,5 mm            | ~3,5 mm (granicznie) |
+| A4 + 2 mm spad (podej.A) | 2,83 mm           | **0,83 mm** ⚠️       |
+| A5 + 2 mm spad (podej.B) | 2,2 mm            | **0,2 mm** ⚠️        |
+
+Przy tolerancji krajarki ±1 mm numer zostaje przycięty albo wisi na krawędzi.
+
+**Zasada (twarda):** po nałożeniu spadu **ZAWSZE zmierz odległość folio/stopki
+od `TrimBox`** (nie od media!). Cel ≥ 5 mm; cokolwiek < 3 mm od trim = czerwona
+strefa, do poprawy.
+
+**Fix u źródła (preferowany):**
+
+1. Zwiększyć `dy` numeru w szablonie Typst (`templates/common/layout.typ`,
+   `page-number-badge`): `-10pt` → ok. `-28pt` (≈ 10 mm od krawędzi).
+2. Spad robić przez **rozszerzenie kanwy + dosunięcie samego TŁA** do krawędzi,
+   **nie** przez skalowanie całej treści — wtedy folio zostaje wysoko niezależnie
+   od spadu.
+
+**Fix post-hoc (retrofit istniejącego pliku):** podnieść numery o N mm. Na pliku
+wektorowym = przesunięcie treści/redraw; na **zrasteryzowanym** (podej. B) =
+chirurgia na pikselach (detekcja folio w oknie bottom-center → wytnij/wklej
+N mm wyżej + inpaint starego miejsca, **w CMYK bez round-tripu do RGB**, filtr
+FlateDecode zachowany). Skrypt: `print-prep/raise_folio.py`.
+
 ## 3. Wspólne wejście/wyjście (kontrakt automatyzacji)
 
 ```
@@ -65,6 +105,7 @@ Parametry konfiguracyjne (jedno miejsce, np. `adminConfig` albo brief):
 | `iccProfile`  | —          | np. Coated FOGRA39 (offset, powlekany, EU)                          |
 | `coverMode`   | `inline`   | `inline` (okładka = str.1) albo `separate`                          |
 | `targetPpi`   | 350        | nagłówek dla rasteryzacji / sanity-check                            |
+| `folioMinMm`  | 5          | min. odległość numeru strony od TrimBox — sanity-check (Pułapka #1) |
 
 Środowisko (oba podejścia heavy — NIE w Convex, brak node-heavy/GPU):
 worker na VPS (np. ten sam Droplet co typst-render) albo lokalny skrypt
