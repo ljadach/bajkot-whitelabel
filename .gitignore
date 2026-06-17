@@ -50,6 +50,7 @@ lerna-debug.log*
 graphify-out/
 out/
 .claude/
+print-prep/
 
 # Configuration
 settings.local.json
