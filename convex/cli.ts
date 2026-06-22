@@ -250,6 +250,8 @@ export const getOrderDetail = internalQuery({
     return {
       _id: order._id,
       childName: order.childName,
+      email: order.email ?? null,
+      paymentStatus: order.paymentStatus ?? null,
       ageBracket: order.ageBracket,
       gender: order.gender,
       problemId: order.problemId,
