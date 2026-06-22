@@ -29,8 +29,9 @@ export interface StageConfig {
    * provider-side default (~8192 for Gemini 2.5 Flash) which silently
    * truncates long prose — A3 (storyWriting) hit this cap when targeting
    * 4500 Polish words (~9000 tokens). Architectural max for Gemini 2.5
-   * Flash is 65536; Claude Sonnet 4.6 is 64000. 16384 is enough for the
-   * longest beat plan (9+ bracket).
+   * Flash is 65536; Claude Sonnet 4.6 is 64000. For Gemini 2.5 Pro this cap
+   * must also absorb thinking tokens (non-disablable), so storyWriting runs
+   * at 32768 — see the per-stage note below.
    */
   maxTokens?: number;
   expect?: 'object' | 'array' | 'any';
@@ -75,8 +76,18 @@ const DEFAULT_LLM_CONFIG: LlmConfig = {
     expect: 'object',
     // A3 is pure prose generation — extended thinking just eats budget
     // without helping craft, and Pro's thinking is heavy.
+    //
+    // NOTE: `reasoning: false` is a no-op for Gemini via OpenRouter
+    // (buildProviderOptions returns undefined → no thinking directive sent),
+    // and Gemini 2.5 Pro can't disable thinking anyway (min budget ~128,
+    // default dynamic). Thinking tokens count against maxOutputTokens, so on
+    // heavy inputs (large blueprints) thinking ate the whole 16384 cap and
+    // the actual JSON came back empty/truncated → "Unable to parse JSON"
+    // (order jn748narq8... on prod, 2026-06-18, 439s across 3 retries).
+    // Bumped to 32768 so thinking + ~12k-token prose both fit. Real root-cap
+    // fix (forcing reasoning.max_tokens low) tracked separately.
     reasoning: false,
-    maxTokens: 16384,
+    maxTokens: 32768,
   },
   'book.psychReview': {
     model: 'google/gemini-2.5-flash',
