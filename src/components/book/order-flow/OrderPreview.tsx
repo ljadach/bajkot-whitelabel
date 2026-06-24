@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { trackEvent } from '../../../lib/telemetry';
 import { genitiveOrSelf } from '../../../lib/childNameInflect';
+import { BookPreviewCarousel } from './BookPreviewCarousel';
 import type { IntakeState, OrderFormat } from './types';
 
 interface Props {
@@ -24,7 +25,6 @@ export function OrderPreview({ intake, onChangeFormat, onContinue, onBack }: Pro
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const trimmedName = intake.name.trim();
-  const topicTitle = intake.topic ? intake.topic.catalog.shortTitle : '';
 
   const nameGen = genitiveOrSelf(trimmedName);
 
@@ -39,10 +39,6 @@ export function OrderPreview({ intake, onChangeFormat, onContinue, onBack }: Pro
     tokenIdx >= 0 ? subheadingTemplate.slice(0, tokenIdx) : subheadingTemplate;
   const subheadingAfter =
     tokenIdx >= 0 ? subheadingTemplate.slice(tokenIdx + NAME_TOKEN.length) : '';
-
-  const bookTitle = trimmedName
-    ? t('previewScreen.bookTitleFor', { nameGen })
-    : t('previewScreen.bookTitleFallback');
 
   const cta = trimmedName
     ? t('previewScreen.ctaOrder', { nameGen })
@@ -66,20 +62,9 @@ export function OrderPreview({ intake, onChangeFormat, onContinue, onBack }: Pro
         </div>
 
         <div className="grid md:grid-cols-2 gap-10 items-start">
-          {/* Product mock */}
+          {/* Product preview — real sample pages */}
           <div className="space-y-4">
-            <div className="bg-gradient-to-br from-calm-500 to-calm-800 rounded-3xl shadow-2xl p-8 text-white text-center aspect-[3/4] flex flex-col items-center justify-center relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-                <div className="absolute top-4 left-4 text-6xl">✨</div>
-                <div className="absolute bottom-4 right-4 text-6xl">🌟</div>
-              </div>
-              <div className="text-6xl mb-4">📖</div>
-              <h2 className="text-2xl font-black mb-2">{bookTitle}</h2>
-              {topicTitle && <p className="text-calm-100 text-sm">{topicTitle}</p>}
-              <div className="mt-4 bg-white/20 rounded-full px-4 py-1 text-sm font-bold">
-                {t('previewScreen.bookBadge')}
-              </div>
-            </div>
+            <BookPreviewCarousel />
             <div className="grid grid-cols-3 gap-3">
               <MiniCard emoji="📝" label={t('previewScreen.miniDedication')} />
               <MiniCard emoji="🎨" label={t('previewScreen.miniIllustrations')} />

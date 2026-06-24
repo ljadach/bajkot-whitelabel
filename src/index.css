@@ -79,6 +79,15 @@ h6 {
   background: #a3a3a3;
 }
 
+/* Hide scrollbar for swipeable carousels (book preview, etc.) */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* ============================================================
    PUBLIC MARKETING DESIGN SYSTEM
    Buttons, cards, navigation, FAQ, badges, layout primitives
