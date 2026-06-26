@@ -533,6 +533,8 @@ interface PreviewResult {
   paid: boolean;
   hasPdf: boolean;
   paymentStatus: 'pending' | 'completed' | 'failed' | null;
+  /** Topic the order targets — drives category-level conversion analytics. */
+  problemId: string;
   /** 'pdf' or 'pdf_print' — drives the unlock CTA price (29 vs 49 PLN) + shipping copy. */
   format: 'pdf' | 'pdf_print';
   illustrations: Array<{ illustrationId: string; url: string | null }>;
@@ -553,6 +555,8 @@ const previewReturnValidator = v.object({
   paid: v.boolean(),
   hasPdf: v.boolean(),
   paymentStatus: paymentStatusReturnValidator,
+  /** Topic the order targets — drives category-level conversion analytics. */
+  problemId: v.string(),
   format: v.union(v.literal('pdf'), v.literal('pdf_print')),
   illustrations: v.array(
     v.object({ illustrationId: v.string(), url: v.union(v.string(), v.null()) }),
@@ -596,6 +600,7 @@ async function buildPreviewResult(
     r2FullKey?: string;
     r2PreviewKey?: string;
     format?: 'pdf' | 'pdf_print';
+    problemId: string;
     _id: Id<'bookOrders'>;
   },
 ): Promise<PreviewResult> {
@@ -620,6 +625,7 @@ async function buildPreviewResult(
     paid: isPaid(order),
     hasPdf: !!order.pdfStorageId || !!order.r2FullKey,
     paymentStatus: order.paymentStatus ?? null,
+    problemId: order.problemId,
     format: order.format ?? 'pdf',
     illustrations: previewIllustrations,
     excerptPl: extractFirstBeatExcerpt(order.storyDraft),
@@ -655,6 +661,8 @@ const downloadUrlReturnValidator = v.object({
   paymentStatus: paymentStatusReturnValidator,
   paid: v.boolean(),
   hasPdf: v.boolean(),
+  /** Topic the order targets — drives category-level conversion analytics. */
+  problemId: v.string(),
   /** Order's chosen format — drives result-page copy + print upsell branch. */
   format: v.union(v.literal('pdf'), v.literal('pdf_print')),
   /** Shipping address for pdf_print orders. Null when format='pdf' or unset. */
@@ -677,6 +685,7 @@ export const getDownloadUrl = query({
       paymentStatus: order.paymentStatus ?? null,
       paid,
       hasPdf: !!order.pdfStorageId || !!order.r2FullKey,
+      problemId: order.problemId,
       format: order.format ?? 'pdf',
       shippingAddress: order.shippingAddress ?? null,
       r2FullKey: paid && order.r2FullKey ? order.r2FullKey : null,
@@ -922,6 +931,7 @@ export const getLandingDownloadUrl = query({
       paymentStatus: order.paymentStatus ?? null,
       paid,
       hasPdf: !!order.pdfStorageId || !!order.r2FullKey,
+      problemId: order.problemId,
       format: order.format ?? 'pdf',
       shippingAddress: order.shippingAddress ?? null,
       r2FullKey: paid && order.r2FullKey ? order.r2FullKey : null,

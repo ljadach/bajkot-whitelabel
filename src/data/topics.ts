@@ -2147,3 +2147,26 @@ export function topicsByCategory(category: CatalogCategory | 'all'): Topic[] {
   if (category === 'all') return TOPICS;
   return TOPICS.filter((t) => t.category === category);
 }
+
+/**
+ * Map a `problemId` (stored on the order) to its catalog category. Powers
+ * conversion/funnel analytics — lets us segment purchases by category and,
+ * together with `categoryForLandingPath`, spot cross-category migration
+ * (entered via category X, bought in category Y).
+ */
+export function categoryForProblemId(problemId: string | null | undefined): CatalogCategory | null {
+  if (!problemId) return null;
+  return TOPICS.find((t) => t.problemId === problemId)?.category ?? null;
+}
+
+/**
+ * Recover the catalog category from a first-touch landing path like
+ * `/problem/:slug` (stored in the attribution snapshot). This is the
+ * "entered via" side of the migration cross-tab.
+ */
+export function categoryForLandingPath(path: string | null | undefined): CatalogCategory | null {
+  if (!path) return null;
+  const match = path.match(/\/problem\/([^/?#]+)/);
+  if (!match) return null;
+  return TOPICS.find((t) => t.slug === match[1])?.category ?? null;
+}

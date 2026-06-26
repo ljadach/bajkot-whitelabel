@@ -1,10 +1,12 @@
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router';
 import { useAction, useQuery } from 'convex/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
 import { trackEvent } from '@lib/telemetry';
+import { trackPurchase, trackBookGenerated, markPurchaseTrackedOnce } from '@lib/gtag';
+import { getAttributionProps } from '@lib/attribution';
 import { BOOK_PRICE_PDF_PLN, BOOK_PRICE_PRINT_PLN, formatPricePLN } from '@lib/pricing';
 import { ClientOnly } from '../ClientOnly';
 import { genitiveOrSelf } from '@lib/childNameInflect';
@@ -96,6 +98,7 @@ export function BookResult() {
       flow="auth"
       bookOrderId={orderId}
       format={data?.format ?? 'pdf'}
+      problemId={data?.problemId ?? null}
       shippingAddress={data?.shippingAddress ?? null}
     />
   );
@@ -117,6 +120,8 @@ interface BookSuccessScreenProps {
   bookOrderId?: string;
   /** Order format — drives whether we show the print-upsell or print-shipping copy. */
   format?: 'pdf' | 'pdf_print';
+  /** Topic the order targets — stamped onto the purchase conversion for category analytics. */
+  problemId?: string | null;
   /** Shipping address for pdf_print orders — rendered into the delivery tile. */
   shippingAddress?: {
     fullName: string;
@@ -140,6 +145,7 @@ export function BookSuccessScreen({
   flow,
   bookOrderId,
   format = 'pdf',
+  problemId = null,
   shippingAddress = null,
 }: BookSuccessScreenProps) {
   const { t } = useTranslation('book');
@@ -155,6 +161,25 @@ export function BookSuccessScreen({
     trackEvent('result_viewed', { flow, bookOrderId });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Purchase conversion fires HERE, not on the progress page: Stripe's
+  // success redirect lands on the result page (`?checkout=success`). We wait
+  // for `problemId` (order data loaded) so the conversion carries category +
+  // format, then guard with `markPurchaseTrackedOnce` so a refresh/remount
+  // can't double-count. `payment_success` (PostHog) ships in the same gate.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !bookOrderId || !problemId) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('checkout') !== 'success') return;
+    if (!markPurchaseTrackedOnce(bookOrderId)) return;
+    trackEvent('payment_success', {
+      flow,
+      bookOrderId,
+      sessionId: params.get('session_id'),
+      ...getAttributionProps(),
+    });
+    trackPurchase({ transactionId: bookOrderId, format, problemId });
+  }, [bookOrderId, problemId, format, flow]);
 
   const handleDownloadClick = () => {
     trackEvent('pdf_downloaded', { flow, bookOrderId });
@@ -286,6 +311,7 @@ interface BookPreviewScreenProps {
         bookTitle: string | null;
         excerptPl: string | null;
         format: 'pdf' | 'pdf_print';
+        problemId: string;
         illustrations: Array<{ illustrationId: string; url: string | null }>;
         previewPdfUrl: string | null;
         r2PreviewKey: string | null;
@@ -325,8 +351,28 @@ export function BookPreviewScreen({
 
   useEffect(() => {
     trackEvent('preview_paywall_viewed', { flow, bookOrderId });
+    // Stripe cancel returns to the (still-unpaid) result page → this preview.
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('checkout') === 'cancelled') {
+        trackEvent('payment_cancelled', { flow, bookOrderId });
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // "Wygenerował, nie zapłacił" → GA4 funnel signal, fired once preview data
+  // (hence problemId/format) is available. PostHog already has the paywall view.
+  const generatedFiredRef = useRef(false);
+  useEffect(() => {
+    if (generatedFiredRef.current || !preview) return;
+    generatedFiredRef.current = true;
+    trackBookGenerated({
+      transactionId: bookOrderId,
+      format: preview.format,
+      problemId: preview.problemId,
+    });
+  }, [preview, bookOrderId]);
 
   const handleUnlock = async () => {
     setRedirecting(true);

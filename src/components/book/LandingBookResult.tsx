@@ -69,6 +69,7 @@ export function LandingBookResult() {
       flow="landing"
       bookOrderId={orderId}
       format={data?.format ?? 'pdf'}
+      problemId={data?.problemId ?? null}
       shippingAddress={data?.shippingAddress ?? null}
     />
   );
