@@ -11,6 +11,7 @@
 import type * as admin_bookBatch from '../admin/bookBatch.js';
 import type * as admin_bookPrompts from '../admin/bookPrompts.js';
 import type * as admin_config from '../admin/config.js';
+import type * as admin_printPdf from '../admin/printPdf.js';
 import type * as admin_stripe from '../admin/stripe.js';
 import type * as analytics from '../analytics.js';
 import type * as analyticsHttp from '../analyticsHttp.js';
@@ -69,6 +70,7 @@ import type * as lib_security from '../lib/security.js';
 import type * as lib_utils from '../lib/utils.js';
 import type * as llmLogs from '../llmLogs.js';
 import type * as pipelineConfig from '../pipelineConfig.js';
+import type * as printPdfHttp from '../printPdfHttp.js';
 import type * as prompts from '../prompts.js';
 import type * as rateLimitMutation from '../rateLimitMutation.js';
 import type * as stripe from '../stripe.js';
@@ -80,6 +82,7 @@ declare const fullApi: ApiFromModules<{
   'admin/bookBatch': typeof admin_bookBatch;
   'admin/bookPrompts': typeof admin_bookPrompts;
   'admin/config': typeof admin_config;
+  'admin/printPdf': typeof admin_printPdf;
   'admin/stripe': typeof admin_stripe;
   analytics: typeof analytics;
   analyticsHttp: typeof analyticsHttp;
@@ -138,6 +141,7 @@ declare const fullApi: ApiFromModules<{
   'lib/utils': typeof lib_utils;
   llmLogs: typeof llmLogs;
   pipelineConfig: typeof pipelineConfig;
+  printPdfHttp: typeof printPdfHttp;
   prompts: typeof prompts;
   rateLimitMutation: typeof rateLimitMutation;
   stripe: typeof stripe;

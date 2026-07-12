@@ -669,6 +669,9 @@ function OrderDetailPanel({ orderId }: { orderId: Id<'bookOrders'> }) {
         </div>
       </div>
 
+      {/* Print-ready (plik drukarski) */}
+      <PrintReadySection orderId={orderId} detail={detail} />
+
       {/* Artifacts */}
       <div className="space-y-1">
         <h3 className="text-xs font-bold uppercase tracking-wide text-neutral-400">Artifacts</h3>
@@ -798,6 +801,190 @@ function OrderDetailPanel({ orderId }: { orderId: Id<'bookOrders'> }) {
           </button>
         )}
       </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════
+// Print-ready — plik drukarski (CMYK 350dpi, spad, folio)
+// ════════════════════════════════════════════════════════════
+// Generacja WYŁĄCZNIE na klik (convex/admin/printPdf.ts → typst-render
+// /print-ready). Klient nigdy nie widzi tego pliku — presign tylko przez
+// admin action. R2 trzyma wynik 30 dni (lifecycle), potem regeneracja.
+
+const PRINT_STALE_MS = 4 * 60 * 60 * 1000; // job bez callbacku > 4h = pewnie padł
+
+interface PrintDetail {
+  r2FullKey: string | null;
+  printPdfStatus: 'queued' | 'rendering' | 'ready' | 'failed' | null;
+  printPdfFormat: 'a5' | 'a4' | null;
+  printPdfError: string | null;
+  printPdfRequestedAt: number | null;
+  printPdfMeta: {
+    sizeBytes: number;
+    pages?: number;
+    pipelineVersion?: string;
+    durationMs?: number;
+    generatedAt: number;
+    cached?: boolean;
+  } | null;
+  hasPrintPdf: boolean;
+  hasPrintLog: boolean;
+}
+
+function PrintReadySection({
+  orderId,
+  detail,
+}: {
+  orderId: Id<'bookOrders'>;
+  detail: PrintDetail;
+}) {
+  const generateAction = useAction(api.admin.printPdf.generatePrintPdf);
+  const resolveUrlAction = useAction(api.admin.printPdf.resolvePrintDownloadUrl);
+  const [format, setFormat] = useState<'a5' | 'a4'>('a5');
+  const [generating, setGenerating] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+
+  if (!detail.r2FullKey) {
+    return (
+      <div className="border border-neutral-200 rounded-lg bg-white p-3">
+        <h3 className="text-xs font-bold uppercase tracking-wide text-neutral-400 mb-1">
+          Druk (print-ready)
+        </h3>
+        <p className="text-xs text-neutral-400">
+          Tylko dla zamówień ze ścieżki typst-render (brak r2FullKey) — ordery legacy pdfkit mają
+          inną geometrię strony.
+        </p>
+      </div>
+    );
+  }
+
+  const status = detail.printPdfStatus;
+  const inFlight = status === 'queued' || status === 'rendering';
+  const stale =
+    inFlight &&
+    detail.printPdfRequestedAt != null &&
+    Date.now() - detail.printPdfRequestedAt > PRINT_STALE_MS;
+
+  const handleGenerate = async (force: boolean) => {
+    setGenerating(true);
+    try {
+      await generateAction({ orderId, format, force: force || undefined });
+      toast.success(`Print job ${format.toUpperCase()} zlecony — status odświeży się sam`);
+    } catch (err) {
+      toast.error(`Nie udało się zlecić: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleDownload = async (kind: 'pdf' | 'log') => {
+    setDownloading(true);
+    try {
+      const url = await resolveUrlAction({ orderId, kind });
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      toast.error(
+        `Pobieranie nie udało się: ${err instanceof Error ? err.message : String(err)}. ` +
+          'Plik mógł wygasnąć (lifecycle 30 dni) — wygeneruj ponownie.',
+      );
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const statusBadge: Record<string, string> = {
+    queued: 'bg-neutral-100 text-neutral-600',
+    rendering: 'bg-blue-100 text-blue-700',
+    ready: 'bg-green-100 text-green-700',
+    failed: 'bg-red-100 text-red-700',
+  };
+
+  return (
+    <div className="border border-neutral-200 rounded-lg bg-white p-3 space-y-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <h3 className="text-xs font-bold uppercase tracking-wide text-neutral-400">
+          Druk (print-ready)
+        </h3>
+        {status && (
+          <span
+            className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${statusBadge[status] ?? 'bg-neutral-100'}`}
+          >
+            {status}
+            {detail.printPdfFormat ? ` · ${detail.printPdfFormat.toUpperCase()}` : ''}
+          </span>
+        )}
+        {inFlight && !stale && (
+          <span className="text-xs text-neutral-400">
+            ESRGAN na CPU liczy się długo (nawet godziny) — status odświeży się sam
+          </span>
+        )}
+        {stale && (
+          <span className="text-xs text-amber-600">
+            Job wisi &gt;4h bez odpowiedzi — prawdopodobnie padł. Zleć ponownie (force).
+          </span>
+        )}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          value={format}
+          onChange={(e) => setFormat(e.target.value as 'a5' | 'a4')}
+          className="rounded-md border border-neutral-300 px-2 py-1 text-xs"
+          disabled={generating || (inFlight && !stale)}
+        >
+          <option value="a5">A5 + 2mm spad (arkusz A4)</option>
+          <option value="a4">A4 + 2mm spad (arkusz A3)</option>
+        </select>
+        <button
+          onClick={() => void handleGenerate(stale || status === 'ready' || status === 'failed')}
+          disabled={generating || (inFlight && !stale)}
+          className="rounded-md bg-purple-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-purple-600 disabled:opacity-40"
+        >
+          {generating
+            ? 'Zlecam...'
+            : inFlight && !stale
+              ? 'W trakcie...'
+              : 'Generuj plik drukarski'}
+        </button>
+        {status === 'ready' && detail.hasPrintPdf && (
+          <button
+            onClick={() => void handleDownload('pdf')}
+            disabled={downloading}
+            className="rounded-md bg-green-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-600 disabled:opacity-40"
+          >
+            {downloading ? 'Pobieram...' : 'Pobierz PDF do drukarni'}
+          </button>
+        )}
+        {detail.hasPrintLog && (status === 'failed' || status === 'ready') && (
+          <button
+            onClick={() => void handleDownload('log')}
+            disabled={downloading}
+            className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-50 disabled:opacity-40"
+          >
+            Log joba
+          </button>
+        )}
+      </div>
+
+      {status === 'ready' && detail.printPdfMeta && (
+        <p className="text-xs text-neutral-500">
+          {(detail.printPdfMeta.sizeBytes / 1024 / 1024).toFixed(0)} MB
+          {detail.printPdfMeta.pages ? ` · ${detail.printPdfMeta.pages} stron` : ''}
+          {detail.printPdfMeta.pipelineVersion
+            ? ` · pipeline v${detail.printPdfMeta.pipelineVersion}`
+            : ''}
+          {detail.printPdfMeta.durationMs
+            ? ` · ${Math.round(detail.printPdfMeta.durationMs / 60000)} min`
+            : ''}
+          {detail.printPdfMeta.cached ? ' · z cache R2' : ''}
+          {` · ${new Date(detail.printPdfMeta.generatedAt).toLocaleString('pl-PL')}`}
+          {' · plik znika z R2 po 30 dniach (regeneracja przyciskiem)'}
+        </p>
+      )}
+      {status === 'failed' && detail.printPdfError && (
+        <p className="text-xs text-red-600 whitespace-pre-wrap">{detail.printPdfError}</p>
+      )}
     </div>
   );
 }

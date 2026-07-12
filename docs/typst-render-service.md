@@ -39,6 +39,12 @@ npx convex env set R2_ENDPOINT https://<account>.r2.cloudflarestorage.com
 # prod (ten sam set, deployment 'wonderful-egret-522')
 npx convex env set --deployment-name wonderful-egret-522 RENDER_SERVICE_URL https://typst-render.example.com
 # … etc
+
+# print-ready (admin, convex/admin/printPdf.ts): sekret callbacku typst-render
+# -> Convex HTTP action /print-ready/callback. TA SAMA wartość w .env serwisu
+# na VPS (PRINT_CALLBACK_SECRET) i w Convex env. Osobny sekret, nie
+# RENDER_SHARED_SECRET.
+npx convex env set PRINT_CALLBACK_SECRET <32-byte-random-hex>
 ```
 
 VPS-side env idzie do `~/P/typst-render/.env` na Droplecie (zob. `~/P/typst-render/README.md` dla DO setup).

@@ -1,9 +1,15 @@
 # Spec: print-ready pipeline (oddanie bajki do drukarni)
 
-> Status: draft do automatyzacji. Powstał po ręcznym przygotowaniu pierwszego
-> płatnego zamówienia do druku (`jn7c2wzaftzwyky8gjt8kbbpen88rpd4`,
-> 2026-06-17). Opisuje DWA sprawdzone podejścia + docelowy fix u źródła,
-> żeby dało się wybrać i zaimplementować lepsze.
+> Status: **ZAUTOMATYZOWANE (2026-07-12)** — pipeline v0.2 (§8) żyje jako
+> `POST /print-ready` w repo typst-render (`print/print_ready.py`), odpalany
+> przyciskiem z admina (zakładka Orders → sekcja "Druk"; backend
+> `convex/admin/printPdf.ts`). Kanon i troubleshooting: typst-render
+> `docs/print-ready-pipeline.md` + `docs/print-ready-service.md`. Ten dokument
+> zostaje jako zapis decyzji i podejść (A/B/hybryda).
+>
+> Historia: powstał po ręcznym przygotowaniu pierwszego płatnego zamówienia
+> do druku (`jn7c2wzaftzwyky8gjt8kbbpen88rpd4`, 2026-06-17). Opisuje DWA
+> sprawdzone podejścia + docelowy fix u źródła.
 
 ## 1. Problem
 
@@ -316,11 +322,115 @@ Uwaga na parzystość: wstawienie pustej karty **odwraca wszystkie rozkładówki
 — układaj tak, by ewentualna rozkładówka tekst|tekst wypadła na otwarciu, nie
 w środku. Szczegóły w sesji 2026-06-17.
 
-## 8. Otwarte pytania (do domknięcia przy implementacji)
+## 8. PIPELINE v0.2 — ZWALIDOWANY (Empire Starachowice, 2 zamówienia)
+
+> Zaakceptowany przez drukarnię (Michał Dańko, Empire): plik Natalii
+> `..._A5_CMYK_350dpi_spady2mm_..._28str_NUMERY+6mm.pdf` — „Jest dobrze".
+> Powtórzony 1:1 dla Olusia (2026-07-06) z lepszym upscalingiem.
+> **Implementacja referencyjna: `print-prep/make_print.py`** (jeden skrypt,
+> wszystkie kroki). To jest kanon pod automatyzację.
+
+### Wymogi drukarni Empire (z wątku mailowego Łukasza, 2026-06-17/18)
+
+1. **A5 + 2 mm spadu** (152×214 mm media, TrimBox 148×210), CMYK, 350 dpi.
+2. **Numeracja min. 6 mm od linii cięcia** — plik z folio 0,2 mm odrzucony
+   („numeracja stron jest w miejscach cięcia, powinny być przesunięte 6mm
+   do góry"). Zob. Pułapka #1.
+3. **Każdy format = osobny plik.** NIE skalować A5→A4 („spady się powiększają
+   dwukrotnie") — dla A4 złożyć osobno od źródła z 2 mm spadem.
+4. **Liczba stron podzielna przez 4** (druk składany/szyty na arkuszach:
+   A5 na arkuszu A4, A4 na A3; 4 strony książki / arkusz).
+5. **Creep/wypychanie** (feedback PO druku Natalii — zaimplementowane w v0.2):
+   w książce szytej zeszytowo arkusze wsuwają się w siebie; wewnętrzne wystają
+   na przedniej krawędzi i trym je równa → treść wewnętrznych stron ląduje
+   bliżej krawędzi zewnętrznej. Kompensacja (`add_creep` w make_print.py):
+   treść strony przesuwana **ku grzbietowi** o `(arkusz-1) × kaliper` papieru.
+   28 stron = 7 arkuszy; arkusz k trzyma strony `2k-1, 2k, 29-2k, 30-2k`;
+   recto (nieparzyste) w lewo, verso (parzyste) w prawo; odsłonięty pas przy
+   spadzie wypełniany replikacją krawędzi. Parametr `CALIPER_MM = 0.1`
+   (kreda ~115–130 g) → max 0,6 mm na środkowym arkuszu. **Kaliper potwierdzać
+   u drukarni per papier.**
+6. (Feedback po druku, otwarte) **„Składać do większego formatu (A4)"** —
+   sugestia, że A4 (na arkuszu A3) wychodzi lepiej niż A5. Generujemy oba
+   pliki osobno (wymóg #3). Decyzja formatu = biznesowa per zamówienie.
+7. **Strona „Dla Rodzica" — margines poziomy jak na stronach tekstowych**
+   (feedback drukarza przy Olusiu): layout Typst daje tej stronie szerszy
+   blok (zmierzone na A5: 6 mm od cięcia vs ~10 mm na stronach narracji).
+   Fix post-hoc w rastrze (`fix_parent_page`): jednorodne pomniejszenie całej
+   strony wokół środka do szerokości bloku referencyjnego (skala ~0,94),
+   marginesy mierzone automatycznie z bbox treści stron 5/13. Fix u źródła:
+   wyrównać margines `parent_card` w szablonie Typst do stron beatów.
+8. (Feedback po druku, fix u źródła) **„Margines większy"** — systemowe 32 pt
+   (~11 mm) na A4 po zeskalowaniu do A5 daje ~8 mm; norma książkowa to
+   12–20 mm. Typst ma gotową flagę `experimental.widerMargins` (60 pt ≈ 21 mm
+   na A4 → ~15 mm po skali do A5) — wymaga re-renderu briefem przez
+   typst-render (`admin/bookBatch.ts` umie recompose z flagami). W rastrze
+   post-hoc tego nie naprawiamy (skalowanie bloku tekstu = zmiana wyglądu).
+
+### Krok po kroku (v0.2 = „metoda Andrzeja" + ESRGAN zamiast interpolacji)
+
+```
+WEJŚCIE: systemowy PDF (Typst, 26 str A4, ilustracje 1024 px na stronach
+         1,4,7,9,12,14,16,18,20,22,24 — stały layout pipeline'u)
+
+1. EKSTRAKCJA    pdfimages -png full.pdf imgs/img          (11 obrazów)
+2. UPSCALE 4×    Real-ESRGAN x4plus 1024→4096 px           (upscale.py)
+                 ← to jest różnica vs v0.1 Andrzeja: bez blura interpolacji
+3. RE-EMBED      podmiana XObject w PDF, layout Typst 1:1  (reembed)
+4. REORDER       26 → 28 stron (recepta Łukasza, patrz niżej)
+5. RASTERYZACJA  pdftoppm -scale-to-x 2095 → crop centr. do 2095×2949
+                 = A5+2mm spadu @ 350 dpi, cover bez dystorsji, partiami po 4
+                 + integrity-check każdego PNG (Image.load())
+6. CMYK          sRGB → FOGRA39L Coated (ICC wyciągnięty z zaakceptowanego
+                 pliku: print-prep/fogra39_from_natalia.icc), relative
+                 colorimetric + black point compensation, profil osadzony
+7. ZŁOŻENIE      pikepdf, FlateDecode (bezstratnie), MediaBox 152×214 mm,
+                 TrimBox 148×210 mm, BleedBox = MediaBox
+8. FOLIO +6mm    chirurgia na rastrze CMYK (okno y 2872-2932, środek ±115 px,
+                 detekcja vs median-bg, przesunięcie +83 px) — strony 4-23
+8b. CREEP        add_creep: shift ku grzbietowi (arkusz-1)×CALIPER_MM,
+                 recto↔verso przeciwne kierunki (wymóg #5)
+9. WERYFIKACJA   28 str · 152×214 · TrimBox · 4 kanały · 350 dpi ·
+                 folio ≥6 mm od trim · spady pełne (render + ramka)
+
+Wariant A4 (osobny plik, wymóg #3): te same kroki od rasteryzacji, parametry
+OUT 2949×4148 px (214×301 mm), PAGE 214×301 mm pt, okno folio przeskalowane
+liniowo ×(2949/2095); FOLIO_SHIFT i creep bez zmian (mm są fizyczne).
+```
+
+### Recepta „Łukasza" na 28 stron (reverse-engineered z FINAL_28str)
+
+Fingerprint-match stron 28str↔26str dał jednoznaczną mapę:
+
+```
+qpdf src.pdf --pages src.pdf 1-23  src.pdf 2  src.pdf 25 \
+             src.pdf 2  src.pdf 26  src.pdf 24  -- out28.pdf
+```
+
+| Strony (nowe) | Źródło    | Po co                                         |
+| ------------- | --------- | --------------------------------------------- |
+| 1–23          | 1–23      | bez zmian (okładka + blok bajki, numery 4-23) |
+| 24            | 2 (pusta) | pusta lewa przed „Dla Rodzica"                |
+| 25            | 25        | Dla Rodzica — na prawej stronie               |
+| 26            | 2 (pusta) | pusta lewa przed „Koniec"                     |
+| 27            | 26        | Koniec/colophon — na prawej stronie           |
+| 28            | 24        | **pejzaż mood_closing → tylna okładka**       |
+
+Efekt: 28 = 7×4 (szycie ✓), pejzaż zamyka książkę, sekcje końcowe na
+prawych stronach. UWAGA: kolejność ma znaczenie — reorder PRZED rasteryzacją
+(wtedy folio 4-23 zostaje spójne, przenoszone strony nie mają numerów).
+
+### Wyjście
+
+`<Imie>_i_..._DRUK_A5_CMYK_350dpi_spady2mm_28str_NUMERY+6mm.pdf` — jeden
+plik, gotowy do wysyłki do Empire (A5 drukowany na arkuszu A4). Dla kopii A4:
+osobny run z geometrią A4+2mm (parametry OUT_W/H, PAGE_W/H_PT w make_print.py).
+
+## 9. Otwarte pytania (do domknięcia przy implementacji)
 
 - Gdzie żyje worker: endpoint `/print-prep` na VPS typst-render czy osobny job?
 - Czy robimy fix u źródła (§2) i wtedy A/B tylko do retrofitu starych orderów?
-- Profil CMYK: który dokładnie (powlekany/niepowlekany) — per drukarnia w configu?
-- Format: A4 vs A5 (A5 ukrywa niską rozdzielczość, mniejszy koszt druku)?
-- Spad: 2 czy 3 mm + czy crop marks/pasery w pliku, czy sam spad + TrimBox?
-- Okładka: inline czy separate — zależne od oprawy (miękka/twarda).
+- Kaliper papieru do creepu: przyjęte 0,1 mm — potwierdzić u Empire per papier.
+- Marginesy: włączyć `widerMargins` w briefie print-profile (wymóg #8)?
+- Format docelowy zamówień: A5, A4 czy oba (feedback #6 „lepiej A4")?
+- Spad: Empire przyjęło 2 mm bez paserów; inni drukarze mogą chcieć 3 mm + marki.

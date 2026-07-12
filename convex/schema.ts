@@ -289,6 +289,30 @@ const applicationTables = {
     // without redeploying.
     useRenderService: v.optional(v.boolean()),
 
+    // Print-ready PDF (CMYK 350dpi, spad, folio) — generowany WYŁĄCZNIE
+    // z admina (convex/admin/printPdf.ts), przez /print-ready na typst-render.
+    // Osobny stan poza maszyną statusów pipeline'u; klucz print/<orderId>/
+    // <format>.pdf żyje pod lifecycle 30 dni i NIGDY nie wychodzi przez
+    // publiczne query — klient nie ma jak go dostać.
+    printPdfStatus: v.optional(
+      v.union(v.literal('queued'), v.literal('rendering'), v.literal('ready'), v.literal('failed')),
+    ),
+    printPdfFormat: v.optional(v.union(v.literal('a5'), v.literal('a4'))),
+    printR2Key: v.optional(v.string()),
+    printLogR2Key: v.optional(v.string()),
+    printPdfError: v.optional(v.string()),
+    printPdfRequestedAt: v.optional(v.number()),
+    printPdfMeta: v.optional(
+      v.object({
+        sizeBytes: v.number(),
+        pages: v.optional(v.number()),
+        pipelineVersion: v.optional(v.string()),
+        durationMs: v.optional(v.number()),
+        generatedAt: v.number(),
+        cached: v.optional(v.boolean()),
+      }),
+    ),
+
     // Payment
     paymentStatus: v.optional(
       v.union(v.literal('pending'), v.literal('completed'), v.literal('failed')),

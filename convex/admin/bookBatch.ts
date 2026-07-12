@@ -315,6 +315,15 @@ export const getOrderDetail = query({
       pdfUrl,
       r2FullKey: order.r2FullKey ?? null,
       r2PreviewKey: order.r2PreviewKey ?? null,
+      // Print-ready (admin/printPdf.ts) — surowe klucze R2 zostają po
+      // stronie serwera, UI dostaje status + metadane + flagi istnienia.
+      printPdfStatus: order.printPdfStatus ?? null,
+      printPdfFormat: order.printPdfFormat ?? null,
+      printPdfError: order.printPdfError ?? null,
+      printPdfRequestedAt: order.printPdfRequestedAt ?? null,
+      printPdfMeta: order.printPdfMeta ?? null,
+      hasPrintPdf: Boolean(order.printR2Key),
+      hasPrintLog: Boolean(order.printLogR2Key),
     };
   },
 });
