@@ -319,6 +319,7 @@ export const getOrderDetail = query({
       // stronie serwera, UI dostaje status + metadane + flagi istnienia.
       printPdfStatus: order.printPdfStatus ?? null,
       printPdfFormat: order.printPdfFormat ?? null,
+      printPdfUpscale: order.printPdfUpscale ?? null,
       printPdfError: order.printPdfError ?? null,
       printPdfRequestedAt: order.printPdfRequestedAt ?? null,
       printPdfMeta: order.printPdfMeta ?? null,

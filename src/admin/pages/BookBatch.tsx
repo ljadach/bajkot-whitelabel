@@ -818,6 +818,7 @@ interface PrintDetail {
   r2FullKey: string | null;
   printPdfStatus: 'queued' | 'rendering' | 'ready' | 'failed' | null;
   printPdfFormat: 'a5' | 'a4' | 'kdp' | null;
+  printPdfUpscale: 'esrgan' | 'none' | null;
   printPdfError: string | null;
   printPdfRequestedAt: number | null;
   printPdfMeta: {
@@ -844,6 +845,7 @@ function PrintReadySection({
   const generateAction = useAction(api.admin.printPdf.generatePrintPdf);
   const resolveUrlAction = useAction(api.admin.printPdf.resolvePrintDownloadUrl);
   const [format, setFormat] = useState<'a5' | 'a4' | 'kdp'>(detail.printPdfFormat ?? 'a5');
+  const [fastProof, setFastProof] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
@@ -871,8 +873,15 @@ function PrintReadySection({
   const handleGenerate = async (force: boolean) => {
     setGenerating(true);
     try {
-      await generateAction({ orderId, format, force: force || undefined });
-      toast.success(`Print job ${format.toUpperCase()} zlecony — status odświeży się sam`);
+      await generateAction({
+        orderId,
+        format,
+        upscale: fastProof ? 'none' : undefined,
+        force: force || undefined,
+      });
+      toast.success(
+        `Print job ${format.toUpperCase()}${fastProof ? ' (fast proof)' : ''} zlecony — status odświeży się sam`,
+      );
     } catch (err) {
       toast.error(`Nie udało się zlecić: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
@@ -914,11 +923,14 @@ function PrintReadySection({
           >
             {status}
             {detail.printPdfFormat ? ` · ${detail.printPdfFormat.toUpperCase()}` : ''}
+            {detail.printPdfUpscale === 'none' ? ' · FAST PROOF' : ''}
           </span>
         )}
         {inFlight && !stale && (
           <span className="text-xs text-neutral-400">
-            ESRGAN na CPU liczy się długo (nawet godziny) — status odświeży się sam
+            {detail.printPdfUpscale === 'none'
+              ? 'Bez ESRGAN — kilkanaście minut, status odświeży się sam'
+              : 'ESRGAN na CPU liczy się długo (nawet godziny) — status odświeży się sam'}
           </span>
         )}
         {stale && (
@@ -939,6 +951,15 @@ function PrintReadySection({
           <option value="a4">A4 + 2mm spad (arkusz A3)</option>
           <option value="kdp">Amazon KDP 6×9″ Premium Color</option>
         </select>
+        <label className="flex items-center gap-1.5 text-xs text-neutral-600">
+          <input
+            type="checkbox"
+            checked={fastProof}
+            onChange={(e) => setFastProof(e.target.checked)}
+            disabled={generating || (inFlight && !stale)}
+          />
+          Fast proof (bez AI upscale — minuty zamiast godzin, miękkie ilustracje)
+        </label>
         <button
           onClick={() => void handleGenerate(stale || status === 'ready' || status === 'failed')}
           disabled={generating || (inFlight && !stale)}
@@ -958,9 +979,11 @@ function PrintReadySection({
           >
             {downloading
               ? 'Pobieram...'
-              : detail.printPdfFormat === 'kdp'
-                ? 'Pobierz KDP manuscript'
-                : 'Pobierz PDF do drukarni'}
+              : detail.printPdfUpscale === 'none'
+                ? 'Pobierz FAST PROOF (nie do druku!)'
+                : detail.printPdfFormat === 'kdp'
+                  ? 'Pobierz KDP manuscript'
+                  : 'Pobierz PDF do drukarni'}
           </button>
         )}
         {status === 'ready' && detail.printPdfFormat === 'kdp' && detail.hasPrintCover && (

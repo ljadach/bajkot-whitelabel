@@ -23,26 +23,33 @@ type BookIllustration = { illustrationId: string; storageId: Id<'_storage'> };
 const printFormat = v.union(v.literal('a5'), v.literal('a4'), v.literal('kdp'));
 type PrintFormat = 'a5' | 'a4' | 'kdp';
 
+const printUpscale = v.union(v.literal('esrgan'), v.literal('none'));
+type PrintUpscale = 'esrgan' | 'none';
+
 const SOURCE_URL_TTL_SECONDS = 3600; // serwis pobiera od razu, 1h = zapas na retry
 
-export function printR2KeyFor(orderId: string, format: PrintFormat): string {
+// Proof (upscale='none') dostaje osobne klucze R2 — idempotencja serwisu
+// (head na outputKey) nie może zwrócić proofa, gdy admin zleca finalny plik.
+export function printR2KeyFor(orderId: string, format: PrintFormat, upscale: PrintUpscale): string {
+  const suffix = upscale === 'none' ? '-fast' : '';
   return format === 'kdp'
-    ? `print/${orderId}/kdp-manuscript.pdf`
-    : `print/${orderId}/${format}.pdf`;
+    ? `print/${orderId}/kdp-manuscript${suffix}.pdf`
+    : `print/${orderId}/${format}${suffix}.pdf`;
 }
 
-export function printCoverR2KeyFor(orderId: string): string {
-  return `print/${orderId}/kdp-cover.pdf`;
+export function printCoverR2KeyFor(orderId: string, upscale: PrintUpscale): string {
+  return `print/${orderId}/kdp-cover${upscale === 'none' ? '-fast' : ''}.pdf`;
 }
 
 export const generatePrintPdf = action({
   args: {
     orderId: v.id('bookOrders'),
     format: printFormat,
+    upscale: v.optional(printUpscale),
     force: v.optional(v.boolean()),
   },
   returns: v.object({ jobId: v.string() }),
-  handler: async (ctx, { orderId, format, force }): Promise<{ jobId: string }> => {
+  handler: async (ctx, { orderId, format, upscale, force }): Promise<{ jobId: string }> => {
     await assertAdmin(ctx);
 
     const renderUrl = process.env.RENDER_SERVICE_URL;
@@ -127,10 +134,12 @@ export const generatePrintPdf = action({
       .map((p) => p.pageNumber);
     const referenceTextPages = pagesOf('text').slice(0, 2);
 
-    const jobId = `${orderId}-${format}`;
-    const outputKey = printR2KeyFor(orderId, format);
-    const coverOutputKey = format === 'kdp' ? printCoverR2KeyFor(orderId) : undefined;
-    const logKey = `print/${orderId}/${format}.log.txt`;
+    const upscaleMode: PrintUpscale = upscale ?? 'esrgan';
+    const fastSuffix = upscaleMode === 'none' ? '-fast' : '';
+    const jobId = `${orderId}-${format}${fastSuffix}`;
+    const outputKey = printR2KeyFor(orderId, format, upscaleMode);
+    const coverOutputKey = format === 'kdp' ? printCoverR2KeyFor(orderId, upscaleMode) : undefined;
+    const logKey = `print/${orderId}/${format}${fastSuffix}.log.txt`;
 
     const printBrief = {
       jobId,
@@ -149,12 +158,14 @@ export const generatePrintPdf = action({
       coverOutputKey,
       logKey,
       callbackUrl: `${siteUrl}/print-ready/callback`,
+      upscale: upscaleMode,
       force: force ?? false,
     };
 
     await ctx.runMutation(internal.admin.printPdf.setPrintPdfRequested, {
       orderId,
       format,
+      upscale: upscaleMode,
       outputKey,
       logKey,
     });
@@ -220,14 +231,17 @@ export const resolvePrintDownloadUrl = action({
       throw new Error(`Brak ${label} dla ordera`);
     }
     const format = (order.printPdfFormat ?? 'a5').toUpperCase();
+    // Proof bez ESRGAN dostaje jawny suffix — plik _FAST_PROOF nie może
+    // przypadkiem pojechać do drukarni jako finalny.
+    const proof = order.printPdfUpscale === 'none' ? '_FAST_PROOF' : '';
     const filename = (() => {
-      if (kind === 'log') return `print_${format}_log.txt`;
+      if (kind === 'log') return `print_${format}${proof}_log.txt`;
       if (kind === 'cover') {
-        return bookPdfFilename(order).replace(/\.pdf$/, '_KDP_COVER_6x9.pdf');
+        return bookPdfFilename(order).replace(/\.pdf$/, `_KDP_COVER_6x9${proof}.pdf`);
       }
       return bookPdfFilename(order).replace(
         /\.pdf$/,
-        format === 'KDP' ? '_KDP_MANUSCRIPT_6x9.pdf' : `_DRUK_${format}.pdf`,
+        format === 'KDP' ? `_KDP_MANUSCRIPT_6x9${proof}.pdf` : `_DRUK_${format}${proof}.pdf`,
       );
     })();
     return await presignR2GetUrl(key, 900, filename);
@@ -238,14 +252,16 @@ export const setPrintPdfRequested = internalMutation({
   args: {
     orderId: v.id('bookOrders'),
     format: printFormat,
+    upscale: printUpscale,
     outputKey: v.string(),
     logKey: v.string(),
   },
   returns: v.null(),
-  handler: async (ctx, { orderId, format, outputKey, logKey }) => {
+  handler: async (ctx, { orderId, format, upscale, outputKey, logKey }) => {
     await ctx.db.patch(orderId, {
       printPdfStatus: 'queued',
       printPdfFormat: format,
+      printPdfUpscale: upscale,
       // Klucze zapisujemy od razu — log w R2 ląduje także przy błędzie,
       // a callback może nie dojść.
       printR2Key: undefined,
@@ -293,9 +309,12 @@ export const applyPrintCallback = internalMutation({
   handler: async (ctx, args) => {
     const order = await ctx.db.get(args.orderId);
     if (!order) return null;
-    // Spóźniony callback po zleceniu innego formatu — ignoruj; stan śledzi
-    // ostatnio żądany format, plik i tak leży w R2 pod swoim kluczem.
+    // Spóźniony callback po zleceniu innego formatu LUB innego wariantu
+    // upscale (fast vs final mają ten sam format, inne klucze) — ignoruj;
+    // stan śledzi ostatnio żądany job, plik i tak leży w R2 pod swoim kluczem.
     if (order.printPdfFormat !== args.format) return null;
+    const expectedKey = printR2KeyFor(args.orderId, args.format, order.printPdfUpscale ?? 'esrgan');
+    if (args.outputKey !== expectedKey) return null;
 
     if (args.status === 'ready') {
       await ctx.db.patch(args.orderId, {

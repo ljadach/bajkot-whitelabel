@@ -298,6 +298,10 @@ const applicationTables = {
       v.union(v.literal('queued'), v.literal('rendering'), v.literal('ready'), v.literal('failed')),
     ),
     printPdfFormat: v.optional(v.union(v.literal('a5'), v.literal('a4'), v.literal('kdp'))),
+    // Tryb upscalingu ostatniego joba: 'esrgan' = pełna jakość (godziny),
+    // 'none' = szybki proof bez AI (minuty, miękkie ilustracje). Proof ląduje
+    // pod osobnym kluczem R2 (-fast) i z suffiksem _FAST_PROOF w nazwie.
+    printPdfUpscale: v.optional(v.union(v.literal('esrgan'), v.literal('none'))),
     printR2Key: v.optional(v.string()),
     printCoverR2Key: v.optional(v.string()),
     printLogR2Key: v.optional(v.string()),

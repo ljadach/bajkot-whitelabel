@@ -6,7 +6,9 @@
 > Status: **ZAUTOMATYZOWANE (2026-07-12)** — pipeline v0.2 (§8) żyje jako
 > `POST /print-ready` w repo typst-render (`print/print_ready.py`), odpalany
 > przyciskiem z admina (zakładka Orders → sekcja "Druk"; backend
-> `convex/admin/printPdf.ts`). Kanon i troubleshooting: typst-render
+> `convex/admin/printPdf.ts`). Od 2026-07-16 checkbox „Fast proof" =
+> `upscale: 'none'` (v0.1 bez ESRGAN: minuty zamiast godzin, miękkie
+> ilustracje; osobne klucze R2 `-fast`, plik nazwany `_FAST_PROOF`). Kanon i troubleshooting: typst-render
 > `docs/print-ready-pipeline.md` + `docs/print-ready-service.md`. Ten dokument
 > zostaje jako zapis decyzji i podejść (A/B/hybryda).
 >
