@@ -48,19 +48,33 @@ async function sleep(ms: number) {
  * doesn't recognize the field it's silently ignored, so no stage-specific
  * gating is needed.
  *
+ * `reasoning === false` does NOT mean "send nothing". Gemini 2.5 Pro can't
+ * disable thinking at all (min budget ~128, and OpenRouter's default is
+ * *dynamic*). Sending no directive lets that dynamic budget run wild — on
+ * unlucky inputs the model loops on repeated thought summaries for minutes
+ * until OpenRouter's upstream idle timeout kills the request, producing zero
+ * prose (prod order jn70nt66rb3z…, A3 Story Writer, 2026-07-15). So `false`
+ * pins the reasoning budget to the floor (128 tokens) — the lowest Gemini
+ * accepts — which stops the runaway loop while still respecting the intent
+ * (A3 is pure prose; thinking should be minimal, not unbounded).
+ *
  * Per-model safety settings (formerly Google `BLOCK_ONLY_HIGH`) are dropped:
  * OpenAI-compat doesn't expose a uniform interface, and the original reason
  * for tweaking them — false positives on therapeutic content — is exactly
  * what motivated the OpenRouter switch (we're moving A5 to Claude precisely
  * because Gemini's hard `PROHIBITED_CONTENT` filter is unconfigurable).
  */
+const MIN_REASONING_TOKENS = 128;
+
 function buildProviderOptions(reasoning: boolean | undefined) {
-  if (reasoning === false) return undefined;
+  // The AI SDK forwards unknown keys as part of the request body, which
+  // is what OpenRouter expects for non-standard params. OpenRouter maps
+  // `reasoning.max_tokens` to the model's thinking budget (Anthropic + Gemini).
+  const reasoningBody =
+    reasoning === false ? { max_tokens: MIN_REASONING_TOKENS } : { enabled: true };
   return {
     openai: {
-      // The AI SDK forwards unknown keys as part of the request body, which
-      // is what OpenRouter expects for non-standard params.
-      extraBody: { reasoning: { enabled: true } },
+      extraBody: { reasoning: reasoningBody },
     },
   } as any;
 }
@@ -103,7 +117,9 @@ export async function chatJsonWithRetries<T = any>(
     images,
   } = params;
   const providerOptions = buildProviderOptions(reasoning);
-  const reasoningUsed = providerOptions !== undefined;
+  // `reasoning: false` still sends a floor thinking budget (see
+  // buildProviderOptions), so track full-reasoning intent off the flag itself.
+  const reasoningUsed = reasoning !== false;
 
   // Build user content — plain text or multimodal with images
   const userContent:

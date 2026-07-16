@@ -77,15 +77,14 @@ const DEFAULT_LLM_CONFIG: LlmConfig = {
     // A3 is pure prose generation — extended thinking just eats budget
     // without helping craft, and Pro's thinking is heavy.
     //
-    // NOTE: `reasoning: false` is a no-op for Gemini via OpenRouter
-    // (buildProviderOptions returns undefined → no thinking directive sent),
-    // and Gemini 2.5 Pro can't disable thinking anyway (min budget ~128,
-    // default dynamic). Thinking tokens count against maxOutputTokens, so on
-    // heavy inputs (large blueprints) thinking ate the whole 16384 cap and
-    // the actual JSON came back empty/truncated → "Unable to parse JSON"
-    // (order jn748narq8... on prod, 2026-06-18, 439s across 3 retries).
-    // Bumped to 32768 so thinking + ~12k-token prose both fit. Real root-cap
-    // fix (forcing reasoning.max_tokens low) tracked separately.
+    // `reasoning: false` pins Gemini's thinking budget to the floor (128 tok)
+    // via buildProviderOptions — Gemini 2.5 Pro can't disable thinking (min
+    // ~128, default *dynamic*). The dynamic default was the root cause of two
+    // prod failures: thinking ate the whole 16384 cap → empty/truncated JSON
+    // (jn748narq8…, 2026-06-18, 439s/3 retries), and on jn70nt66rb3z…
+    // (2026-07-15) it looped on repeated thought summaries until OpenRouter's
+    // upstream idle timeout killed the request with zero prose. Flooring the
+    // budget stops both. maxTokens stays at 32768 as headroom for the prose.
     reasoning: false,
     maxTokens: 32768,
   },
