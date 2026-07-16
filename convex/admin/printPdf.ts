@@ -20,13 +20,19 @@ import { buildRenderBrief } from '../lib/buildRenderBrief';
 
 type BookIllustration = { illustrationId: string; storageId: Id<'_storage'> };
 
-const printFormat = v.union(v.literal('a5'), v.literal('a4'));
-type PrintFormat = 'a5' | 'a4';
+const printFormat = v.union(v.literal('a5'), v.literal('a4'), v.literal('kdp'));
+type PrintFormat = 'a5' | 'a4' | 'kdp';
 
 const SOURCE_URL_TTL_SECONDS = 3600; // serwis pobiera od razu, 1h = zapas na retry
 
 export function printR2KeyFor(orderId: string, format: PrintFormat): string {
-  return `print/${orderId}/${format}.pdf`;
+  return format === 'kdp'
+    ? `print/${orderId}/kdp-manuscript.pdf`
+    : `print/${orderId}/${format}.pdf`;
+}
+
+export function printCoverR2KeyFor(orderId: string): string {
+  return `print/${orderId}/kdp-cover.pdf`;
 }
 
 export const generatePrintPdf = action({
@@ -123,6 +129,7 @@ export const generatePrintPdf = action({
 
     const jobId = `${orderId}-${format}`;
     const outputKey = printR2KeyFor(orderId, format);
+    const coverOutputKey = format === 'kdp' ? printCoverR2KeyFor(orderId) : undefined;
     const logKey = `print/${orderId}/${format}.log.txt`;
 
     const printBrief = {
@@ -139,6 +146,7 @@ export const generatePrintPdf = action({
       numberedPages,
       referenceTextPages,
       outputKey,
+      coverOutputKey,
       logKey,
       callbackUrl: `${siteUrl}/print-ready/callback`,
       force: force ?? false,
@@ -191,7 +199,7 @@ export const generatePrintPdf = action({
 export const resolvePrintDownloadUrl = action({
   args: {
     orderId: v.id('bookOrders'),
-    kind: v.union(v.literal('pdf'), v.literal('log')),
+    kind: v.union(v.literal('pdf'), v.literal('cover'), v.literal('log')),
   },
   returns: v.string(),
   handler: async (ctx, { orderId, kind }): Promise<string> => {
@@ -201,13 +209,27 @@ export const resolvePrintDownloadUrl = action({
       { orderId },
     );
     if (!order) throw new Error('Order not found');
-    const key: string | undefined = kind === 'pdf' ? order.printR2Key : order.printLogR2Key;
-    if (!key) throw new Error(`Brak ${kind === 'pdf' ? 'pliku drukarskiego' : 'logu'} dla ordera`);
-    const format = (order.printPdfFormat ?? 'a5').toUpperCase();
-    const filename =
+    const key: string | undefined =
       kind === 'pdf'
-        ? bookPdfFilename(order).replace(/\.pdf$/, `_DRUK_${format}.pdf`)
-        : `print_${format}_log.txt`;
+        ? order.printR2Key
+        : kind === 'cover'
+          ? order.printCoverR2Key
+          : order.printLogR2Key;
+    if (!key) {
+      const label = kind === 'pdf' ? 'pliku drukarskiego' : kind === 'cover' ? 'okładki' : 'logu';
+      throw new Error(`Brak ${label} dla ordera`);
+    }
+    const format = (order.printPdfFormat ?? 'a5').toUpperCase();
+    const filename = (() => {
+      if (kind === 'log') return `print_${format}_log.txt`;
+      if (kind === 'cover') {
+        return bookPdfFilename(order).replace(/\.pdf$/, '_KDP_COVER_6x9.pdf');
+      }
+      return bookPdfFilename(order).replace(
+        /\.pdf$/,
+        format === 'KDP' ? '_KDP_MANUSCRIPT_6x9.pdf' : `_DRUK_${format}.pdf`,
+      );
+    })();
     return await presignR2GetUrl(key, 900, filename);
   },
 });
@@ -227,6 +249,7 @@ export const setPrintPdfRequested = internalMutation({
       // Klucze zapisujemy od razu — log w R2 ląduje także przy błędzie,
       // a callback może nie dojść.
       printR2Key: undefined,
+      printCoverR2Key: undefined,
       printLogR2Key: logKey,
       printPdfError: undefined,
       printPdfMeta: undefined,
@@ -255,8 +278,10 @@ export const applyPrintCallback = internalMutation({
     format: printFormat,
     status: v.union(v.literal('ready'), v.literal('failed')),
     outputKey: v.string(),
+    coverOutputKey: v.optional(v.string()),
     logKey: v.string(),
     sizeBytes: v.optional(v.number()),
+    coverSizeBytes: v.optional(v.number()),
     pages: v.optional(v.number()),
     pipelineVersion: v.optional(v.string()),
     durationMs: v.optional(v.number()),
@@ -276,10 +301,12 @@ export const applyPrintCallback = internalMutation({
       await ctx.db.patch(args.orderId, {
         printPdfStatus: 'ready',
         printR2Key: args.outputKey,
+        printCoverR2Key: args.coverOutputKey,
         printLogR2Key: args.logKey,
         printPdfError: undefined,
         printPdfMeta: {
           sizeBytes: args.sizeBytes ?? 0,
+          coverSizeBytes: args.coverSizeBytes,
           pages: args.pages,
           pipelineVersion: args.pipelineVersion,
           durationMs: args.durationMs,

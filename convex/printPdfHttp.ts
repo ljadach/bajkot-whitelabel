@@ -29,9 +29,10 @@ export const receivePrintCallback = httpAction(async (ctx, req) => {
   if (
     typeof body.orderId !== 'string' ||
     (status !== 'ready' && status !== 'failed') ||
-    (format !== 'a5' && format !== 'a4') ||
+    (format !== 'a5' && format !== 'a4' && format !== 'kdp') ||
     typeof body.outputKey !== 'string' ||
-    typeof body.logKey !== 'string'
+    typeof body.logKey !== 'string' ||
+    (format === 'kdp' && status === 'ready' && typeof body.coverOutputKey !== 'string')
   ) {
     return new Response('bad payload', { status: 400 });
   }
@@ -42,8 +43,10 @@ export const receivePrintCallback = httpAction(async (ctx, req) => {
     format,
     status,
     outputKey: body.outputKey,
+    coverOutputKey: typeof body.coverOutputKey === 'string' ? body.coverOutputKey : undefined,
     logKey: body.logKey,
     sizeBytes: typeof body.sizeBytes === 'number' ? body.sizeBytes : undefined,
+    coverSizeBytes: typeof body.coverSizeBytes === 'number' ? body.coverSizeBytes : undefined,
     pages: typeof body.pages === 'number' ? body.pages : undefined,
     pipelineVersion: typeof body.pipelineVersion === 'string' ? body.pipelineVersion : undefined,
     durationMs: typeof body.durationMs === 'number' ? body.durationMs : undefined,

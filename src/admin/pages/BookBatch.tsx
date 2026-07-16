@@ -806,7 +806,7 @@ function OrderDetailPanel({ orderId }: { orderId: Id<'bookOrders'> }) {
 }
 
 // ════════════════════════════════════════════════════════════
-// Print-ready — plik drukarski (CMYK 350dpi, spad, folio)
+// Print-ready — Empire A4/A5 lub Amazon KDP manuscript + cover
 // ════════════════════════════════════════════════════════════
 // Generacja WYŁĄCZNIE na klik (convex/admin/printPdf.ts → typst-render
 // /print-ready). Klient nigdy nie widzi tego pliku — presign tylko przez
@@ -817,11 +817,12 @@ const PRINT_STALE_MS = 4 * 60 * 60 * 1000; // job bez callbacku > 4h = pewnie pa
 interface PrintDetail {
   r2FullKey: string | null;
   printPdfStatus: 'queued' | 'rendering' | 'ready' | 'failed' | null;
-  printPdfFormat: 'a5' | 'a4' | null;
+  printPdfFormat: 'a5' | 'a4' | 'kdp' | null;
   printPdfError: string | null;
   printPdfRequestedAt: number | null;
   printPdfMeta: {
     sizeBytes: number;
+    coverSizeBytes?: number;
     pages?: number;
     pipelineVersion?: string;
     durationMs?: number;
@@ -829,6 +830,7 @@ interface PrintDetail {
     cached?: boolean;
   } | null;
   hasPrintPdf: boolean;
+  hasPrintCover: boolean;
   hasPrintLog: boolean;
 }
 
@@ -841,7 +843,7 @@ function PrintReadySection({
 }) {
   const generateAction = useAction(api.admin.printPdf.generatePrintPdf);
   const resolveUrlAction = useAction(api.admin.printPdf.resolvePrintDownloadUrl);
-  const [format, setFormat] = useState<'a5' | 'a4'>('a5');
+  const [format, setFormat] = useState<'a5' | 'a4' | 'kdp'>(detail.printPdfFormat ?? 'a5');
   const [generating, setGenerating] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
@@ -878,7 +880,7 @@ function PrintReadySection({
     }
   };
 
-  const handleDownload = async (kind: 'pdf' | 'log') => {
+  const handleDownload = async (kind: 'pdf' | 'cover' | 'log') => {
     setDownloading(true);
     try {
       const url = await resolveUrlAction({ orderId, kind });
@@ -929,12 +931,13 @@ function PrintReadySection({
       <div className="flex flex-wrap items-center gap-2">
         <select
           value={format}
-          onChange={(e) => setFormat(e.target.value as 'a5' | 'a4')}
+          onChange={(e) => setFormat(e.target.value as 'a5' | 'a4' | 'kdp')}
           className="rounded-md border border-neutral-300 px-2 py-1 text-xs"
           disabled={generating || (inFlight && !stale)}
         >
           <option value="a5">A5 + 2mm spad (arkusz A4)</option>
           <option value="a4">A4 + 2mm spad (arkusz A3)</option>
+          <option value="kdp">Amazon KDP 6×9″ Premium Color</option>
         </select>
         <button
           onClick={() => void handleGenerate(stale || status === 'ready' || status === 'failed')}
@@ -953,7 +956,20 @@ function PrintReadySection({
             disabled={downloading}
             className="rounded-md bg-green-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-600 disabled:opacity-40"
           >
-            {downloading ? 'Pobieram...' : 'Pobierz PDF do drukarni'}
+            {downloading
+              ? 'Pobieram...'
+              : detail.printPdfFormat === 'kdp'
+                ? 'Pobierz KDP manuscript'
+                : 'Pobierz PDF do drukarni'}
+          </button>
+        )}
+        {status === 'ready' && detail.printPdfFormat === 'kdp' && detail.hasPrintCover && (
+          <button
+            onClick={() => void handleDownload('cover')}
+            disabled={downloading}
+            className="rounded-md bg-amber-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600 disabled:opacity-40"
+          >
+            {downloading ? 'Pobieram...' : 'Pobierz okładkę KDP'}
           </button>
         )}
         {detail.hasPrintLog && (status === 'failed' || status === 'ready') && (
@@ -970,6 +986,9 @@ function PrintReadySection({
       {status === 'ready' && detail.printPdfMeta && (
         <p className="text-xs text-neutral-500">
           {(detail.printPdfMeta.sizeBytes / 1024 / 1024).toFixed(0)} MB
+          {detail.printPdfMeta.coverSizeBytes
+            ? ` + okładka ${(detail.printPdfMeta.coverSizeBytes / 1024 / 1024).toFixed(0)} MB`
+            : ''}
           {detail.printPdfMeta.pages ? ` · ${detail.printPdfMeta.pages} stron` : ''}
           {detail.printPdfMeta.pipelineVersion
             ? ` · pipeline v${detail.printPdfMeta.pipelineVersion}`

@@ -289,7 +289,7 @@ const applicationTables = {
     // without redeploying.
     useRenderService: v.optional(v.boolean()),
 
-    // Print-ready PDF (CMYK 350dpi, spad, folio) — generowany WYŁĄCZNIE
+    // Print-ready PDF (Empire CMYK 350dpi albo Amazon KDP 300dpi) — generowany WYŁĄCZNIE
     // z admina (convex/admin/printPdf.ts), przez /print-ready na typst-render.
     // Osobny stan poza maszyną statusów pipeline'u; klucz print/<orderId>/
     // <format>.pdf żyje pod lifecycle 30 dni i NIGDY nie wychodzi przez
@@ -297,14 +297,16 @@ const applicationTables = {
     printPdfStatus: v.optional(
       v.union(v.literal('queued'), v.literal('rendering'), v.literal('ready'), v.literal('failed')),
     ),
-    printPdfFormat: v.optional(v.union(v.literal('a5'), v.literal('a4'))),
+    printPdfFormat: v.optional(v.union(v.literal('a5'), v.literal('a4'), v.literal('kdp'))),
     printR2Key: v.optional(v.string()),
+    printCoverR2Key: v.optional(v.string()),
     printLogR2Key: v.optional(v.string()),
     printPdfError: v.optional(v.string()),
     printPdfRequestedAt: v.optional(v.number()),
     printPdfMeta: v.optional(
       v.object({
         sizeBytes: v.number(),
+        coverSizeBytes: v.optional(v.number()),
         pages: v.optional(v.number()),
         pipelineVersion: v.optional(v.string()),
         durationMs: v.optional(v.number()),

@@ -1,5 +1,8 @@
 # Spec: print-ready pipeline (oddanie bajki do drukarni)
 
+> Amazon KDP 6x9 jest osobnym profilem tego endpointu; kontrakt i geometria:
+> `docs/spec-amazon-kdp.md`.
+
 > Status: **ZAUTOMATYZOWANE (2026-07-12)** — pipeline v0.2 (§8) żyje jako
 > `POST /print-ready` w repo typst-render (`print/print_ready.py`), odpalany
 > przyciskiem z admina (zakładka Orders → sekcja "Druk"; backend

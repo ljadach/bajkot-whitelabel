@@ -323,6 +323,7 @@ export const getOrderDetail = query({
       printPdfRequestedAt: order.printPdfRequestedAt ?? null,
       printPdfMeta: order.printPdfMeta ?? null,
       hasPrintPdf: Boolean(order.printR2Key),
+      hasPrintCover: Boolean(order.printCoverR2Key),
       hasPrintLog: Boolean(order.printLogR2Key),
     };
   },
