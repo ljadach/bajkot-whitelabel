@@ -32,7 +32,7 @@ function getAppUrl() {
  * the same code runs in dev (test mode) and prod (live mode) without changes.
  *
  * Legacy orders without an explicit format default to PDF — safer than
- * accidentally charging 49 PLN for a missing-format edge case.
+ * accidentally charging 99 PLN for a missing-format edge case.
  */
 function resolvePriceId(format: 'pdf' | 'pdf_print' | null): string {
   const pdfPriceId = process.env.STRIPE_BOOK_PRICE_ID;

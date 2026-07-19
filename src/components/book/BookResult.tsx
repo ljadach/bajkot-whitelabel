@@ -474,7 +474,7 @@ export function BookPreviewScreen({
         )}
 
         {/* Unlock CTA — price + body adapt to the order's format. pdf_print
-            shows the 49 PLN total and the shipping reassurance line. */}
+            shows the 99 PLN total and the shipping reassurance line. */}
         {(() => {
           const isPrint = preview?.format === 'pdf_print';
           const priceValue = isPrint ? BOOK_PRICE_PRINT_PLN : BOOK_PRICE_PDF_PLN;

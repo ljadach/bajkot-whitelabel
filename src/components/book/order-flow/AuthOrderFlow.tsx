@@ -88,7 +88,7 @@ export function AuthOrderFlow() {
     async (payload: CheckoutSubmitPayload) => {
       const result = await submitOrder(payload);
       if (!result) return;
-      // Both PDF and PDF+Print run the pipeline. Stripe payment (29 vs 49 PLN)
+      // Both PDF and PDF+Print run the pipeline. Stripe payment (49 vs 99 PLN)
       // is gated at the result page after a real preview. Physical shipping
       // for pdf_print is triggered by admin alert email post-payment.
       void navigate(`/book/${result.orderId}/progress`);

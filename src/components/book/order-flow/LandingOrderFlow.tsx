@@ -107,7 +107,7 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
     async (payload: CheckoutSubmitPayload) => {
       const result = await submitOrder(payload);
       if (!result) return;
-      // Both PDF and PDF+Print run the pipeline; payment (29 vs 49 PLN) and
+      // Both PDF and PDF+Print run the pipeline; payment (49 vs 99 PLN) and
       // print-shipping are handled post-pipeline on the result page.
       void navigate(`/landing/book/${result.orderId}/progress`);
     },

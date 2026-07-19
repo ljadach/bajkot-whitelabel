@@ -98,7 +98,7 @@ export const PRICE_TESTIMONIALS: readonly CennikTestimonial[] = [
   },
   {
     quote:
-      '„29 zł za bajkę dopasowaną do konkretnego problemu mojego dziecka? To kosztuje mniej niż jedna konsultacja u psychologa, a czytamy ją codziennie. Najlepsza inwestycja tego roku."',
+      '„49 zł za bajkę dopasowaną do konkretnego problemu mojego dziecka? To kosztuje mniej niż jedna konsultacja u psychologa, a czytamy ją codziennie. Najlepsza inwestycja tego roku."',
     name: 'Karolina',
     role: 'mama dwójki dzieci',
     avatar: '👩‍👧‍👦',
@@ -107,7 +107,7 @@ export const PRICE_TESTIMONIALS: readonly CennikTestimonial[] = [
   },
   {
     quote:
-      '„Zamówiłem druk za 49 zł i wysłałem na urodziny chrześniaka. Mama przysłała filmik, jak chłopiec zobaczył siebie na okładce — bezcenne."',
+      '„Zamówiłem druk za 99 zł i wysłałem na urodziny chrześniaka. Mama przysłała filmik, jak chłopiec zobaczył siebie na okładce — bezcenne."',
     name: 'Piotr',
     role: 'chrzestny ojciec',
     avatar: '👨',
@@ -133,7 +133,7 @@ export const FAQ_ITEMS: readonly CennikFaqItem[] = [
     id: 'shipping-cost',
     question: 'Ile kosztuje wysyłka drukowanej książki?',
     answer:
-      'Wysyłka kurierska po Polsce jest wliczona w cenę pakietu PDF + Druk (49 zł). Za granicę wysyłamy po indywidualnej wycenie — napisz do nas na info@bajkoterapia.org.',
+      'Wysyłka kurierska po Polsce jest wliczona w cenę pakietu PDF + Druk (99 zł). Za granicę wysyłamy po indywidualnej wycenie — napisz do nas na info@bajkoterapia.org.',
   },
   {
     id: 'refund-policy',

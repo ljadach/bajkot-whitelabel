@@ -535,7 +535,7 @@ interface PreviewResult {
   paymentStatus: 'pending' | 'completed' | 'failed' | null;
   /** Topic the order targets — drives category-level conversion analytics. */
   problemId: string;
-  /** 'pdf' or 'pdf_print' — drives the unlock CTA price (29 vs 49 PLN) + shipping copy. */
+  /** 'pdf' or 'pdf_print' — drives the unlock CTA price (49 vs 99 PLN) + shipping copy. */
   format: 'pdf' | 'pdf_print';
   illustrations: Array<{ illustrationId: string; url: string | null }>;
   excerptPl: string | null;
