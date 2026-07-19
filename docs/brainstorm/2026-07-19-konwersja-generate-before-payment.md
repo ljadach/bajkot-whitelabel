@@ -1,359 +1,194 @@
-# Konwersja: model „zobacz zanim zapłacisz"
+# Konwersja góry lejka: od wejścia z Google do wygenerowanej bajki
 
-**Data:** 2026-07-19 · **Do dyskusji z:** Łukasz · **Status:** brainstorm — nic z tego nie jest jeszcze wdrożone
+**Data:** 2026-07-19 (rewrite — poprzednia wersja skupiała się na dole lejka)
+**Zakres:** visitor z SEO → strona tematyczna → wizard → **ukończona generacja bajki**.
+**Poza zakresem:** paywall, checkout Stripe, płatność — to osobny wątek. Mail z pełnym PDF przed płatnością jest już uszczelniony (mail wychodzi po płatności) i NIE jest tematem tego dokumentu.
 
-Bajkoterapia działa dziś w modelu **try-before-you-buy**: rodzic wypełnia formularz, bajka
-generuje się **za darmo i przed płatnością**, a dopiero na końcu — po obejrzeniu podglądu —
-płaci za odblokowanie pobrania. Ten dokument opisuje, jak dokładnie wygląda obecny lejek
-(na podstawie kodu, nie domysłów), gdzie tracimy ludzi i co możemy zrobić, żeby więcej
-wygenerowanych bajek kończyło się płatnością.
-
-**Aktualne ceny:** PDF **49 zł** · PDF + Druk **99 zł**.
+Wszystko poniżej wynika z lektury kodu (ścieżki plików w nawiasach), nie z domysłów.
 
 ---
 
-## 1. Jak działa obecny funnel
+## 1. Lejek: SEO → wygenerowana bajka
 
-Dwa wejścia (strona tematyczna SEO — mamy ich 39 — albo katalog po zalogowaniu), potem
-wszystko zbiega się w ten sam przebieg: formularz → generacja → paywall → płatność.
+Użytkownik wchodzi z Google na `/problem/:slug` (15 stron tematycznych, SSG). Wizard jest osadzony inline na dole tej samej strony (`#kreator`). Po submisji checkoutu pipeline startuje **od razu** — płatność jest dopiero na stronie wyniku, więc "ukończona generacja" to realny, darmowy dla usera punkt konwersji.
 
 ```mermaid
 flowchart TD
-    subgraph WEJSCIE["🚪 Wejście"]
-        A1["Strona tematyczna SEO<br/>(39 tematów, np. lęk przed ciemnością)"]
-        A2["Strona główna / Katalog tematów<br/>(wymaga logowania)"]
+    G[Google SERP] --> T["Strona tematyczna /problem/:slug<br/>Hero → Pain → Science → #kreator"]
+    T -->|CTA w hero lub nav<br/>skok do #kreator| W1
+
+    subgraph WIZ [Wizard — 3 kroki na jednej stronie]
+        W1["Krok 1: potwierdzenie tematu<br/>(1 klik, zero pól)"] --> W2["Krok 2: opis sytuacji<br/>(textarea, opcjonalny)"]
+        W2 --> W3["Krok 3: dane dziecka<br/>imię* wiek* płeć* + wygląd (defaulty)"]
     end
 
-    subgraph FORMULARZ["📝 Formularz (5 ekranów)"]
-        B1["Krok 1: Potwierdzenie tematu"]
-        B2["Krok 2: Opis sytuacji dziecka<br/>(pole tekstowe, opcjonalne)"]
-        B3["Krok 3: Dane dziecka<br/>imię · wiek · płeć · wygląd · zabawka"]
-        B4["Ekran „Co otrzymasz?"<br/>karuzela przykładowej książki + wybór formatu<br/>PDF 49 zł / PDF+Druk 99 zł + opinie"]
-        B5["Checkout: e-mail + 2 zgody RODO<br/>(+ adres, jeśli druk)<br/>przycisk: „Generuj bajkę" — BEZ płatności"]
-    end
+    W3 --> P["Preview: 'Co otrzymasz?'<br/>karuzela + wybór formatu<br/>PDF 49 zł / PDF+Druk 99 zł<br/>+ opinie (pierwszy social proof)"]
+    P --> C["Checkout: email* + 2 zgody RODO*<br/>(+5 pól adresu przy druku)"]
+    C -->|startLandingOrder<br/>pipeline startuje| PR["Ekran postępu<br/>pasek % + rotujące tipy"]
 
-    subgraph GENERACJA["⏳ Generacja (~15 minut, ZA DARMO)"]
-        C1["Ekran postępu<br/>pasek + rotujące karty edukacyjne"]
-        C2["Wybór stylu ilustracji A/B<br/>(w trakcie, po ~30% postępu)"]
-        C3["Dedykacja od rodzica<br/>(30 s po wyborze stylu, można pominąć)"]
-        C4["Bajka gotowa —<br/>automatyczne przejście na ekran wyniku"]
-    end
+    PR --> CZ1{{"⏳ CZEKANIE ~kilka minut<br/>(story + projekt bohatera)"}}
+    CZ1 --> SV["🖐 STYLE VOTE — user MUSI być na stronie<br/>wybór stylu A/B blokuje ilustracje<br/>nieobecny: auto-wybór A po 15–20 min"]
+    SV --> CZ2{{"⏳ 30 s pauzy"}}
+    CZ2 --> D["🖐 DEDYKACJA — formularz inline<br/>można pominąć; nieobecny: auto-skip po 5 min"]
+    D --> CZ3{{"⏳ CZEKANIE: ilustracje + skład PDF"}}
+    CZ3 --> R["✅ Gotowa bajka — strona wyniku<br/>(dalej: paywall — poza zakresem)"]
 
-    subgraph PAYWALL["💰 Paywall (ekran wyniku)"]
-        D1["Podgląd: 7 pierwszych stron PDF<br/>(flipbook z tytułem i imieniem dziecka)"]
-        D2["CTA: „Odblokuj PDF (49 zł)"<br/>→ Stripe Checkout"]
-    end
-
-    subgraph PO_PLATNOSCI["🎉 Po płatności"]
-        E1["Pełne pobranie PDF"]
-        E2["E-mail: potwierdzenie zakupu"]
-        E3["Druk: alert do fulfillmentu,<br/>wysyłka kurierem 3-5 dni"]
-        E4["Upsell: „Stwórz kolejną bajkę""]
-    end
-
-    A1 --> B1
-    A2 --> B1
-    B1 --> B2 --> B3 --> B4 --> B5
-    B5 --> C1
-    C1 --> C2 --> C3 --> C4
-    C4 --> D1 --> D2
-    D2 -->|"płatność OK"| E1
-    E1 --> E2 & E4
-    E2 -.-> E3
-    D2 -.->|"anulował płatność"| D1
-
-    style PAYWALL fill:#fef3c7,stroke:#f59e0b,stroke-width:2px
-    style GENERACJA fill:#f0f9ff,stroke:#0284c7,stroke-width:2px
+    classDef wait fill:#fff3cd,stroke:#b8860b,color:#333
+    classDef action fill:#fde2e2,stroke:#c0392b,color:#333
+    class CZ1,CZ2,CZ3 wait
+    class SV,D action
 ```
 
-### Co rodzic dostaje za darmo (przed zapłaceniem ani złotówki)
+Punkty oznaczone 🖐 wymagają **obecności i kliknięcia** użytkownika w trakcie generacji — każdy z nich to potencjalny punkt odpadu przed ukończeniem bajki. Punkty ⏳ to czyste czekanie.
 
-| Element                | Szczegóły                                                                  |
-| ---------------------- | -------------------------------------------------------------------------- |
-| Pełna generacja bajki  | Cała książka powstaje przed płatnością (tekst + wszystkie ilustracje)      |
-| Wybór stylu ilustracji | 2 prawdziwe ilustracje z bohaterem-dzieckiem do wyboru w trakcie generacji |
-| Podgląd 7 stron        | Flipbook na ekranie wyniku: okładka + pierwsze strony z imieniem dziecka   |
-| Tytuł bajki            | Wygenerowany, spersonalizowany tytuł widoczny nad podglądem                |
-| Dedykacja              | Rodzic wpisuje własną dedykację jeszcze przed paywallem                    |
+### Gdzie user czeka albo musi wrócić (twarde liczby z kodu)
 
-### Zabezpieczenia przed porzuceniem w trakcie generacji (już działają)
-
-- Jeśli rodzic nie wybierze stylu w 15 minut → system wybiera automatycznie styl A i jedzie dalej.
-- Jeśli nie zdecyduje o dedykacji w 5 minut → auto-pominięcie.
-- Czyli: **każda rozpoczęta generacja kończy się gotową bajką**, nawet gdy rodzic zamknie kartę.
-
-### Co już mierzymy (analityka jest w dobrym stanie)
-
-Cały lejek jest opomiarowany w PostHog + GA4: wybór tematu, każdy krok formularza
-(z czasem spędzonym na kroku), obejrzenie ekranu „Co otrzymasz?", checkout, start generacji,
-obejrzenie paywalla, kliknięcie „Odblokuj", anulowanie płatności, zakup, pobranie PDF.
-Dodatkowo GA4 dostaje event **`book_generated`** („wygenerował, nie zapłacił") — więc
-**konwersję wygenerowane → opłacone możemy policzyć już dziś**, bez żadnych zmian w kodzie.
+| Punkt | Co się dzieje | Timing | Źródło |
+|---|---|---|---|
+| Style vote | Tor ilustracji **stoi**, dopóki rodzic nie wybierze stylu A/B | auto-wybór A po 15 min, cron sprawdza co 5 min → realnie **15–20 min przestoju** dla nieobecnych | `convex/bookPipelineHelpers.ts` (`STYLE_VOTE_TIMEOUT_MS`), `convex/crons.ts` |
+| Dedykacja | Formularz pojawia się 30 s po głosowaniu; skład PDF czeka na decyzję | auto-skip po **5 min**, więc bramka miękka | `convex/bookAgents.ts` (`DEDICATION_TIMEOUT_MS`), `BookProgressShell.tsx` |
+| Obietnica z hero | „Bajka gotowa do czytania w 15 minut" | nieosiągalna dla rodzica, który zamknie kartę — sam style vote dodaje do 20 min | `TopicHero.tsx` |
+| Powrót do procesu | Token zamówienia tylko w localStorage — **ta sama przeglądarka albo nic** | żaden mail z linkiem nie wychodzi przed ukończeniem książki | `useLandingOrderToken`, `convex/email.ts` |
 
 ---
 
-## 2. Punkty tarcia i odpadu (na bazie kodu)
+## 2. Punkty tarcia i odpadu (z kodu)
 
-### 🔴 T1. E-mail „bajka gotowa" wysyła PEŁNY PDF przed płatnością
+### 2.1 Strona tematyczna — droga do wizarda
 
-> **To jest najważniejsze znalezisko tego dokumentu.** W momencie ukończenia generacji system
-> wysyła na e-mail rodzica wiadomość „📖 Bajka dla X czeka na pobranie" z **działającym linkiem
-> do pełnego PDF-a** (ważnym 24 h) — niezależnie od tego, czy rodzic zapłacił.
+- **CTA w hero jest nad foldem** i skacze kotwicą prosto do wizarda — to działa. Sticky nav ma drugi CTA, który chowa się, gdy wizard jest widoczny (`TopicNav.tsx`). Dobre.
+- **Organiczny scroll przechodzi przez dwie długie sekcje bez żadnego przycisku.** Sekcja Pain kończy się mocnym zdaniem wezwania (`painCta` — „daj dziecku historię o Bohaterze...") wyrenderowanym jako **karta tekstowa bez buttona** (`TopicPain.tsx`). Emocjonalny szczyt strony nie ma kliku.
+- **Zero ceny na stronie tematycznej.** 49/99 zł pojawia się dopiero na ekranie preview, w środku wizarda. Cennik jest tylko linkiem w nav.
+- **Zero social proof przed wizardem.** Trzy opinie istnieją, ale renderują się dopiero na ekranie preview (`OrderPreview.tsx`) — user, który nie wszedł do wizarda, nigdy ich nie zobaczy.
 
-E-mail jest wymagany w checkoucie, więc dotyczy to **każdego zamówienia**. Rodzic, który
-porzucił kartę w trakcie generacji (albo świadomie nie kliknął „Odblokuj"), dostaje całą
-książkę za darmo do skrzynki. Treść maila („dni od zakupu", „Dziękujemy...") pochodzi
-najwyraźniej z czasów, gdy płatność była przed generacją — po zmianie modelu nikt go nie
-przestawił. **Paywall na stronie jest szczelny, ale boczne drzwi stoją otworem.**
+### 2.2 Wizard — liczba ekranów i pól
 
-### T2. Długi formularz przed jakąkolwiek gratyfikacją
+Od kliknięcia CTA do startu generacji: **7 ekranów/kliknięć**, w tym 6 wymaganych inputów (imię, wiek, płeć, email, 2 zgody RODO).
 
-5 ekranów zanim cokolwiek się wydarzy: temat → sytuacja → dane dziecka (do 9 pól) →
-„Co otrzymasz?" → checkout (e-mail + 2 obowiązkowe zgody RODO + adres przy druku).
-Zgoda na przetwarzanie danych „szczególnej kategorii" (problemy dziecka) jest prawnie
-konieczna, ale dwa checkboxy + e-mail to realny próg tuż przed startem.
+| Ekran | Pola wymagane | Pola opcjonalne | Uwagi |
+|---|---|---|---|
+| Krok 1: potwierdzenie tematu | — | — | **Redundantny dla wejścia z topic page** — user właśnie kliknął CTA na stronie tego tematu, a pierwszy ekran pyta „czy to ten temat?" (`OrderWizard.tsx`, `StepTopic`) |
+| Krok 2: opis sytuacji | — | textarea | OK — opcjonalny, z łagodną zachętą |
+| Krok 3: dane dziecka | imię (≥2 znaki), wiek (2–12), płeć | oczy/włosy/długość (selecty z defaultami: Niebieskie/Blond/Krótkie), okulary, zabawka, strój | Jedna strona, rozsądnie skondensowane |
+| Preview | wybór formatu (default PDF) | — | Karuzela + lista wartości + opinie |
+| Checkout | email, 2 checkboxy zgód | (druk: +5 pól adresu) | Submit → generacja startuje |
 
-### T3. ~15 minut oczekiwania bez jasnej obietnicy
+- **Email zbierany na SAMYM końcu.** Odpad w krokach 1–3 lub na preview = zero kontaktu, zero możliwości odzyskania (`OrderCheckout.tsx` — jedyne miejsce z polem email).
+- **Stan wizarda żyje tylko w pamięci Reacta** (`LandingOrderFlow.tsx` — `useState`, brak persystencji). Refresh, przypadkowe zamknięcie karty, wyrzucenie taba z pamięci na mobile — wszystko od zera. Na mobile to realny scenariusz, nie edge case.
 
-Copy mówi „to zajmie tylko chwilę", a hint formatu — „gotowa do czytania w 15 minut".
-Na ekranie postępu **nie ma szacowanego czasu** ani komunikatu „możesz zamknąć stronę,
-damy znać mailem". Rodzic z telefonem w ręku o 21:30 nie wie, czy czekać. Karty
-edukacyjne w trakcie czekania są dobre, ale to jedyny mechanizm utrzymania uwagi.
+### 2.3 W trakcie generacji
 
-### T4. Powrót do porzuconej generacji prowadzi... przez dziurawy e-mail
+- **Style vote to najtwardszy strukturalny punkt odpadu.** Pipeline zatrzymuje tor ilustracji do decyzji rodzica. Rodzic, który uwierzył w „15 minut" i poszedł zrobić herbatę na 20 minut, wraca do procesu opóźnionego o kwadrans — albo nie wraca wcale. Nic go nie woła z powrotem: brak maila, brak powiadomienia.
+- **Dedykacja jest OK.** Pojawia się w naturalnym oknie czekania (30 s po głosowaniu, gdy ilustracje i tak się rysują), ma przycisk „pomiń", a backend auto-skipuje po 5 min. Wzorzec do naśladowania — style vote powinien działać podobnie.
+- **Batch mode już dziś omija pauzę style vote**: jeśli `chosenStyle` jest ustawiony przed A6, pipeline leci dalej bez zatrzymania (`convex/bookAgents.ts`, `designCharacter`). Czyli architektura na „wybór stylu przed generacją" **już istnieje**.
 
-Jedyna ścieżka powrotu dla rodzica, który zamknął kartę, to e-mail z T1 — który dziś
-oddaje książkę za darmo, zamiast prowadzić na paywall z podglądem. Nie ma żadnej
-sekwencji przypomnień (T+24 h, T+72 h) dla wygenerowanych-nieopłaconych.
+### 2.4 Pomiar — co widzimy, a czego nie
 
-### T5. Paywall nie sprzedaje — tylko blokuje
+- **PostHog: pełny funnel klientowy istnieje** — `cta_create_book_clicked`, `topic_selected`, `order_form_step_viewed/completed` (z czasem trwania kroku), `preview_viewed`, `checkout_viewed`, `checkout_submit_clicked`, `progress_viewed`, `style_vote_viewed/submitted`, `dedication_submitted/skipped`, `result_viewed` (`src/lib/telemetry.ts`). Odpady per krok wizarda **da się policzyć już dziś** — pytanie, czy ktoś na te lejki patrzy.
+- **GA4/Google Ads widzi tylko `purchase` i `book_generated`** (`src/lib/gtag.ts`). Zero mid-funnel eventów → Smart Bidding nie może optymalizować pod starty wizarda ani submisje checkoutu, i nie zbudujemy w Ads audiencji remarketingowej „zaczął wizard, nie skończył".
+- **Backend-owe odpady są niewidzialne.** Auto-wybór stylu po timeoucie i auto-skip dedykacji dzieją się w Convex i nie emitują żadnego eventu produktowego. **Nie wiemy, jaki procent rodziców nigdy nie wraca do głosowania** — a to kluczowa liczba do decyzji o P2 poniżej.
 
-Ekran odblokowania to: podgląd + nagłówek + jedno zdanie + przycisk z ceną. Brakuje:
-gwarancji zwrotu 14 dni (jest w stopce e-maila, nie ma jej na paywallu!), listy tego,
-co konkretnie odblokowuje płatność (pełne ~26+ stron, przewodnik dla rodzica, 5 pytań
-do rozmowy), kotwicy cenowej i opinii. Cała siła perswazji jest na ekranie „Co
-otrzymasz?" — czyli **przed** generacją, a nie w momencie decyzji o zapłacie.
+### 2.5 SEO / dopasowanie intencji
 
-### T6. Anulowana płatność Stripe = powrót bez słowa
-
-Rodzic, który wszedł w Stripe i się wycofał, wraca na ten sam ekran paywalla bez żadnej
-reakcji interfejsu (zdarzenie jest mierzone, ale UI milczy). To moment najwyższej
-intencji zakupowej w całym lejku — i nic z nim nie robimy.
-
-### T7. Drobne niespójności komunikacji
-
-- Checkout obiecuje „podgląd **3 stron**", paywall pokazuje **7 stron**.
-- Notka przy druku mówi „o adres poprosimy mailem", a formularz zbiera adres od razu.
-- Ceny są wpisane na sztywno w kilku miejscach (cennik, opinie klientów z kwotami
-  „29 zł"/„49 zł", teksty przycisków) — po zmianie na 49/99 zł trzeba je zsynchronizować
-  wszędzie, inaczej rodzic zobaczy dwie różne ceny w jednym lejku.
+- Meta title, description, canonical, og: — jest (`src/routes/topic.tsx`). **Brak JSON-LD** (FAQPage, Product, BreadcrumbList) — tracimy rich snippets w SERP.
+- **Tytuły niejednolite względem intencji wyszukiwania**: „Bajkoterapia – Dziecko Nie Chce Iść do Przedszkola | Adaptacja" trafia w frazę, ale np. „Bajkoterapia - Opanuj dziecięcą złość magią" nie zawiera frazy, którą rodzic realnie wpisuje („dziecko bije inne dzieci"). H1 na stronie jest pytaniowe i dobre — title'y powinny być równie konsekwentne.
 
 ---
 
-## 3. Propozycje poprawy konwersji
+## 3. Propozycje poprawy konwersji visitor → wygenerowana bajka
 
-Wszystkie kręcą się wokół wzmocnienia modelu „zobacz zanim zapłacisz": skoro dajemy
-produkt przed płatnością, to (a) boczne drzwi muszą być zamknięte, (b) moment „chcę to
-mieć" musi być maksymalnie doładowany emocjonalnie, (c) każdy, kto wygenerował i nie
-zapłacił, musi mieć zaplanowaną ścieżkę powrotu.
+### P1. Email wcześniej + link powrotny do procesu
 
-Skala: **Effort** S = godziny, M = 1-3 dni, L = tydzień+. **Impact** = oczekiwany wpływ na konwersję wygenerowane → opłacone.
+**Co:** przenieść pole email z checkoutu do kroku 3 wizarda (albo jako osobny mikro-krok przed preview). Po starcie generacji wysłać krótki mail z linkiem do strony postępu (link z tokenem per-order, który już istnieje w URL-owym mechanizmie `captureLandingOrderTokenFromUrl`).
+**Dlaczego:** dziś odpad przed checkoutem = user stracony bezpowrotnie, a zamknięcie karty w trakcie generacji = utrata dostępu (token tylko w localStorage). Email w środku lejka daje: (a) recovery porzuconego wizarda, (b) „wróć i wybierz styl", (c) dostęp z innego urządzenia. To NIE jest mail z PDF-em — tylko link do procesu; uszczelnienie PDF-a pozostaje nietknięte.
+**Effort:** M · **Impact:** wysoki
 
-### P1. Naprawa e-maila „bajka gotowa" → e-mail z podglądem i CTA odblokowania
+### P2. Wybór stylu w wizardzie zamiast blokującego style vote
 
-**Co:** Zamiast pełnego linku do PDF — e-mail „Bajka dla Zosi jest gotowa — zobacz
-pierwsze strony" prowadzący na ekran paywalla (podgląd 7 stron + przycisk odblokowania).
-Pełny link zostaje wyłącznie w mailu po płatności.
+**Co:** pokazać dwa statyczne przykłady stylów (A/B) jako wybór w kroku 3 lub na preview, ustawiać `chosenStyle` przy tworzeniu zamówienia. Pipeline już dziś omija pauzę, gdy styl jest wybrany (ścieżka batch mode w `designCharacter`).
+**Dlaczego:** usuwa jedyny twardy „musisz tu być i kliknąć" z generacji. Bajka robi się od startu do końca bez udziału rodzica — obietnica „15 minut" staje się prawdziwa także dla tych, którzy zamkną kartę. Koszt: przykłady stylów będą generyczne, nie spersonalizowane pod dziecko (trade-off do dyskusji — pytanie 1 w sekcji 5).
+**Effort:** M · **Impact:** wysoki
 
-**Dlaczego:** Bez tego cała reszta nie ma sensu — dziś każdy niedoszły klient dostaje
-produkt za darmo do skrzynki. To nie optymalizacja, to **uszczelnienie modelu biznesowego**.
-Bonus: ten e-mail staje się naturalnym pierwszym krokiem sekwencji przypomnień (P3).
+### P3. Skrócenie auto-wyboru stylu: 15 min → 5 min (interim, jeśli P2 nie od razu)
 
-**Effort: S** · **Impact: wysoki** (warunek konieczny modelu)
+**Co:** zmiana `STYLE_VOTE_TIMEOUT_MS` na 5 min i/lub gęstszy cron. Jednolinijkowa zmiana konfiguracji.
+**Dlaczego:** tnie maksymalny przestój z 15–20 min do 5–10 min. Nie usuwa problemu, ale zmniejsza karę za zamknięcie karty o dwie trzecie.
+**Effort:** S · **Impact:** średni
 
-### P2. Doładowanie ekranu paywalla
+### P4. Persystencja stanu wizarda w localStorage
 
-**Co:** Na ekranie odblokowania dodać: (1) gwarancję zwrotu 14 dni z ikoną, (2) listę
-„co odblokowujesz" — pełne ~26 stron, przewodnik dla rodzica, 5 pytań do rozmowy,
-możliwość druku w domu, (3) kotwicę cenową („49 zł — mniej niż jedna konsultacja
-u psychologa, a czytacie codziennie"), (4) jedną opinię rodzica.
+**Co:** zapisywać `IntakeState` przy każdej zmianie, odtwarzać przy powrocie na stronę tematu (z banerkiem „Dokończ bajkę dla Zosi").
+**Dlaczego:** dziś refresh lub ubity tab na mobile kasuje cały wpisany formularz. Odzyskanie usera, który już zainwestował dane dziecka, jest tańsze niż pozyskanie nowego kliku z Google.
+**Effort:** S · **Impact:** średni–wysoki
 
-**Dlaczego:** Rodzic podejmuje decyzję o pieniądzach dokładnie na tym ekranie, a dziś
-jest on najuboższy perswazyjnie w całym lejku. Gwarancja zwrotu zdejmuje ryzyko
-(a już jej udzielamy — tylko piszemy o tym w stopce maila). Czysta robota copy +
-układ, zero zmian w logice.
+### P5. Usunięcie kroku 1 wizarda dla wejścia z topic page
 
-**Effort: S** · **Impact: wysoki**
+**Co:** landing flow ma temat z URL-a — krok „potwierdź temat" scalić z krokiem opisu sytuacji (temat jako potwierdzony nagłówek nad textarea, z linkiem „zmień"). Nagłówek wizarda i tak już pokazuje wybrany temat.
+**Dlaczego:** jeden pełnoekranowy klik mniej w lejcu, który ma ich siedem. Krok 1 nie zbiera żadnych danych.
+**Effort:** S · **Impact:** średni
 
-### P3. Sekwencja przypomnień dla wygenerowanych-nieopłaconych
+### P6. CTA po sekcji Pain + social proof i cena przy hero
 
-**Co:** Automatyczne e-maile do zamówień z gotową bajką i brakiem płatności:
+**Co:** (a) dodać button pod `painCta` w `TopicPain` (kotwica `#kreator`), (b) przenieść/duplikować jedną-dwie opinie z ekranu preview na stronę tematyczną, (c) mikrocena przy CTA („od 49 zł" — do decyzji, pytanie 5).
+**Dlaczego:** emocjonalny szczyt strony (koniec sekcji Pain) nie ma dziś kliku; social proof widzą tylko ci, którzy już weszli do wizarda; brak ceny przed checkoutem to odroczony szok cenowy.
+**Effort:** S · **Impact:** średni
 
-- **T+2 h:** „Bajka dla Zosi wciąż czeka" + okładka bajki w treści maila + link do podglądu,
-- **T+24 h:** akcent na gwarancję i opinie,
-- **T+72 h:** kod rabatowy (np. −20%; Stripe ma już włączoną obsługę kodów promocyjnych,
-  więc technicznie to tylko utworzenie kodu i wpisanie go do maila).
+### P7. Mid-funnel eventy do GA4/Ads
 
-**Dlaczego:** Klasyka odzyskiwania porzuconych koszyków — a nasz „koszyk" jest wyjątkowo
-mocny, bo zawiera gotowy, spersonalizowany produkt z imieniem dziecka na okładce. Mamy
-e-mail (wymagany), mamy zgodę, mamy infrastrukturę wysyłki — brakuje tylko harmonogramu.
+**Co:** dublować kluczowe eventy PostHog do gtag: start wizarda, ukończenie kroku 3, submisja checkoutu (i istniejący `book_generated`). Wzorzec już jest w `gtag.ts`.
+**Dlaczego:** bez tego Google Ads optymalizuje w ciemno pod rzadkie konwersje końcowe i nie da się budować audiencji remarketingowych na porzucających. To enabler dla całej reszty płatnego ruchu.
+**Effort:** S · **Impact:** średni–wysoki (mnożnik dla Ads)
 
-**Effort: M** · **Impact: wysoki**
+### P8. Serwerowe eventy odpadu z pipeline'u
 
-### P4. „Możesz zamknąć stronę" + realny czas na ekranie oczekiwania
+**Co:** emitować z Convex eventy produktowe (PostHog server-side): `style_vote_auto_resolved`, `dedication_auto_skipped`, `pipeline_completed`. Skrzyżować z klientowym `result_viewed`.
+**Dlaczego:** dziś nie wiemy, ilu rodziców znika w trakcie generacji i nigdy nie widzi gotowej bajki. Ta liczba rozstrzyga, ile naprawdę warte są P1/P2/P3.
+**Effort:** S · **Impact:** średni (pomiar — warunek świadomych decyzji)
 
-**Co:** Na ekranie postępu: „Tworzenie bajki trwa zwykle ok. 15 minut. Możesz zamknąć
-tę stronę — wyślemy e-mail, gdy bajka będzie gotowa." (Po wdrożeniu P1 ten e-mail
-prowadzi na paywall, więc nie oddajemy nic za darmo.)
+### P9. JSON-LD + ujednolicenie meta title pod frazy
 
-**Dlaczego:** Niepewność („ile to potrwa?") jest gorsza niż samo czekanie. Jawna
-obietnica maila zdejmuje presję i zamienia porzucenie karty z „utraconego klienta"
-w „klienta w sekwencji e-mailowej". Dziś copy wręcz kłamie („to zajmie tylko chwilę").
+**Co:** dodać FAQPage/Product/BreadcrumbList schema do stron tematycznych; przejrzeć 15 title'ów pod realne frazy rodziców (wzorzec: „przedszkole" tak, „magia złości" nie).
+**Dlaczego:** wyższy CTR z SERP i lepsze dopasowanie intencji = więcej i lepszego ruchu na wejściu do tego samego lejka.
+**Effort:** S–M · **Impact:** niski–średni (działa na wolumen, nie na konwersję)
 
-**Effort: S** · **Impact: średni**
+### P10. Uczciwe zarządzanie oczekiwaniem na stronie postępu
 
-### P5. Fragment bajki na żywo w trakcie czekania
-
-**Co:** Gdy tekst bajki jest już napisany (w trakcie generacji ilustracji), pokazać na
-ekranie postępu pierwszy akapit: „Pierwsze zdania bajki dla Zosi już są ✨". Backend już
-dziś umie wyciągnąć fragment pierwszej sceny (robi to dla paywalla) — chodzi o pokazanie
-go wcześniej.
-
-**Dlaczego:** Efekt posiadania zaczyna działać, zanim rodzic zobaczy paywall — czytał
-już „swoją" bajkę, jego dziecko jest bohaterem. Im więcej zainwestowanej uwagi przed
-paywallem, tym trudniej odejść. To też najlepszy moment emocjonalny całego produktu
-(pierwszy raz widzi imię dziecka w opowieści).
-
-**Effort: M** · **Impact: średni-wysoki**
-
-### P6. Imię dziecka na okładce już na ekranie „Co otrzymasz?"
-
-**Co:** W karuzeli przykładowej książki (ekran przed checkoutem) nałożyć imię dziecka
-z formularza na przykładową okładkę — „Zosia i wulkan emocji" zamiast anonimowego sampla.
-Czysto frontendowa nakładka tekstu na istniejący obrazek.
-
-**Dlaczego:** Personalizacja przed jakimkolwiek kosztem (nawet przed generacją) podnosi
-przejście przez checkout — rodzic ogląda już „książkę swojego dziecka", a nie produkt
-z półki. Tania wersja instant gratification.
-
-**Effort: S/M** · **Impact: średni**
-
-### P7. Odchudzenie kroku „Dane dziecka"
-
-**Co:** Zostawić na wierzchu tylko: imię, wiek, płeć. Wygląd (oczy, włosy, okulary,
-strój, zabawka) schować w rozwijane „✨ Dopracuj wygląd bohatera (opcjonalne)" z sensownymi
-domyślnymi wartościami. Krok „sytuacja" wyraźniej oznaczyć jako opcjonalny.
-
-**Dlaczego:** Mierzymy czas na każdym kroku formularza, więc hipotezę „krok 3 to
-zjadacz konwersji" można zweryfikować danymi **przed** wdrożeniem. Mniej pól = mniej
-momentów na „wrócę do tego później". Pola opcjonalne wypełni ten, komu zależy — czyli
-ten, kto i tak kupi.
-
-**Effort: M** · **Impact: średni** (weryfikowalny danymi z PostHog przed decyzją)
-
-### P8. Reakcja na anulowaną płatność
-
-**Co:** Gdy rodzic wraca ze Stripe po anulowaniu: pasek „Twoja bajka wciąż na Ciebie
-czeka — masz 14 dni gwarancji zwrotu" zamiast identycznego ekranu bez słowa. Opcjonalnie
-po 2. anulowaniu: „Coś nie zagrało z płatnością? Napisz do nas".
-
-**Dlaczego:** To ludzie o najwyższej intencji w całym lejku (kliknęli „Odblokuj"!).
-Zdarzenie już jest mierzone — brakuje tylko reakcji interfejsu na nie.
-
-**Effort: S** · **Impact: niski-średni**
-
-### P9. Upgrade do druku na paywallu
-
-**Co:** Rodzic, który zamówił sam PDF, widzi na paywallu obok „Odblokuj PDF (49 zł)"
-drugą opcję: „PDF + wydrukowana książka (99 zł)" — z możliwością przełączenia formatu
-tuż przed płatnością.
-
-**Dlaczego:** Decyzja o formacie zapadała przed generacją, „w ciemno". Po obejrzeniu
-7 stron z własnym dzieckiem na ilustracjach chęć posiadania fizycznej książki jest
-naturalnie wyższa — to najlepszy moment na podniesienie wartości koszyka, nie konwersji.
-Wymaga zmiany formatu zamówienia po stronie backendu + zebrania adresu po płatności.
-
-**Effort: M** · **Impact: średni** (podnosi AOV, nie liczbę transakcji)
-
-### P10. Porządek w komunikacji cen i obietnic
-
-**Co:** Jedno źródło prawdy dla cen 49/99 zł (dziś kwoty siedzą w kilku plikach, w tym
-w cytowanych opiniach klientów), „3 strony" → „7 stron" w checkoucie, poprawka notki
-o adresie przy druku.
-
-**Dlaczego:** Rozjazd cen w obrębie jednego lejka (inna kwota na cenniku, inna na
-przycisku) to zabójca zaufania w produkcie dla rodziców, który sprzedaje „spokój".
-Higiena, nie feature.
-
-**Effort: S** · **Impact: niski** (ale obowiązkowy przy zmianie cen)
+**Co:** komunikat na progresie: „Za chwilę poprosimy Cię o wybór stylu — zostań z nami ~X min" (przed P2), a po wdrożeniu P1: „Możesz zamknąć stronę — wyślemy link mailem".
+**Dlaczego:** hero obiecuje 15 minut, ale nie mówi, że trzeba być obecnym. Użytkownik, który wie, czego się spodziewać, nie znika w najgorszym momencie.
+**Effort:** S · **Impact:** średni
 
 ---
 
-## 4. Priorytetyzacja
+## 4. Impact vs effort i rekomendowane pierwsze kroki
 
-| #   | Propozycja                                | Effort | Impact     | Uwagi                                       |
-| --- | ----------------------------------------- | ------ | ---------- | ------------------------------------------- |
-| P1  | Naprawa e-maila „bajka gotowa"            | S      | 🔴 wysoki  | Warunek modelu — boczne drzwi do zamknięcia |
-| P2  | Doładowanie paywalla (gwarancja, kotwica) | S      | 🔴 wysoki  | Samo copy, zero ryzyka                      |
-| P3  | Sekwencja przypomnień (2 h / 24 h / 72 h) | M      | 🔴 wysoki  | Wymaga P1; kody rabatowe gotowe w Stripe    |
-| P4  | „Możesz zamknąć stronę" + realny czas     | S      | 🟡 średni  | Wymaga P1                                   |
-| P5  | Fragment bajki podczas czekania           | M      | 🟡 średni+ | Mechanizm już istnieje dla paywalla         |
-| P6  | Imię dziecka na okładce przed checkoutem  | S/M    | 🟡 średni  | Czysty frontend                             |
-| P7  | Odchudzenie formularza                    | M      | 🟡 średni  | Najpierw sprawdzić dane z PostHog           |
-| P9  | Upgrade do druku na paywallu              | M      | 🟡 średni  | Podnosi AOV, nie konwersję                  |
-| P8  | Reakcja na anulowaną płatność             | S      | 🟢 niski+  |                                             |
-| P10 | Porządek w cenach i obietnicach           | S      | 🟢 niski   | Obowiązkowe przy zmianie cen na 49/99       |
+| # | Propozycja | Effort | Impact | Typ |
+|---|---|---|---|---|
+| P1 | Email wcześniej + link powrotny | M | wysoki | strukturalny |
+| P2 | Wybór stylu w wizardzie | M | wysoki | strukturalny |
+| P4 | Persystencja wizarda | S | średni–wysoki | quick win |
+| P7 | Mid-funnel eventy GA4/Ads | S | średni–wysoki | pomiar/enabler |
+| P3 | Timeout stylu 15→5 min | S | średni | quick win (interim) |
+| P5 | Scalenie kroku 1 | S | średni | quick win |
+| P6 | CTA po Pain + social proof | S | średni | quick win |
+| P8 | Serwerowe eventy odpadu | S | średni | pomiar |
+| P10 | Zarządzanie oczekiwaniem | S | średni | quick win |
+| P9 | JSON-LD + title'y | S–M | niski–średni | SEO/wolumen |
 
-### Rekomendowana kolejność — pierwsze 3 kroki
+**Rekomendowane pierwsze 3 kroki:**
 
-> **Krok 1 — P1 (+ P10 przy okazji):** zamknąć wyciek pełnego PDF-a w e-mailu i wyrównać
-> ceny. Dopóki to wisi, optymalizowanie paywalla to lanie wody do dziurawego wiadra.
->
-> **Krok 2 — P2 + P4:** doładować paywall (gwarancja, „co odblokowujesz", kotwica cenowa)
-> i uczciwie zakomunikować czas oczekiwania z obietnicą e-maila. Dwie zmiany czysto
-> tekstowo-układowe, możliwe w jeden dzień.
->
-> **Krok 3 — P3:** uruchomić sekwencję przypomnień. Od tego momentu każda wygenerowana
-> a nieopłacona bajka ma zaplanowane trzy szanse powrotu zamiast zera.
+1. **P7 + P8 (pomiar, łącznie kilka dni):** zanim ruszymy strukturę, zobaczmy liczby — odpady per krok wizarda (dane w PostHog już są, trzeba zbudować lejek i spojrzeć) plus niewidzialny dziś odpad w trakcie generacji. To rozstrzyga spory z sekcji 5 danymi zamiast opiniami.
+2. **P1 (email wcześniej + link powrotny):** największa pojedyncza dźwignia — zamienia bezpowrotne odpady w odzyskiwalne kontakty i naprawia „zamknąłem kartę = straciłem bajkę".
+3. **P2 (styl w wizardzie), z P3 jako natychmiastowym plastrem:** usuwa jedyny twardy punkt „musisz tu być" z generacji. P3 (zmiana jednej stałej) można wdrożyć od ręki, jeszcze przed decyzją o P2.
 
-Przed i po każdym kroku patrzymy na jedną liczbę: **`book_generated` → `purchase` w GA4**
-(konwersja wygenerowane → opłacone). Ona już się liczy — mamy darmową grupę kontrolną
-w danych historycznych.
+Quick winy P4/P5/P6/P10 wchodzą równolegle, w miarę mocy przerobowych — żaden nie koliduje z powyższymi.
 
 ---
 
-## 5. Otwarte pytania do decyzji (z Łukaszem)
+## 5. Otwarte pytania do dyskusji z Łukaszem
 
-1. **Ilu ludzi już dostało pełny PDF za darmo mailem?** Da się oszacować z danych
-   (wygenerowane bajki z e-mailem, bez płatności). Czy chcemy do nich wrócić z osobnym
-   mailem sprzedażowym („podobała się bajka? zamów druk / kolejną"), czy odpuszczamy?
-2. **Rabat w 3. przypomnieniu** — dawać w ogóle? Jaki poziom (−20%? −10 zł?)? Ryzyko:
-   uczymy rodziców, że warto poczekać 3 dni. Alternatywa: zamiast rabatu — bonus
-   (np. druga bajka −50%).
-3. **7 stron podglądu — za dużo, za mało?** Przy książce ~26+ stron pokazujemy ~25%.
-   Czy testujemy 5 vs 7 vs 9? (Zmiana jest tania — to parametr składania podglądu.)
-4. **Moment pokazania ceny:** dziś cena jest widoczna od ekranu „Co otrzymasz?" (przed
-   generacją). Zostawiamy (transparentność = zaufanie) czy testujemy wariant „cena
-   dopiero na paywallu"? Moja intuicja: zostawić — rodzic zaskoczony ceną na końcu
-   poczuje się złapany w pułapkę, a to grupa wyjątkowo wrażliwa na zaufanie.
-5. **Adres do druku:** zbierać przed generacją (jak dziś) czy po płatności? Po płatności
-   = krótszy formularz i mniejsza bariera, ale dodatkowy krok do obsłużenia mailowo.
-6. **Gwarancja zwrotu 14 dni** — potwierdzamy ją oficjalnie jako element oferty na
-   paywallu i cenniku? (Dziś istnieje tylko w stopce e-maila.) Jaki był dotychczas
-   realny poziom zwrotów?
-
----
-
-## Aneks: gdzie to siedzi w kodzie (dla wdrażających)
-
-| Temat                                         | Miejsce                                                                                                                         |
-| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Ekrany formularza (wizard/preview/checkout)   | `src/components/book/order-flow/` (`OrderWizard`, `OrderPreview`, `OrderCheckout`)                                              |
-| Paywall + podgląd 7 stron                     | `src/components/book/BookResult.tsx` (`BookPreviewScreen`)                                                                      |
-| E-mail „bajka gotowa" (wyciek T1)             | `convex/email.ts` (`sendBookReady`) + `convex/lib/email.ts`, wywoływany z `convex/bookPipelineHelpers.ts` (`markOrderComplete`) |
-| Bramka płatności / kody promocyjne            | `convex/stripe.ts` (`allow_promotion_codes: true` już włączone)                                                                 |
-| Gating pobrania (płatność)                    | `convex/bookPipeline.ts` (`getDownloadUrl`, `getOrderPreview`, `isPaid`)                                                        |
-| Auto-styl po 15 min / auto-dedykacja po 5 min | `convex/bookPipelineHelpers.ts` (`autoResolveStyleVotes`), `convex/bookPipeline.ts` (`autoSkipStaleDedication`)                 |
-| Ekran oczekiwania + karty edukacyjne          | `src/components/book/ProgressJourney.tsx`, `BookProgressShell.tsx`                                                              |
-| Analityka lejka                               | `src/lib/gtag.ts` (`book_generated`, `purchase`), `trackEvent(...)` w komponentach                                              |
-| Ceny (do synchronizacji przy 49/99)           | `src/lib/pricing.ts`, `src/locales/pl/book.json`, `src/data/cennik.ts`                                                          |
+1. **Czy style vote ma wartość produktową, którą chcemy zachować?** Współtworzenie bajki angażuje rodzica (efekt IKEA) — ale kosztuje odpadami. Jeśli P8 pokaże, że >20–30% głosowań kończy się auto-wyborem, argument za P2 staje się bezdyskusyjny. Gdzie stawiamy próg?
+2. **Kiedy dokładnie prosić o email (P1)?** W kroku 3 wizarda (mniej ekranów, ale email obok danych dziecka może budzić opór) czy jako mikro-krok tuż przed startem generacji („gdzie wysłać link do bajki?") — z przeniesieniem zgód RODO w to samo miejsce?
+3. **Jaka ma być obietnica czasowa?** „15 minut" jest agresywne i dziś bywa nieprawdziwe. Alternatywa: „gotowa dziś — wyślemy link mailem" (mniej sexy, zawsze prawdziwa, dobrze gra z P1).
+4. **Remarketing porzuconego wizarda:** po wdrożeniu P1 — po jakim czasie i jakim tonem przypominamy? (np. 1 h: „Twoja bajka czeka dokończona w 2 minuty"; 24 h: ostatnie przypomnienie). Ile prób?
+5. **Cena na stronie tematycznej:** transparentność („od 49 zł" przy CTA filtruje niekupujących wcześnie) vs klasyczne „najpierw wartość, cena po zaangażowaniu". Które podejście testujemy pierwsze?
+6. **Defaulty wyglądu dziecka (Blond/Niebieskie/Krótkie):** zostawić (mniej tarcia) czy wymusić świadomy wybór (ilustracje bardziej podobne do dziecka → lepszy efekt „wow" na końcu)? To pytanie o konwersję dalej w dół lejka (satysfakcja → płatność), ale pole wybiera się w tym wizardzie.
