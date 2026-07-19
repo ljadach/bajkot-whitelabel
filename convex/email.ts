@@ -110,6 +110,12 @@ export const sendBookReady = internalAction({
       console.warn('[email.sendBookReady] order not found', bookOrderId);
       return null;
     }
+    if (order.paymentStatus !== 'completed') {
+      // Paywall guard: this email hands out the full PDF link, so it must
+      // never be sent for an unpaid order regardless of who scheduled it.
+      console.warn('[email.sendBookReady] order not paid — skipping send', bookOrderId);
+      return null;
+    }
     if (!order.email) {
       console.warn('[email.sendBookReady] no email on order', bookOrderId);
       return null;

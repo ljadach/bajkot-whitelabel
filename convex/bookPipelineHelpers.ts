@@ -348,11 +348,16 @@ export const markOrderComplete = internalMutation({
       completedAt: Date.now(),
       updatedAt: Date.now(),
     });
-    // Pipeline finished and PDF is now persisted — send the delivery email.
-    // Scheduled so a Resend hiccup doesn't roll back the status flip.
-    await ctx.scheduler.runAfter(0, internal.email.sendBookReady, {
-      bookOrderId: orderId,
-    });
+    // The delivery email carries the full PDF link, so it must never leave
+    // before payment. Normal flow (generate-before-payment) sends it from
+    // billing.markBookOrderPaid; this branch covers the reverse order where
+    // the parent paid while the pipeline was still running.
+    const order = await ctx.db.get(orderId);
+    if (order?.paymentStatus === 'completed') {
+      await ctx.scheduler.runAfter(0, internal.email.sendBookReady, {
+        bookOrderId: orderId,
+      });
+    }
     return null;
   },
 });

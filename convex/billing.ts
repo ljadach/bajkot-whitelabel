@@ -104,13 +104,21 @@ export const markBookOrderPaid = internalMutation({
       stripeSessionId: args.stripeSessionId,
       updatedAt: Date.now(),
     });
-    // Hand off the "Mamy Twoje zamówienie" confirmation email. The PDF isn't
-    // ready yet — that mail is sent later from markOrderComplete. Scheduled
+    // Hand off the "Mamy Twoje zamówienie" confirmation email. Scheduled
     // rather than awaited so a Resend hiccup doesn't fail the webhook
     // (Stripe would retry, double-flipping paid status).
     await ctx.scheduler.runAfter(0, internal.email.sendOrderConfirmation, {
       bookOrderId: args.bookOrderId,
     });
+    // Generate-before-payment: by the time the webhook lands the pipeline has
+    // usually finished, so the delivery email (full PDF link) goes out here —
+    // never earlier. The reverse order (paid before the PDF exists) is
+    // covered by bookPipelineHelpers.markOrderComplete.
+    if (order.status === 'completed') {
+      await ctx.scheduler.runAfter(0, internal.email.sendBookReady, {
+        bookOrderId: args.bookOrderId,
+      });
+    }
     // PDF+Print: fire a parallel internal alert to the fulfillment inbox so
     // the team can start printing/packing while the customer's PDF download
     // is still in flight. Pipeline already ran — physical book ships in 3–5d.
