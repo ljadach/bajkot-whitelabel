@@ -6,6 +6,7 @@ import { BookBatch } from './pages/BookBatch';
 import { AdminLogs } from './pages/AdminLogs';
 import { AdminStripe } from './pages/AdminStripe';
 import { AdminAnalytics } from './pages/AdminAnalytics';
+import { AdminProto1 } from './pages/AdminProto1';
 
 const NAV_ITEMS = [
   { to: '/admin', label: 'Dashboard', icon: 'grid', end: true },
@@ -14,6 +15,7 @@ const NAV_ITEMS = [
   { to: '/admin/analytics', label: 'Analytics', icon: 'chart' },
   { to: '/admin/logs', label: 'Logs', icon: 'logs' },
   { to: '/admin/stripe', label: 'Stripe', icon: 'stripe' },
+  { to: '/admin/proto1', label: 'Proto LP', icon: 'proto' },
 ];
 
 function NavIcon({ icon }: { icon: string }) {
@@ -115,6 +117,22 @@ function NavIcon({ icon }: { icon: string }) {
           />
         </svg>
       );
+    case 'proto':
+      return (
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={1.5}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"
+          />
+        </svg>
+      );
     default:
       return null;
   }
@@ -165,6 +183,7 @@ export function AdminLayout() {
               <Route path="analytics" element={<AdminAnalytics />} />
               <Route path="logs" element={<AdminLogs />} />
               <Route path="stripe" element={<AdminStripe />} />
+              <Route path="proto1" element={<AdminProto1 />} />
             </Routes>
           </Suspense>
         </div>
