@@ -164,7 +164,8 @@ describe('normalizeIllustrationSpec — new schema', () => {
     };
     const spec = normalizeIllustrationSpec(legacy, 2);
     expect(spec.id).toBe('scene_1');
-    expect(spec.beatRef).toBe(1);
+    // beatRef is normalized to string — beat ids like '4a'/'4b' aren't numeric
+    expect(spec.beatRef).toBe('1');
     expect(spec.illustrationPrompt).toBe('Legacy prompt');
     expect(spec.composition).toBe('Child in bedroom'); // falls back from sceneDescription
     expect(spec.negativePrompt).toBe(''); // legacy had no negative
