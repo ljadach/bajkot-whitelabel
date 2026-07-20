@@ -7,6 +7,7 @@ import { AdminLogs } from './pages/AdminLogs';
 import { AdminStripe } from './pages/AdminStripe';
 import { AdminAnalytics } from './pages/AdminAnalytics';
 import { AdminProto1 } from './pages/AdminProto1';
+import { AdminProto2 } from './pages/AdminProto2';
 
 const NAV_ITEMS = [
   { to: '/admin', label: 'Dashboard', icon: 'grid', end: true },
@@ -16,6 +17,7 @@ const NAV_ITEMS = [
   { to: '/admin/logs', label: 'Logs', icon: 'logs' },
   { to: '/admin/stripe', label: 'Stripe', icon: 'stripe' },
   { to: '/admin/proto1', label: 'Proto LP', icon: 'proto' },
+  { to: '/admin/proto2', label: 'Proto LP 2', icon: 'proto' },
 ];
 
 function NavIcon({ icon }: { icon: string }) {
@@ -184,6 +186,7 @@ export function AdminLayout() {
               <Route path="logs" element={<AdminLogs />} />
               <Route path="stripe" element={<AdminStripe />} />
               <Route path="proto1" element={<AdminProto1 />} />
+              <Route path="proto2" element={<AdminProto2 />} />
             </Routes>
           </Suspense>
         </div>
