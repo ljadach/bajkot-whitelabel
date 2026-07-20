@@ -103,37 +103,25 @@ export function PricingCards() {
               <li className="flex items-start gap-2.5">
                 <i className="fa-solid fa-check text-magic-500 mt-1" />
                 <span>
-                  <strong>Profesjonalny druk</strong> w pełnym kolorze, format A5
+                  <strong>Profesjonalny druk</strong> w pełnym kolorze
                 </span>
               </li>
               <li className="flex items-start gap-2.5">
                 <i className="fa-solid fa-check text-magic-500 mt-1" />
                 <span>
-                  Twarda, lakierowana <strong>okładka</strong> z imieniem dziecka
+                  Strona dedykacyjna napisana dla dziecka przez zamawiającego
                 </span>
               </li>
               <li className="flex items-start gap-2.5">
                 <i className="fa-solid fa-check text-magic-500 mt-1" />
                 <span>
-                  Strona dedykacyjna <strong>„Ta książka należy do…"</strong>
-                </span>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <i className="fa-solid fa-check text-magic-500 mt-1" />
-                <span>
-                  <strong>Wysyłka kurierska</strong> w 3–5 dni roboczych
+                  <strong>Wysyłka kurierska</strong> do 10 dni roboczych
                 </span>
               </li>
               <li className="flex items-start gap-2.5">
                 <i className="fa-solid fa-check text-magic-500 mt-1" />
                 <span>
                   Pamiątka, którą <strong>można podarować</strong> w prezencie
-                </span>
-              </li>
-              <li className="flex items-start gap-2.5 text-magic-600">
-                <i className="fa-solid fa-gift mt-1" />
-                <span>
-                  <strong>Bezpłatna eko-koperta prezentowa</strong>
                 </span>
               </li>
             </ul>

@@ -95,7 +95,7 @@ export function CennikPage() {
               <i className="fa-solid fa-rotate-left text-calm-500" /> Gwarancja zwrotu 14 dni
             </span>
             <span className="flex items-center gap-1.5">
-              <i className="fa-solid fa-truck-fast text-calm-500" /> Wysyłka w 3–5 dni
+              <i className="fa-solid fa-truck-fast text-calm-500" /> Wysyłka do 10 dni
             </span>
           </div>
         </div>

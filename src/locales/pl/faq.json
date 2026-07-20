@@ -55,7 +55,7 @@
     },
     "bookContent": {
       "question": "Jak wygląda książka?",
-      "answer": "Każda książka zawiera: spersonalizowaną okładkę z imieniem dziecka, stronę dedykacyjną „Ta książka należy do…”, 4-6 rozdziałów z pięknymi ilustracjami oraz pytania do dyskusji z dzieckiem na końcu.",
+      "answer": "Każda książka zawiera: spersonalizowaną okładkę z imieniem dziecka, stronę dedykacyjną napisaną dla dziecka przez zamawiającego, 4-6 rozdziałów z pięknymi ilustracjami oraz pytania do dyskusji z dzieckiem na końcu.",
       "category": "content",
       "faqVisible": true,
       "pages": ["home"]
