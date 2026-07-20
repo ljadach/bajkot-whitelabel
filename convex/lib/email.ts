@@ -171,7 +171,7 @@ export function buildOrderConfirmationEmail(params: OrderConfirmationParams): {
     format === 'pdf_print'
       ? `
         <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:16px 18px;margin:24px 0;font-size:14px;color:#78350f;">
-          <strong>📦 Drukowana wersja w drodze!</strong> Profesjonalnie oprawiona książeczka jest właśnie pakowana — wyślemy ją kurierem w 3–5 dni roboczych na wskazany przez Ciebie adres.
+          <strong>📦 Drukowana wersja w drodze!</strong> Profesjonalnie oprawiona książeczka jest właśnie pakowana — wyślemy ją kurierem do 10 dni roboczych na wskazany przez Ciebie adres.
         </div>`
       : '';
 
@@ -247,7 +247,7 @@ export function buildOrderConfirmationEmail(params: OrderConfirmationParams): {
 
   const printLine =
     format === 'pdf_print'
-      ? '\nDRUKOWANA WERSJA: Książeczka jest pakowana — wyślemy ją kurierem w 3–5 dni roboczych.\n'
+      ? '\nDRUKOWANA WERSJA: Książeczka jest pakowana — wyślemy ją kurierem do 10 dni roboczych.\n'
       : '';
   const text = [
     `Dziękujemy!`,
@@ -319,7 +319,7 @@ export function buildBookReadyEmail(params: BookReadyParams): {
   const printBlock =
     format === 'pdf_print'
       ? `<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:16px 18px;margin:24px 0;font-size:14px;color:#78350f;">
-            <strong>📦 Drukowana wersja w drodze!</strong> Profesjonalnie oprawiona książeczka jest właśnie pakowana — wyślemy ją kurierem w 3–5 dni roboczych.
+            <strong>📦 Drukowana wersja w drodze!</strong> Profesjonalnie oprawiona książeczka jest właśnie pakowana — wyślemy ją kurierem do 10 dni roboczych.
           </div>`
       : '';
 
@@ -353,7 +353,7 @@ export function buildBookReadyEmail(params: BookReadyParams): {
               href: downloadUrl,
               label: '⬇ Pobierz bajkę (PDF)',
             })}
-              <div style="margin-top:14px;font-size:13px;color:#64748b;">Format A5 · PDF</div>
+              <div style="margin-top:14px;font-size:13px;color:#64748b;">PDF</div>
             </div>
 
             <div style="background:#fef2f2;border-left:3px solid #dc2626;padding:14px 18px;border-radius:8px;margin:24px 0;font-size:14px;color:#7f1d1d;">
@@ -399,7 +399,7 @@ export function buildBookReadyEmail(params: BookReadyParams): {
     : `Spersonalizowana bajka ${dlaPhrase} jest gotowa.`;
   const printLine =
     format === 'pdf_print'
-      ? '\nDRUKOWANA WERSJA: Książeczka jest pakowana — wyślemy ją kurierem w 3–5 dni roboczych.\n'
+      ? '\nDRUKOWANA WERSJA: Książeczka jest pakowana — wyślemy ją kurierem do 10 dni roboczych.\n'
       : '';
   const text = [
     `Cześć!`,
@@ -409,7 +409,7 @@ export function buildBookReadyEmail(params: BookReadyParams): {
     `>> POBIERZ BAJKĘ (PDF) <<`,
     downloadUrl,
     '',
-    `Format A5 · PDF`,
+    `PDF`,
     '',
     `UWAGA: Link aktywny do ${expiryDate} (${DOWNLOAD_LINK_TTL_DAYS} dni od zakupu). Po tym czasie pobranie wymaga kontaktu z nami.`,
     '',

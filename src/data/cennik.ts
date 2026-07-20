@@ -59,12 +59,12 @@ export const VALUE_ITEMS: readonly CennikValueItem[] = [
   {
     emoji: '📖',
     title: 'Strona dedykacyjna',
-    text: '„Ta książka należy do…" z imieniem dziecka — drobiazg, który robi ogromne wrażenie i zostaje na lata.',
+    text: 'Dedykacja napisana dla dziecka przez zamawiającego — drobiazg, który robi ogromne wrażenie i zostaje na lata.',
   },
   {
     emoji: '⚡',
     title: 'Realizacja w ~15 minut',
-    text: 'Po zamówieniu otrzymujesz PDF na maila w kilkanaście minut. Wersję drukowaną wysyłamy w 3–5 dni roboczych kurierem.',
+    text: 'Po zamówieniu otrzymujesz PDF na maila w kilkanaście minut. Wersję drukowaną wysyłamy do 10 dni roboczych kurierem.',
   },
   {
     emoji: '🛡️',
@@ -79,10 +79,9 @@ export const COMPARISON_ROWS: readonly CennikComparisonRow[] = [
   { label: '35 tematów do wyboru', pdf: 'check', print: 'check' },
   { label: 'Ilustracje w pełnym kolorze', pdf: 'check', print: 'check' },
   { label: 'Pytania do rozmowy z dzieckiem', pdf: 'check', print: 'check' },
-  { label: 'Drukowana książeczka A5', pdf: 'minus', print: 'check' },
+  { label: 'Drukowana książeczka', pdf: 'minus', print: 'check' },
   { label: 'Wysyłka kurierska', pdf: 'minus', print: 'check' },
-  { label: 'Eko-koperta prezentowa', pdf: 'minus', print: 'check' },
-  { label: 'Czas realizacji', pdf: '~15 min', print: '3–5 dni' },
+  { label: 'Czas realizacji', pdf: '~15 min', print: 'do 10 dni' },
   { label: 'Gwarancja zwrotu 14 dni', pdf: 'check', print: 'check' },
 ];
 
@@ -145,7 +144,7 @@ export const FAQ_ITEMS: readonly CennikFaqItem[] = [
     id: 'gift',
     question: 'Czy mogę kupić bajkę w prezencie dla kogoś innego?',
     answer:
-      'Oczywiście. Przy zamówieniu pakietu PDF + Druk możesz podać dane swojej karty oraz adres dostawy bliskich — wyślemy fizyczną książeczkę w eko-kopercie z dedykacją od Ciebie prosto do obdarowanej rodziny.',
+      'Oczywiście. Przy zamówieniu pakietu PDF + Druk możesz podać dane swojej karty oraz adres dostawy bliskich — wyślemy fizyczną książeczkę z dedykacją od Ciebie prosto do obdarowanej rodziny.',
   },
   {
     id: 'professionals-discount',
