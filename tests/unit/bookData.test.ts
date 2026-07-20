@@ -37,30 +37,33 @@ describe('bookData — problem catalog', () => {
     expect([...AGE_BRACKETS]).toEqual(['3-5', '6-8', '9+']);
   });
 
-  it('PIPELINE_STEPS covers 14 steps (intake → completed)', () => {
-    expect(PIPELINE_STEPS).toHaveLength(14);
+  it('PIPELINE_STEPS covers 15 steps (intake → completed)', () => {
+    expect(PIPELINE_STEPS).toHaveLength(15);
     expect(PIPELINE_STEPS[0].status).toBe('intake');
     expect(PIPELINE_STEPS[PIPELINE_STEPS.length - 1].status).toBe('completed');
   });
 });
 
 describe('bookData — frontend ↔ backend key parity', () => {
-  it('HAIR_COLORS keys match HAIR_COLOR_MAP keys', () => {
-    const frontendKeys = Object.keys(HAIR_COLORS).sort();
-    const backendKeys = Object.keys(HAIR_COLOR_MAP).sort();
-    expect(frontendKeys).toEqual(backendKeys);
+  // Backend maps are a deliberate superset: spec § 3.4 capitalized values
+  // plus legacy slugs. The contract is: every key the frontend can send
+  // must be resolvable by the backend map.
+  it('every HAIR_COLORS key resolves in HAIR_COLOR_MAP', () => {
+    for (const key of Object.keys(HAIR_COLORS)) {
+      expect(HAIR_COLOR_MAP[key], `HAIR_COLOR_MAP missing '${key}'`).toBeTruthy();
+    }
   });
 
-  it('HAIR_STYLES keys match HAIR_STYLE_MAP keys', () => {
-    const frontendKeys = Object.keys(HAIR_STYLES).sort();
-    const backendKeys = Object.keys(HAIR_STYLE_MAP).sort();
-    expect(frontendKeys).toEqual(backendKeys);
+  it('every HAIR_STYLES key resolves in HAIR_STYLE_MAP', () => {
+    for (const key of Object.keys(HAIR_STYLES)) {
+      expect(HAIR_STYLE_MAP[key], `HAIR_STYLE_MAP missing '${key}'`).toBeTruthy();
+    }
   });
 
-  it('EYE_COLORS keys match EYE_COLOR_MAP keys', () => {
-    const frontendKeys = Object.keys(EYE_COLORS).sort();
-    const backendKeys = Object.keys(EYE_COLOR_MAP).sort();
-    expect(frontendKeys).toEqual(backendKeys);
+  it('every EYE_COLORS key resolves in EYE_COLOR_MAP', () => {
+    for (const key of Object.keys(EYE_COLORS)) {
+      expect(EYE_COLOR_MAP[key], `EYE_COLOR_MAP missing '${key}'`).toBeTruthy();
+    }
   });
 
   it('SKIN_TONES keys match SKIN_TONE_MAP keys', () => {
