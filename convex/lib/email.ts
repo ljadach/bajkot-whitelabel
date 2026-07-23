@@ -26,11 +26,21 @@ const BOOK_PRICE_PRINT_PLN = 99;
 
 const DOWNLOAD_LINK_TTL_DAYS = 30;
 
+export interface EmailAttachment {
+  filename: string;
+  /** File content, base64-encoded. */
+  contentBase64: string;
+}
+
 interface SendEmailParams {
-  to: string;
+  to: string | string[];
+  cc?: string[];
+  bcc?: string[];
+  replyTo?: string;
   subject: string;
   html: string;
   text?: string;
+  attachments?: EmailAttachment[];
 }
 
 let resendInstance: Resend | null = null;
@@ -52,10 +62,16 @@ export async function sendEmail(params: SendEmailParams): Promise<{ ok: boolean;
     const { data, error } = await client.emails.send({
       from,
       to: params.to,
-      replyTo: DEFAULT_REPLY_TO,
+      cc: params.cc,
+      bcc: params.bcc,
+      replyTo: params.replyTo ?? DEFAULT_REPLY_TO,
       subject: params.subject,
       html: params.html,
       text: params.text,
+      attachments: params.attachments?.map((a) => ({
+        filename: a.filename,
+        content: a.contentBase64,
+      })),
     });
     if (error) {
       console.error('[email] Resend returned error:', error);
