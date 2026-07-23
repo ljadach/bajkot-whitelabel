@@ -58,6 +58,8 @@ Wymagania: `GEMINI_API_KEY` w `.env.local`, `jq`, `uv` (skrypt skill-owy używa 
 | `theme-bohaterowie.png`         | topics.ts → `niska-samoocena` heroImage           |
 | `theme-lekarz.png`              | topics.ts → `lek-przed-lekarzem` heroImage        |
 | `theme-niesmialosc.png`         | topics.ts → `niesmialosci` heroImage              |
+| `theme-moczenie-nocne.png`      | topics.ts → `moczenie-nocne` heroImage            |
+| `theme-wizyta-szpital.png`      | topics.ts → `wizyta-w-szpitalu` heroImage         |
 | `theme-rodzenstwo-klotnia.png`  | topics.ts → `rywalizacja-rodzenstwo` heroImage    |
 | `theme-przeprowadzka.png`       | topics.ts → `przeprowadzka` heroImage             |
 
