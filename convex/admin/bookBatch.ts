@@ -168,9 +168,99 @@ const AGENT_STATUS_MAP: Record<string, { status: string; agent: string }> = {
   A11: { status: 'delivering', agent: 'A11' },
 };
 
+const nullable = <T extends Parameters<typeof v.union>[0]>(validator: T) =>
+  v.union(validator, v.null());
+
 export const getOrderDetail = query({
   args: { orderId: v.id('bookOrders') },
-  returns: v.any(),
+  returns: v.union(
+    v.null(),
+    v.object({
+      _id: v.id('bookOrders'),
+      childName: v.string(),
+      ageBracket: v.union(v.literal('3-5'), v.literal('6-8'), v.literal('9+')),
+      gender: v.union(v.literal('boy'), v.literal('girl')),
+      problemId: v.string(),
+      status: v.string(),
+      currentAgent: nullable(v.string()),
+      error: nullable(v.string()),
+      chosenStyle: nullable(v.string()),
+      retryCount: v.number(),
+      skipQaReviews: v.boolean(),
+      llmCallCount: nullable(v.number()),
+      // Customer data
+      email: nullable(v.string()),
+      clerkUserId: v.string(),
+      format: nullable(v.union(v.literal('pdf'), v.literal('pdf_print'))),
+      paymentStatus: nullable(
+        v.union(v.literal('pending'), v.literal('completed'), v.literal('failed')),
+      ),
+      shippingAddress: nullable(
+        v.object({
+          fullName: v.string(),
+          phone: v.string(),
+          street: v.string(),
+          zip: v.string(),
+          city: v.string(),
+        }),
+      ),
+      createdAt: v.number(),
+      updatedAt: nullable(v.number()),
+      completedAt: nullable(v.number()),
+      // Artifacts (raw agent JSON strings)
+      orderData: nullable(v.string()),
+      characterProfile: nullable(v.string()),
+      storyBlueprint: nullable(v.string()),
+      storyDraft: nullable(v.string()),
+      psychReview: nullable(v.string()),
+      illustrationPlan: nullable(v.string()),
+      visualQa: nullable(v.string()),
+      finalQa: nullable(v.string()),
+      // Media
+      illustrationUrls: v.array(
+        v.object({
+          illustrationId: v.string(),
+          url: nullable(v.string()),
+          prompt: v.string(),
+          width: v.number(),
+          height: v.number(),
+          sceneRef: v.optional(v.number()),
+        }),
+      ),
+      styleVoteUrlA: nullable(v.string()),
+      styleVoteUrlB: nullable(v.string()),
+      pdfUrl: nullable(v.string()),
+      r2FullKey: nullable(v.string()),
+      r2PreviewKey: nullable(v.string()),
+      // Print-ready
+      printPdfStatus: nullable(
+        v.union(
+          v.literal('queued'),
+          v.literal('rendering'),
+          v.literal('ready'),
+          v.literal('failed'),
+        ),
+      ),
+      printPdfFormat: nullable(v.union(v.literal('a5'), v.literal('a4'), v.literal('kdp'))),
+      printPdfUpscale: nullable(v.union(v.literal('esrgan'), v.literal('none'))),
+      printPdfError: nullable(v.string()),
+      printPdfRequestedAt: nullable(v.number()),
+      printPdfMeta: nullable(
+        v.object({
+          sizeBytes: v.number(),
+          coverSizeBytes: v.optional(v.number()),
+          pages: v.optional(v.number()),
+          pipelineVersion: v.optional(v.string()),
+          durationMs: v.optional(v.number()),
+          generatedAt: v.number(),
+          cached: v.optional(v.boolean()),
+        }),
+      ),
+      hasPrintPdf: v.boolean(),
+      hasPrintCover: v.boolean(),
+      hasPrintLog: v.boolean(),
+    }),
+  ),
   handler: async (ctx, { orderId }) => {
     await assertAdmin(ctx);
 

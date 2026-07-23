@@ -226,8 +226,9 @@ Pipeline processes orders through agents A0–A11:
 ### Admin Security
 
 - All admin functions call `assertAdmin(ctx)` which returns `{ subject }` for audit trail
+- Admin role = Clerk JWT custom claim `isAdmin` (from `publicMetadata.isAdmin`, set only via Clerk Dashboard)
 - Admin mutations trigger `auditLog()` entries
-- Rate limiting via `checkAdminRateLimit()` on expensive operations
+- No rate limiting on admin endpoints — `checkAdminRateLimit()` exists in `adminGuards.ts` but is intentionally unused (admin-only surface, decided 2026-07-23)
 
 ## Environment Variables
 
