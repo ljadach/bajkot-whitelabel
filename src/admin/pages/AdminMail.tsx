@@ -2,15 +2,7 @@ import { useState, useRef } from 'react';
 import { useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { toast } from 'sonner';
-
-// Mirrors backend limit in convex/admin/email.ts.
-const MAX_ATTACHMENT_TOTAL_BYTES = 10 * 1024 * 1024;
-
-interface Attachment {
-  filename: string;
-  contentBase64: string;
-  sizeBytes: number;
-}
+import { MAX_ATTACHMENT_TOTAL_BYTES } from '../../../convex/lib/emailLimits';
 
 function parseAddresses(raw: string): string[] {
   return raw
@@ -44,31 +36,28 @@ export function AdminMail() {
   const [bcc, setBcc] = useState('');
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [attachments, setAttachments] = useState<File[]>([]);
   const [sending, setSending] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const totalAttachmentBytes = attachments.reduce((s, a) => s + a.sizeBytes, 0);
+  const totalAttachmentBytes = attachments.reduce((s, f) => s + f.size, 0);
 
-  const handleFiles = async (files: FileList | null) => {
+  // Files stay as File objects until send — base64 (≈4/3 of the file size)
+  // is only produced in handleSend, not held in React state per keystroke.
+  const handleFiles = (files: FileList | null) => {
     if (!files) return;
-    const next = [...attachments];
-    for (const file of Array.from(files)) {
-      if (next.some((a) => a.filename === file.name)) continue;
-      const contentBase64 = await readFileAsBase64(file);
-      next.push({ filename: file.name, contentBase64, sizeBytes: file.size });
-    }
-    const total = next.reduce((s, a) => s + a.sizeBytes, 0);
+    const fresh = Array.from(files).filter((f) => !attachments.some((a) => a.name === f.name));
+    const total = totalAttachmentBytes + fresh.reduce((s, f) => s + f.size, 0);
     if (total > MAX_ATTACHMENT_TOTAL_BYTES) {
       toast.error(`Załączniki przekraczają limit ${formatSize(MAX_ATTACHMENT_TOTAL_BYTES)}`);
       return;
     }
-    setAttachments(next);
+    setAttachments([...attachments, ...fresh]);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const removeAttachment = (filename: string) =>
-    setAttachments((prev) => prev.filter((a) => a.filename !== filename));
+    setAttachments((prev) => prev.filter((f) => f.name !== filename));
 
   const toList = parseAddresses(to);
   const canSend = toList.length > 0 && subject.trim() !== '' && body.trim() !== '' && !sending;
@@ -76,15 +65,20 @@ export function AdminMail() {
   const handleSend = async () => {
     setSending(true);
     try {
+      const encoded = await Promise.all(
+        attachments.map(async (file) => ({
+          filename: file.name,
+          contentBase64: await readFileAsBase64(file),
+        })),
+      );
       const result = await sendAction({
         to: toList,
-        cc: parseAddresses(cc).length ? parseAddresses(cc) : undefined,
-        bcc: parseAddresses(bcc).length ? parseAddresses(bcc) : undefined,
+        // Backend treats empty arrays as "no cc/bcc" — no need to normalize here.
+        cc: parseAddresses(cc),
+        bcc: parseAddresses(bcc),
         subject: subject.trim(),
         body,
-        attachments: attachments.length
-          ? attachments.map(({ filename, contentBase64 }) => ({ filename, contentBase64 }))
-          : undefined,
+        attachments: encoded.length ? encoded : undefined,
       });
       if (result.ok) {
         toast.success(`Wysłano do: ${toList.join(', ')}`);
@@ -187,23 +181,22 @@ export function AdminMail() {
             ref={fileInputRef}
             type="file"
             multiple
-            onChange={(e) => void handleFiles(e.target.files)}
+            onChange={(e) => handleFiles(e.target.files)}
             className="block text-sm text-neutral-500 file:mr-3 file:rounded-md file:border-0 file:bg-neutral-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-neutral-700 hover:file:bg-neutral-200"
           />
           {attachments.length > 0 && (
             <ul className="mt-2 space-y-1">
               {attachments.map((a) => (
                 <li
-                  key={a.filename}
+                  key={a.name}
                   className="flex items-center justify-between rounded-md bg-neutral-50 border border-neutral-200 px-3 py-1.5 text-xs"
                 >
                   <span className="truncate">
-                    📎 {a.filename}{' '}
-                    <span className="text-neutral-400">({formatSize(a.sizeBytes)})</span>
+                    📎 {a.name} <span className="text-neutral-400">({formatSize(a.size)})</span>
                   </span>
                   <button
                     type="button"
-                    onClick={() => removeAttachment(a.filename)}
+                    onClick={() => removeAttachment(a.name)}
                     className="ml-3 text-neutral-400 hover:text-red-600 font-semibold"
                   >
                     usuń

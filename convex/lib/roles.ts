@@ -14,6 +14,7 @@
 import { GenericActionCtx, GenericMutationCtx, GenericQueryCtx } from 'convex/server';
 import { DataModel, Id } from '../_generated/dataModel';
 import { sha256Hex, timingSafeEqual } from './landingToken';
+import { LANDING_USER_ID } from './userSentinels';
 
 export type Role = 'admin';
 
@@ -103,7 +104,7 @@ export async function assertAdmin(ctx: AnyCtx): Promise<{ subject: string }> {
 
 type DbCtx = GenericQueryCtx<DataModel> | GenericMutationCtx<DataModel>;
 
-export const LANDING_USER_ID = 'landing-user' as const;
+export { LANDING_USER_ID };
 
 /**
  * Assert the current user owns the given bookOrder.

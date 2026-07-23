@@ -1,13 +1,14 @@
 import { Link, useNavigate } from 'react-router';
 import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
-import { STATUS_COLORS } from '../statusColors';
+import { STATUS_COLORS, PAYMENT_BADGES } from '../statusColors';
 import { timeAgo } from '../../lib/formatTime';
+import { TERMINAL_STATUSES } from '../../../convex/lib/pipelineStateMachine';
+import type { PipelineStatus } from '../../../convex/lib/pipelineStateMachine';
 
 const RECENT_LIMIT = 25;
 
-// Statuses that need admin eyes: failures always, plus print orders (shipping).
-const TERMINAL_STATUSES = new Set(['completed', 'failed', 'paused']);
+const isRunning = (status: string) => !TERMINAL_STATUSES.has(status as PipelineStatus);
 
 const NAV_CARDS = [
   {
@@ -54,7 +55,7 @@ export function AdminDashboard() {
 
   const recent = orders?.slice(0, RECENT_LIMIT);
   const failedCount = orders?.filter((o) => o.status === 'failed').length ?? 0;
-  const inProgressCount = orders?.filter((o) => !TERMINAL_STATUSES.has(o.status)).length ?? 0;
+  const inProgressCount = orders?.filter((o) => isRunning(o.status)).length ?? 0;
   const unshippedPrints =
     orders?.filter((o) => o.format === 'pdf_print' && o.paymentStatus === 'completed').length ?? 0;
 
@@ -156,20 +157,18 @@ export function AdminDashboard() {
                       >
                         {order.status}
                       </span>
-                      {order.currentAgent && !TERMINAL_STATUSES.has(order.status) && (
+                      {order.currentAgent && isRunning(order.status) && (
                         <span className="ml-1.5 text-xs text-neutral-400">
                           {order.currentAgent}
                         </span>
                       )}
                     </td>
                     <td className="px-5 py-3">
-                      {order.paymentStatus === 'completed' ? (
-                        <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-full">
-                          OPŁACONE
-                        </span>
-                      ) : order.paymentStatus === 'failed' ? (
-                        <span className="text-xs font-bold text-red-700 bg-red-100 px-1.5 py-0.5 rounded-full">
-                          NIEUDANA
+                      {order.paymentStatus && order.paymentStatus !== 'pending' ? (
+                        <span
+                          className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${PAYMENT_BADGES[order.paymentStatus].cls}`}
+                        >
+                          {PAYMENT_BADGES[order.paymentStatus].label}
                         </span>
                       ) : (
                         <span className="text-xs text-neutral-400">—</span>

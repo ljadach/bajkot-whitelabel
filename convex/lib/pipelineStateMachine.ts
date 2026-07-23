@@ -52,6 +52,14 @@ export const POST_CONVERGENCE_STATUSES: ReadonlySet<PipelineStatus> = new Set([
   'failed',
 ]);
 
+// Statuses where the pipeline is no longer running. Pure module — safe to
+// import from the frontend (admin dashboard) as well as agents.
+export const TERMINAL_STATUSES: ReadonlySet<PipelineStatus> = new Set([
+  'completed',
+  'failed',
+  'paused',
+]);
+
 /**
  * Guard: should we allow this status transition?
  *

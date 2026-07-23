@@ -16,3 +16,11 @@ export const STATUS_COLORS: Record<string, string> = {
   failed: 'bg-red-100 text-red-800',
   paused: 'bg-yellow-100 text-yellow-800',
 };
+
+// Stripe paymentStatus → badge class + Polish label, shared by the dashboard
+// and the order-detail customer section.
+export const PAYMENT_BADGES: Record<string, { cls: string; label: string }> = {
+  completed: { cls: 'bg-emerald-100 text-emerald-700', label: 'Opłacone' },
+  pending: { cls: 'bg-amber-100 text-amber-700', label: 'Nieopłacone' },
+  failed: { cls: 'bg-red-100 text-red-700', label: 'Płatność nieudana' },
+};

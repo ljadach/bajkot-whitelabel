@@ -12,7 +12,8 @@ import { PROBLEMS } from '../../lib/bookData';
 import type { Id } from '../../../convex/_generated/dataModel';
 import { toast } from 'sonner';
 import { OrderTimeline } from '../../components/book/OrderTimeline';
-import { STATUS_COLORS } from '../statusColors';
+import { STATUS_COLORS, PAYMENT_BADGES } from '../statusColors';
+import { LANDING_USER_ID, CLI_USER_ID } from '../../../convex/lib/userSentinels';
 
 type ValidationResult = { index: number; profile: BatchProfile; valid: boolean; errors: string[] };
 
@@ -490,16 +491,10 @@ interface CustomerDetail {
 }
 
 function customerSource(clerkUserId: string): string {
-  if (clerkUserId === 'landing-user') return 'Landing (bez konta)';
-  if (clerkUserId === 'cli-user') return 'CLI (test)';
+  if (clerkUserId === LANDING_USER_ID) return 'Landing (bez konta)';
+  if (clerkUserId === CLI_USER_ID) return 'CLI (test)';
   return 'Konto Clerk';
 }
-
-const PAYMENT_BADGES: Record<string, string> = {
-  completed: 'bg-emerald-100 text-emerald-700',
-  pending: 'bg-amber-100 text-amber-700',
-  failed: 'bg-red-100 text-red-700',
-};
 
 function CustomerSection({ detail }: { detail: CustomerDetail }) {
   const isPrint = detail.format === 'pdf_print';
@@ -529,15 +524,11 @@ function CustomerSection({ detail }: { detail: CustomerDetail }) {
         >
           {isPrint ? 'PDF + Druk' : 'PDF'}
         </span>
-        {detail.paymentStatus && (
+        {detail.paymentStatus && PAYMENT_BADGES[detail.paymentStatus] && (
           <span
-            className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${PAYMENT_BADGES[detail.paymentStatus] ?? 'bg-neutral-100 text-neutral-600'}`}
+            className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${PAYMENT_BADGES[detail.paymentStatus].cls}`}
           >
-            {detail.paymentStatus === 'completed'
-              ? 'Opłacone'
-              : detail.paymentStatus === 'pending'
-                ? 'Nieopłacone'
-                : 'Płatność nieudana'}
+            {PAYMENT_BADGES[detail.paymentStatus].label}
           </span>
         )}
       </div>
