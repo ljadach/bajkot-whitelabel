@@ -8,9 +8,11 @@
  * @module
  */
 
+import type * as admin_audit from '../admin/audit.js';
 import type * as admin_bookBatch from '../admin/bookBatch.js';
 import type * as admin_bookPrompts from '../admin/bookPrompts.js';
 import type * as admin_config from '../admin/config.js';
+import type * as admin_email from '../admin/email.js';
 import type * as admin_printPdf from '../admin/printPdf.js';
 import type * as admin_stripe from '../admin/stripe.js';
 import type * as analytics from '../analytics.js';
@@ -79,9 +81,11 @@ import type * as stripeHttp from '../stripeHttp.js';
 import type { ApiFromModules, FilterApi, FunctionReference } from 'convex/server';
 
 declare const fullApi: ApiFromModules<{
+  'admin/audit': typeof admin_audit;
   'admin/bookBatch': typeof admin_bookBatch;
   'admin/bookPrompts': typeof admin_bookPrompts;
   'admin/config': typeof admin_config;
+  'admin/email': typeof admin_email;
   'admin/printPdf': typeof admin_printPdf;
   'admin/stripe': typeof admin_stripe;
   analytics: typeof analytics;

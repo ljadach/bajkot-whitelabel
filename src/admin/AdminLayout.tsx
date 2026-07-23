@@ -5,6 +5,7 @@ import { AdminConfig } from './pages/AdminConfig';
 import { BookBatch } from './pages/BookBatch';
 import { AdminLogs } from './pages/AdminLogs';
 import { AdminStripe } from './pages/AdminStripe';
+import { AdminMail } from './pages/AdminMail';
 import { AdminAnalytics } from './pages/AdminAnalytics';
 import { AdminProto1 } from './pages/AdminProto1';
 import { AdminProto2 } from './pages/AdminProto2';
@@ -13,6 +14,7 @@ const NAV_ITEMS = [
   { to: '/admin', label: 'Dashboard', icon: 'grid', end: true },
   { to: '/admin/config', label: 'Config', icon: 'settings' },
   { to: '/admin/batch', label: 'Book Batch', icon: 'stack' },
+  { to: '/admin/mail', label: 'Mail', icon: 'mail' },
   { to: '/admin/analytics', label: 'Analytics', icon: 'chart' },
   { to: '/admin/logs', label: 'Logs', icon: 'logs' },
   { to: '/admin/stripe', label: 'Stripe', icon: 'stripe' },
@@ -68,6 +70,22 @@ function NavIcon({ icon }: { icon: string }) {
             strokeLinecap="round"
             strokeLinejoin="round"
             d="M6.429 9.75 2.25 12l4.179 2.25m0-4.5 5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L12 12.75l-5.571-3m11.142 0 4.179 2.25L12 17.25l-9.75-5.25 4.179-2.25m11.142 0 4.179 2.25L12 21.75l-9.75-5.25 4.179-2.25"
+          />
+        </svg>
+      );
+    case 'mail':
+      return (
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={1.5}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
           />
         </svg>
       );
@@ -182,6 +200,7 @@ export function AdminLayout() {
               <Route index element={<AdminDashboard />} />
               <Route path="config" element={<AdminConfig />} />
               <Route path="batch" element={<BookBatch />} />
+              <Route path="mail" element={<AdminMail />} />
               <Route path="analytics" element={<AdminAnalytics />} />
               <Route path="logs" element={<AdminLogs />} />
               <Route path="stripe" element={<AdminStripe />} />

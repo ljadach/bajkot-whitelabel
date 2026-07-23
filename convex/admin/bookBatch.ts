@@ -10,85 +10,6 @@ import { Id } from '../_generated/dataModel';
 import { assertAdmin } from '../lib/roles';
 import { assertBulkLimit, auditLog } from '../lib/adminGuards';
 
-// ── Pipeline stats (admin dashboard) ─────────────────────────
-
-export const getPipelineStats = query({
-  args: {},
-  returns: v.object({
-    totalOrders: v.number(),
-    completedOrders: v.number(),
-    failedOrders: v.number(),
-    inProgressOrders: v.number(),
-    avgCompletionTimeMs: v.union(v.number(), v.null()),
-    successRate: v.number(),
-    ordersByStatus: v.any(),
-    recentOrders: v.array(
-      v.object({
-        _id: v.id('bookOrders'),
-        childName: v.string(),
-        status: v.string(),
-        currentAgent: v.union(v.string(), v.null()),
-        createdAt: v.number(),
-      }),
-    ),
-  }),
-  handler: async (ctx) => {
-    await assertAdmin(ctx);
-
-    const allOrders = await ctx.db.query('bookOrders').order('desc').take(500);
-
-    const totalOrders = allOrders.length;
-
-    const ordersByStatus: Record<string, number> = {};
-    let completedOrders = 0;
-    let failedOrders = 0;
-    let inProgressOrders = 0;
-    let totalCompletionTime = 0;
-    let completionCount = 0;
-
-    for (const order of allOrders) {
-      // Count by status
-      ordersByStatus[order.status] = (ordersByStatus[order.status] || 0) + 1;
-
-      if (order.status === 'completed') {
-        completedOrders++;
-        if (order.completedAt) {
-          totalCompletionTime += order.completedAt - order.createdAt;
-          completionCount++;
-        }
-      } else if (order.status === 'failed') {
-        failedOrders++;
-      } else {
-        inProgressOrders++;
-      }
-    }
-
-    const avgCompletionTimeMs = completionCount > 0 ? totalCompletionTime / completionCount : null;
-    const denominator = completedOrders + failedOrders;
-    const successRate = denominator > 0 ? Math.round((completedOrders / denominator) * 100) : 0;
-
-    // Recent 10 orders
-    const recentOrders = allOrders.slice(0, 10).map((o) => ({
-      _id: o._id,
-      childName: o.childName,
-      status: o.status,
-      currentAgent: o.currentAgent ?? null,
-      createdAt: o.createdAt,
-    }));
-
-    return {
-      totalOrders,
-      completedOrders,
-      failedOrders,
-      inProgressOrders,
-      avgCompletionTimeMs,
-      successRate,
-      ordersByStatus,
-      recentOrders,
-    };
-  },
-});
-
 // ── List all book orders (admin view) ────────────────────────
 
 export const listOrders = query({
@@ -109,6 +30,7 @@ export const listOrders = query({
         v.literal('failed'),
         v.null(),
       ),
+      email: v.union(v.string(), v.null()),
       createdAt: v.number(),
     }),
   ),
@@ -127,6 +49,7 @@ export const listOrders = query({
       skipQaReviews: o.skipQaReviews ?? false,
       format: o.format ?? null,
       paymentStatus: o.paymentStatus ?? null,
+      email: o.email ?? null,
       createdAt: o.createdAt,
     }));
   },
@@ -296,6 +219,12 @@ export const getOrderDetail = query({
       retryCount: order.retryCount ?? 0,
       skipQaReviews: order.skipQaReviews ?? false,
       llmCallCount: order.llmCallCount ?? null,
+      // Customer data — who ordered, how they paid, where to ship the print.
+      email: order.email ?? null,
+      clerkUserId: order.clerkUserId,
+      format: order.format ?? null,
+      paymentStatus: order.paymentStatus ?? null,
+      shippingAddress: order.shippingAddress ?? null,
       createdAt: order.createdAt,
       updatedAt: order.updatedAt ?? null,
       completedAt: order.completedAt ?? null,
@@ -445,142 +374,6 @@ export const regeneratePdf = action({
 
     await ctx.scheduler.runAfter(0, internal.bookAgents.composePdf, { orderId });
     return null;
-  },
-});
-
-// ── DTP Lab: experimental render ──────────────────────────────
-// Builds a brief with the requested experimental flags, calls typst-render
-// directly, stores the result under experiments/<orderId>/<timestamp>.pdf
-// in R2 and returns a presigned URL. Crucially: does NOT touch the order's
-// r2FullKey/r2PreviewKey, so the production PDF the parent eventually
-// downloads is left exactly as the pipeline produced it.
-
-const EXPERIMENT_PREFIX = 'experiments';
-
-export const composeExperimentalPdf = action({
-  args: {
-    orderId: v.id('bookOrders'),
-    options: v.object({
-      // Typography
-      dropCaps: v.optional(v.boolean()),
-      widerMargins: v.optional(v.boolean()),
-      looseLineGap: v.optional(v.boolean()),
-      noPageNumbers: v.optional(v.boolean()),
-      // Color (manual override or auto-from-category)
-      themeColor: v.optional(v.string()),
-      bgTitleOverride: v.optional(v.string()),
-      ornament: v.optional(v.string()),
-      autoCategoryTheme: v.optional(v.boolean()),
-      // Sequence
-      singleBlankAfterCover: v.optional(v.boolean()),
-      removeKoniecSentinel: v.optional(v.boolean()),
-      chapterHeaders: v.optional(v.boolean()),
-      // Imposition
-      printFormat: v.optional(v.union(v.literal('booklet'), v.literal('single'))),
-    }),
-  },
-  returns: v.object({
-    outputKey: v.string(),
-    presignedUrl: v.string(),
-    pages: v.number(),
-    sizeKb: v.number(),
-    durationMs: v.number(),
-  }),
-  handler: async (ctx, { orderId, options }) => {
-    await assertAdmin(ctx);
-
-    const renderUrl = process.env.RENDER_SERVICE_URL;
-    const renderSecret = process.env.RENDER_SHARED_SECRET;
-    if (!renderUrl || !renderSecret) {
-      throw new Error('RENDER_SERVICE_URL or RENDER_SHARED_SECRET missing');
-    }
-
-    const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
-    if (!order?.storyDraft) throw new Error('Order has no storyDraft — cannot compose');
-
-    const illustrations = await ctx.runQuery(internal.bookPipelineHelpers.getIllustrations, {
-      orderId,
-    });
-    const briefIllustrations = await Promise.all(
-      illustrations.map(async (i) => {
-        const url = await ctx.storage.getUrl(i.storageId);
-        if (!url) throw new Error(`Illustration ${i.illustrationId} has no URL`);
-        return { illustrationId: i.illustrationId, url };
-      }),
-    );
-
-    const { buildRenderBrief } = await import('../lib/buildRenderBrief');
-    const { categoryThemeFor } = await import('../../src/lib/bookData');
-    const ts = Date.now();
-    const outputKey = `${EXPERIMENT_PREFIX}/${orderId}/${ts}.pdf`;
-
-    // Resolve theme: explicit themeColor wins; fallback to auto-from-category.
-    let resolvedThemeColor = options.themeColor;
-    let resolvedBg = options.bgTitleOverride;
-    let resolvedOrnament = options.ornament;
-    let categoryTagline: string | undefined;
-    if (options.autoCategoryTheme && !resolvedThemeColor) {
-      const theme = categoryThemeFor(order.problemId);
-      if (theme) {
-        resolvedThemeColor = theme.color;
-        resolvedBg = resolvedBg ?? theme.bgTitle;
-        resolvedOrnament = resolvedOrnament ?? theme.ornament;
-        categoryTagline = theme.tagline;
-      }
-    }
-
-    const brief = buildRenderBrief({
-      jobId: `exp-${orderId}-${ts}`,
-      mode: 'full',
-      order,
-      illustrations: briefIllustrations,
-      outputKey,
-      force: true,
-      experimental: {
-        dropCaps: options.dropCaps,
-        widerMargins: options.widerMargins,
-        looseLineGap: options.looseLineGap,
-        noPageNumbers: options.noPageNumbers,
-        themeColor: resolvedThemeColor,
-        bgTitleOverride: resolvedBg,
-        ornament: resolvedOrnament,
-        categoryTagline,
-        singleBlankAfterCover: options.singleBlankAfterCover,
-        removeKoniecSentinel: options.removeKoniecSentinel,
-        chapterHeaders: options.chapterHeaders,
-        printFormat: options.printFormat,
-      },
-    });
-
-    const ac = new AbortController();
-    const timer = setTimeout(() => ac.abort(), 120_000);
-    let result: { outputKey: string; sizeBytes: number; pages: number; durationMs: number };
-    try {
-      const res = await fetch(`${renderUrl.replace(/\/$/, '')}/render`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${renderSecret}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(brief),
-        signal: ac.signal,
-      });
-      if (!res.ok) {
-        const txt = await res.text().catch(() => '');
-        throw new Error(`render ${res.status}: ${txt.slice(0, 500)}`);
-      }
-      result = await res.json();
-    } finally {
-      clearTimeout(timer);
-    }
-
-    const { presignR2GetUrl } = await import('../lib/r2Presign');
-    const presignedUrl = await presignR2GetUrl(result.outputKey);
-
-    return {
-      outputKey: result.outputKey,
-      presignedUrl,
-      pages: result.pages,
-      sizeKb: Math.round(result.sizeBytes / 1024),
-      durationMs: result.durationMs,
-    };
   },
 });
 

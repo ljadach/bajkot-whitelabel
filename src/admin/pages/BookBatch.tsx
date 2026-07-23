@@ -16,7 +16,7 @@ import { STATUS_COLORS } from '../statusColors';
 
 type ValidationResult = { index: number; profile: BatchProfile; valid: boolean; errors: string[] };
 
-type Tab = 'launch' | 'orders' | 'prompts' | 'dtp';
+type Tab = 'launch' | 'orders' | 'prompts';
 
 const AGENT_LIST = ['A0', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11'];
 
@@ -52,8 +52,7 @@ function downloadJson(content: string, filename: string) {
 export function BookBatch() {
   const [searchParams, setSearchParams] = useSearchParams();
   const urlTab = searchParams.get('tab');
-  const activeTab: Tab =
-    urlTab === 'orders' || urlTab === 'prompts' || urlTab === 'dtp' ? urlTab : 'launch';
+  const activeTab: Tab = urlTab === 'orders' || urlTab === 'prompts' ? urlTab : 'launch';
 
   const switchTab = (tab: Tab) =>
     setSearchParams(tab === 'launch' ? {} : { tab }, { replace: true });
@@ -74,7 +73,6 @@ export function BookBatch() {
             ['launch', 'Launch'],
             ['orders', 'Orders'],
             ['prompts', 'Prompts'],
-            ['dtp', 'DTP Lab'],
           ] as [Tab, string][]
         ).map(([tab, label]) => (
           <button
@@ -94,7 +92,6 @@ export function BookBatch() {
       {activeTab === 'launch' && <LaunchTab />}
       {activeTab === 'orders' && <OrdersTab />}
       {activeTab === 'prompts' && <PromptsTab />}
-      {activeTab === 'dtp' && <DtpLabTab />}
     </div>
   );
 }
@@ -364,7 +361,12 @@ function LaunchTab() {
 
 function OrdersTab() {
   const orders = useQuery(api.admin.bookBatch.listOrders);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  // Deep links (dashboard, print-alert email) open with ?orderId=<id> — start
+  // with that order expanded so the admin lands straight on the details.
+  const [searchParams] = useSearchParams();
+  const [expandedId, setExpandedId] = useState<string | null>(
+    () => searchParams.get('orderId') ?? null,
+  );
 
   return (
     <div className="rounded-xl border border-neutral-200 bg-white p-6">
@@ -465,6 +467,134 @@ function OrdersTab() {
           </table>
         </div>
       )}
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════
+// Customer data — kto zamówił, kontakt, adres wysyłki przy druku
+// ════════════════════════════════════════════════════════════
+
+interface CustomerDetail {
+  email: string | null;
+  clerkUserId: string;
+  format: 'pdf' | 'pdf_print' | null;
+  paymentStatus: 'pending' | 'completed' | 'failed' | null;
+  shippingAddress: {
+    fullName: string;
+    phone: string;
+    street: string;
+    zip: string;
+    city: string;
+  } | null;
+}
+
+function customerSource(clerkUserId: string): string {
+  if (clerkUserId === 'landing-user') return 'Landing (bez konta)';
+  if (clerkUserId === 'cli-user') return 'CLI (test)';
+  return 'Konto Clerk';
+}
+
+const PAYMENT_BADGES: Record<string, string> = {
+  completed: 'bg-emerald-100 text-emerald-700',
+  pending: 'bg-amber-100 text-amber-700',
+  failed: 'bg-red-100 text-red-700',
+};
+
+function CustomerSection({ detail }: { detail: CustomerDetail }) {
+  const isPrint = detail.format === 'pdf_print';
+  const addr = detail.shippingAddress;
+
+  const copyAddress = () => {
+    if (!addr) return;
+    const text = [
+      addr.fullName,
+      addr.street,
+      `${addr.zip} ${addr.city}`,
+      `tel. ${addr.phone}`,
+    ].join('\n');
+    void navigator.clipboard.writeText(text);
+    toast.success('Adres skopiowany');
+  };
+
+  return (
+    <div className="border border-neutral-200 rounded-lg bg-white p-3 space-y-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <h3 className="text-xs font-bold uppercase tracking-wide text-neutral-400">Zamawiający</h3>
+        <span className="text-xs px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-500">
+          {customerSource(detail.clerkUserId)}
+        </span>
+        <span
+          className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${isPrint ? 'bg-orange-100 text-orange-700' : 'bg-blue-50 text-blue-600'}`}
+        >
+          {isPrint ? 'PDF + Druk' : 'PDF'}
+        </span>
+        {detail.paymentStatus && (
+          <span
+            className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${PAYMENT_BADGES[detail.paymentStatus] ?? 'bg-neutral-100 text-neutral-600'}`}
+          >
+            {detail.paymentStatus === 'completed'
+              ? 'Opłacone'
+              : detail.paymentStatus === 'pending'
+                ? 'Nieopłacone'
+                : 'Płatność nieudana'}
+          </span>
+        )}
+      </div>
+
+      <div className="text-sm">
+        {detail.email ? (
+          <span>
+            <span className="text-neutral-400 text-xs mr-2">E-mail:</span>
+            <a href={`mailto:${detail.email}`} className="text-blue-600 hover:underline">
+              {detail.email}
+            </a>
+            <button
+              type="button"
+              onClick={() => {
+                void navigator.clipboard.writeText(detail.email!);
+                toast.success('E-mail skopiowany');
+              }}
+              className="ml-2 text-xs text-neutral-400 hover:text-neutral-700"
+              title="Kopiuj e-mail"
+            >
+              kopiuj
+            </button>
+          </span>
+        ) : (
+          <span className="text-xs text-neutral-400">Brak adresu e-mail na zamówieniu</span>
+        )}
+      </div>
+
+      {isPrint &&
+        (addr ? (
+          <div className="rounded-md bg-orange-50 border border-orange-200 p-3 text-sm">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-bold uppercase tracking-wide text-orange-700">
+                Adres wysyłki (druk)
+              </span>
+              <button
+                type="button"
+                onClick={copyAddress}
+                className="text-xs font-semibold text-orange-700 hover:text-orange-900"
+              >
+                Kopiuj adres
+              </button>
+            </div>
+            <div className="text-neutral-800">
+              <div className="font-medium">{addr.fullName}</div>
+              <div>{addr.street}</div>
+              <div>
+                {addr.zip} {addr.city}
+              </div>
+              <div className="text-neutral-500">tel. {addr.phone}</div>
+            </div>
+          </div>
+        ) : (
+          <p className="text-xs font-semibold text-red-600">
+            ⚠️ Zamówienie z drukiem, ale brak adresu wysyłki — skontaktuj się z klientem.
+          </p>
+        ))}
     </div>
   );
 }
@@ -582,6 +712,9 @@ function OrderDetailPanel({ orderId }: { orderId: Id<'bookOrders'> }) {
         )}
         <span className="text-xs text-neutral-400">Retries: {detail.retryCount}</span>
       </div>
+
+      {/* Customer data */}
+      <CustomerSection detail={detail} />
 
       {/* Pipeline Timeline (collapsible) */}
       <div className="border border-neutral-200 rounded-lg bg-white">
@@ -1590,346 +1723,5 @@ function VersionRow({
         </tr>
       )}
     </>
-  );
-}
-
-// ════════════════════════════════════════════════════════════
-// DTP Lab Tab — sandbox for trying experimental layouts on existing
-// orders without touching production output. Renders a fresh PDF under
-// experiments/<orderId>/<timestamp>.pdf in R2 and opens it in a new tab.
-// ════════════════════════════════════════════════════════════
-
-function Toggle({
-  label,
-  hint,
-  checked,
-  onChange,
-}: {
-  label: string;
-  hint?: string;
-  checked: boolean;
-  onChange: (next: boolean) => void;
-}) {
-  return (
-    <label className="flex items-start gap-3 cursor-pointer py-1">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="w-4 h-4 mt-0.5"
-      />
-      <div>
-        <div className="text-sm font-medium text-neutral-700">{label}</div>
-        {hint && <div className="text-xs text-neutral-400 mt-0.5">{hint}</div>}
-      </div>
-    </label>
-  );
-}
-
-function DtpLabTab() {
-  const orders = useQuery(api.admin.bookBatch.listOrders);
-  const composeAction = useAction(api.admin.bookBatch.composeExperimentalPdf);
-
-  const [orderId, setOrderId] = useState<string>('');
-  // Typography
-  const [dropCaps, setDropCaps] = useState(true);
-  const [widerMargins, setWiderMargins] = useState(true);
-  const [looseLineGap, setLooseLineGap] = useState(true);
-  const [noPageNumbers, setNoPageNumbers] = useState(true);
-  // Color
-  const [autoCategoryTheme, setAutoCategoryTheme] = useState(true);
-  const [themeColor, setThemeColor] = useState<string>('');
-  // Sequence
-  const [singleBlankAfterCover, setSingleBlankAfterCover] = useState(true);
-  const [removeKoniecSentinel, setRemoveKoniecSentinel] = useState(true);
-  const [chapterHeaders, setChapterHeaders] = useState(true);
-  // Imposition
-  const [printFormat, setPrintFormat] = useState<'booklet' | 'single'>('booklet');
-
-  const [composing, setComposing] = useState(false);
-  const [lastResult, setLastResult] = useState<{
-    url: string;
-    pages: number;
-    sizeKb: number;
-    durationMs: number;
-  } | null>(null);
-
-  const eligibleOrders = (orders ?? []).filter((o) => o.status === 'completed');
-
-  const handleCompose = async () => {
-    if (!orderId) {
-      toast.error('Wybierz zamowienie');
-      return;
-    }
-    setComposing(true);
-    setLastResult(null);
-    try {
-      const result = await composeAction({
-        orderId: orderId as Id<'bookOrders'>,
-        options: {
-          dropCaps,
-          widerMargins,
-          looseLineGap,
-          noPageNumbers,
-          themeColor: themeColor || undefined,
-          autoCategoryTheme,
-          singleBlankAfterCover,
-          removeKoniecSentinel,
-          chapterHeaders,
-          printFormat,
-        },
-      });
-      setLastResult({
-        url: result.presignedUrl,
-        pages: result.pages,
-        sizeKb: result.sizeKb,
-        durationMs: result.durationMs,
-      });
-      window.open(result.presignedUrl, '_blank', 'noopener,noreferrer');
-      toast.success(
-        `Wygenerowano ${result.pages} stron w ${(result.durationMs / 1000).toFixed(1)}s`,
-      );
-    } catch (err) {
-      toast.error(`Render padl: ${err instanceof Error ? err.message : String(err)}`);
-    } finally {
-      setComposing(false);
-    }
-  };
-
-  const enableAll = () => {
-    setDropCaps(true);
-    setWiderMargins(true);
-    setLooseLineGap(true);
-    setNoPageNumbers(true);
-    setAutoCategoryTheme(true);
-    setThemeColor('');
-    setSingleBlankAfterCover(true);
-    setRemoveKoniecSentinel(true);
-    setChapterHeaders(true);
-  };
-
-  const disableAll = () => {
-    setDropCaps(false);
-    setWiderMargins(false);
-    setLooseLineGap(false);
-    setNoPageNumbers(false);
-    setAutoCategoryTheme(false);
-    setThemeColor('');
-    setSingleBlankAfterCover(false);
-    setRemoveKoniecSentinel(false);
-    setChapterHeaders(false);
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-amber-700 mb-1">
-          DTP Lab · sandbox
-        </h2>
-        <p className="text-xs text-amber-700/80">
-          Renderuje PDF z eksperymentalnym layoutem na podstawie istniejacego, ukonczonego
-          zamowienia. Wynik trafia do{' '}
-          <code className="font-mono">experiments/&lt;orderId&gt;/&lt;timestamp&gt;.pdf</code> w R2
-          i <span className="font-semibold">nie nadpisuje produkcyjnego PDF-a</span>. Pipeline
-          klienta (A0..A11) i email z linkiem do bajki dzialaja bez zmian.
-        </p>
-      </div>
-
-      <div className="rounded-xl border border-neutral-200 bg-white p-6 space-y-6">
-        <div>
-          <label className="block text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-1.5">
-            Zamowienie (tylko ukonczone)
-          </label>
-          {!orders ? (
-            <div className="w-5 h-5 spinner" />
-          ) : (
-            <select
-              value={orderId}
-              onChange={(e) => setOrderId(e.target.value)}
-              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm font-mono"
-            >
-              <option value="">— wybierz —</option>
-              {eligibleOrders.map((o) => (
-                <option key={o._id} value={o._id as string}>
-                  {(o._id as string).slice(-12)} · {o.childName} ·{' '}
-                  {new Date(o.createdAt).toLocaleDateString('pl-PL')}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-
-        <div className="flex gap-2 text-xs">
-          <button
-            onClick={enableAll}
-            className="rounded-md border border-neutral-300 px-3 py-1 hover:bg-neutral-50"
-          >
-            Wlacz wszystko
-          </button>
-          <button
-            onClick={disableAll}
-            className="rounded-md border border-neutral-300 px-3 py-1 hover:bg-neutral-50"
-          >
-            Wylacz wszystko
-          </button>
-        </div>
-
-        <fieldset className="border-t pt-4">
-          <legend className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
-            Typografia
-          </legend>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-            <Toggle
-              label="Drop cap"
-              hint="Pierwsza litera tekstu beatu × 3.2, w kolorze akcentu"
-              checked={dropCaps}
-              onChange={setDropCaps}
-            />
-            <Toggle
-              label="Szersze marginesy"
-              hint="42pt (~15mm) zamiast 18pt — bezpieczniej do druku"
-              checked={widerMargins}
-              onChange={setWiderMargins}
-            />
-            <Toggle
-              label="Luzniejsza interlinia"
-              hint="leading 1.4em zamiast sztywnego pt"
-              checked={looseLineGap}
-              onChange={setLooseLineGap}
-            />
-            <Toggle
-              label="Bez numerow stron"
-              hint="Dla malych dzieci numer w rogu rozprasza"
-              checked={noPageNumbers}
-              onChange={setNoPageNumbers}
-            />
-          </div>
-        </fieldset>
-
-        <fieldset className="border-t pt-4">
-          <legend className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
-            Kolor i nastroj
-          </legend>
-          <Toggle
-            label="Auto-dobor koloru z kategorii problemu"
-            hint="leki=indigo, emocje=amber, relacje=emerald, codziennosc=violet, zmiana=rose"
-            checked={autoCategoryTheme}
-            onChange={setAutoCategoryTheme}
-          />
-          <div className="mt-3 flex items-center gap-2">
-            <input
-              type="text"
-              value={themeColor}
-              onChange={(e) => setThemeColor(e.target.value)}
-              placeholder="lub wlasny hex, np. #4a6fa5"
-              className="w-48 rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-mono"
-            />
-            {themeColor && (
-              <span
-                className="inline-block w-5 h-5 rounded border border-neutral-300"
-                style={{ background: themeColor }}
-              />
-            )}
-            <span className="text-xs text-neutral-400">
-              {themeColor
-                ? '(pole nadpisuje auto-dobor)'
-                : autoCategoryTheme
-                  ? '(domyslnie auto)'
-                  : '(domyslny pomarancz)'}
-            </span>
-          </div>
-        </fieldset>
-
-        <fieldset className="border-t pt-4">
-          <legend className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
-            Sekwencja stron
-          </legend>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-            <Toggle
-              label="1 blank po okladce"
-              hint="Domyslnie 2; przy 1 spread #2 = blank | title czysto"
-              checked={singleBlankAfterCover}
-              onChange={setSingleBlankAfterCover}
-            />
-            <Toggle
-              label='Bez "*Koniec*"'
-              hint="Colophon i tak ma 'Koniec' — sentinel jest duplikatem"
-              checked={removeKoniecSentinel}
-              onChange={setRemoveKoniecSentinel}
-            />
-            <Toggle
-              label="Strony rozdzialow"
-              hint="Polstronicowy header z ornamentem przed kazdym beatem"
-              checked={chapterHeaders}
-              onChange={setChapterHeaders}
-            />
-          </div>
-        </fieldset>
-
-        <fieldset className="border-t pt-4">
-          <legend className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
-            Format wyjscia
-          </legend>
-          <div className="flex gap-3">
-            {(
-              [
-                ['booklet', 'A4 landscape 2-up (do druku w domu)'],
-                ['single', 'A5 portrait single-page (do drukarni / Printul)'],
-              ] as [typeof printFormat, string][]
-            ).map(([val, label]) => (
-              <button
-                key={val}
-                onClick={() => setPrintFormat(val)}
-                className={`rounded-md border px-3 py-2 text-xs ${
-                  printFormat === val
-                    ? 'border-neutral-800 bg-neutral-100 font-semibold'
-                    : 'border-neutral-300 hover:border-neutral-500'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </fieldset>
-
-        <div className="flex items-center gap-3 pt-4 border-t">
-          <button
-            onClick={() => void handleCompose()}
-            disabled={composing || !orderId}
-            className="rounded-md bg-amber-600 px-5 py-2 text-sm font-bold text-white hover:bg-amber-500 disabled:opacity-40"
-          >
-            {composing ? 'Skladam...' : 'Zloz test'}
-          </button>
-          {lastResult && (
-            <a
-              href={lastResult.url}
-              target="_blank"
-              rel="noreferrer"
-              className="text-xs text-neutral-500 hover:text-neutral-800 underline"
-            >
-              Otworz ostatni ({lastResult.pages} stron, {lastResult.sizeKb}KB,{' '}
-              {(lastResult.durationMs / 1000).toFixed(1)}s)
-            </a>
-          )}
-        </div>
-      </div>
-
-      <div className="rounded-xl border border-neutral-200 bg-white p-4">
-        <h3 className="text-xs font-bold uppercase tracking-wide text-neutral-400 mb-2">
-          Jak zlozyc ksiazke po wydruku
-        </h3>
-        <p className="text-xs text-neutral-600">
-          Instrukcja na osobnej stronie:{' '}
-          <a
-            href="/jak-zlozyc-ksiazke"
-            target="_blank"
-            rel="noreferrer"
-            className="text-amber-700 hover:underline font-semibold"
-          >
-            /jak-zlozyc-ksiazke
-          </a>
-        </p>
-      </div>
-    </div>
   );
 }
