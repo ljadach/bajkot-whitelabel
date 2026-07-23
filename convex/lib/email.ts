@@ -579,6 +579,37 @@ export function buildAdminPrintAlertEmail(params: AdminPrintAlertParams): {
   return { subject, html, text };
 }
 
+// ────────────────────────────────────────────────────────────────
+// Admin one-off email (admin panel → Mail tab). Plain-text body wrapped
+// in the same branded shell as the transactional emails above, so ad-hoc
+// messages from the team look like they come from the same place.
+// ────────────────────────────────────────────────────────────────
+
+export function buildAdminBroadcastEmail(body: string): { html: string } {
+  const bodyHtml = escapeHtml(body).replace(/\n/g, '<br>');
+  const html = `<!doctype html>
+<html lang="pl">
+  <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+  <body style="margin:0;padding:0;background:#F5F7FA;font-family:Nunito,Arial,sans-serif;color:#334155;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F7FA;padding:32px 16px;">
+      <tr><td align="center">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:12px;box-shadow:0 8px 24px -8px rgba(15,23,42,0.12);overflow:hidden;">
+          <tr><td style="background:linear-gradient(135deg,#f0f9ff 0%,#ffffff 100%);padding:24px;text-align:center;border-bottom:1px solid #e0f2fe;">
+            <div style="color:#075985;font-weight:800;font-size:20px;">📖 Bajkoterapia</div>
+          </td></tr>
+          <tr><td style="padding:32px 28px;font-size:15px;line-height:1.65;color:#334155;">${bodyHtml}</td></tr>
+          <tr><td style="background:#f8fafc;padding:20px;text-align:center;border-top:1px solid #e2e8f0;font-size:12px;color:#64748b;">
+            <div style="margin-bottom:6px;"><strong style="color:#0c4a6e;">Bajkoterapia</strong> by Trustee Interactive · Plac Inwalidów 10, 01-552 Warszawa</div>
+            <div><a href="mailto:info@bajkoterapia.org" style="color:#0284c7;text-decoration:none;">info@bajkoterapia.org</a> · <a href="https://www.bajkoterapia.org" style="color:#0284c7;text-decoration:none;">bajkoterapia.org</a></div>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+</html>`;
+  return { html };
+}
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, '&amp;')
