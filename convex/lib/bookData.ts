@@ -229,6 +229,14 @@ export const PROBLEMS: Record<string, ProblemDefinition> = {
       'Kapitan brzuszka, który dowodzi statkiem ciała i woła „pora na port!" Foka Słuchaczka.',
     category: 'routine',
   },
+  bedwetting: {
+    title_pl: 'Moczenie nocne',
+    context_pl:
+      'Dziecko moczy się w nocy lub w przedszkolu i wstydzi się tego. Zdejmij wstyd i presję — pokaż, że ciało uczy się we własnym tempie, a mokra noc nie odbiera bohaterowi odwagi.',
+    metaphor_pl:
+      'Nocna chmurka, z której czasem popada deszcz, ale każdy poranek wstaje ze słońcem. Bobrzyk Suchy-Poranek.',
+    category: 'routine',
+  },
   food_selectivity: {
     title_pl: 'Wybiórczość pokarmowa (niejadek)',
     context_pl:
@@ -317,6 +325,14 @@ export const PROBLEMS: Record<string, ProblemDefinition> = {
       'Szczepienie, dentysta, biały fartuch = panika. Pokaż lekarza jako sojusznika, a narzędzia jako magiczne pomocniki.',
     metaphor_pl:
       'Szpital to warsztat naprawczy superbohaterów, a stetoskop słucha historii serca. Doktor Iskierka.',
+    category: 'fears',
+  },
+  hospital_stay: {
+    title_pl: 'Wizyta w szpitalu',
+    context_pl:
+      'Dziecko czeka pobyt w szpitalu lub zabieg — boi się nieznanego miejsca, badań i rozłąki z rodzicami. Oswój szpital z wyprzedzeniem: pokaż przebieg wydarzeń krok po kroku, personel jako pomocników i to, że rodzice zawsze wracają.',
+    metaphor_pl:
+      'Szpital to zamek dzielnych rycerzy, a opaska na nadgarstku to tarcza odwagi. Smok Plasterek.',
     category: 'fears',
   },
   relocation: {

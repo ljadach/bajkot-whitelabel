@@ -2126,6 +2126,116 @@ export const TOPICS: Topic[] = [
       shortDesc: 'Zrozumienie celu nauki. Bajka pokaże, że uczenie się to odkrywanie świata.',
     },
   },
+
+  // ---------------------------------------------------------------------------
+  // 39. Moczenie Nocne
+  // ---------------------------------------------------------------------------
+  {
+    slug: 'moczenie-nocne',
+    problemId: 'bedwetting',
+    title: 'Bajkoterapia – Dziecko Moczy Się w Nocy | Moczenie Nocne',
+    metaDescription:
+      'Mokre prześcieradła, wstyd, pranie o poranku. Bajka zdejmuje z dziecka wstyd i presję — czyli to, co najbardziej podtrzymuje moczenie nocne.',
+    badge: 'Metoda oparta na badaniach',
+    headline: 'Jak pomóc dziecku, gdy',
+    headlineAccent: 'moczy się w nocy i wstydzi się tego?',
+    intro:
+      'Mokra piżama nad ranem, ukradkiem zwinięta pościel, odmowa nocowania u babci. Bajka, w której Twoje dziecko jest bohaterem, zdejmuje wstyd i presję — a bez nich ciało uczy się szybciej.',
+    heroImage: '/illustrations/theme-moczenie-nocne.png',
+    heroImageAlt: 'Dziecko budzące się rano z uśmiechem w przytulnym, zalanym słońcem łóżku',
+    painHeadline: 'Znasz ten poranek, gdy dziecko cicho mówi „mamo, znowu się stało"?',
+    painEmpathy:
+      'Rozumiemy, jak to wygląda. Kolejne pranie, suszony materac, dziecko, które nie chce jechać na nocowanie do kolegi. Widzisz jego wstyd i nie wiesz, czy rozmawiać, ignorować, czy nagradzać suche noce.',
+    painRootCause:
+      'Moczenie nocne u przedszkolaka to najczęściej kwestia dojrzewania układu nerwowego — nie złej woli ani lenistwa. Presja i wstyd tylko utrwalają problem. Dziecko potrzebuje historii, która zdejmie z niego ciężar winy.',
+    painCta:
+      'Zamiast kolejnej rozmowy o suchych nocach, daj dziecku historię o Bohaterze, którego ciało uczy się we własnym tempie — i któremu mokra noc nie odbiera odwagi.',
+    scienceHeadline: 'Dlaczego bajka pomaga przy moczeniu nocnym?',
+    scienceSubheading:
+      'Bajkoterapia obniża napięcie i wstyd — dokładnie te czynniki, które najsilniej podtrzymują moczenie.',
+    scienceCards: [
+      {
+        icon: 'fa-solid fa-cloud-moon',
+        title: 'Zdejmuje wstyd',
+        description:
+          'Bohater bajki też miewa mokre noce — i wciąż jest bohaterem. Dziecko przestaje utożsamiać się z problemem i zaczyna o nim mówić.',
+      },
+      {
+        icon: 'fa-solid fa-shield-halved',
+        title: 'Obniża napięcie',
+        description:
+          'Zasypianie bez lęku „czy znowu się stanie" zmniejsza nocne napięcie, które sprzyja moczeniu. Spokojna głowa pomaga ciału.',
+      },
+      {
+        icon: 'fa-solid fa-hat-wizard',
+        title: 'Sojusznik nocy',
+        description:
+          'W historii pojawia się przyjaciel, który czuwa nad bohaterem do rana. Noc przestaje być przeciwnikiem, a staje się sprzymierzeńcem.',
+      },
+    ],
+    loadingMessage: 'Tworzę magiczną bajkę o spokojnych nocach...',
+    category: 'higiena',
+    catalog: {
+      emoji: '🧼',
+      shortTitle: 'Moczy się w nocy?',
+      shortDesc: 'Moczenie nocne. Bajka zdejmie wstyd i presję, które podtrzymują problem.',
+    },
+  },
+
+  // ---------------------------------------------------------------------------
+  // 40. Wizyta w Szpitalu
+  // ---------------------------------------------------------------------------
+  {
+    slug: 'wizyta-w-szpitalu',
+    problemId: 'hospital_stay',
+    title: 'Bajkoterapia – Bajka o Szpitalu dla Dzieci | Wizyta w Szpitalu',
+    metaDescription:
+      'Zabieg, badania, rozłąka z rodzicami. Bajka o szpitalu oswaja nieznane i przygotowuje dziecko na pobyt — zanim przekroczy próg oddziału.',
+    badge: 'Delikatne wsparcie dla całej rodziny',
+    headline: 'Jak przygotować dziecko, gdy',
+    headlineAccent: 'czeka je pobyt w szpitalu?',
+    intro:
+      'Zabieg, badania, obce łóżko i rozłąka z rodzicami. Bajka, w której Twoje dziecko jest bohaterem, oswaja szpital, zanim dziecko przekroczy jego próg — i zamienia lęk przed nieznanym w plan przygody.',
+    heroImage: '/illustrations/theme-wizyta-szpital.png',
+    heroImageAlt: 'Dziecko na szpitalnym łóżku z pluszakiem, trzymane za rękę przez rodzica',
+    painHeadline: 'Znasz to pytanie „mamo, a czy będzie bolało?", zadane cichym głosem?',
+    painEmpathy:
+      'Rozumiemy, co przeżywasz. Termin się zbliża, a Ty nie wiesz, ile powiedzieć, żeby przygotować, a nie przestraszyć. Dziecko wyłapuje Twoje napięcie, pyta o igły i o to, czy będziesz obok.',
+    painRootCause:
+      'Dla dziecka najtrudniejsze w szpitalu nie jest badanie — jest nieznane: obce miejsce, obcy ludzie, niejasne „co się będzie działo". Lęk maleje, gdy dziecko przejdzie całą drogę wcześniej, w bezpiecznym świecie wyobraźni.',
+    painCta:
+      'Zamiast obietnic, że nie będzie bolało, daj dziecku historię, w której Bohater przechodzi przez szpital krok po kroku — i wychodzi z niego silniejszy.',
+    scienceHeadline: 'Dlaczego bajka o szpitalu zmniejsza lęk przed pobytem?',
+    scienceSubheading:
+      'Bajkoterapia działa jak próba generalna — dziecko poznaje przebieg wydarzeń, zanim wydarzą się naprawdę.',
+    scienceCards: [
+      {
+        icon: 'fa-solid fa-hospital',
+        title: 'Oswaja nieznane',
+        description:
+          'Bohater poznaje oddział, personel i sprzęt w bezpiecznej historii. W dniu przyjęcia szpital jest już znajomym miejscem.',
+      },
+      {
+        icon: 'fa-solid fa-shield-halved',
+        title: 'Rodzice wracają',
+        description:
+          'Historia oswaja też rozłąkę: bohater wie, kiedy rodzice są obok i że zawsze wracają. To buduje poczucie bezpieczeństwa.',
+      },
+      {
+        icon: 'fa-solid fa-hat-wizard',
+        title: 'Towarzysz odwagi',
+        description:
+          'W bajce pojawia się przyjaciel, który towarzyszy bohaterowi w każdym badaniu. Dziecko może zabrać go ze sobą — w wyobraźni i pod poduszką.',
+      },
+    ],
+    loadingMessage: 'Tworzę magiczną bajkę o dzielnej szpitalnej przygodzie...',
+    category: 'leki',
+    catalog: {
+      emoji: '🦁',
+      shortTitle: 'Czeka je pobyt w szpitalu?',
+      shortDesc: 'Wizyta w szpitalu. Bajka oswoi oddział, badania i rozłąkę — zanim się wydarzą.',
+    },
+  },
 ];
 
 /**
