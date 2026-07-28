@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Topic } from '../../../data/topics';
+import { STORY_OPENINGS } from '../../../data/storyOpenings';
 import { trackEvent } from '../../../lib/telemetry';
 
 /**
@@ -22,13 +23,21 @@ export function TopicNameDemo({ topic }: { topic: Topic }) {
     const v = name.trim();
     const display = v ? v.charAt(0).toUpperCase() + v.slice(1) : 'bohater tej bajki';
     const fem = !!v && v.toLowerCase().endsWith('a') && !MALE_A.has(v.toLowerCase());
-    // Placeholder template — replaced by STORY_OPENINGS[topic.slug] in F3.
-    const sit = fem ? 'siedziała' : 'siedział';
-    const knew = fem ? 'wiedziała' : 'wiedział';
-    const pron = fem ? 'na nią' : 'na niego';
-    setShown(
-      `„Wieczorem, gdy słońce kładło się spać za wielkimi drzewami, w dziecięcym pokoju robiło się ciepło i przytulnie. Na miękkim dywanie, wśród klocków i pluszaków, ${sit} ${display} — i jeszcze nie ${knew}, że niedługo zacznie się przygoda, która od dawna czeka właśnie ${pron}…”`,
-    );
+    const opening = STORY_OPENINGS[topic.slug];
+    if (opening) {
+      const text = opening.paragraphs
+        .slice(0, 2)
+        .map((p) => (fem ? p.f : p.m).replaceAll('{name}', display))
+        .join(' ');
+      setShown(`„${text}”`);
+    } else {
+      const sit = fem ? 'siedziała' : 'siedział';
+      const knew = fem ? 'wiedziała' : 'wiedział';
+      const pron = fem ? 'na nią' : 'na niego';
+      setShown(
+        `„Wieczorem, gdy słońce kładło się spać za wielkimi drzewami, w dziecięcym pokoju robiło się ciepło i przytulnie. Na miękkim dywanie, wśród klocków i pluszaków, ${sit} ${display} — i jeszcze nie ${knew}, że niedługo zacznie się przygoda, która od dawna czeka właśnie ${pron}…”`,
+      );
+    }
     trackEvent('lp_name_demo_used', { topicSlug: topic.slug });
   };
 
