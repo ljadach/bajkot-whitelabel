@@ -7,6 +7,7 @@ import { TopicScience } from './TopicScience';
 import { LandingOrderFlow } from '../book/order-flow/LandingOrderFlow';
 import { TopicFooter } from './TopicFooter';
 import { TopicLayoutV4 } from './v4/TopicLayoutV4';
+import { TOPIC_V4_CONTENT } from '../../data/topicV4Content';
 
 function WizardPlaceholder() {
   return (
@@ -19,8 +20,12 @@ function WizardPlaceholder() {
 }
 
 export function TopicLayout({ topic }: { topic: Topic }) {
-  if (topic.lpV4) {
-    return <TopicLayoutV4 topic={topic} />;
+  // v4 layout: pilot flag (mycie-zebow, copy inline in topics.ts) or an F2
+  // copy override in topicV4Content.ts. Topics with neither keep the legacy
+  // layout — the safety net during the rollout.
+  const v4Copy = TOPIC_V4_CONTENT[topic.slug];
+  if (topic.lpV4 || v4Copy) {
+    return <TopicLayoutV4 topic={v4Copy ? { ...topic, ...v4Copy } : topic} />;
   }
   return (
     <div
