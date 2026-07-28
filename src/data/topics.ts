@@ -312,10 +312,10 @@ export const TOPICS: Topic[] = [
     metaDescription:
       'Ucieczki, płacz, zaciśnięte usta – bajkoterapia zamienia szczoteczkę w magiczne narzędzie i mycie zębów w ekscytującą misję.',
     badge: 'Metoda oparta na badaniach',
-    headline: 'Jak sprawić, by mycie zębów stało się',
-    headlineAccent: 'przygodą, a nie codzienną bitwą?',
+    headline: 'Twoje dziecko nie chce myć zębów?',
+    headlineAccent: 'Dziś wieczorem zamiast bitwy — misja.',
     intro:
-      'Ucieczki, płacz, zaciśnięte usta – wiemy jak to wygląda. Bajka, w której Twoje dziecko jest bohaterem, zamienia szczoteczkę w magiczne narzędzie i mycie zębów w ekscytującą misję.',
+      'Bajka, w której Twoje dziecko jest bohaterem — zamienia mycie zębów w misję, na którą samo czeka.',
     heroImage: '/illustrations/theme-mycie-zebow.png',
     heroImageAlt: 'Dziecko szczęśliwie myjące zęby jak bohater',
     painHeadline: 'Znasz ten wieczorny rytuał: Nie! Nie chcę myć zębów!?',

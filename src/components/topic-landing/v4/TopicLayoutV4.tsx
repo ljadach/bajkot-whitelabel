@@ -1,6 +1,6 @@
 import type { Topic } from '../../../data/topics';
 import { ClientOnly } from '../../ClientOnly';
-import { TopicNav } from '../TopicNav';
+import { TopicNavV4 } from './TopicNavV4';
 import { TopicFooter } from '../TopicFooter';
 import { LandingOrderFlow } from '../../book/order-flow/LandingOrderFlow';
 import { TopicHeroV4 } from './TopicHeroV4';
@@ -36,7 +36,7 @@ export function TopicLayoutV4({ topic }: { topic: Topic }) {
       className="min-h-screen antialiased bg-cream text-ink selection:bg-amberlp selection:text-navy"
       style={{ fontFamily: "'Nunito', sans-serif" }}
     >
-      <TopicNav />
+      <TopicNavV4 topicSlug={topic.slug} />
       <TopicHeroV4 topic={topic} />
       <TopicProduct topic={topic} />
       <TopicVideo topic={topic} />
