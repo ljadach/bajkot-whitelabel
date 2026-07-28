@@ -19,7 +19,7 @@ export function CtaButton({
     <a
       href="#kreator"
       onClick={() => trackEvent('cta_create_book_clicked', { location, topicSlug })}
-      className={`inline-block bg-amberlp hover:-translate-y-0.5 text-navy font-black text-[0.95rem] px-6 py-3 rounded-full shadow-lg shadow-amberlp/40 transition text-center no-underline ${className}`}
+      className={`inline-block bg-lp-amber hover:-translate-y-0.5 text-lp-navy font-black text-[0.95rem] px-6 py-3 rounded-full shadow-lg shadow-lp-amber/40 transition text-center no-underline ${className}`}
     >
       {children}
     </a>

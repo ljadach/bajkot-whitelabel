@@ -42,12 +42,15 @@ export default {
           500: '#f59e0b',
           600: '#d97706',
         },
-        // LP v4 palette (public/proto1/v4.html → docs/spec-lp-v4-rollout.md)
-        navy: { DEFAULT: '#1e3a5f', deep: '#16304f' },
-        cream: { DEFAULT: '#fdf9f2', dark: '#f7efe2' },
-        amberlp: { DEFAULT: '#f59f2d', dark: '#e08a14' },
-        teallp: { DEFAULT: '#3d8f8a', text: '#2a6f6a' },
-        ink: { DEFAULT: '#2b3648', soft: '#5a6577' },
+        // LP v4 palette, own namespace so nothing shadows existing tokens
+        // (public/proto1/v4.html → docs/spec-lp-v4-rollout.md)
+        lp: {
+          navy: { DEFAULT: '#1e3a5f', deep: '#16304f' },
+          cream: { DEFAULT: '#fdf9f2', dark: '#f7efe2' },
+          amber: { DEFAULT: '#f59f2d', dark: '#e08a14' },
+          teal: { DEFAULT: '#3d8f8a', text: '#2a6f6a' },
+          ink: { DEFAULT: '#2b3648', soft: '#5a6577' },
+        },
         // Legacy compatibility
         primary: '#ff6b35',
         'primary-hover': '#e55a2b',

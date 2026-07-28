@@ -1,8 +1,8 @@
 /**
  * v4 landing-page copy overrides (spec-lp-v4-rollout.md, F2) — hero headline
  * in the "problem? promise." format plus four pain scenes and a relief line.
- * Merged over Topic at render time; mycie-zebow lives directly in topics.ts
- * as the pilot. Review before production.
+ * Merged over Topic at render time; All 39 topics live here —
+ * the presence of an entry switches /problem/:slug to the v4 layout. Review before production.
  */
 
 export interface TopicV4Content {
@@ -13,8 +13,26 @@ export interface TopicV4Content {
   painRelief: string;
 }
 
+/** A Topic merged with its v4 copy — the input type for v4 components. */
+export type TopicV4 = import('./topics').Topic & TopicV4Content;
+
 /** Keyed by topic slug. */
 export const TOPIC_V4_CONTENT: Record<string, TopicV4Content> = {
+  'mycie-zebow': {
+    headline: 'Twoje dziecko nie chce myć zębów?',
+    headlineAccent: 'Dziś wieczorem zamiast bitwy — misja.',
+    intro:
+      'Bajka, w której Twoje dziecko jest bohaterem — zamienia mycie zębów w misję, na którą samo czeka.',
+    painScenes: [
+      '„Nieee! Nie chcę myć zębów!” — i ucieczka do pokoju.',
+      'Zaciśnięte usta. Negocjacje. „Jeszcze pięć minut”. Znowu.',
+      'Mówisz o próchnicy i dentyście — jak do ściany.',
+      'Kończy się na przytrzymywaniu i płaczu. A wieczorem myślisz: „przecież nie o to chodziło”.',
+    ],
+    painRelief:
+      'To nie Twoja wina. I nie musisz czekać, aż „samo minie”. Jest coś, co możesz zrobić jeszcze dziś wieczorem — zanim znowu spotkacie się przy umywalce.',
+  },
+
   'adaptacja-przedszkolna': {
     headline: 'Twoje dziecko nie chce iść do przedszkola?',
     headlineAccent: 'Jutro rano zamiast łez — pierwszy krok za bramkę.',

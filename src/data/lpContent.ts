@@ -3,6 +3,14 @@
  * Per c3z decision (2026-07-28): print photos, promo video, sample book and
  * reviews stay shared across all topics — no per-problem variants planned.
  */
+import { GENERATION_MINUTES, DELIVERY_DAYS_TEXT } from '../lib/pricing';
+
+/**
+ * "Wpisz imię" demo stays hidden until the storyOpenings copy is reviewed
+ * (spec-lp-v4-rollout.md). Lives here — outside the component — so the flag
+ * doesn't force TopicNameDemo (and its 68 KB of story data) into the bundle.
+ */
+export const SHOW_NAME_DEMO = false;
 
 export interface GalleryPhoto {
   src: string;
@@ -67,11 +75,11 @@ export const LP_FAQ: { q: string; a: string }[] = [
   },
   {
     q: 'Kiedy dojdzie drukowana wersja?',
-    a: 'PDF dostajesz od razu po opłaceniu. Drukowana książka dociera kurierem w 3–5 dni roboczych — wysyłka po Polsce w cenie.',
+    a: `PDF dostajesz od razu po opłaceniu. Drukowana książka dociera kurierem w ${DELIVERY_DAYS_TEXT} — wysyłka po Polsce w cenie.`,
   },
   {
     q: 'Ile trwa przygotowanie bajki?',
-    a: 'Około 20 minut. Stronę z postępem możesz mieć otwartą, a bajka poczeka gotowa, aż wrócisz.',
+    a: `Około ${GENERATION_MINUTES} minut. Stronę z postępem możesz mieć otwartą, a bajka poczeka gotowa, aż wrócisz.`,
   },
   {
     q: 'Czym jest wersja z audiobookiem?',

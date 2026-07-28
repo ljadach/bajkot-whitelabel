@@ -10,6 +10,17 @@
 export const BOOK_PRICE_PDF_PLN = 49;
 export const BOOK_PRICE_PRINT_PLN = 99;
 
+// LP v4 additions (spec-lp-v4-rollout.md). The promo/regular split and the
+// audiobook bundle are LP display copy until Stripe carries matching prices.
+export const BOOK_PRICE_PDF_REGULAR_PLN = 59;
+/** Omnibus: lowest PDF price within the last 30 days. */
+export const BOOK_PRICE_PDF_OMNIBUS_PLN = 49;
+export const BOOK_PRICE_AUDIO_BUNDLE_PLN = 69;
+/** One number everywhere for "gotowa w X minut" claims. */
+export const GENERATION_MINUTES = 20;
+/** One phrase everywhere for courier delivery claims. */
+export const DELIVERY_DAYS_TEXT = '3–5 dni roboczych';
+
 export function formatPricePLN(value: number): string {
   return `${value} zł`;
 }

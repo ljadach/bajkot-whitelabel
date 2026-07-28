@@ -61,17 +61,6 @@ export interface Topic {
   scienceSubheading: string;
   scienceCards: [ScienceCard, ScienceCard, ScienceCard];
   loadingMessage: string;
-  /**
-   * LP v4 layout flag (spec-lp-v4-rollout.md). When true, /problem/:slug
-   * renders the v4 section skeleton instead of the legacy hero/pain/science.
-   */
-  lpV4?: boolean;
-  /**
-   * v4 pain section: four short scenes + a relief line. Optional until F2 —
-   * TopicPainV4 falls back to painEmpathy/painRootCause/painCta when absent.
-   */
-  painScenes?: [string, string, string, string];
-  painRelief?: string;
   /** Catalog tab this topic belongs to. */
   category: CatalogCategory;
   /** Short content for the catalog grid card (auth flow). */
@@ -312,10 +301,10 @@ export const TOPICS: Topic[] = [
     metaDescription:
       'Ucieczki, płacz, zaciśnięte usta – bajkoterapia zamienia szczoteczkę w magiczne narzędzie i mycie zębów w ekscytującą misję.',
     badge: 'Metoda oparta na badaniach',
-    headline: 'Twoje dziecko nie chce myć zębów?',
-    headlineAccent: 'Dziś wieczorem zamiast bitwy — misja.',
+    headline: 'Jak sprawić, by mycie zębów stało się',
+    headlineAccent: 'przygodą, a nie codzienną bitwą?',
     intro:
-      'Bajka, w której Twoje dziecko jest bohaterem — zamienia mycie zębów w misję, na którą samo czeka.',
+      'Ucieczki, płacz, zaciśnięte usta – wiemy jak to wygląda. Bajka, w której Twoje dziecko jest bohaterem, zamienia szczoteczkę w magiczne narzędzie i mycie zębów w ekscytującą misję.',
     heroImage: '/illustrations/theme-mycie-zebow.png',
     heroImageAlt: 'Dziecko szczęśliwie myjące zęby jak bohater',
     painHeadline: 'Znasz ten wieczorny rytuał: Nie! Nie chcę myć zębów!?',
@@ -349,15 +338,6 @@ export const TOPICS: Topic[] = [
       },
     ],
     loadingMessage: 'Tworzę magiczną bajkę o Misji Czystych Zębów...',
-    lpV4: true,
-    painScenes: [
-      '„Nieee! Nie chcę myć zębów!” — i ucieczka do pokoju.',
-      'Zaciśnięte usta. Negocjacje. „Jeszcze pięć minut”. Znowu.',
-      'Mówisz o próchnicy i dentyście — jak do ściany.',
-      'Kończy się na przytrzymywaniu i płaczu. A wieczorem myślisz: „przecież nie o to chodziło”.',
-    ],
-    painRelief:
-      'To nie Twoja wina. I nie musisz czekać, aż „samo minie”. Jest coś, co możesz zrobić jeszcze dziś wieczorem — zanim znowu spotkacie się przy umywalce.',
     category: 'higiena',
     catalog: {
       emoji: '🧼',

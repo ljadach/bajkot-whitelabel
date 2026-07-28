@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
-import type { GalleryPhoto } from './lpContent';
+import type { GalleryPhoto } from '../../../data/lpContent';
+import { ModalOverlay } from './ModalOverlay';
+import { cycle } from './cycle';
 
 /**
  * Clickable photo grid + fullscreen lightbox (arrows, Esc, counter) —
@@ -8,17 +9,17 @@ import type { GalleryPhoto } from './lpContent';
  */
 export function GalleryWithLightbox({ photos }: { photos: GalleryPhoto[] }) {
   const [open, setOpen] = useState<number | null>(null);
+  const isOpen = open !== null;
 
   useEffect(() => {
-    if (open === null) return;
+    if (!isOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(null);
-      if (e.key === 'ArrowLeft') setOpen((i) => (i! + photos.length - 1) % photos.length);
-      if (e.key === 'ArrowRight') setOpen((i) => (i! + 1) % photos.length);
+      if (e.key === 'ArrowLeft') setOpen((i) => cycle(i!, -1, photos.length));
+      if (e.key === 'ArrowRight') setOpen((i) => cycle(i!, 1, photos.length));
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open, photos.length]);
+  }, [isOpen, photos.length]);
 
   return (
     <>
@@ -43,53 +44,46 @@ export function GalleryWithLightbox({ photos }: { photos: GalleryPhoto[] }) {
           </button>
         ))}
       </div>
-      {open !== null &&
-        typeof document !== 'undefined' &&
-        createPortal(
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Podgląd zdjęcia"
-            className="fixed inset-0 z-[100] bg-slate-900/90 flex flex-col items-center justify-center gap-3 p-5"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) setOpen(null);
-            }}
+      {open !== null && (
+        <ModalOverlay
+          onClose={() => setOpen(null)}
+          label="Podgląd zdjęcia"
+          className="flex flex-col items-center justify-center gap-3 p-5"
+        >
+          <button
+            type="button"
+            onClick={() => setOpen(null)}
+            aria-label="Zamknij"
+            className="absolute top-3 right-3 w-10 h-10 rounded-full bg-white/15 hover:bg-white/30 text-white"
           >
-            <button
-              type="button"
-              onClick={() => setOpen(null)}
-              aria-label="Zamknij"
-              className="absolute top-3 right-3 w-10 h-10 rounded-full bg-white/15 hover:bg-white/30 text-white"
-            >
-              ✕
-            </button>
-            <button
-              type="button"
-              onClick={() => setOpen((i) => (i! + photos.length - 1) % photos.length)}
-              aria-label="Poprzednie zdjęcie"
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/15 hover:bg-white/30 text-white text-2xl"
-            >
-              ‹
-            </button>
-            <img
-              src={photos[open].src}
-              alt={photos[open].caption}
-              className="max-h-[78vh] max-w-[92vw] rounded-xl shadow-2xl"
-            />
-            <p className="text-slate-300 text-sm">
-              {photos[open].caption} ({open + 1}/{photos.length})
-            </p>
-            <button
-              type="button"
-              onClick={() => setOpen((i) => (i! + 1) % photos.length)}
-              aria-label="Następne zdjęcie"
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/15 hover:bg-white/30 text-white text-2xl"
-            >
-              ›
-            </button>
-          </div>,
-          document.body,
-        )}
+            ✕
+          </button>
+          <button
+            type="button"
+            onClick={() => setOpen((i) => cycle(i!, -1, photos.length))}
+            aria-label="Poprzednie zdjęcie"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/15 hover:bg-white/30 text-white text-2xl"
+          >
+            ‹
+          </button>
+          <img
+            src={photos[open].src}
+            alt={photos[open].caption}
+            className="max-h-[78vh] max-w-[92vw] rounded-xl shadow-2xl"
+          />
+          <p className="text-slate-300 text-sm">
+            {photos[open].caption} ({open + 1}/{photos.length})
+          </p>
+          <button
+            type="button"
+            onClick={() => setOpen((i) => cycle(i!, 1, photos.length))}
+            aria-label="Następne zdjęcie"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/15 hover:bg-white/30 text-white text-2xl"
+          >
+            ›
+          </button>
+        </ModalOverlay>
+      )}
     </>
   );
 }

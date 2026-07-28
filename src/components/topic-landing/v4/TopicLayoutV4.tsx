@@ -1,8 +1,11 @@
-import type { Topic } from '../../../data/topics';
+import { Suspense, lazy } from 'react';
+import type { TopicV4 } from '../../../data/topicV4Content';
+import { SHOW_NAME_DEMO } from '../../../data/lpContent';
 import { ClientOnly } from '../../ClientOnly';
-import { TopicNavV4 } from './TopicNavV4';
-import { TopicFooter } from '../TopicFooter';
 import { LandingOrderFlow } from '../../book/order-flow/LandingOrderFlow';
+import { WizardPlaceholder } from '../WizardPlaceholder';
+import { TopicFooter } from '../TopicFooter';
+import { TopicNavV4 } from './TopicNavV4';
 import { TopicHeroV4 } from './TopicHeroV4';
 import { TopicProduct } from './TopicProduct';
 import { TopicVideo } from './TopicVideo';
@@ -12,17 +15,10 @@ import { TopicReviews } from './TopicReviews';
 import { TopicSafety } from './TopicSafety';
 import { TopicFaq } from './TopicFaq';
 import { TopicPricing } from './TopicPricing';
-import { TopicNameDemo, SHOW_NAME_DEMO } from './TopicNameDemo';
 
-function WizardPlaceholder() {
-  return (
-    <section className="py-24 px-6 bg-cream">
-      <div className="max-w-4xl mx-auto text-center">
-        <div className="w-8 h-8 spinner mx-auto" />
-      </div>
-    </section>
-  );
-}
+// Lazy so the hidden demo (and its ~68 KB of story-opening data) stays out
+// of the topic chunk until SHOW_NAME_DEMO flips.
+const TopicNameDemo = lazy(() => import('./TopicNameDemo'));
 
 /**
  * LP v4 section skeleton (docs/spec-lp-v4-rollout.md):
@@ -30,10 +26,10 @@ function WizardPlaceholder() {
  * → pricing → engagement (hidden name demo + inline wizard). Same route,
  * same SEO meta — only the body of /problem/:slug changes.
  */
-export function TopicLayoutV4({ topic }: { topic: Topic }) {
+export function TopicLayoutV4({ topic }: { topic: TopicV4 }) {
   return (
     <div
-      className="min-h-screen antialiased bg-cream text-ink selection:bg-amberlp selection:text-navy"
+      className="min-h-screen antialiased bg-lp-cream text-lp-ink selection:bg-lp-amber selection:text-lp-navy"
       style={{ fontFamily: "'Nunito', sans-serif" }}
     >
       <TopicNavV4 topicSlug={topic.slug} />
@@ -46,8 +42,14 @@ export function TopicLayoutV4({ topic }: { topic: Topic }) {
       <TopicSafety topic={topic} />
       <TopicFaq />
       <TopicPricing topic={topic} />
-      {SHOW_NAME_DEMO && <TopicNameDemo topic={topic} />}
-      <ClientOnly fallback={<WizardPlaceholder />}>
+      {SHOW_NAME_DEMO && (
+        <ClientOnly fallback={null}>
+          <Suspense fallback={null}>
+            <TopicNameDemo topic={topic} />
+          </Suspense>
+        </ClientOnly>
+      )}
+      <ClientOnly fallback={<WizardPlaceholder className="bg-lp-cream" />}>
         <div id="kreator">
           <LandingOrderFlow topic={topic} />
         </div>
