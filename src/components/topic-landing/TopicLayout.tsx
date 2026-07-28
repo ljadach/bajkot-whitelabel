@@ -6,6 +6,7 @@ import { TopicPain } from './TopicPain';
 import { TopicScience } from './TopicScience';
 import { LandingOrderFlow } from '../book/order-flow/LandingOrderFlow';
 import { TopicFooter } from './TopicFooter';
+import { TopicLayoutV4 } from './v4/TopicLayoutV4';
 
 function WizardPlaceholder() {
   return (
@@ -18,6 +19,9 @@ function WizardPlaceholder() {
 }
 
 export function TopicLayout({ topic }: { topic: Topic }) {
+  if (topic.lpV4) {
+    return <TopicLayoutV4 topic={topic} />;
+  }
   return (
     <div
       className="min-h-screen antialiased selection:bg-magic-400 selection:text-white"

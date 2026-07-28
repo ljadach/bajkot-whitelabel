@@ -61,6 +61,17 @@ export interface Topic {
   scienceSubheading: string;
   scienceCards: [ScienceCard, ScienceCard, ScienceCard];
   loadingMessage: string;
+  /**
+   * LP v4 layout flag (spec-lp-v4-rollout.md). When true, /problem/:slug
+   * renders the v4 section skeleton instead of the legacy hero/pain/science.
+   */
+  lpV4?: boolean;
+  /**
+   * v4 pain section: four short scenes + a relief line. Optional until F2 —
+   * TopicPainV4 falls back to painEmpathy/painRootCause/painCta when absent.
+   */
+  painScenes?: [string, string, string, string];
+  painRelief?: string;
   /** Catalog tab this topic belongs to. */
   category: CatalogCategory;
   /** Short content for the catalog grid card (auth flow). */
@@ -338,6 +349,15 @@ export const TOPICS: Topic[] = [
       },
     ],
     loadingMessage: 'Tworzę magiczną bajkę o Misji Czystych Zębów...',
+    lpV4: true,
+    painScenes: [
+      '„Nieee! Nie chcę myć zębów!” — i ucieczka do pokoju.',
+      'Zaciśnięte usta. Negocjacje. „Jeszcze pięć minut”. Znowu.',
+      'Mówisz o próchnicy i dentyście — jak do ściany.',
+      'Kończy się na przytrzymywaniu i płaczu. A wieczorem myślisz: „przecież nie o to chodziło”.',
+    ],
+    painRelief:
+      'To nie Twoja wina. I nie musisz czekać, aż „samo minie”. Jest coś, co możesz zrobić jeszcze dziś wieczorem — zanim znowu spotkacie się przy umywalce.',
     category: 'higiena',
     catalog: {
       emoji: '🧼',
