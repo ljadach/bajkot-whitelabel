@@ -92,7 +92,7 @@
   .gallery button::after{content:"🔍";position:absolute;right:.5rem;bottom:.5rem;background:rgba(255,255,255,.85);border-radius:999px;width:1.7rem;height:1.7rem;display:flex;align-items:center;justify-content:center;font-size:.8rem}
   .ex-note{font-size:.8rem;color:var(--ink-soft)}
 
-  .video-sec video{width:100%;max-width:52rem;border-radius:var(--radius);box-shadow:0 14px 40px rgba(30,58,95,.18);display:block;background:#000}
+  .video-sec video{width:100%;max-width:52rem;height:auto;aspect-ratio:16/9;border-radius:var(--radius);box-shadow:0 14px 40px rgba(30,58,95,.18);display:block;background:#000}
 
   .pain{background:var(--white)}
   .pain-scenes{display:grid;gap:.9rem;max-width:38rem;margin:1.4rem 0}
@@ -255,8 +255,8 @@
 <!-- 2b. FILM PROMO -->
 <section class="video-sec" id="film"><div class="wrap">
   <h2>Zobacz, jakie to proste w praktyce</h2>
-  <p class="sub">31 sekund — od wpisania imienia do gotowej bajki dla Oli.</p>
-  <video controls preload="metadata" playsinline poster="img/promo-poster.jpg" width="1920" height="1080">
+  <p class="sub">10 minut — od wpisania imienia do gotowej bajki dla Oli.</p>
+  <video controls muted preload="metadata" playsinline poster="img/promo-poster.jpg" width="1920" height="1080">
     <source src="promo-ola.mp4" type="video/mp4">
     Twoja przeglądarka nie odtwarza wideo — <a href="promo-ola.mp4">pobierz film</a>.
   </video>
