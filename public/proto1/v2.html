@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>PROTOTYP v2 — Bajkoterapia: mycie zębów (nowy LP)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1e3a5f; --navy-deep:#16304f;
+    --amber:#f59f2d; --amber-dark:#e08a14;
+    --cream:#fdf9f2; --cream-dark:#f7efe2;
+    --teal:#3d8f8a; --teal-text:#2a6f6a;
+    --ink:#2b3648; --ink-soft:#5a6577;
+    --white:#ffffff;
+    --radius:1.5rem;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:'Nunito',system-ui,sans-serif;background:var(--cream);color:var(--ink);line-height:1.6}
+  img{max-width:100%;height:auto;display:block}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 1.25rem}
+  section,header{scroll-margin-top:4.5rem}
+
+  .proto{background:#7c3aed;color:#fff;text-align:center;font-size:.75rem;font-weight:700;padding:.35rem .5rem;letter-spacing:.05em}
+
+  nav{position:sticky;top:0;background:rgba(253,249,242,.92);backdrop-filter:blur(8px);z-index:50;border-bottom:1px solid #eee3cf}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;padding:.65rem 1.25rem;max-width:1060px;margin:0 auto}
+  .logo{font-weight:900;font-size:1.15rem;color:var(--navy);text-decoration:none;line-height:1.1}
+  .logo span{color:var(--amber-dark)}
+  .logo small{display:block;font-size:.62rem;font-weight:700;color:var(--ink-soft);letter-spacing:.02em}
+  .nav-cta{background:var(--amber);color:var(--navy);font-weight:900;text-decoration:none;padding:.7rem 1.2rem;border-radius:999px;font-size:.9rem;box-shadow:0 2px 8px rgba(245,159,45,.4)}
+
+  .hero{padding:2.5rem 0 2rem}
+  .hero-grid{display:block}
+  .hero-copy{display:flex;flex-direction:column}
+  @media(min-width:820px){
+    .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;column-gap:2rem;align-items:center}
+    .hero-copy{display:contents}
+    .hero-copy>*{grid-column:1;justify-self:start}
+    .hero-copy>h1,.hero-copy>.lead{justify-self:stretch}
+    .hero-copy>.hero-img{grid-column:2;grid-row:1/span 5;align-self:center}
+  }
+  .badge{display:inline-block;background:#e8f4f3;color:var(--teal-text);font-weight:800;font-size:.8rem;padding:.3rem .8rem;border-radius:999px;margin-bottom:1rem;align-self:flex-start}
+  h1{font-size:clamp(1.8rem,4.5vw,2.7rem);line-height:1.15;color:var(--navy);font-weight:900;margin-bottom:.9rem}
+  h1 em{font-style:normal;color:var(--amber-dark)}
+  .hero p.lead{font-size:1.08rem;color:var(--ink-soft);margin-bottom:1.2rem;max-width:34rem}
+  .hero-img{border-radius:var(--radius);box-shadow:0 18px 44px rgba(30,58,95,.18)}
+  @media(max-width:819px){.hero-img{margin-bottom:.4rem}}
+  .cta{display:inline-block;background:var(--amber);color:var(--navy);font-weight:900;font-size:1.05rem;text-decoration:none;padding:1rem 1.8rem;border-radius:999px;box-shadow:0 6px 18px rgba(245,159,45,.45);transition:transform .15s;text-align:center}
+  .cta:hover{transform:translateY(-2px)}
+  .cta:focus-visible,.nav-cta:focus-visible{outline:3px solid var(--navy);outline-offset:2px}
+  .demo-row input:focus-visible,.demo-row button:focus-visible,summary:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.cta{transition:none}}
+  .cta-sub{font-size:.85rem;color:var(--ink-soft);margin-top:.7rem}
+  .trustbar{display:flex;flex-wrap:wrap;gap:.6rem 1.6rem;margin-top:1.5rem;font-size:.85rem;font-weight:700;color:var(--navy)}
+  .trustbar span::before{content:"✓ ";color:var(--teal-text);font-weight:900}
+  .trustbar a{color:var(--navy)}
+
+  section{padding:3.2rem 0}
+  h2{font-size:clamp(1.45rem,3.4vw,2rem);color:var(--navy);font-weight:900;line-height:1.2;margin-bottom:1rem}
+  .sub{color:var(--ink-soft);max-width:38rem;margin-bottom:1.6rem}
+
+  .pain{background:var(--white)}
+  .pain-scenes{display:grid;gap:.9rem;max-width:38rem;margin:1.4rem 0}
+  .scene{background:var(--cream);border-left:4px solid var(--amber);border-radius:.8rem;padding:.85rem 1.1rem;font-size:1rem}
+  .pain-relief{background:#e8f4f3;border-radius:var(--radius);padding:1.4rem 1.6rem;max-width:38rem;margin:1.6rem 0;font-weight:700;color:var(--navy)}
+
+  .demo{background:var(--navy);color:#fff}
+  .demo h2{color:#fff}
+  .demo .sub{color:#c8d4e4}
+  .demo-box{background:var(--white);color:var(--ink);border-radius:var(--radius);padding:1.6rem;max-width:64rem;box-shadow:0 14px 40px rgba(0,0,0,.25)}
+  .demo-box label{font-weight:800;font-size:.95rem;color:var(--navy)}
+  .demo-row{display:flex;gap:.6rem;margin:.6rem 0 1rem}
+  .demo-row input{flex:1;min-width:0;border:2px solid #8f7f55;border-radius:.8rem;padding:.7rem .9rem;font-size:1rem;font-family:inherit}
+  .demo-row button{background:var(--teal);color:#fff;border:0;font-weight:800;font-family:inherit;font-size:.95rem;padding:.7rem 1.2rem;border-radius:.8rem;cursor:pointer}
+  @media(max-width:480px){.demo-row{flex-direction:column}.demo-row button{width:100%}}
+  .demo-result{display:none;grid-template-columns:1fr;gap:1.4rem;margin-top:1.2rem}
+  @media(min-width:760px){.demo-result{grid-template-columns:1.2fr .8fr;align-items:start}}
+  .fragment{background:var(--cream);border-radius:.9rem;padding:1.1rem 1.3rem;font-size:1.02rem;font-style:italic;color:var(--ink)}
+  .fragment strong{color:var(--amber-dark)}
+  .fragment-note{font-size:.85rem;color:var(--ink-soft);margin-top:.7rem;font-style:normal}
+  .cover-wrap{position:relative;max-width:340px;margin:0 auto;container-type:inline-size}
+  .cover-wrap img{border-radius:1rem}
+  .cover-title{position:absolute;left:53%;top:41.5%;width:31%;height:11%;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:900;color:var(--navy);line-height:1.15;font-size:clamp(.55rem,3.4cqw,.8rem);transform:rotate(-2deg);padding:0 .2rem;overflow:hidden}
+  .cover-title.long{font-size:clamp(.5rem,2.8cqw,.66rem)}
+  .cover-cap{font-size:.8rem;color:var(--ink-soft);text-align:center;margin-top:.5rem}
+  .demo-next{margin-top:1.2rem;text-align:center}
+
+  .steps-grid{display:grid;gap:1.2rem}
+  @media(min-width:760px){.steps-grid{grid-template-columns:repeat(3,1fr)}}
+  .step{background:var(--white);border-radius:var(--radius);padding:1.5rem;box-shadow:0 6px 20px rgba(30,58,95,.07)}
+  .step .num{width:2.2rem;height:2.2rem;border-radius:999px;background:var(--amber);color:var(--navy);font-weight:900;display:flex;align-items:center;justify-content:center;margin-bottom:.8rem}
+  .step h3{color:var(--navy);font-size:1.05rem;margin-bottom:.4rem}
+  .step p{font-size:.92rem;color:var(--ink-soft)}
+  .steps-note{margin-top:1.4rem;font-weight:700;color:var(--navy)}
+
+  .examples{background:var(--white)}
+  .ex-grid{display:grid;gap:1.2rem;margin-top:1.6rem}
+  @media(min-width:760px){.ex-grid{grid-template-columns:repeat(2,1fr)}}
+  .ex-card{background:var(--cream);border-radius:var(--radius);padding:1.4rem;display:flex;flex-direction:column;gap:1rem}
+  .ex-card h3{color:var(--navy);font-size:1.1rem}
+  .ex-card p{font-size:.92rem;color:var(--ink-soft)}
+  .ex-card img{border-radius:1rem;box-shadow:0 8px 24px rgba(30,58,95,.14)}
+  .ex-dl{display:inline-block;background:var(--teal);color:#fff;font-weight:800;text-decoration:none;padding:.85rem 1.4rem;border-radius:999px;font-size:.95rem;align-self:flex-start}
+  .ex-dl:focus-visible{outline:3px solid var(--navy);outline-offset:2px}
+  .ex-photos{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+  .ex-photos img{margin:0}
+  .ex-photos .full{grid-column:1/-1}
+  .ex-note{font-size:.8rem;color:var(--ink-soft)}
+
+  .pricing{background:var(--cream-dark)}
+  .price-grid{display:grid;gap:1.2rem;max-width:52rem;margin:1.6rem auto 0}
+  @media(min-width:700px){.price-grid{grid-template-columns:1fr 1fr}}
+  .price-card{background:var(--white);border-radius:var(--radius);padding:1.8rem 1.6rem;box-shadow:0 8px 26px rgba(30,58,95,.09);display:flex;flex-direction:column}
+  .price-card.featured{border:3px solid var(--amber);position:relative}
+  .price-flag{position:absolute;top:-1rem;left:50%;transform:translateX(-50%);background:var(--amber);color:var(--navy);font-weight:900;font-size:.78rem;padding:.3rem 1rem;border-radius:999px;white-space:nowrap}
+  .price-card h3{color:var(--navy);font-size:1.15rem;margin-bottom:.2rem}
+  .price-tag{font-size:2.2rem;font-weight:900;color:var(--navy);margin:.4rem 0 .9rem}
+  .price-tag small{font-size:1rem;font-weight:700;color:var(--ink-soft)}
+  .price-card ul{list-style:none;display:grid;gap:.55rem;margin-bottom:1.3rem;font-size:.93rem}
+  .price-card li::before{content:"✓ ";color:var(--teal-text);font-weight:900}
+  .price-card .cta{margin-top:auto;font-size:.98rem;padding:.85rem 1.4rem}
+  .price-note{text-align:center;font-size:.85rem;color:var(--ink-soft);margin-top:1.2rem;font-weight:700}
+
+  .proof{background:var(--white)}
+  .proof-grid{display:grid;gap:1.2rem}
+  @media(min-width:760px){.proof-grid{grid-template-columns:repeat(3,1fr)}}
+  .quote{background:var(--cream);border-radius:var(--radius);padding:1.4rem}
+  .quote p{font-size:.95rem;font-style:italic;margin-bottom:.9rem}
+  .quote .who{font-size:.85rem;font-weight:800;color:var(--navy)}
+  .proof-note{font-size:.78rem;color:var(--ink-soft);margin-top:1rem}
+
+  .safety{background:var(--cream-dark)}
+  .safety-grid{display:grid;gap:1.6rem;align-items:center}
+  @media(min-width:820px){.safety-grid{grid-template-columns:1fr 1fr}}
+  .safety ul{list-style:none;display:grid;gap:.9rem;margin-top:1rem}
+  .safety li{background:var(--white);border-radius:.9rem;padding:.9rem 1.1rem;box-shadow:0 4px 14px rgba(30,58,95,.06)}
+  .safety li b{color:var(--navy)}
+  .guarantee{background:#fdf2e2;border:2px dashed var(--amber);border-radius:var(--radius);padding:1.3rem 1.5rem;margin-top:1.4rem;font-weight:700;color:var(--navy)}
+  .spread-wrap{position:relative;container-type:inline-size}
+  .spread-wrap img{border-radius:var(--radius);box-shadow:0 14px 36px rgba(30,58,95,.15)}
+  .spread-text{position:absolute;left:55%;top:30%;width:33%;height:42%;font-size:clamp(.6rem,2.8cqw,.8rem);line-height:1.55;color:#4a4436;font-style:italic;overflow:hidden}
+  @container (max-width:430px){
+    .spread-text{position:static;width:auto;height:auto;overflow:visible;margin-top:.8rem;font-size:.95rem;font-style:normal;color:var(--ink);background:var(--white);border-radius:.9rem;padding:.9rem 1.1rem;box-shadow:0 4px 14px rgba(30,58,95,.06)}
+  }
+  .spread-text b{color:var(--amber-dark)}
+
+  .sci{background:var(--white)}
+  .sci-grid{display:grid;gap:1rem}
+  @media(min-width:760px){.sci-grid{grid-template-columns:repeat(3,1fr)}}
+  .sci-card{background:var(--cream);border-radius:var(--radius);padding:1.3rem}
+  .sci-card h3{font-size:1rem;color:var(--navy);margin-bottom:.3rem}
+  .sci-card p{font-size:.88rem;color:var(--ink-soft)}
+  .sci-quote{max-width:44rem;margin-top:1.6rem;background:#e8f4f3;border-left:4px solid var(--teal);border-radius:.9rem;padding:1.2rem 1.4rem}
+  .sci-quote p{font-style:italic;font-size:.98rem;color:var(--ink)}
+  .sci-quote cite{display:block;margin-top:.7rem;font-style:normal;font-size:.85rem;font-weight:700;color:var(--teal-text)}
+  .sci-quote a{color:var(--teal-text)}
+  .todo{background:#fff3cd;border:2px dashed #d4a017;border-radius:.6rem;padding:.15rem .5rem;font-weight:800;font-style:normal;color:#7a5c00}
+
+  .faq-list{max-width:44rem;display:grid;gap:.7rem}
+  .faq-list details{background:var(--white);border-radius:1rem;padding:1rem 1.2rem;box-shadow:0 4px 14px rgba(30,58,95,.06)}
+  .faq-list summary{font-weight:800;color:var(--navy);cursor:pointer}
+  .faq-list p{margin-top:.6rem;font-size:.92rem;color:var(--ink-soft)}
+  .faq-list a{color:var(--teal-text)}
+
+  .final{background:var(--navy);color:#fff;text-align:center}
+  .final h2{color:#fff}
+  .final .cta{margin-top:.6rem}
+  .final .cta-sub{color:#c8d4e4}
+
+  footer{background:var(--navy-deep);color:#9fb0c8;font-size:.8rem;text-align:center;padding:1.6rem 1rem;line-height:1.8}
+
+  .notes{background:#f3ecff;border-top:3px solid #7c3aed}
+  .notes h2{color:#5b21b6;font-size:1.2rem}
+  .notes ol{margin-left:1.2rem;display:grid;gap:.5rem;font-size:.9rem;color:#3f3355}
+</style>
+</head>
+<body>
+
+<div class="proto">PROTOTYP v2 DO DYSKUSJI — to nie jest strona produkcyjna · <a href="index.html" style="color:#e9d5ff">zobacz v1</a></div>
+
+<nav><div class="nav-in">
+  <a class="logo" href="#">📖 Bajko<span>terapia</span><small>bajki, które pomagają dzieciom</small></a>
+  <a class="nav-cta" href="#demo">Zobacz za darmo</a>
+</div></nav>
+
+<header class="hero"><div class="wrap hero-grid">
+  <div class="hero-copy">
+    <span class="badge">Dla dzieci 2–12 lat · gotowa w jeden wieczór</span>
+    <h1>Twoje dziecko nie chce myć zębów? <em>Dziś wieczorem zamiast bitwy — misja.</em></h1>
+    <p class="lead">Bajka, w której <strong>Twoje dziecko jest bohaterem</strong>, zamienia szczoteczkę w magiczną latarnię, a mycie zębów — w misję, na którą samo czeka.</p>
+    <div>
+      <a class="cta" href="#demo">Zobacz bajkę za darmo</a>
+      <p class="cta-sub">Bez karty. Bez zobowiązań. Najpierw czytasz, potem decydujesz.</p>
+    </div>
+    <img class="hero-img" src="img/hero.jpg" alt="Dziecko-bohater z magiczną świecącą szczoteczką i uciekającymi zabawnymi potworkami" width="900" height="900" fetchpriority="high">
+    <div class="trustbar">
+      <span>Płacisz dopiero po przeczytaniu</span>
+      <span>Wysyłka po Polsce w cenie</span>
+      <span><a href="#cennik">PDF 49 zł · PDF + druk 99 zł</a></span>
+    </div>
+  </div>
+</div></header>
+
+<section class="pain"><div class="wrap">
+  <h2>Wiesz, jak to jest.</h2>
+  <div class="pain-scenes">
+    <div class="scene">„Nieee! Nie chcę myć zębów!” — i ucieczka do pokoju.</div>
+    <div class="scene">Zaciśnięte usta. Negocjacje. „Jeszcze pięć minut”. Znowu.</div>
+    <div class="scene">Mówisz o próchnicy i dentyście — jak do ściany.</div>
+    <div class="scene">Kończy się na przytrzymywaniu i płaczu. A wieczorem myślisz: „przecież nie o to chodziło”.</div>
+  </div>
+  <div class="pain-relief">To nie Twoja wina. I nie musisz czekać, aż „samo minie”. Jest coś, co możesz zrobić jeszcze dziś wieczorem — zanim znowu spotkacie się przy umywalce.</div>
+  <a class="cta" href="#demo">Zobacz bajkę za darmo</a>
+</div></section>
+
+<section class="demo" id="demo"><div class="wrap">
+  <h2>Wpisz imię dziecka i zobacz, jak zaczyna się jego bajka</h2>
+  <p class="sub">Bajka Twojego dziecka będzie napisana specjalnie dla niego. Tu możesz poczuć, jak to brzmi.</p>
+  <div class="demo-box">
+    <label for="imie">Jak ma na imię Twoje dziecko?</label>
+    <form class="demo-row" onsubmit="pokaz();return false">
+      <input id="imie" type="text" maxlength="20" placeholder="np. Zosia, Antek" autocomplete="off" enterkeyhint="go">
+      <button type="submit">Zobacz fragment</button>
+    </form>
+    <div class="demo-result" id="demo-result">
+      <div>
+        <div class="fragment">
+          <p>„Wieczorem, kiedy w łazience gaśnie światło, na półce budzi się Iskierka — szczoteczka, która świeci jak mała latarnia. Iskierka od dawna czeka na kogoś odważnego. I wie jedno: nikt nie nadaje się do tej misji lepiej niż <strong class="imie-out">…</strong>…”</p>
+          <p class="fragment-note">To przykładowy początek. Bajka Twojego dziecka powstanie od zera — na podstawie tego, co nam o nim opowiesz: co jest trudne, co lubi, czego się boi.</p>
+        </div>
+        <div class="demo-next">
+          <a class="cta" id="demo-cta" href="https://bajkoterapia.org/problem/mycie-zebow#kreator">Stwórz całą bajkę →</a>
+          <p class="cover-cap">3 minuty wypełniania · gotowa jeszcze dziś wieczorem</p>
+        </div>
+      </div>
+      <div>
+        <div class="cover-wrap">
+          <img src="img/book.jpg" alt="Drukowana książka z bohaterem bajki na okładce" width="900" height="900" loading="lazy">
+          <div class="cover-title" id="cover-title">Misja Czystych Zębów</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<section id="jak"><div class="wrap">
+  <h2>Widzisz całość, zanim zapłacisz.</h2>
+  <p class="sub">Żadnych płatności z góry. Tak to działa:</p>
+  <div class="steps-grid">
+    <div class="step"><div class="num">1</div><h3>Opowiadasz o dziecku</h3><p>Imię, wiek, co jest trudne przy myciu zębów. 3 minuty — mniej niż jedna wieczorna negocjacja.</p></div>
+    <div class="step"><div class="num">2</div><h3>Bajka powstaje</h3><p>Pisze ją AI według sprawdzonego schematu bajek terapeutycznych — o Twoim dziecku, z jego imieniem i wyglądem. A pierwszą osobą, która ją przeczyta, jesteś Ty.</p></div>
+    <div class="step"><div class="num">3</div><h3>Czytasz i decydujesz</h3><p>Przeglądasz całą bajkę. Dopiero jeśli Wam się spodoba, płacisz i pobierasz: <a href="#cennik" style="color:var(--teal-text);font-weight:700">PDF 49 zł albo PDF + drukowana książka 99 zł</a>.</p></div>
+  </div>
+  <p class="steps-note">Nie podoba Ci się? Po prostu nie płacisz. Bez tłumaczenia się.</p>
+  <a class="cta" href="#demo" style="margin-top:1.2rem">Zobacz bajkę za darmo</a>
+</div></section>
+
+<section class="examples" id="przyklady"><div class="wrap">
+  <h2>Nie kupujesz kota w worku. Przejrzyj gotową bajkę.</h2>
+  <p class="sub">Tak wygląda książka, którą dostają rodzice. Pobierz całą przykładową bajkę — bez podawania maila, bez zapisów.</p>
+  <div class="ex-grid">
+    <div class="ex-card">
+      <h3>Przykładowa bajka w PDF — cała, od okładki po morał</h3>
+      <img src="img/zosia-cover.jpg" alt="Okładka przykładowej bajki: Zosia i Rycerz Biały Uśmiech" width="700" height="989" loading="lazy" style="max-width:280px">
+      <p>„Zosia i Rycerz Biały Uśmiech” — 26 stron, 5 rozdziałów, pełne ilustracje. Dokładnie taki plik dostaniesz dla swojego dziecka: z jego imieniem, wyglądem i jego wersją tej przygody.</p>
+      <a class="ex-dl" href="przyklad-bajka.pdf" download>⬇ Pobierz przykładową bajkę (PDF, 1,4 MB)</a>
+    </div>
+    <div class="ex-card">
+      <h3>Tak wygląda wydrukowana wersja</h3>
+      <div class="ex-photos">
+        <img class="full" src="img/druk-okladka.jpg" alt="Zdjęcie wydrukowanej książki Bajkoterapii leżącej na stole" width="1100" height="825" loading="lazy">
+        <img src="img/druk-rozkladowka.jpg" alt="Rozkładówka wydrukowanej bajki: ilustracja bohaterki i tekst" width="550" height="733" loading="lazy">
+        <img src="img/druk-portret.jpg" alt="Strona wydrukowanej bajki z portretem bohaterki" width="550" height="733" loading="lazy">
+      </div>
+      <p class="ex-note">Prawdziwe zdjęcia, bez filtrów — egzemplarz wydrukowany dokładnie tak, jak wysyłamy go do rodziców.</p>
+    </div>
+  </div>
+</div></section>
+
+<section class="pricing" id="cennik"><div class="wrap">
+  <h2 style="text-align:center">Prosty wybór. Bez gwiazdek.</h2>
+  <p class="sub" style="text-align:center;margin-left:auto;margin-right:auto">W obu wariantach najpierw czytasz całą bajkę za darmo. Płacisz dopiero wtedy, gdy chcesz ją zatrzymać.</p>
+  <div class="price-grid">
+    <div class="price-card">
+      <h3>Bajka w PDF</h3>
+      <div class="price-tag">49 zł</div>
+      <ul>
+        <li>Cała spersonalizowana bajka z ilustracjami</li>
+        <li>Do pobrania od razu po opłaceniu</li>
+        <li>Czytasz na tablecie albo drukujesz w domu</li>
+        <li>Zostaje z Wami na zawsze</li>
+      </ul>
+      <a class="cta" href="#demo">Zacznij od darmowej bajki</a>
+    </div>
+    <div class="price-card featured">
+      <div class="price-flag">Najczęściej wybierane</div>
+      <h3>PDF + drukowana książka</h3>
+      <div class="price-tag">99 zł <small>z wysyłką</small></div>
+      <ul>
+        <li>Wszystko z wariantu PDF</li>
+        <li>Profesjonalnie wydrukowana książka</li>
+        <li>Kurier w 3–5 dni roboczych, wysyłka po Polsce w cenie</li>
+        <li>Prezent, w którym dziecko widzi siebie</li>
+      </ul>
+      <a class="cta" href="#demo">Zacznij od darmowej bajki</a>
+    </div>
+  </div>
+  <p class="price-note">Cena jak za książkę z księgarni — tylko że ta jest o Twoim dziecku.</p>
+</div></section>
+
+<section class="proof"><div class="wrap">
+  <h2>Rodzice, którzy już próbowali</h2>
+  <div class="proof-grid">
+    <div class="quote"><p>„Cena jak za zwykłą książkę z księgarni, a bajka napisana na konkretny problem mojej córki. To w ogóle nieporównywalne.”</p><div class="who">Magda, mama 5-letniej Lenki</div></div>
+    <div class="quote"><h3 style="color:var(--navy);font-size:1rem;margin-bottom:.6rem">Po czym poznasz, że działa?</h3><p style="font-style:normal;font-size:.92rem">U wielu dzieci wygląda to tak: prosi o tę samą bajkę drugi i trzeci wieczór. Przy umywalce samo wspomina Iskierkę. Sięga po szczoteczkę bez wojny — bo to już rekwizyt z jego historii.</p></div>
+    <div class="quote"><p>„Zamówiłem druk i wysłałem na urodziny chrześniaka. Mama przysłała filmik, jak chłopiec zobaczył siebie na okładce — bezcenne.”</p><div class="who">Piotr, ojciec chrzestny</div></div>
+  </div>
+  <p class="proof-note">Opinie od klientów Bajkoterapii. Te o efektach u dzieci dopiero zbieramy.</p>
+</div></section>
+
+<section class="safety"><div class="wrap safety-grid">
+  <div>
+    <h2>Najpierw Ty. Potem dziecko.</h2>
+    <ul>
+      <li><b>Czytasz przed dzieckiem.</b> Bajka najpierw trafia do Ciebie — dziecko zobaczy ją dopiero, gdy uznasz, że jest w porządku.</li>
+      <li><b>Sprawdzamy każdą bajkę.</b> Zanim ją dostaniesz, sprawdza ją osobny recenzent AI: zero straszenia, zero moralizowania. A ostatnie słowo i tak masz Ty.</li>
+      <li><b>Łagodni „przeciwnicy”.</b> Bakteryjne Potworki są śmieszne, nie straszne. Dziecko ma się śmiać i kibicować, nie bać.</li>
+      <li><b>Dane dziecka służą tylko bajce.</b> To, co opowiesz o swoim dziecku, służy do napisania jego bajki. Nie sprzedajemy tych informacji, nie pokazujemy ich innym rodzicom i nie używamy do reklam. Szczegóły: <a href="https://bajkoterapia.org/polityka-prywatnosci" style="color:var(--teal-text);font-weight:700">polityka prywatności</a>. Bajkoterapia to projekt polskiej firmy Trustee Interactive z Warszawy.</li>
+    </ul>
+    <div class="guarantee">Najlepsza gwarancja to ta, której nie musisz używać: całą bajkę czytasz <b>przed</b> zapłatą. Nie podoba się — nie płacisz i nikt nie zada Ci ani jednego pytania.</div>
+    <a class="cta" href="#demo" style="margin-top:1.4rem">Zobacz bajkę za darmo</a>
+  </div>
+  <div class="spread-wrap">
+    <img src="img/spread.jpg" alt="Rozkładówka bajki: bohater z magiczną szczoteczką-latarnią i zabawne potworki" width="900" height="900" loading="lazy">
+    <div class="spread-text">Potworki zasłaniają oczy łapkami.<br>— Ona świeci! — piszczy pierwszy.<br>— Za jasno! — jęczy drugi.<br><br>A wtedy <b>bohater tej bajki</b> unosi Iskierkę wysoko jak latarnię. I ciemne kąty łazienki robią się złote.</div>
+  </div>
+</div></section>
+
+<section class="sci"><div class="wrap">
+  <h2>Dlaczego bajka działa, kiedy argumenty nie pomagają?</h2>
+  <div class="sci-grid">
+    <div class="sci-card"><h3>🦷 Misja, nie obowiązek</h3><p>Bohater ratuje swoje zęby przed Bakteryjnymi Potworkami. Dla dziecka to przygoda — a przygody się nie odmawia.</p></div>
+    <div class="sci-card"><h3>🪞 „To przecież ja!”</h3><p>Dziecko słyszy własne imię i widzi siebie na ilustracjach. Chce być tak dzielne jak bohater — bo bohater to ono samo.</p></div>
+    <div class="sci-card"><h3>🪄 Szczoteczka z imieniem</h3><p>W bajce szczoteczka ma imię i moc. Po bajce przestaje być wrogiem — staje się przyjacielem, który czeka w łazience.</p></div>
+  </div>
+  <blockquote class="sci-quote">
+    <p><span class="todo">[TODO: cytat z pracy naukowej, którą podesłał Andrzej — jedno zdanie o skuteczności bajkoterapii / personalizacji]</span></p>
+    <cite>— <span class="todo">[Autorzy, rok, tytuł pracy]</span> · <a href="#" rel="nofollow"><span class="todo">[link do publikacji]</span></a></cite>
+  </blockquote>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Pytania, które pewnie masz</h2>
+  <div class="faq-list">
+    <details><summary>Czy mogę zobaczyć przykładową bajkę przed zamówieniem?</summary><p>Tak — <a href="#przyklady">pobierz całą przykładową bajkę w PDF</a>, bez podawania maila. A swoją bajkę i tak przeczytasz w całości przed zapłatą.</p></details>
+    <details><summary>Ile stron ma bajka?</summary><p>Kilkanaście stron: 4–6 rozdziałów z kolorowymi ilustracjami. Długość dopasowujemy do wieku dziecka.</p></details>
+    <details><summary>Kiedy dojdzie drukowana wersja?</summary><p>PDF dostajesz od razu po opłaceniu. Drukowana książka dociera kurierem w 3–5 dni roboczych — wysyłka po Polsce w cenie.</p></details>
+    <details><summary>Ile trwa przygotowanie bajki?</summary><p>Zwykle około pół godziny. Stronę z postępem możesz mieć otwartą, a bajka poczeka gotowa, aż wrócisz.</p></details>
+    <details><summary>Kto pisze bajkę?</summary><p>Bajkę pisze AI według schematu bajek terapeutycznych: bohater zaczyna bezpiecznie, spotyka wyzwanie, dostaje mądrego przewodnika i wygrywa. Każdą historię sprawdzamy, a Ty czytasz ją przed dzieckiem.</p></details>
+    <details><summary>A jeśli bajka mi się nie spodoba?</summary><p>Nie płacisz — i tyle. Całą bajkę czytasz przed zakupem, więc dokładnie wiesz, za co płacisz. Bajka to treść cyfrowa tworzona na indywidualne zamówienie i dostarczana od razu — dlatego po zakupie nie ma już zwrotów, ale przed zakupem masz pełny wgląd.</p></details>
+  </div>
+</div></section>
+
+<section class="final" id="final"><div class="wrap">
+  <h2>Dziś wieczorem możesz przeczytać dziecku bajkę,<br>w której to <em style="font-style:normal;color:var(--amber)">ono</em> jest bohaterem.</h2>
+  <a class="cta" href="#demo">Zobacz bajkę za darmo</a>
+  <p class="cta-sub">Bez karty · gotowa jeszcze dziś wieczorem · płacisz, tylko jeśli się spodoba</p>
+</div></section>
+
+<section class="notes"><div class="wrap">
+  <h2>🗒️ Notatki do dyskusji — co zmieniło się w v2 (nie są częścią strony)</h2>
+  <ol>
+    <li><b>Boxy cenowe 49/99</b> — nowa sekcja #cennik, rozbicie PDF vs PDF + druk jak na obecnej stronie. Ceny w hero linkują do sekcji.</li>
+    <li><b>Sekcja przykładów</b> — cała przykładowa bajka do pobrania („Zosia i Rycerz Biały Uśmiech”, PDF 1,4 MB, bez maila) + prawdziwe zdjęcia wydrukowanego egzemplarza. Gdy będzie zdjęcie okładki z miejscem na tytuł (poniedziałek), podmienić też mock w sekcji demo.</li>
+    <li><b>Zwroty usunięte</b> — produkt cyfrowy na zamówienie = zrzeczenie prawa odstąpienia. Wywalone: „Zwrot bez pytań” (hero), „zwracamy pieniądze” (gwarancja), „14 dni na zwrot” (FAQ). Gwarancja przeformułowana na „czytasz przed zapłatą”. Do weryfikacji z regulaminem.</li>
+    <li><b>Cytat naukowy</b> — sekcja „Dlaczego działa” dostała blockquote z linkiem. TODO: wstawić cytat + link z pracy, którą podesłał Andrzej (żółte placeholdery).</li>
+    <li><b>Podpis pod okładką-mockiem usunięty</b> („Tak może wyglądać okładka…”) — zgodnie z ustaleniem; realne zdjęcia druku są teraz w sekcji przykładów.</li>
+    <li><b>Demo z imieniem zostaje</b> — decyzja ze spotkania. WYMÓG PRODUKTOWY: pokazany początek musi być przekazywany do pipeline’u, żeby wygenerowana bajka faktycznie tak się zaczynała (inaczej miss-selling). Do zrobienia w promptach zanim LP pójdzie na kampanię.</li>
+    <li><b>Bez zmian z v1:</b> demo fragmentu (uczciwie oznaczone), opinie (2 prawdziwe + kafel „Po czym poznasz”), deklaracja AI wprost, „gotowa jeszcze dziś wieczorem”.</li>
+    <li><b>Przed startem kampanii Ads:</b> wizard jako sekcja LP (teraz CTA prowadzi do produkcyjnego wizarda za tokenem), WebP/AVIF + srcset, domknięcie PII w logach (TODO #2), podmiana placeholderów cytatu.</li>
+  </ol>
+</div></section>
+
+<footer>PROTOTYP v2 — Bajkoterapia LP „mycie zębów” · wersja robocza do wewnętrznej dyskusji · nie indeksować, nie udostępniać publicznie<br>Bajkoterapia by Trustee Interactive, Plac Inwalidów 10, 01-552 Warszawa · info@bajkoterapia.org<br><a href="https://bajkoterapia.org/regulamin" style="color:#c8d4e4">Regulamin</a> · <a href="https://bajkoterapia.org/polityka-prywatnosci" style="color:#c8d4e4">Polityka Prywatności i RODO</a></footer>
+
+<script>
+function pokaz(){
+  var v=(document.getElementById('imie').value||'').trim();
+  var fallback = !v;
+  if(fallback){
+    v='bohater tej bajki';
+  } else {
+    v=v.charAt(0).toUpperCase()+v.slice(1);
+  }
+  document.querySelectorAll('.imie-out').forEach(function(el){el.textContent=v;});
+  var ct=document.getElementById('cover-title');
+  var title = fallback ? 'Misja Czystych Zębów' : (v + ' i Misja Czystych Zębów');
+  ct.textContent = title;
+  ct.classList.toggle('long', title.length > 22);
+  var res=document.getElementById('demo-result');
+  res.style.display='grid';
+  res.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest'});
+}
+</script>
+</body>
+</html>

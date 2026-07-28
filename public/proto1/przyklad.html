@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Przykładowa bajka — Zosia i Rycerz Biały Uśmiech · Bajkoterapia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1e3a5f; --navy-deep:#16304f;
+    --amber:#f59f2d; --amber-dark:#e08a14;
+    --cream:#fdf9f2;
+    --teal:#3d8f8a; --teal-text:#2a6f6a;
+    --ink:#2b3648; --ink-soft:#5a6577;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Nunito',system-ui,sans-serif;background:var(--cream);color:var(--ink);line-height:1.6}
+  nav{position:sticky;top:0;background:rgba(253,249,242,.95);backdrop-filter:blur(8px);z-index:50;border-bottom:1px solid #eee3cf}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.65rem 1.25rem;max-width:1060px;margin:0 auto;flex-wrap:wrap}
+  .logo{font-weight:900;font-size:1.1rem;color:var(--navy);text-decoration:none;line-height:1.1}
+  .logo span{color:var(--amber-dark)}
+  .nav-actions{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+  .btn{display:inline-block;font-weight:800;text-decoration:none;padding:.6rem 1.1rem;border-radius:999px;font-size:.85rem}
+  .btn-amber{background:var(--amber);color:var(--navy);box-shadow:0 2px 8px rgba(245,159,45,.4)}
+  .btn-teal{background:var(--teal);color:#fff}
+  .btn-ghost{color:var(--teal-text)}
+  .btn:focus-visible{outline:3px solid var(--navy);outline-offset:2px}
+  .head{max-width:820px;margin:1.6rem auto .6rem;padding:0 1.25rem;text-align:center}
+  .head h1{font-size:clamp(1.2rem,3vw,1.7rem);color:var(--navy);font-weight:900;line-height:1.25}
+  .head p{font-size:.92rem;color:var(--ink-soft);margin-top:.4rem}
+  .viewer{max-width:820px;margin:1rem auto 2rem;padding:0 1.25rem;display:grid;gap:1rem}
+  .viewer canvas{width:100%;height:auto;border-radius:.8rem;box-shadow:0 8px 26px rgba(30,58,95,.14);background:#fff}
+  .loading{text-align:center;color:var(--ink-soft);font-weight:700;padding:2rem 0}
+  .fallback{max-width:820px;margin:1rem auto;padding:0 1.25rem;text-align:center;display:none}
+  .cta-strip{background:var(--navy);color:#fff;text-align:center;padding:2.2rem 1.25rem}
+  .cta-strip p{font-weight:800;font-size:1.05rem;margin-bottom:.9rem}
+  footer{background:var(--navy-deep);color:#9fb0c8;font-size:.78rem;text-align:center;padding:1.4rem 1rem;line-height:1.8}
+</style>
+</head>
+<body>
+
+<nav><div class="nav-in">
+  <a class="logo" href="v4.html">📖 Bajko<span>terapia</span></a>
+  <div class="nav-actions">
+    <a class="btn btn-ghost" href="v4.html">← Wróć</a>
+    <a class="btn btn-teal" href="przyklad-bajka.pdf" download>⬇ Pobierz PDF</a>
+    <a class="btn btn-amber" href="v4.html#demo">Stwórz bajkę</a>
+  </div>
+</div></nav>
+
+<div class="head">
+  <h1>„Zosia i Rycerz Biały Uśmiech”</h1>
+  <p>Przykładowa bajka Bajkoterapii — 26 stron, 5 rozdziałów. Podobną książkę, z imieniem i wyglądem Twojego dziecka, przygotujemy w około 20 minut.</p>
+</div>
+
+<div class="viewer" id="viewer"><p class="loading" id="loading">Ładuję bajkę…</p></div>
+<div class="fallback" id="fallback">
+  <p style="margin-bottom:.8rem">Nie udało się załadować podglądu w przeglądarce.</p>
+  <a class="btn btn-teal" href="przyklad-bajka.pdf">Otwórz PDF bezpośrednio</a>
+</div>
+
+<div class="cta-strip">
+  <p>Podoba Ci się? Taka sama bajka może być o Twoim dziecku.</p>
+  <a class="btn btn-amber" href="v4.html#demo">Stwórz bajkę</a>
+</div>
+
+<footer>PROTOTYP — podstrona przykładowej bajki · nie indeksować<br>Bajkoterapia by Trustee Interactive · info@bajkoterapia.org</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+(function(){
+  var fallback = function(){
+    document.getElementById('loading').style.display='none';
+    document.getElementById('fallback').style.display='block';
+  };
+  if(!window.pdfjsLib){ fallback(); return; }
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  pdfjsLib.getDocument('przyklad-bajka.pdf').promise.then(function(pdf){
+    document.getElementById('loading').style.display='none';
+    var viewer = document.getElementById('viewer');
+    var scale = Math.min(2, (window.devicePixelRatio || 1) * 1.2);
+    var renderPage = function(n){
+      if(n > pdf.numPages) return;
+      pdf.getPage(n).then(function(page){
+        var viewport = page.getViewport({ scale: scale });
+        var canvas = document.createElement('canvas');
+        canvas.width = viewport.width; canvas.height = viewport.height;
+        canvas.setAttribute('aria-label', 'Strona ' + n);
+        viewer.appendChild(canvas);
+        page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise.then(function(){
+          renderPage(n + 1);
+        });
+      }).catch(fallback);
+    };
+    renderPage(1);
+  }).catch(fallback);
+})();
+</script>
+</body>
+</html>

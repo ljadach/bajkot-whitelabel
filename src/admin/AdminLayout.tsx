@@ -8,7 +8,11 @@ import { AdminStripe } from './pages/AdminStripe';
 import { AdminMail } from './pages/AdminMail';
 import { AdminAnalytics } from './pages/AdminAnalytics';
 import { AdminProto1 } from './pages/AdminProto1';
+import { AdminProto1V2 } from './pages/AdminProto1V2';
+import { AdminProto1V3 } from './pages/AdminProto1V3';
+import { AdminProto1V4 } from './pages/AdminProto1V4';
 import { AdminProto2 } from './pages/AdminProto2';
+import { AdminPlayer } from './pages/AdminPlayer';
 
 const NAV_ITEMS = [
   { to: '/admin', label: 'Dashboard', icon: 'grid', end: true },
@@ -19,7 +23,11 @@ const NAV_ITEMS = [
   { to: '/admin/logs', label: 'Logs', icon: 'logs' },
   { to: '/admin/stripe', label: 'Stripe', icon: 'stripe' },
   { to: '/admin/proto1', label: 'Proto LP', icon: 'proto' },
+  { to: '/admin/proto1_v2', label: 'Proto LP v2', icon: 'proto' },
+  { to: '/admin/proto1_v3', label: 'Proto LP v3', icon: 'proto' },
+  { to: '/admin/proto1_v4', label: 'Proto LP v4', icon: 'proto' },
   { to: '/admin/proto2', label: 'Proto LP 2', icon: 'proto' },
+  { to: '/admin/player', label: 'Player', icon: 'play' },
 ];
 
 function NavIcon({ icon }: { icon: string }) {
@@ -137,6 +145,22 @@ function NavIcon({ icon }: { icon: string }) {
           />
         </svg>
       );
+    case 'play':
+      return (
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={1.5}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z"
+          />
+        </svg>
+      );
     case 'proto':
       return (
         <svg
@@ -205,7 +229,11 @@ export function AdminLayout() {
               <Route path="logs" element={<AdminLogs />} />
               <Route path="stripe" element={<AdminStripe />} />
               <Route path="proto1" element={<AdminProto1 />} />
+              <Route path="proto1_v2" element={<AdminProto1V2 />} />
+              <Route path="proto1_v3" element={<AdminProto1V3 />} />
+              <Route path="proto1_v4" element={<AdminProto1V4 />} />
               <Route path="proto2" element={<AdminProto2 />} />
+              <Route path="player" element={<AdminPlayer />} />
             </Routes>
           </Suspense>
         </div>
