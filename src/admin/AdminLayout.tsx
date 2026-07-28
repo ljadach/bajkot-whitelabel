@@ -8,6 +8,8 @@ import { AdminStripe } from './pages/AdminStripe';
 import { AdminMail } from './pages/AdminMail';
 import { AdminAnalytics } from './pages/AdminAnalytics';
 import { AdminProto1 } from './pages/AdminProto1';
+import { AdminProto1V2 } from './pages/AdminProto1V2';
+import { AdminProto1V3 } from './pages/AdminProto1V3';
 import { AdminProto2 } from './pages/AdminProto2';
 
 const NAV_ITEMS = [
@@ -19,6 +21,8 @@ const NAV_ITEMS = [
   { to: '/admin/logs', label: 'Logs', icon: 'logs' },
   { to: '/admin/stripe', label: 'Stripe', icon: 'stripe' },
   { to: '/admin/proto1', label: 'Proto LP', icon: 'proto' },
+  { to: '/admin/proto1_v2', label: 'Proto LP v2', icon: 'proto' },
+  { to: '/admin/proto1_v3', label: 'Proto LP v3', icon: 'proto' },
   { to: '/admin/proto2', label: 'Proto LP 2', icon: 'proto' },
 ];
 
@@ -205,6 +209,8 @@ export function AdminLayout() {
               <Route path="logs" element={<AdminLogs />} />
               <Route path="stripe" element={<AdminStripe />} />
               <Route path="proto1" element={<AdminProto1 />} />
+              <Route path="proto1_v2" element={<AdminProto1V2 />} />
+              <Route path="proto1_v3" element={<AdminProto1V3 />} />
               <Route path="proto2" element={<AdminProto2 />} />
             </Routes>
           </Suspense>
