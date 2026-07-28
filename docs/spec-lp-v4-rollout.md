@@ -1,12 +1,71 @@
 # Spec: rollout LP v4 na wszystkie topic landing pages
 
-**Status:** plan zaakceptowany kierunkowo (2026-07-28, uwagi c3z naniesione). Nic z tego nie idzie na prod bez osobnej decyzji.
+**Status:** F0–F2 wykonane na branchu `feat/lp-v4-rollout` (PR #62), F3 częściowo (dane
+gotowe, sekcja schowana). **Nic z tego nie jest na prodzie** — merge i deploy czekają na
+przegląd treści. Sekcja „Stan wykonania" niżej opisuje, co realnie powstało i gdzie
+implementacja rozjechała się z tym planem.
 
 **Decyzje c3z (28.07):** zdjęcia druku, film i opinie zostają wspólne na stałe (bez wariantów per problem); przykładowa bajka zostaje jedna (Zosia) na stałe; sekcja demo „wpisz imię" + preview bajki w rollout **schowana (nie usunięta)** — wraca na końcu, po opracowaniu symulowanych początków bajek per problem (generuje je osobny agent na bazie promptów pipeline'u → `src/data/storyOpenings.ts`).
 
+## Stan wykonania (2026-07-28)
+
+Wykonane: **F0** (tokeny + assety), **F1** (layout, pilot), **F2** (treść dla wszystkich
+tematów), **F3 częściowo** (`storyOpenings.ts` gotowe dla 39/39 tematów, sekcja demo
+dalej schowana do czasu przeglądu treści). Weryfikacja: sweep Playwright na 39/39
+slugach renderuje v4, kolejność sekcji zgodna z proto, `npm run lint` zielony.
+
+**Co powstało — mapa plików:**
+
+| Warstwa                | Plik                                                                                                                        |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Przełącznik layoutu    | `TopicLayout.tsx` — wpis w `TOPIC_V4_CONTENT` ⇒ v4, brak wpisu ⇒ legacy (rollback path)                                     |
+| Treść per problem (39) | `src/data/topicV4Content.ts` — `{headline, headlineAccent, intro, painHeadline, painScenes[4], painRelief}` + typ `TopicV4` |
+| Treść wspólna          | `src/data/lpContent.ts` — galeria, przykładowa bajka, film, cytat, opinie, FAQ, safety, `SECTION_COPY`, `SHOW_NAME_DEMO`    |
+| Ceny i liczby          | `src/lib/pricing.ts` — jedno źródło (ceny, `GENERATION_MINUTES`, `DELIVERY_DAYS_TEXT`)                                      |
+| Otwarcia bajek (39)    | `src/data/storyOpenings.ts` — `{title, paragraphs: [{m, f}]}`, ładowane tylko w lazy chunku demo                            |
+| Sekcje v4              | `src/components/topic-landing/v4/Topic{NavV4,HeroV4,Product,Video,PainV4,ScienceV4,Reviews,Safety,Faq,Pricing,NameDemo}`    |
+| Prymitywy v4           | `v4/{Section,CtaButton,ModalOverlay,PhotoCarousel,Lightbox,cycle}`                                                          |
+| Współdzielone z legacy | `topic-landing/WizardPlaceholder.tsx`, `src/hooks/useWizardInView.ts`                                                       |
+
+**Rozjazdy vs plan — świadome decyzje w trakcie:**
+
+- **Brak flagi `lpV4` w `topics.ts`.** Plan zakładał pole boolean na temacie. Zamiast tego
+  o layoucie decyduje sama obecność wpisu w `TOPIC_V4_CONTENT` — jeden mechanizm zamiast
+  dwóch (flaga + treść mogły się rozjechać), a `Topic` zostaje nietknięty.
+- **Tokeny w namespace `lp.*`, nie gołe `cream/navy/amber/teal`.** Gołe nazwy nadpisały
+  istniejący token `ink` z palety enterprise i przebarwiły CookieBanner w całej apce.
+  Reguła na przyszłość w ADR-002.
+- **Ceny w `src/lib/pricing.ts`, nie w nowym `src/data/pricing.ts`.** Moduł już istniał
+  i był używany przez 7 plików — nowy byłby drugim źródłem prawdy.
+- **FontAwesome zostaje w kartach naukowych** (`topic.scienceCards[].icon` to klasy FA);
+  plan mówił o emoji. Emoji są tylko tam, gdzie proto ich używa (nav, przyciski).
+- **`childNameInflect` jeszcze nie podpięty** — `TopicNameDemo` ma lokalną heurystykę
+  (`-a` = żeńskie + lista wyjątków) z TODO. Do zrobienia zanim sekcja wróci.
+- **Sekcja demo lazy-loadowana**, nie tylko schowana za flagą — inaczej 68 KB otwarć
+  siedziałoby w bundlu każdej strony mimo niewidocznej sekcji.
+- **Prymitywy `Section`/`SectionHeading`** (nie było ich w planie) — szkielet sekcji
+  powtarzał się w 9 komponentach i zaczął dryfować.
+
+**Rozstrzygnięte:** czas generacji — jedna liczba `GENERATION_MINUTES = 20` w całym
+nowym kodzie (film, bullety, FAQ, cennik). Stare `faq.json`/`cennik.ts` dalej mówią
+swoje — poza zakresem tego rolloutu.
+
+**Otwarte przed prodem:**
+
+1. Przegląd treści przez zespół: `topicV4Content.ts` (39 tematów) i `storyOpenings.ts`
+   (39 otwarć, tematy wrażliwe: rozwód, nowe rodzeństwo).
+2. Promocja 59→49 musi zgadzać się z realnym cennikiem Stripe (dziś cena żyje w Stripe
+   Price) i z notą Omnibus.
+3. Claim profilu Trustpilot — link jest, profilu jeszcze nie.
+4. Cena audiobooka 69 zł jest robocza; audiobook nie istnieje jako produkt (F4).
+5. `inferGender` w `childNameInflect.ts` przed odsłonięciem demo.
+6. **Blokada kampanijna:** publiczny intake nie ma gate'u ani rate-limitu (TODO.md #1,
+   `startLandingOrder` w `convex/bookPipeline.ts`). Layout może iść na prod; płatna
+   promocja tych LP — dopiero po pay-first albo per-IP rate limicie.
+
 ## Cel
 
-Podmienić treść i strukturę wszystkich stron `/problem/:slug` (obecnie ~35 tematów w
+Podmienić treść i strukturę wszystkich stron `/problem/:slug` (39 tematów w
 `src/data/topics.ts`, SSG prerender) na układ wypracowany w prototypie
 `public/proto1/v4.html`, zachowując:
 
@@ -145,14 +204,13 @@ zostawiamy emoji (mniej FontAwesome, spójne z proto).
 - viewer PDF: `BookPdfFlipbook` (lazy chunk już istnieje) — podstrona nie jest
   potrzebna; otwieramy w modalu/nowej karcie z istniejącym komponentem.
 
-**Ceny.** Bullety hero i cennik czytają z jednego modułu (`src/data/pricing.ts`
-w F1; docelowo Convex `config`, żeby promocję dało się włączać bez deploya).
-Uwaga na spójność z `OrderCheckout`/Stripe price — dziś cena żyje w Stripe Price;
-LP musi pokazywać to samo (test integracyjny: cena na LP == cena w checkout).
+**Ceny.** Bullety hero i cennik czytają z jednego modułu — wykonane w istniejącym
+`src/lib/pricing.ts` (docelowo Convex `config`, żeby promocję dało się włączać bez
+deploya). Uwaga na spójność z `OrderCheckout`/Stripe price — dziś cena żyje w Stripe
+Price; LP musi pokazywać to samo (test integracyjny: cena na LP == cena w checkout).
 
-**Niespójność do rozstrzygnięcia przed F1:** czas generacji — film mówi
-„10 minut", bullety/FAQ „20 minut", stary `TopicHero` „15 minut". Jedna liczba
-wszędzie (proponuję ~20 min, bo bezpieczniejsza).
+**Niespójność czasu generacji — ROZSTRZYGNIĘTA:** `GENERATION_MINUTES = 20`
+w `src/lib/pricing.ts`, interpolowane wszędzie w nowym kodzie.
 
 **Ryzyka.**
 
