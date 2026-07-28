@@ -1,6 +1,8 @@
 # Spec: rollout LP v4 na wszystkie topic landing pages
 
-**Status:** plan do dyskusji (2026-07-28). Nic z tego nie idzie na prod bez osobnej decyzji.
+**Status:** plan zaakceptowany kierunkowo (2026-07-28, uwagi c3z naniesione). Nic z tego nie idzie na prod bez osobnej decyzji.
+
+**Decyzje c3z (28.07):** zdjęcia druku, film i opinie zostają wspólne na stałe (bez wariantów per problem); przykładowa bajka zostaje jedna (Zosia) na stałe; sekcja demo „wpisz imię" + preview bajki w rollout **schowana (nie usunięta)** — wraca na końcu, po opracowaniu symulowanych początków bajek per problem (generuje je osobny agent na bazie promptów pipeline'u → `src/data/storyOpenings.ts`).
 
 ## Cel
 
@@ -30,28 +32,28 @@ Podmienić treść i strukturę wszystkich stron `/problem/:slug` (obecnie ~35 t
 
 ## Tabela: co jest content-dependent, co wspólne, w której fazie podmiana
 
-| #   | Element                                  | Zależny od problemu?             | Źródło danych dziś                                             | Faza                                                       | Uwagi                                                                                                     |
-| --- | ---------------------------------------- | -------------------------------- | -------------------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 1   | Nav, logo, CTA                           | nie                              | `TopicNav`                                                     | **F1**                                                     | tylko copy CTA („Stwórz bajkę")                                                                           |
-| 2a  | H1 + accent                              | **tak**                          | `topic.headline/headlineAccent`                                | **F1** (istniejąca treść) → **F2** (przepis pod format v4) | format „Twoje dziecko nie chce X? Dziś wieczorem zamiast bitwy — misja."                                  |
-| 2b  | Lead                                     | **tak** (1 zdanie)               | `topic.intro`                                                  | **F2**                                                     | stały prefiks „Dedykowana książka dla Twojego dziecka." + zdanie per problem                              |
-| 2c  | Karuzela zdjęć hero                      | nie (na razie)                   | assety `proto1/img/druk-*`                                     | **F1**                                                     | jedna fizyczna książka; per-problem dopiero gdy będą wydruki (F4)                                         |
-| 2d  | Bullety cenowe                           | nie                              | hardcode → docelowo config                                     | **F1**                                                     | jedna prawda cen dla całego serwisu (spójnie z checkout)                                                  |
-| 3a  | Przykładowa bajka (PDF + okładka)        | **docelowo tak**                 | wspólna „Zosia i Rycerz Biały Uśmiech"                         | **F1** wspólna → **F3** per problem                        | F3 = batch generacja 1 bajki na temat (admin Book Batch), viewer per slug                                 |
-| 3b  | Galeria zdjęć druku                      | nie                              | `proto1/img`                                                   | **F1**                                                     | wspólne zdjęcia; per problem w F4 (sesje foto)                                                            |
-| 4   | Film promo                               | nie (na razie)                   | `promo-ola.mp4`                                                | **F1**                                                     | jeden film; warianty per problem = F4, opcjonalne                                                         |
-| 5   | Pain: 4 scenki + relief                  | **tak**                          | brak (jest `painEmpathy/painRootCause/painCta` w innej formie) | **F2**                                                     | nowe pola `painScenes[4]`, `painRelief`; treść do przepisania z istniejących pól                          |
-| 6a  | Karty naukowe ×3                         | **tak** (2 z 3)                  | `topic.scienceCards`                                           | **F1**                                                     | karta 3 „Bohater z imieniem" wspólna; 1–2 zostają per problem                                             |
-| 6b  | Cytat naukowy + link                     | nie                              | hardcode (Sufa & Janas 2018)                                   | **F1**                                                     | jeden cytat wszędzie                                                                                      |
-| 7   | Opinie + Trustpilot                      | nie                              | hardcode                                                       | **F1**                                                     | docelowo prawdziwe opinie per problem (F4, po zebraniu)                                                   |
-| 8a  | „Bajkoterapia jest bezpieczna"           | nie                              | hardcode                                                       | **F1**                                                     | wspólne                                                                                                   |
-| 8b  | FAQ                                      | nie (opcjonalnie +1 per problem) | hardcode                                                       | **F1**                                                     | ewentualne pytanie per problem w F2                                                                       |
-| 9   | Cennik + promocja                        | nie                              | hardcode → config                                              | **F1**                                                     | ceny/promocja sterowane jednym miejscem (docelowo `config` w Convex)                                      |
-| 10a | Fragment demo (odmiana imienia)          | **tak**                          | brak                                                           | **F1** szablon wspólny → **F2** per problem                | tytuł mock-okładki per problem (np. „{Imię} i Misja Czystych Zębów"); odmiana przez `childNameInflect.ts` |
-| 10b | Wizard                                   | **tak** (problemId)              | `LandingOrderFlow` + `topic.problemId`                         | **F1**                                                     | bez zmian funkcjonalnych — tylko pozycja i wygląd otoczenia                                               |
-| 11  | Footer                                   | nie                              | `TopicFooter`                                                  | **F1**                                                     | drobne copy                                                                                               |
-| —   | Meta/SEO (title, description, canonical) | **tak**                          | `topic.title/metaDescription`                                  | **bez zmian**                                              | zostaje jak jest                                                                                          |
-| —   | `loadingMessage`, `catalog`, `category`  | **tak**                          | `topics.ts`                                                    | **bez zmian**                                              | używane poza LP                                                                                           |
+| #   | Element                                  | Zależny od problemu?             | Źródło danych dziś                                             | Faza                                                       | Uwagi                                                                                                    |
+| --- | ---------------------------------------- | -------------------------------- | -------------------------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 1   | Nav, logo, CTA                           | nie                              | `TopicNav`                                                     | **F1**                                                     | tylko copy CTA („Stwórz bajkę")                                                                          |
+| 2a  | H1 + accent                              | **tak**                          | `topic.headline/headlineAccent`                                | **F1** (istniejąca treść) → **F2** (przepis pod format v4) | format „Twoje dziecko nie chce X? Dziś wieczorem zamiast bitwy — misja."                                 |
+| 2b  | Lead                                     | **tak** (1 zdanie)               | `topic.intro`                                                  | **F2**                                                     | stały prefiks „Dedykowana książka dla Twojego dziecka." + zdanie per problem                             |
+| 2c  | Karuzela zdjęć hero                      | nie (na razie)                   | assety `proto1/img/druk-*`                                     | **F1**                                                     | DECYZJA: wspólne na stałe                                                                                |
+| 2d  | Bullety cenowe                           | nie                              | hardcode → docelowo config                                     | **F1**                                                     | jedna prawda cen dla całego serwisu (spójnie z checkout)                                                 |
+| 3a  | Przykładowa bajka (PDF + okładka)        | **docelowo tak**                 | wspólna „Zosia i Rycerz Biały Uśmiech"                         | **F1**                                                     | DECYZJA: zostaje jedna wspólna na stałe                                                                  |
+| 3b  | Galeria zdjęć druku                      | nie                              | `proto1/img`                                                   | **F1**                                                     | DECYZJA: wspólne na stałe                                                                                |
+| 4   | Film promo                               | nie (na razie)                   | `promo-ola.mp4`                                                | **F1**                                                     | DECYZJA: jeden film na stałe                                                                             |
+| 5   | Pain: 4 scenki + relief                  | **tak**                          | brak (jest `painEmpathy/painRootCause/painCta` w innej formie) | **F2**                                                     | nowe pola `painScenes[4]`, `painRelief`; treść do przepisania z istniejących pól                         |
+| 6a  | Karty naukowe ×3                         | **tak** (2 z 3)                  | `topic.scienceCards`                                           | **F1**                                                     | karta 3 „Bohater z imieniem" wspólna; 1–2 zostają per problem                                            |
+| 6b  | Cytat naukowy + link                     | nie                              | hardcode (Sufa & Janas 2018)                                   | **F1**                                                     | jeden cytat wszędzie                                                                                     |
+| 7   | Opinie + Trustpilot                      | nie                              | hardcode                                                       | **F1**                                                     | DECYZJA: wspólne na stałe                                                                                |
+| 8a  | „Bajkoterapia jest bezpieczna"           | nie                              | hardcode                                                       | **F1**                                                     | wspólne                                                                                                  |
+| 8b  | FAQ                                      | nie (opcjonalnie +1 per problem) | hardcode                                                       | **F1**                                                     | ewentualne pytanie per problem w F2                                                                      |
+| 9   | Cennik + promocja                        | nie                              | hardcode → config                                              | **F1**                                                     | ceny/promocja sterowane jednym miejscem (docelowo `config` w Convex)                                     |
+| 10a | Fragment demo (odmiana imienia)          | **tak**                          | brak                                                           | **schowane w F1** → wraca po `storyOpenings`               | sekcja ukryta (nie usunięta); wróci z realnym otwarciem per problem, odmiana przez `childNameInflect.ts` |
+| 10b | Wizard                                   | **tak** (problemId)              | `LandingOrderFlow` + `topic.problemId`                         | **F1**                                                     | bez zmian funkcjonalnych — tylko pozycja i wygląd otoczenia                                              |
+| 11  | Footer                                   | nie                              | `TopicFooter`                                                  | **F1**                                                     | drobne copy                                                                                              |
+| —   | Meta/SEO (title, description, canonical) | **tak**                          | `topic.title/metaDescription`                                  | **bez zmian**                                              | zostaje jak jest                                                                                         |
+| —   | `loadingMessage`, `catalog`, `category`  | **tak**                          | `topics.ts`                                                    | **bez zmian**                                              | używane poza LP                                                                                          |
 
 **Zasada faz:** F1 = nowy layout + wszystkie sekcje wspólne, treść per problem bierzemy
 z istniejących pól. F2 = nowe pola treściowe w `topics.ts` i przepisanie ~35 tematów.
@@ -79,9 +81,10 @@ filmy, opinie per problem, audiobook jako realny produkt).
   pdf.js z CDN — CDN odpada na produkcji.
 - Telemetria: `trackEvent` na każdym CTA (`location` per sekcja), zdarzenia dla
   karuzeli/lightboxa/video-play/demo-imię — będzie mierzalny funnel.
-- Demo-fragment: WYMÓG PRODUKTOWY z przeglądów — pokazany początek musi trafiać
-  do pipeline'u (prompt A1/A2), inaczej miss-selling. Do zrobienia w tej fazie
-  po stronie promptów.
+- Sekcja demo „wpisz imię" + preview bajki: komponent powstaje, ale renderuje
+  się za flagą `showNameDemo=false` — SCHOWANY do czasu gotowych
+  `storyOpenings` (F3). Wymóg produktowy bez zmian: zanim sekcja wróci,
+  otwarcia muszą być spójne z tym, co generuje pipeline (prompt A1/A2).
 
 ### Faza 2 — treść per problem (wszystkie tematy)
 
@@ -92,7 +95,21 @@ filmy, opinie per problem, audiobook jako realny produkt).
 - Przełączyć `lpV4: true` dla wszystkich, usunąć stare komponenty
   (`TopicHero/TopicPain/TopicScience` w wersji v1) po przełączeniu.
 
-### Faza 3 — przykładowa bajka per problem
+### Faza 3 — story openings (symulowane początki bajek per problem)
+
+- Osobny agent czyta prompty pipeline'u (`convex/lib/prompts.ts`: profiling,
+  story planning, story writing), zasady bezpieczeństwa treści i realne otwarcie
+  „Zosi i Rycerza Biały Uśmiech", po czym dla każdego tematu z `topics.ts`
+  pisze początek bajki (2–3 akapity pierwszych stron) tak, jakby wygenerował go
+  pipeline — plus wzór tytułu okładki.
+- Zapis: `src/data/storyOpenings.ts` — mapa per `slug`:
+  `{ title: "{name} i …", paragraphs: [{ m, f }] }` (warianty rodzajowe,
+  `{name}` jako placeholder; odmiana i wybór wariantu przez `childNameInflect`).
+- Po przeglądzie treści przez zespół sekcja demo „wpisz imię" wraca na LP
+  (odkrycie schowanej sekcji) — a docelowo te same otwarcia trafiają do
+  promptu A2 jako wymuszone pierwsze zdania (anty-miss-selling).
+
+### ~~Faza 3 (stara) — przykładowa bajka per problem~~ SKREŚLONA (decyzja c3z)
 
 - Batch (admin Book Batch / CLI) → 1 zaakceptowana bajka na temat, PDF zbity
   gs `/ebook`, okładka JPG; pola `sampleBook: { pdf, cover, title, pages }`
