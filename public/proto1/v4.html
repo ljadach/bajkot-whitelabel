@@ -92,6 +92,13 @@
   .gallery button::after{content:"🔍";position:absolute;right:.5rem;bottom:.5rem;background:rgba(255,255,255,.85);border-radius:999px;width:1.7rem;height:1.7rem;display:flex;align-items:center;justify-content:center;font-size:.8rem}
   .ex-note{font-size:.8rem;color:var(--ink-soft)}
 
+  .video-sec video{width:100%;max-width:52rem;border-radius:var(--radius);box-shadow:0 14px 40px rgba(30,58,95,.18);display:block;background:#000}
+
+  .pain{background:var(--white)}
+  .pain-scenes{display:grid;gap:.9rem;max-width:38rem;margin:1.4rem 0}
+  .scene{background:var(--cream);border-left:4px solid var(--amber);border-radius:.8rem;padding:.85rem 1.1rem;font-size:.98rem}
+  .pain-relief{background:#e8f4f3;border-radius:var(--radius);padding:1.3rem 1.5rem;max-width:38rem;margin:1.5rem 0;font-weight:700;color:var(--navy)}
+
   .lightbox{position:fixed;inset:0;background:rgba(15,23,42,.9);z-index:100;display:none;align-items:center;justify-content:center;flex-direction:column;gap:.8rem;padding:1.2rem}
   .lightbox.open{display:flex}
   .lightbox img{max-height:78vh;max-width:92vw;width:auto;border-radius:.8rem;box-shadow:0 20px 60px rgba(0,0,0,.5)}
@@ -245,6 +252,29 @@
   </div>
 </div></section>
 
+<!-- 2b. FILM PROMO -->
+<section class="video-sec" id="film"><div class="wrap">
+  <h2>Zobacz, jakie to proste w praktyce</h2>
+  <p class="sub">31 sekund — od wpisania imienia do gotowej bajki dla Oli.</p>
+  <video controls preload="metadata" playsinline poster="img/promo-poster.jpg" width="1920" height="1080">
+    <source src="promo-ola.mp4" type="video/mp4">
+    Twoja przeglądarka nie odtwarza wideo — <a href="promo-ola.mp4">pobierz film</a>.
+  </video>
+</div></section>
+
+<!-- 2c. PAIN -->
+<section class="pain"><div class="wrap">
+  <h2>Wiesz, jak to jest.</h2>
+  <div class="pain-scenes">
+    <div class="scene">„Nieee! Nie chcę myć zębów!” — i ucieczka do pokoju.</div>
+    <div class="scene">Zaciśnięte usta. Negocjacje. „Jeszcze pięć minut”. Znowu.</div>
+    <div class="scene">Mówisz o próchnicy i dentyście — jak do ściany.</div>
+    <div class="scene">Kończy się na przytrzymywaniu i płaczu. A wieczorem myślisz: „przecież nie o to chodziło”.</div>
+  </div>
+  <div class="pain-relief">To nie Twoja wina. I nie musisz czekać, aż „samo minie”. Jest coś, co możesz zrobić jeszcze dziś wieczorem — zanim znowu spotkacie się przy umywalce.</div>
+  <a class="cta" href="#demo">Stwórz bajkę</a>
+</div></section>
+
 <!-- 3. DLACZEGO BAJKA DZIAŁA -->
 <section class="sci"><div class="wrap">
   <h2>Dlaczego bajka działa, kiedy argumenty nie pomagają?</h2>
@@ -387,7 +417,8 @@
 <section class="notes"><div class="wrap">
   <h2>🗒️ Notatki do dyskusji — co zmieniło się w v4 (nie są częścią strony)</h2>
   <ol>
-    <li><b>Struktura wg szkieletu z 28.07:</b> Góra → Opis produktu → Dlaczego bajka działa → Opinie Rodziców → Zbicie obiekcji (bezpieczeństwo + FAQ) → Promocja/cennik → Engagement (demo z imieniem). Sekcje „Wiesz, jak to jest” (pain) i „3 kroki” wypadły — nie ma ich w szkielecie; kluczowa treść kroków (czytasz przed zapłatą) żyje w gwarancji i cenniku.</li>
+    <li><b>Struktura wg szkieletu z 28.07:</b> Góra → Opis produktu → Film promo → „Wiesz, jak to jest” → Dlaczego bajka działa → Opinie Rodziców → Zbicie obiekcji (bezpieczeństwo + FAQ) → Promocja/cennik → Engagement (demo z imieniem). Sekcja „3 kroki” wypadła; kluczowa treść kroków (czytasz przed zapłatą) żyje w gwarancji i cenniku.</li>
+    <li><b>Film promo</b> — sekcja „Zobacz, jakie to proste w praktyce” z playerem (Bajka_dla_Oli_promo.mp4, 31 s, 7,8 MB, poster z 2. sekundy) nad „Wiesz, jak to jest”.</li>
     <li><b>CTA konsekwentnie „Stwórz bajkę”</b> — nav, hero, wszystkie sekcje, cennik, demo, final.</li>
     <li><b>Podpis pod CTA:</b> „Najpierw czytasz, potem decydujesz, czy kupujesz.”</li>
     <li><b>Hero z galerią</b> — główny obrazek przesuwany strzałkami / swipe (4 zdjęcia druku), kropki nawigacyjne.</li>
