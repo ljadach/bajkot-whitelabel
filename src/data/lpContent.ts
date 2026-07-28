@@ -95,7 +95,12 @@ export const LP_FAQ: { q: string; a: string }[] = [
   },
 ];
 
-export const SAFETY_POINTS: { title: string; body: string }[] = [
+export const SAFETY_POINTS: {
+  title: string;
+  body: string;
+  link?: { href: string; text: string };
+  tail?: string;
+}[] = [
   {
     title: 'Czytasz przed dzieckiem.',
     body: 'Bajka najpierw trafia do Ciebie — dziecko zobaczy ją dopiero, gdy uznasz, że jest w porządku.',
@@ -108,6 +113,39 @@ export const SAFETY_POINTS: { title: string; body: string }[] = [
     title: 'Łagodni „przeciwnicy”.',
     body: 'Przeciwnicy w bajkach są śmieszni, nie straszni. Dziecko ma się śmiać i kibicować, nie bać.',
   },
+  {
+    title: 'Dane dziecka służą tylko bajce.',
+    body: 'To, co opowiesz o swoim dziecku, służy do napisania jego bajki. Nie sprzedajemy tych informacji, nie pokazujemy ich innym rodzicom i nie używamy do reklam. Szczegóły: ',
+    link: { href: '/polityka-prywatnosci', text: 'polityka prywatności' },
+    tail: '. Bajkoterapia to projekt polskiej firmy Trustee Interactive z Warszawy.',
+  },
 ];
 
-export const SPREAD_IMAGE = '/lp/spread.webp';
+/** Shared print spread — shown on every topic, so the alt stays topic-neutral. */
+export const SPREAD_IMAGE = {
+  src: '/lp/spread.webp',
+  alt: 'Przykładowa rozkładówka wydrukowanej bajki: ilustracja bohatera i zabawnych potworków',
+};
+
+/**
+ * Plain-text copy of the shared (topic-independent) sections, in one
+ * reviewable place. Fragments with inline markup stay in their components.
+ */
+export const SECTION_COPY = {
+  product: {
+    heading: 'Dostajesz książkę przygotowaną specjalnie dla Twojego dziecka',
+    sub: 'Przejrzyj przykładową bajkę i zobacz, jak wygląda wydrukowana wersja — zanim cokolwiek zapłacisz.',
+  },
+  video: {
+    heading: 'Zobacz, jakie to proste w praktyce',
+    sub: `${GENERATION_MINUTES} minut — od wpisania imienia do gotowej bajki dla Oli.`,
+  },
+  reviews: { heading: 'Opinie Rodziców' },
+  safety: { heading: 'Bajkoterapia jest bezpieczna' },
+  faq: { heading: 'Pytania, które pewnie masz' },
+  pricing: {
+    heading: 'Prosty wybór. Bez gwiazdek.',
+    sub: 'W każdym wariancie najpierw czytasz podgląd bajki za darmo. Płacisz dopiero wtedy, gdy chcesz ją zatrzymać.',
+    footer: 'Cena jak za książkę z księgarni — tylko że ta jest o Twoim dziecku.',
+  },
+} as const;

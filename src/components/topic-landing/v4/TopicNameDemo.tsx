@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Topic } from '../../../data/topics';
 import { STORY_OPENINGS } from '../../../data/storyOpenings';
 import { trackEvent } from '../../../lib/telemetry';
+import { Section } from './Section';
 
 /**
  * "Wpisz imię dziecka" demo — gated by SHOW_NAME_DEMO in data/lpContent.ts
@@ -34,54 +35,51 @@ export default function TopicNameDemo({ topic }: { topic: Topic }) {
   };
 
   return (
-    <section className="py-12 px-6 bg-lp-navy text-white" id="demo-imie">
-      <div className="max-w-6xl mx-auto">
-        <h2 className="text-xl md:text-3xl font-black mb-2">
-          Wpisz imię dziecka i zobacz, jak zaczyna się jego bajka
-        </h2>
-        <p className="text-slate-300 mb-6">
-          Bajka Twojego dziecka będzie napisana specjalnie dla niego. Tu możesz poczuć, jak to
-          brzmi.
-        </p>
-        <div className="bg-white text-lp-ink rounded-3xl p-6 max-w-3xl">
-          <label htmlFor="demo-imie-input" className="font-extrabold text-sm text-lp-navy">
-            Jak ma na imię Twoje dziecko?
-          </label>
-          <form
-            className="flex flex-col sm:flex-row gap-2.5 mt-2 mb-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              show();
-            }}
+    <Section id="demo-imie" className="bg-lp-navy text-white">
+      <h2 className="text-xl md:text-3xl font-black mb-2">
+        Wpisz imię dziecka i zobacz, jak zaczyna się jego bajka
+      </h2>
+      <p className="text-slate-300 mb-6">
+        Bajka Twojego dziecka będzie napisana specjalnie dla niego. Tu możesz poczuć, jak to brzmi.
+      </p>
+      <div className="bg-white text-lp-ink rounded-3xl p-6 max-w-3xl">
+        <label htmlFor="demo-imie-input" className="font-extrabold text-sm text-lp-navy">
+          Jak ma na imię Twoje dziecko?
+        </label>
+        <form
+          className="flex flex-col sm:flex-row gap-2.5 mt-2 mb-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            show();
+          }}
+        >
+          <input
+            id="demo-imie-input"
+            type="text"
+            maxLength={20}
+            placeholder="np. Zosia, Antek"
+            autoComplete="off"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="flex-1 border-2 border-lp-amber-dark/50 rounded-xl px-4 py-2.5"
+          />
+          <button
+            type="submit"
+            className="bg-lp-teal text-white font-extrabold text-sm px-5 py-2.5 rounded-xl"
           >
-            <input
-              id="demo-imie-input"
-              type="text"
-              maxLength={20}
-              placeholder="np. Zosia, Antek"
-              autoComplete="off"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="flex-1 border-2 border-lp-amber-dark/50 rounded-xl px-4 py-2.5"
-            />
-            <button
-              type="submit"
-              className="bg-lp-teal text-white font-extrabold text-sm px-5 py-2.5 rounded-xl"
-            >
-              Zobacz fragment
-            </button>
-          </form>
-          {shown && (
-            <div className="bg-lp-cream rounded-2xl px-5 py-4 italic text-[0.98rem]">
-              {shown}
-              <p className="not-italic text-xs text-lp-ink-soft mt-2.5">
-                Tak zaczynają się nasze bajki. Ta dla Twojego dziecka powstanie od zera — na
-                podstawie tego, co nam o nim opowiesz.
-              </p>
-            </div>
-          )}
-        </div>
+            Zobacz fragment
+          </button>
+        </form>
+        {shown && (
+          <div className="bg-lp-cream rounded-2xl px-5 py-4 italic text-[0.98rem]">
+            {shown}
+            <p className="not-italic text-xs text-lp-ink-soft mt-2.5">
+              Tak zaczynają się nasze bajki. Ta dla Twojego dziecka powstanie od zera — na podstawie
+              tego, co nam o nim opowiesz.
+            </p>
+          </div>
+        )}
       </div>
-    </section>
+    </Section>
   );
 }

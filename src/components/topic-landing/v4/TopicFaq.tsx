@@ -1,21 +1,18 @@
-import { LP_FAQ } from '../../../data/lpContent';
+import { LP_FAQ, SECTION_COPY } from '../../../data/lpContent';
+import { Section, SectionHeading } from './Section';
 
 export function TopicFaq() {
   return (
-    <section className="pb-12 px-6 bg-lp-cream-dark">
-      <div className="max-w-6xl mx-auto">
-        <h2 className="text-xl md:text-3xl font-black text-lp-navy mb-5">
-          Pytania, które pewnie masz
-        </h2>
-        <div className="grid gap-2.5 max-w-3xl">
-          {LP_FAQ.map((item) => (
-            <details key={item.q} className="bg-white rounded-2xl px-5 py-4 shadow-sm">
-              <summary className="font-extrabold text-lp-navy cursor-pointer">{item.q}</summary>
-              <p className="mt-2 text-sm text-lp-ink-soft">{item.a}</p>
-            </details>
-          ))}
-        </div>
+    <Section className="bg-lp-cream-dark" flushTop>
+      <SectionHeading>{SECTION_COPY.faq.heading}</SectionHeading>
+      <div className="grid gap-2.5 max-w-3xl">
+        {LP_FAQ.map((item) => (
+          <details key={item.q} className="bg-white rounded-2xl px-5 py-4 shadow-sm">
+            <summary className="font-extrabold text-lp-navy cursor-pointer">{item.q}</summary>
+            <p className="mt-2 text-sm text-lp-ink-soft">{item.a}</p>
+          </details>
+        ))}
       </div>
-    </section>
+    </Section>
   );
 }

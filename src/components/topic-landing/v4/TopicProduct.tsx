@@ -1,9 +1,10 @@
 import { Suspense, lazy, useState } from 'react';
 import { trackEvent } from '../../../lib/telemetry';
 import type { Topic } from '../../../data/topics';
-import { PRINT_GALLERY, SAMPLE_BOOK } from '../../../data/lpContent';
+import { PRINT_GALLERY, SAMPLE_BOOK, SECTION_COPY } from '../../../data/lpContent';
 import { GalleryWithLightbox } from './Lightbox';
 import { ModalOverlay } from './ModalOverlay';
+import { Section, SectionHeading } from './Section';
 
 // react-pdf pulls a heavy chunk — load only when the sample-book modal opens.
 const BookPdfFlipbook = lazy(() =>
@@ -52,53 +53,45 @@ export function TopicProduct({ topic }: { topic: Topic }) {
   const [viewerOpen, setViewerOpen] = useState(false);
 
   return (
-    <section className="py-12 px-6 bg-white" id="produkt">
-      <div className="max-w-6xl mx-auto">
-        <h2 className="text-xl md:text-3xl font-black text-lp-navy mb-2">
-          Dostajesz książkę przygotowaną specjalnie dla Twojego dziecka
-        </h2>
-        <p className="text-lp-ink-soft max-w-2xl mb-6">
-          Przejrzyj przykładową bajkę i zobacz, jak wygląda wydrukowana wersja — zanim cokolwiek
-          zapłacisz.
-        </p>
-        <div className="grid md:grid-cols-2 gap-5">
-          <div className="bg-lp-cream rounded-3xl p-6 flex flex-col gap-4">
-            <h3 className="font-black text-lp-navy">Książeczka w PDF</h3>
-            <img
-              src={SAMPLE_BOOK.cover}
-              alt={`Okładka przykładowej bajki: ${SAMPLE_BOOK.title}`}
-              loading="lazy"
-              className="max-w-[240px] rounded-2xl shadow-lg"
-              width={700}
-              height={989}
-            />
-            <p className="text-sm text-lp-ink-soft">
-              „{SAMPLE_BOOK.title}” — {SAMPLE_BOOK.pages} stron, {SAMPLE_BOOK.chapters} rozdziałów,
-              pełne ilustracje.{' '}
-              <b className="text-lp-navy">Podobny plik otrzymasz dla Twojego dziecka</b> — z jego
-              imieniem, wyglądem i jego wersją tej przygody.
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                setViewerOpen(true);
-                trackEvent('lp_sample_book_opened', { topicSlug: topic.slug });
-              }}
-              className="self-start bg-lp-teal text-white font-extrabold text-sm px-5 py-3 rounded-full"
-            >
-              Zobacz przykładową bajkę
-            </button>
-          </div>
-          <div className="bg-lp-cream rounded-3xl p-6 flex flex-col gap-4">
-            <h3 className="font-black text-lp-navy">Książeczka drukowana</h3>
-            <GalleryWithLightbox photos={PRINT_GALLERY} />
-            <p className="text-xs text-lp-ink-soft">
-              Prawdziwe zdjęcia, bez filtrów — kliknij, żeby powiększyć.
-            </p>
-          </div>
+    <Section id="produkt">
+      <SectionHeading sub={SECTION_COPY.product.sub}>{SECTION_COPY.product.heading}</SectionHeading>
+      <div className="grid md:grid-cols-2 gap-5">
+        <div className="bg-lp-cream rounded-3xl p-6 flex flex-col gap-4">
+          <h3 className="font-black text-lp-navy">Książeczka w PDF</h3>
+          <img
+            src={SAMPLE_BOOK.cover}
+            alt={`Okładka przykładowej bajki: ${SAMPLE_BOOK.title}`}
+            loading="lazy"
+            className="max-w-[240px] rounded-2xl shadow-lg"
+            width={700}
+            height={989}
+          />
+          <p className="text-sm text-lp-ink-soft">
+            „{SAMPLE_BOOK.title}” — {SAMPLE_BOOK.pages} stron, {SAMPLE_BOOK.chapters} rozdziałów,
+            pełne ilustracje.{' '}
+            <b className="text-lp-navy">Podobny plik otrzymasz dla Twojego dziecka</b> — z jego
+            imieniem, wyglądem i jego wersją tej przygody.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setViewerOpen(true);
+              trackEvent('lp_sample_book_opened', { topicSlug: topic.slug });
+            }}
+            className="self-start bg-lp-teal text-white font-extrabold text-sm px-5 py-3 rounded-full"
+          >
+            Zobacz przykładową bajkę
+          </button>
+        </div>
+        <div className="bg-lp-cream rounded-3xl p-6 flex flex-col gap-4">
+          <h3 className="font-black text-lp-navy">Książeczka drukowana</h3>
+          <GalleryWithLightbox photos={PRINT_GALLERY} />
+          <p className="text-xs text-lp-ink-soft">
+            Prawdziwe zdjęcia, bez filtrów — kliknij, żeby powiększyć.
+          </p>
         </div>
       </div>
       {viewerOpen && <SampleBookModal onClose={() => setViewerOpen(false)} />}
-    </section>
+    </Section>
   );
 }

@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
-import { trackEvent } from '../../../lib/telemetry';
 import { useWizardInView } from '../../../hooks/useWizardInView';
+import { CtaButton } from './CtaButton';
 
 /**
  * v4 sticky nav — lp-cream, book logo with tagline, single amber CTA
@@ -20,15 +20,7 @@ export function TopicNavV4({ topicSlug }: { topicSlug: string }) {
             bajki, które pomagają dzieciom
           </small>
         </Link>
-        {!hideCta && (
-          <a
-            href="#kreator"
-            onClick={() => trackEvent('cta_create_book_clicked', { location: 'nav_v4', topicSlug })}
-            className="bg-lp-amber text-lp-navy font-black text-sm px-4 py-2.5 rounded-full shadow-md shadow-lp-amber/40 no-underline"
-          >
-            Stwórz bajkę
-          </a>
-        )}
+        {!hideCta && <CtaButton topicSlug={topicSlug} location="nav_v4" size="sm" />}
       </div>
     </nav>
   );
