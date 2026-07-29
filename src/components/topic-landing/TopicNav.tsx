@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router';
+import { BrandLogo } from '../BrandLogo';
 import { useWizardInView } from '../../hooks/useWizardInView';
 
 const HOME_ANCHORS = [
@@ -28,9 +29,8 @@ export function TopicNav() {
   return (
     <nav className="w-full py-4 px-6 fixed top-0 bg-white/90 backdrop-blur-md z-50 border-b border-gray-100 shadow-sm">
       <div className="max-w-6xl mx-auto flex justify-between items-center gap-6">
-        <Link to="/" className="flex items-center gap-2 shrink-0 no-underline">
-          <i className="fa-solid fa-book-open text-calm-500 text-2xl" />
-          <span className="font-extrabold text-xl text-calm-900 tracking-tight">Bajkoterapia</span>
+        <Link to="/" className="shrink-0 no-underline">
+          <BrandLogo />
         </Link>
         <ul className="hidden lg:flex items-center gap-6 text-sm font-semibold text-calm-800">
           {HOME_ANCHORS.map((anchor) => (

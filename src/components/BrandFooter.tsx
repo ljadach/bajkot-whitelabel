@@ -1,3 +1,5 @@
+import { BrandLogo } from './BrandLogo';
+
 /**
  * Minimal brand header for in-flow pages (landing book progress, vote,
  * dedication). Same wordmark as TopicNav on marketing pages but with no menu
@@ -9,9 +11,8 @@ export function BrandHeader() {
   return (
     <header className="w-full bg-white border-b border-gray-100 shadow-sm">
       <div className="max-w-6xl mx-auto px-6 py-4 flex items-center">
-        <a href="/" className="flex items-center gap-2 shrink-0 no-underline">
-          <i className="fa-solid fa-book-open text-calm-500 text-2xl" />
-          <span className="font-extrabold text-xl text-calm-900 tracking-tight">Bajkoterapia</span>
+        <a href="/" className="shrink-0 no-underline">
+          <BrandLogo />
         </a>
       </div>
     </header>

@@ -19,6 +19,12 @@ interface Props {
   onChangeTopic: () => void;
   /** Show progress nav (auth flow). Hidden when landing pre-selects topic. */
   showProgressNav?: boolean;
+  /**
+   * Skip the "confirm your topic" step. On a topic landing page the parent
+   * already chose the problem by being on that URL, so re-confirming it is a
+   * dead click between the CTA and the actual form.
+   */
+  skipTopicStep?: boolean;
 }
 
 // Spec section 3.4 mandates age list 2-12. Pipeline maps age 2 to the
@@ -43,9 +49,10 @@ export function OrderWizard({
   onSubmit,
   onChangeTopic,
   showProgressNav = true,
+  skipTopicStep = false,
 }: Props) {
   const { t } = useTranslation('book');
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(skipTopicStep ? 2 : 1);
   const [error, setError] = useState('');
   const formCardRef = useRef<HTMLDivElement | null>(null);
   const errorRef = useRef<HTMLDivElement | null>(null);
@@ -109,6 +116,7 @@ export function OrderWizard({
       if (step === 1) goToStep(2);
       else if (step === 2) goToStep(3);
       else handleFinish();
+      // step 1 is unreachable when skipTopicStep is set; the branch is harmless.
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
@@ -181,7 +189,7 @@ export function OrderWizard({
               <StepSituation
                 value={intake.situation}
                 onChangeValue={(v) => update('situation', v)}
-                onBack={() => goToStep(1)}
+                onBack={skipTopicStep ? undefined : () => goToStep(1)}
                 onNext={() => goToStep(3)}
                 placeholder={situationPlaceholder(intake.topic, t)}
               />
@@ -274,7 +282,8 @@ function StepSituation({
 }: {
   value: string;
   onChangeValue: (v: string) => void;
-  onBack: () => void;
+  /** Omitted when the topic step is skipped — there is nowhere to go back to. */
+  onBack?: () => void;
   onNext: () => void;
   placeholder: string;
 }) {
@@ -303,17 +312,19 @@ function StepSituation({
       </div>
 
       <div className="flex gap-4 pt-4">
-        <button
-          type="button"
-          onClick={onBack}
-          className="w-1/3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-4 rounded-2xl transition"
-        >
-          {t('wizard.back')}
-        </button>
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="w-1/3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-4 rounded-2xl transition"
+          >
+            {t('wizard.back')}
+          </button>
+        )}
         <button
           type="button"
           onClick={onNext}
-          className="w-2/3 bg-magic-500 hover:bg-magic-600 text-white font-bold py-4 rounded-2xl text-lg shadow-lg shadow-magic-500/30 transition"
+          className={`${onBack ? 'w-2/3' : 'w-full'} bg-magic-500 hover:bg-magic-600 text-white font-bold py-4 rounded-2xl text-lg shadow-lg shadow-magic-500/30 transition`}
         >
           {t('wizard.nextChild')} <i className="fa-solid fa-arrow-right ml-2" />
         </button>

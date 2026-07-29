@@ -62,3 +62,6 @@ test-results/
 e2e/auth-failure.png
 e2e/*.png
 analytics-today.html
+
+# Generated image staging (raw PNGs, regenerate with scripts/gen-lp-topic-images.mjs)
+scripts/.out/

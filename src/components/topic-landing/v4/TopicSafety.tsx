@@ -1,9 +1,11 @@
 import type { Topic } from '../../../data/topics';
-import { SAFETY_POINTS, SECTION_COPY, SPREAD_IMAGE } from '../../../data/lpContent';
+import { SAFETY_POINTS, SECTION_COPY, topicSafetyImage } from '../../../data/lpContent';
 import { CtaButton } from './CtaButton';
 import { Section, SectionHeading } from './Section';
 
 export function TopicSafety({ topic }: { topic: Topic }) {
+  const image = topicSafetyImage(topic.slug, topic.catalog.shortDesc);
+
   return (
     <Section
       className="bg-lp-cream-dark"
@@ -34,8 +36,8 @@ export function TopicSafety({ topic }: { topic: Topic }) {
         </div>
       </div>
       <img
-        src={SPREAD_IMAGE.src}
-        alt={SPREAD_IMAGE.alt}
+        src={image.src}
+        alt={image.alt}
         loading="lazy"
         className="rounded-3xl shadow-xl"
         width={900}

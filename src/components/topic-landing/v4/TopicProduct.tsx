@@ -67,10 +67,9 @@ export function TopicProduct({ topic }: { topic: Topic }) {
             height={989}
           />
           <p className="text-sm text-lp-ink-soft">
-            „{SAMPLE_BOOK.title}” — {SAMPLE_BOOK.pages} stron, {SAMPLE_BOOK.chapters} rozdziałów,
-            pełne ilustracje.{' '}
-            <b className="text-lp-navy">Podobny plik otrzymasz dla Twojego dziecka</b> — z jego
-            imieniem, wyglądem i jego wersją tej przygody.
+            „{SAMPLE_BOOK.title}” — {SAMPLE_BOOK.pages} stron i {SAMPLE_BOOK.illustrations} pełnych
+            ilustracji. <b className="text-lp-navy">Podobny plik otrzymasz dla Twojego dziecka</b> —
+            z jego imieniem, wyglądem i jego wersją tej przygody.
           </p>
           <button
             type="button"
