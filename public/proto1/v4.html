@@ -173,7 +173,7 @@
 
   .pricing{background:var(--white)}
   .price-grid{display:grid;gap:1.2rem;max-width:64rem;margin:1.6rem auto 0}
-  @media(min-width:860px){.price-grid{grid-template-columns:repeat(3,1fr)}}
+  @media(min-width:860px){.price-grid{grid-template-columns:repeat(2,1fr);max-width:46rem}}
   .price-card{background:var(--cream);border-radius:var(--radius);padding:1.7rem 1.5rem;box-shadow:0 8px 26px rgba(30,58,95,.09);display:flex;flex-direction:column}
   .price-card.featured{border:3px solid var(--amber);position:relative;background:var(--white)}
   .price-flag{position:absolute;top:-1rem;left:50%;transform:translateX(-50%);background:var(--amber);color:var(--navy);font-weight:900;font-size:.75rem;padding:.3rem 1rem;border-radius:999px;white-space:nowrap}
@@ -326,7 +326,6 @@
     <details><summary>Ile stron ma bajka?</summary><p>Kilkanaście stron: 4–6 rozdziałów z kolorowymi ilustracjami. Długość dopasowujemy do wieku dziecka.</p></details>
     <details><summary>Kiedy dojdzie drukowana wersja?</summary><p>PDF dostajesz od razu po opłaceniu. Drukowana książka dociera kurierem w 3–5 dni roboczych — wysyłka po Polsce w cenie.</p></details>
     <details><summary>Ile trwa przygotowanie bajki?</summary><p>Około 20 minut. Stronę z postępem możesz mieć otwartą, a bajka poczeka gotowa, aż wrócisz.</p></details>
-    <details><summary>Czym jest wersja z audiobookiem?</summary><p>To ta sama bajka, nagrana jako plik audio czytany przez lektora — do słuchania przed snem, w aucie albo u babci. Dostajesz ją razem z PDF-em.</p></details>
     <details><summary>Kto pisze bajkę?</summary><p>Bajkę pisze AI według schematu bajek terapeutycznych: bohater zaczyna bezpiecznie, spotyka wyzwanie, dostaje mądrego przewodnika i wygrywa. Każdą historię sprawdzamy, a Ty czytasz ją przed dzieckiem.</p></details>
     <details><summary>A jeśli bajka mi się nie spodoba?</summary><p>Nie płacisz — i tyle. Podgląd bajki czytasz przed zakupem, więc dokładnie wiesz, za co płacisz. Bajka to treść cyfrowa tworzona na indywidualne zamówienie i dostarczana od razu — dlatego po zakupie nie ma już zwrotów, ale przed zakupem masz pełny wgląd.</p></details>
   </div>
@@ -359,17 +358,6 @@
         <li>Profesjonalnie wydrukowana książka</li>
         <li>Kurier w 3–5 dni roboczych, wysyłka po Polsce w cenie</li>
         <li>Prezent, w którym dziecko widzi siebie</li>
-      </ul>
-      <a class="cta" href="#demo">Stwórz bajkę</a>
-    </div>
-    <div class="price-card">
-      <h3>Książeczka w PDF + audiobook</h3>
-      <div class="price-tag">69 zł</div>
-      <ul>
-        <li>Wszystko z wariantu PDF</li>
-        <li>Bajka czytana ciepłym głosem lektora</li>
-        <li>Do słuchania przed snem i w aucie</li>
-        <li>Plik audio zostaje z Wami na zawsze</li>
       </ul>
       <a class="cta" href="#demo">Stwórz bajkę</a>
     </div>
@@ -424,7 +412,8 @@
     <li><b>Hero z galerią</b> — główny obrazek przesuwany strzałkami / swipe (4 zdjęcia druku), kropki nawigacyjne.</li>
     <li><b>Viewer PDF</b> — „Zobacz przykładową bajkę” prowadzi na podstronę <a href="przyklad.html">przyklad.html</a> z wbudowanym viewerem (pdf.js) i przyciskiem pobrania, zamiast gołego pliku PDF.</li>
     <li><b>Mobile:</b> dodany margines między podpisem CTA a obrazkiem hero.</li>
-    <li><b>Bez zmian z v3:</b> cytat naukowy z linkiem (Sufa &amp; Janas 2018), promocja PDF 59→49 + Omnibus, wariant audiobook 69 zł (cena robocza), „podgląd bajki przed zapłatą”, odmiana imion w demie.</li>
+    <li><b>Bez zmian z v3:</b> cytat naukowy z linkiem (Sufa &amp; Janas 2018), promocja PDF 59→49 + Omnibus, „podgląd bajki przed zapłatą”, odmiana imion w demie.</li>
+    <li><b>Usunięte 29.07:</b> wariant „Książeczka w PDF + audiobook” (69 zł) — rezygnujemy z tego produktu; wypadła też pozycja FAQ o audiobooku.</li>
   </ol>
 </div></section>
 
