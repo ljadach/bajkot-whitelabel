@@ -34,6 +34,11 @@ Sprawdź w `.env.local` które `CONVEX_DEPLOYMENT` jest aktywne i wypisz to w pi
 
 Nie znikają same — sprawdź `TODO.md` czy dalej tam są i przypomnij użytkownikowi na starcie sesji.
 
+Najnowszy audyt: `docs/security-audit-2026-07-28.md` (33 ustalenia — poza dwoma dziurami
+wyżej dochodzą: integralność płatności, wyciek tokena landingowego do GA, surowe IP
+z `bookOrderId` w `pageViews`, rozjazdy polityki prywatności z rzeczywistością).
+Sekcja „Nowe z audytu 2026-07-28" w `TODO.md` ma skrót tego, co dotyka launchu.
+
 ## Commands
 
 ```bash
