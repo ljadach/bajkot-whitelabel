@@ -88,10 +88,6 @@ export const LP_FAQ: { q: string; a: string }[] = [
     a: `Około ${GENERATION_MINUTES} minut. Stronę z postępem możesz mieć otwartą, a bajka poczeka gotowa, aż wrócisz.`,
   },
   {
-    q: 'Czym jest wersja z audiobookiem?',
-    a: 'To ta sama bajka, nagrana jako plik audio czytany przez lektora — do słuchania przed snem, w aucie albo u babci. Dostajesz ją razem z PDF-em.',
-  },
-  {
     q: 'Kto pisze bajkę?',
     a: 'Bajkę pisze AI według schematu bajek terapeutycznych: bohater zaczyna bezpiecznie, spotyka wyzwanie, dostaje mądrego przewodnika i wygrywa. Każdą historię sprawdzamy, a Ty czytasz ją przed dzieckiem.',
   },

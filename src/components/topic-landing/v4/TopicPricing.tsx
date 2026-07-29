@@ -4,7 +4,6 @@ import {
   BOOK_PRICE_PDF_REGULAR_PLN,
   BOOK_PRICE_PDF_OMNIBUS_PLN,
   BOOK_PRICE_PRINT_PLN,
-  BOOK_PRICE_AUDIO_BUNDLE_PLN,
   GENERATION_MINUTES,
   DELIVERY_DAYS_TEXT,
 } from '../../../lib/pricing';
@@ -39,17 +38,6 @@ const CARDS: PriceCard[] = [
     location: 'pricing_pdf',
   },
   {
-    title: 'Książeczka w PDF + audiobook',
-    price: BOOK_PRICE_AUDIO_BUNDLE_PLN,
-    features: [
-      'Wszystko z wariantu PDF',
-      'Bajka czytana ciepłym głosem lektora',
-      'Do słuchania przed snem i w aucie',
-      'Plik audio zostaje z Wami na zawsze',
-    ],
-    location: 'pricing_audio',
-  },
-  {
     title: 'Książeczka drukowana + książeczka w PDF',
     price: BOOK_PRICE_PRINT_PLN,
     priceNote: 'z wysyłką',
@@ -69,7 +57,7 @@ export function TopicPricing({ topic }: { topic: Topic }) {
       <SectionHeading center sub={SECTION_COPY.pricing.sub}>
         {SECTION_COPY.pricing.heading}
       </SectionHeading>
-      <div className="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+      <div className="grid md:grid-cols-2 gap-4 max-w-3xl mx-auto">
         {CARDS.map((card) => (
           <div
             key={card.location}
