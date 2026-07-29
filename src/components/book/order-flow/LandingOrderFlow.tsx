@@ -131,6 +131,7 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
             void navigate('/katalog');
           }}
           showProgressNav={false}
+          skipTopicStep
         />
       )}
       {screen === 'preview' && (

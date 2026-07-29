@@ -1,12 +1,12 @@
 import type { MetaDescriptor, MetaFunction } from 'react-router';
 import { CennikPage } from '../pages/CennikPage';
+import { BOOK_PRICE_PDF_PLN, BOOK_PRICE_PRINT_PLN } from '../lib/pricing';
 
 const SITE_URL = 'https://bajkoterapia.org';
 
 export const meta: MetaFunction = (): MetaDescriptor[] => {
   const title = 'Cennik — Bajkoterapia | Spersonalizowane bajki terapeutyczne';
-  const description =
-    'Sprawdź, ile kosztuje spersonalizowana bajka terapeutyczna. PDF od 49 zł, drukowana książka od 99 zł. Bez ukrytych opłat, gwarancja zwrotu 14 dni.';
+  const description = `Sprawdź, ile kosztuje spersonalizowana bajka terapeutyczna. PDF od ${BOOK_PRICE_PDF_PLN} zł, drukowana książka od ${BOOK_PRICE_PRINT_PLN} zł. Bez ukrytych opłat, gwarancja zwrotu 14 dni.`;
   const canonicalUrl = `${SITE_URL}/cennik`;
 
   return [

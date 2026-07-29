@@ -29,10 +29,15 @@ Sprawdź w `.env.local` które `CONVEX_DEPLOYMENT` jest aktywne i wypisz to w pi
 
 **Jesteśmy GOLI.** Otwórz `TODO.md` w katalogu głównym i wypisz statusy dwóch dziur:
 
-1. **Landing access token gate WYŁĄCZONY** (`convex/bookPipeline.ts:422-428`) — public endpoint bez rate-limitu. Docelowo zastąpiony przez Stripe gate na każdą generację. Do tego czasu: NIE PROMUJEMY landing flow publicznie.
+1. **Publiczny intake bez gate'u i bez rate-limitu** — `startLandingOrder` w `convex/bookPipeline.ts` (szukaj komentarza „C3 intentionally disabled"): `accessToken` przyjmowany, ale niewalidowany, `checkAndRecordLandingStart` leży nieużywane. Świadome ryzyko DoS-na-budżet (revert 2026-05-12: gate blokował legit ruch, limit 10/h dławił realny). Obrona: per-order tokeny + Stripe paywall na PDF. **Przed kampanią marketingową pay-first albo per-IP rate limit MUSI wrócić.**
 2. **PII dzieci w LLM logach + Langfuse** — imiona, problemy, dedykacje wpadają nieanonimizowane. RODO ryzyko.
 
 Nie znikają same — sprawdź `TODO.md` czy dalej tam są i przypomnij użytkownikowi na starcie sesji.
+
+Najnowszy audyt: `docs/security-audit-2026-07-28.md` (33 ustalenia — poza dwoma dziurami
+wyżej dochodzą: integralność płatności, wyciek tokena landingowego do GA, surowe IP
+z `bookOrderId` w `pageViews`, rozjazdy polityki prywatności z rzeczywistością).
+Sekcja „Nowe z audytu 2026-07-28" w `TODO.md` ma skrót tego, co dotyka launchu.
 
 ## Commands
 
@@ -129,9 +134,13 @@ There are two user flows: authenticated (via Clerk) and landing (token-gated, no
 - `routes/`: Route definitions (public marketing, landing book flow, auth-gated app routes)
 - `pages/`: Public pages (HomePage, FaqPage, ContactPage)
 - `components/book/`: Book order form, progress, vote, result (auth + landing variants). Shared internals: `ProgressJourney.tsx` (animated stage UI for both progress pages, plus exported `BookErrorScreen` / `BookPausedScreen`), `BookSuccessScreen` (download + upsell card reused by both result pages), `StyleVoteCards` exported from `BookStyleVote.tsx` and reused by `LandingBookVote.tsx`, `DedicationForm.tsx` shared between auth + landing.
-- `components/topic-landing/`: Topic landing page components (TopicNav, TopicHero, TopicPain, TopicScience, TopicWizard, TopicFooter, TopicLayout)
+- `components/topic-landing/`: Topic landing page kit. `TopicLayout.tsx` picks the layout: a slug present in `TOPIC_V4_CONTENT` renders `v4/TopicLayoutV4` (current design), otherwise the legacy sections (TopicNav/TopicHero/TopicPain/TopicScience — kept as a rollback path). `v4/` holds the section components plus shared primitives (`Section`, `CtaButton`, `ModalOverlay`, `PhotoCarousel`, `Lightbox`). See `docs/spec-lp-v4-rollout.md`.
 - `components/landing/`: Legacy landing page sections (Hero, ValueProps, FAQ, CTA, Testimonial, Pitch)
-- `data/topics.ts`: 15 topic definitions with SEO content, extracted from HTML prototypes
+- `data/topics.ts`: 39 topic definitions with SEO content (routing, meta, science cards) — shared by both layouts
+- `data/topicV4Content.ts`: per-topic v4 copy (headline, intro, pain scenes); presence of an entry is what switches a topic to the v4 layout
+- `data/lpContent.ts`: topic-independent LP content (print gallery, sample book, promo video, reviews, FAQ, safety, section headings) + `SHOW_NAME_DEMO` flag
+- `data/storyOpenings.ts`: simulated story openings per topic for the hidden "wpisz imię" demo (lazy-loaded only)
+- `lib/pricing.ts`: single source of truth for prices, `GENERATION_MINUTES`, `DELIVERY_DAYS_TEXT`
 - `hooks/useAccessToken.ts`: Token capture from URL + localStorage persistence
 - `lib/`: Client utilities (i18n, telemetry, routeMeta)
 - `locales/`: Translation files (pl/) — namespaces: common, app, cookies, contact, faq, book
@@ -254,16 +263,19 @@ Never commit secrets or `.env.local` files.
 3. **LLM prompts load from Langfuse first**, fallback to `prompts.ts`
 4. **Admin queries have auth-protected and internal variants**: Use `config.getInternal` from internal actions, not `config.get` which requires admin role
 5. **Pipeline stages are sequential**: Each agent depends on previous agent's output
-6. **Three languages**: All user-facing strings must exist in en/, pl/, de/ locale files
+6. **Polish only**: `src/locales/` ships `pl/` alone — the EN/DE plan from the early spec was never built. Don't add `t()` keys for languages that don't exist.
+7. **Tailwind config changes need a dev-server restart** — HMR won't pick up new tokens, and components silently fall back to browser defaults.
 
 ## Important Paths
 
 - `cli/`: CLI tool for pipeline testing (see CLI Tool section above)
 - `convex/cli.ts`: Internal Convex functions for CLI (no auth)
-- `src/data/topics.ts`: 15 topic landing page definitions (typed, extracted from HTML prototypes)
-- `src/components/topic-landing/`: Topic landing page component kit
+- `src/data/topics.ts`: 39 topic landing page definitions (typed, extracted from HTML prototypes)
+- `src/components/topic-landing/`: Topic landing page component kit (`v4/` = current design)
 - `docs/prototypes/`: 15 HTML prototypes from Andrzej (source for topic data)
-- `docs/spec-topic-landing-pages.md`: Architecture spec for topic pages
+- `public/proto1/v4.html`: static LP prototype the current topic pages are ported from
+- `docs/spec-lp-v4-rollout.md`: v4 rollout spec — layout switch, content layers, open items
+- `docs/spec-topic-landing-pages.md`: original (v1) architecture spec for topic pages
 - `docs/devlog/`: Development journal (John Carmack .plan style, in Polish)
 - `docs/bajkot-pipeline/`: Pipeline architecture documentation
 - `docs/illustration_guide.md`: Illustration generation guide

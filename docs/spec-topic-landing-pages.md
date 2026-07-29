@@ -1,6 +1,13 @@
 # Spec: Topic Landing Pages — statyczne strony per problem
 
-> Status: DRAFT
+> **Status: ZREALIZOWANE, częściowo NIEAKTUALNE (2026-07-28).**
+> Routing, dane (`topics.ts`, dziś 39 tematów), SSG i SEO działają wg tego dokumentu.
+> **Body strony zostało przepisane** — sekcje Hero/Pain/Science i paleta `calm`/`magic`
+> opisane niżej to layout legacy, dziś trzymany tylko jako rollback path. Aktualny
+> układ, paleta `lp.*` i warstwy treści: `docs/spec-lp-v4-rollout.md`.
+> Nieaktualne też „Open questions": ceny (patrz `src/lib/pricing.ts`) i wielojęzyczność
+> (serwis jest PL-only).
+>
 > Źródło: 15 prototypów HTML od Andrzeja (`docs/prototypes/`)
 
 ## Cel

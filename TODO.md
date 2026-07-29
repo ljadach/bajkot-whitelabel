@@ -1,6 +1,10 @@
 # TODO — pre-launch security holes
 
 > **STATUS po 2026-05-12: #1 częściowo (audit C1/C2/H3/H1). C3 cofnięte CAŁOŚCIOWO — public intake otwarty bez gate'u i bez rate limitu. Idziemy na produkcję świadomie z ryzykiem DoS-na-budżet. #2 dalej otwarty.**
+>
+> **AKTUALIZACJA 2026-07-28:** nowy audyt — `docs/security-audit-2026-07-28.md` (33 ustalenia).
+> Dwie dziury niżej dalej otwarte, doszły trzy nowe klasy ryzyka: płatność, wyciek tokena
+> i zgodność prawna. Skrót w sekcji „Nowe z audytu 2026-07-28" na dole tego pliku.
 
 ---
 
@@ -38,7 +42,7 @@ Devlog: `docs/devlog/2026-05-12.md`. Audit doc: `docs/security-audit-2026-05-12.
 
 **Konsekwencje:**
 
-- **RODO:** mamy do czynienia z danymi osobowymi dziecka (zwłaszcza w połączeniu z `clerkUserId` rodzica). Langfuse to 3rd party, prawdopodobnie poza EU bez DPA. Naruszenie.
+- **RODO:** mamy do czynienia z danymi osobowymi dziecka (zwłaszcza w połączeniu z `clerkUserId` rodzica). Langfuse to 3rd party. ~~prawdopodobnie poza EU~~ — **korekta 2026-07-28:** domyślny `LANGFUSE_BASE_URL` w kodzie to `https://cloud.langfuse.com`, czyli region EU; teza „poza EU" była niepotwierdzona. Do sprawdzenia: czy env produkcji (`wonderful-egret-522`) nie nadpisuje go na `us.cloud.langfuse.com`, oraz czy jest podpisane DPA. Bez DPA to nadal naruszenie.
 - Wyciek danych z Langfuse = wyciek listy "co boli dzieci użytkowników".
 - Audyt RODO da nam karę.
 
@@ -53,8 +57,43 @@ Devlog: `docs/devlog/2026-05-12.md`. Audit doc: `docs/security-audit-2026-05-12.
 
 ---
 
+## Nowe z audytu 2026-07-28
+
+Pełna lista i cytaty kodu: `docs/security-audit-2026-07-28.md`. Triage (co naprawiamy,
+co akceptujemy) jest do wyklikania — decyzje jeszcze nie zapadły. Tu tylko to, co dotyka
+launchu:
+
+- **Kupon 100% = darmowa książka.** Webhook odblokowuje zamówienie po samym
+  `payment_status === 'paid'`, bez sprawdzenia kwoty i bez porównania sesji z zapisanym
+  `stripeSessionId`, a Checkout ma `allow_promotion_codes: true` (`convex/stripe.ts:86,170,247-257`).
+  **Do sprawdzenia w dashboardzie Stripe:** czy istnieje jakikolwiek kupon 100% i czy są
+  Payment Linki — to przesądza, czy dziura jest teoretyczna czy dzisiejsza.
+- **Brak obsługi refundów i płatności odroczonych.** Obsługiwany tylko
+  `checkout.session.completed`; po refundzie dostęp zostaje na zawsze, a przy P24/BLIK
+  (`payment_status: 'unpaid'` + brak handlera `async_payment_succeeded`) klient płaci
+  i nigdy nie dostaje książki. Sprawdzić, które metody płatności są włączone.
+- **Token landingowy wycieka do Google Analytics.** Linki w mailach niosą `?t=<token>`,
+  a `gtag` w `<head>` wysyła pełny `location.href` zanim frontend zdejmie parametr.
+  Ten token to jedyna autoryzacja do danych zamówienia dziecka.
+- **Surowe IP + `bookOrderId` w `pageViews`, bezterminowo i przed zgodą.** `SKIP_PREFIXES`
+  w `middleware.ts` ma `/book`, ale ścieżki landingowe to `/landing/book/…` — nie są
+  pomijane. `analytics.purgeOld` istnieje, ale nie ma go w cronie.
+- **Zgodność prawna (do prawnika, nie do kodu):** polityka prywatności nie wymienia
+  Google/Gemini, Langfuse, Resend, PostHog ani własnego VPS jako odbiorców danych dziecka;
+  zgoda na dane szczególne odebrana na „wybór problemu z listy", a wysyłamy 500 znaków
+  wolnego tekstu; polityka obiecuje trwałe usuwanie PDF-ów, mail mówi „zarchiwizowany na
+  zawsze" (kod potwierdza mail); brak jakiejkolwiek ścieżki realizacji praw z art. 15/17.
+- **Zależności:** 43 podatności w drzewie produkcyjnym. Jedyna krytyczna pochodzi
+  z **nieużywanej** paczki `@convex-dev/auth` (projekt stoi na Clerku) — usunięcie ją
+  likwiduje. Osobno `react-router` 7.13.1 jest w zakresie podatnym (RCE przez turbo-stream)
+  przy `ssr: true`; fix dopiero w linii 8.x, czyli migracja majorowa.
+
+---
+
 ## Notatki
 
-- #1 zamknięte 2026-05-12 (security audit + override merge na PR #44).
+- #1 zamknięte 2026-05-12 (security audit + override merge na PR #44), ale **C3 cofnięte**
+  tego samego dnia — publiczny intake jest dziś otwarty bez gate'u i bez rate-limitu
+  (patrz nagłówek pliku). „Zamknięte" dotyczy C1/C2/H3/H1, nie całości #1.
 - Zostaje #2 (PII w Langfuse + llmLogs) — realne ryzyko prawne + RODO. Przed publicznym launchem MUSI być zamknięte.
 - Status checkujemy NA POCZĄTKU KAŻDEJ SESJI (instrukcja w CLAUDE.md).

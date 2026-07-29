@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router';
+import { BrandLogo } from '../BrandLogo';
+import { useWizardInView } from '../../hooks/useWizardInView';
 
 const HOME_ANCHORS = [
   { hash: 'jak-to-dziala', label: 'Jak to działa' },
@@ -23,26 +24,13 @@ export function TopicNav() {
   // Hide the "Stwórz Bajkę" CTA once the user has scrolled the wizard into
   // view — the same button is right below them, so the nav copy is redundant.
   // Pages without a #kreator anchor (HP, /katalog) keep the CTA visible.
-  const [hideCta, setHideCta] = useState(false);
-  useEffect(() => {
-    const target = document.getElementById('kreator');
-    if (!target) {
-      setHideCta(false);
-      return;
-    }
-    const observer = new IntersectionObserver(([entry]) => setHideCta(entry.isIntersecting), {
-      threshold: 0.05,
-    });
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, [location.pathname]);
+  const hideCta = useWizardInView([location.pathname]);
 
   return (
     <nav className="w-full py-4 px-6 fixed top-0 bg-white/90 backdrop-blur-md z-50 border-b border-gray-100 shadow-sm">
       <div className="max-w-6xl mx-auto flex justify-between items-center gap-6">
-        <Link to="/" className="flex items-center gap-2 shrink-0 no-underline">
-          <i className="fa-solid fa-book-open text-calm-500 text-2xl" />
-          <span className="font-extrabold text-xl text-calm-900 tracking-tight">Bajkoterapia</span>
+        <Link to="/" className="shrink-0 no-underline">
+          <BrandLogo />
         </Link>
         <ul className="hidden lg:flex items-center gap-6 text-sm font-semibold text-calm-800">
           {HOME_ANCHORS.map((anchor) => (
