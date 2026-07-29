@@ -1,7 +1,7 @@
 // Server-side analytics. Paths skipped here never reach `pageViews` — keep in
 // sync with whatever the operator considers "noise" (assets, admin, auth flow,
 // API endpoints). The first hit on the marketing routes is what matters.
-const SKIP_PREFIXES = ['/_', '/api', '/admin', '/book', '/sign-in', '/sign-up', '/__nitro'];
+const SKIP_PREFIXES = ['/_', '/api', '/admin', '/book', '/sign-in', '/sign-up', '/__nitro', '/ingest'];
 const ASSET_EXT = /\.(?:png|jpe?g|svg|webp|gif|ico|css|js|map|woff2?|ttf|otf|txt|xml|json|pdf|mp4|webm)$/i;
 
 function shouldSkip(path: string): boolean {

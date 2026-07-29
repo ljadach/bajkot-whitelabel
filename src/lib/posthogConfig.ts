@@ -7,8 +7,12 @@
 
 export const posthogConfig = {
   // API Configuration
+  // Events go through our reverse proxy (vercel.json rewrites /ingest/* →
+  // eu.i.posthog.com) so ad-blockers don't eat them; ui_host points the SDK
+  // back at the real PostHog app for toolbar/links.
   apiKey: import.meta.env.VITE_PUBLIC_POSTHOG_KEY as string | undefined,
-  apiHost: (import.meta.env.VITE_PUBLIC_POSTHOG_HOST as string) || 'https://eu.i.posthog.com',
+  apiHost: (import.meta.env.VITE_PUBLIC_POSTHOG_HOST as string) || '/ingest',
+  uiHost: 'https://eu.posthog.com',
 
   // SDK defaults version
   defaults: '2025-05-30' as const,
@@ -44,6 +48,7 @@ export const posthogConfig = {
 export function getPostHogOptions() {
   return {
     api_host: posthogConfig.apiHost,
+    ui_host: posthogConfig.uiHost,
     defaults: posthogConfig.defaults,
     autocapture: posthogConfig.autocapture,
     capture_pageview: posthogConfig.capturePageview,

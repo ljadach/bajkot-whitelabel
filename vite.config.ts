@@ -14,6 +14,22 @@ export default defineConfig({
       '@hooks': path.resolve(__dirname, './src/hooks'),
     },
   },
+  server: {
+    // Dev mirror of the vercel.json PostHog reverse proxy (/ingest/*) so the
+    // SDK behaves the same locally as in production.
+    proxy: {
+      '/ingest/static': {
+        target: 'https://eu-assets.i.posthog.com',
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/ingest/, ''),
+      },
+      '/ingest': {
+        target: 'https://eu.i.posthog.com',
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/ingest/, ''),
+      },
+    },
+  },
   ssr: {
     // Bundle these into SSR so their built-in browser detection works (no-op on server).
     // Without this, Vite uses require() at runtime which crashes on Vercel serverless.
