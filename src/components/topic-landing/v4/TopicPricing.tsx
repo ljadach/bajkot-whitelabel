@@ -39,6 +39,17 @@ const CARDS: PriceCard[] = [
     location: 'pricing_pdf',
   },
   {
+    title: 'Książeczka w PDF + audiobook',
+    price: BOOK_PRICE_AUDIO_BUNDLE_PLN,
+    features: [
+      'Wszystko z wariantu PDF',
+      'Bajka czytana ciepłym głosem lektora',
+      'Do słuchania przed snem i w aucie',
+      'Plik audio zostaje z Wami na zawsze',
+    ],
+    location: 'pricing_audio',
+  },
+  {
     title: 'Książeczka drukowana + książeczka w PDF',
     price: BOOK_PRICE_PRINT_PLN,
     priceNote: 'z wysyłką',
@@ -49,17 +60,6 @@ const CARDS: PriceCard[] = [
       'Prezent, w którym dziecko widzi siebie',
     ],
     location: 'pricing_print',
-  },
-  {
-    title: 'Książeczka w PDF + audiobook',
-    price: BOOK_PRICE_AUDIO_BUNDLE_PLN,
-    features: [
-      'Wszystko z wariantu PDF',
-      'Bajka czytana ciepłym głosem lektora',
-      'Do słuchania przed snem i w aucie',
-      'Plik audio zostaje z Wami na zawsze',
-    ],
-    location: 'pricing_audio',
   },
 ];
 

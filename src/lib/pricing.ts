@@ -8,7 +8,7 @@
  * are display-only.
  */
 export const BOOK_PRICE_PDF_PLN = 49;
-export const BOOK_PRICE_PRINT_PLN = 99;
+export const BOOK_PRICE_PRINT_PLN = 139;
 
 // LP v4 additions (spec-lp-v4-rollout.md). The promo/regular split and the
 // audiobook bundle are LP display copy until Stripe carries matching prices.
