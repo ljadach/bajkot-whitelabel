@@ -69,9 +69,19 @@ function HomeHero() {
   );
 }
 
+/**
+ * How many topic cards show before "pokaż wszystkie". All 39 at once buries the
+ * rest of the page under ~9000 px of scrolling on a phone.
+ */
+const VISIBLE_TOPICS = 9;
+
 function TopicsGrid() {
   const [category, setCategory] = useState<'all' | CatalogCategory>('all');
-  const topics = topicsByCategory(category);
+  const [expanded, setExpanded] = useState(false);
+  const allTopics = topicsByCategory(category);
+  // A picked category is already short enough to show whole.
+  const collapsed = category === 'all' && !expanded;
+  const topics = collapsed ? allTopics.slice(0, VISIBLE_TOPICS) : allTopics;
 
   const tabs: { id: 'all' | CatalogCategory; label: string; emoji?: string }[] = [
     { id: 'all', label: 'Wszystkie' },
@@ -91,7 +101,10 @@ function TopicsGrid() {
           <button
             key={tab.id}
             type="button"
-            onClick={() => setCategory(tab.id)}
+            onClick={() => {
+              setCategory(tab.id);
+              setExpanded(false);
+            }}
             className={`text-sm font-bold px-4 py-2 rounded-full transition ${
               category === tab.id
                 ? 'bg-lp-navy text-white'
@@ -119,6 +132,17 @@ function TopicsGrid() {
           </Link>
         ))}
       </div>
+      {collapsed && allTopics.length > VISIBLE_TOPICS && (
+        <div className="text-center mt-6">
+          <button
+            type="button"
+            onClick={() => setExpanded(true)}
+            className="bg-lp-cream-dark text-lp-navy font-bold text-sm px-6 py-3 rounded-full"
+          >
+            Pokaż wszystkie tematy ({allTopics.length})
+          </button>
+        </div>
+      )}
     </Section>
   );
 }
