@@ -19,44 +19,19 @@ import { type PipelineStage, getStageConfig } from './pipelineConfig';
 const openrouterApiKey = process.env.OPENROUTER_API_KEY;
 const fallbackModel = 'google/gemini-2.0-flash-001';
 
-const openrouter = openrouterApiKey
-  ? createOpenAI({
-      apiKey: openrouterApiKey,
-      baseURL: 'https://openrouter.ai/api/v1',
-    })
-  : null;
-
-// Type for action context (simplified)
-type ActionCtx = {
-  runMutation: <T>(fn: any, args: any) => Promise<T>;
-};
-
-function ensureModel(modelName: string) {
-  if (!openrouter) {
-    throw new Error('OpenRouter not configured. Set OPENROUTER_API_KEY in Convex environment.');
-  }
-  return openrouter(modelName || fallbackModel);
-}
-
-async function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 /**
- * Reasoning toggle is forwarded to OpenRouter via `extraBody`. Per-model
- * support varies (Gemini 2.5 supports it, GPT-4o doesn't). When the provider
- * doesn't recognize the field it's silently ignored, so no stage-specific
- * gating is needed.
+ * Reasoning toggle is forwarded to OpenRouter as a top-level `reasoning` field.
+ * Per-model support varies (Gemini 2.5 supports it, GPT-4o doesn't); an
+ * unrecognised field is ignored, so no stage-specific gating is needed.
  *
  * `reasoning === false` does NOT mean "send nothing". Gemini 2.5 Pro can't
  * disable thinking at all (min budget ~128, and OpenRouter's default is
  * *dynamic*). Sending no directive lets that dynamic budget run wild — on
  * unlucky inputs the model loops on repeated thought summaries for minutes
  * until OpenRouter's upstream idle timeout kills the request, producing zero
- * prose (prod order jn70nt66rb3z…, A3 Story Writer, 2026-07-15). So `false`
- * pins the reasoning budget to the floor (128 tokens) — the lowest Gemini
- * accepts — which stops the runaway loop while still respecting the intent
- * (A3 is pure prose; thinking should be minimal, not unbounded).
+ * prose (prod orders jn70nt66rb3z…, 2026-07-15, and jn76evhtefmr…,
+ * 2026-07-30 — the latter burned all 3 retries). So `false` pins the budget
+ * to the floor (128 tokens), the lowest Gemini accepts.
  *
  * Per-model safety settings (formerly Google `BLOCK_ONLY_HIGH`) are dropped:
  * OpenAI-compat doesn't expose a uniform interface, and the original reason
@@ -66,17 +41,65 @@ async function sleep(ms: number) {
  */
 const MIN_REASONING_TOKENS = 128;
 
-function buildProviderOptions(reasoning: boolean | undefined) {
-  // The AI SDK forwards unknown keys as part of the request body, which
-  // is what OpenRouter expects for non-standard params. OpenRouter maps
-  // `reasoning.max_tokens` to the model's thinking budget (Anthropic + Gemini).
-  const reasoningBody =
-    reasoning === false ? { max_tokens: MIN_REASONING_TOKENS } : { enabled: true };
-  return {
-    openai: {
-      extraBody: { reasoning: reasoningBody },
-    },
-  } as any;
+/**
+ * OpenRouter takes the reasoning budget as a top-level `reasoning` field, which
+ * no `@ai-sdk/openai` option maps to — `providerOptions.openai` is parsed
+ * against a fixed zod schema and unknown keys (we used to send `extraBody`) are
+ * dropped before the request is built. The only way in is to patch the body on
+ * its way out.
+ */
+function reasoningFetch(reasoning: Record<string, unknown>): typeof globalThis.fetch {
+  return async (input, init) => {
+    if (typeof init?.body !== 'string') return fetch(input, init);
+    const body = JSON.parse(init.body);
+    body.reasoning = reasoning;
+    // The SDK classifies every non-`gpt-*` id as a reasoning model (see
+    // getOpenAILanguageModelCapabilities), which flips system messages to the
+    // `developer` role. That's an OpenAI-only convention — send plain `system`
+    // so Gemini/Claude get the prompt where they expect it.
+    if (Array.isArray(body.messages)) {
+      for (const message of body.messages) {
+        if (message?.role === 'developer') message.role = 'system';
+      }
+    }
+    return fetch(input, { ...init, body: JSON.stringify(body) });
+  };
+}
+
+function makeProvider(reasoning: Record<string, unknown>) {
+  return openrouterApiKey
+    ? createOpenAI({
+        apiKey: openrouterApiKey,
+        baseURL: 'https://openrouter.ai/api/v1',
+        fetch: reasoningFetch(reasoning),
+      })
+    : null;
+}
+
+const openrouterCapped = makeProvider({ max_tokens: MIN_REASONING_TOKENS });
+const openrouterThinking = makeProvider({ enabled: true });
+
+// Type for action context (simplified)
+type ActionCtx = {
+  runMutation: <T>(fn: any, args: any) => Promise<T>;
+};
+
+function ensureModel(modelName: string, reasoning: boolean | undefined) {
+  const provider = reasoning === false ? openrouterCapped : openrouterThinking;
+  if (!provider) {
+    throw new Error('OpenRouter not configured. Set OPENROUTER_API_KEY in Convex environment.');
+  }
+  // `.chat()` pins the OpenAI-compat chat-completions endpoint. The SDK
+  // default is the Responses API, which OpenRouter serves in alpha and which
+  // rejects a reasoning budget outright ("Reasoning is mandatory for this
+  // endpoint and cannot be disabled", HTTP 400) — even `effort: 'minimal'`
+  // still burned ~1.8k thinking tokens in a live probe, against 75 on
+  // chat-completions with `max_tokens: 128`. Verified 2026-07-30.
+  return provider.chat(modelName || fallbackModel);
+}
+
+async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export interface ChatJsonParams {
@@ -116,9 +139,8 @@ export async function chatJsonWithRetries<T = any>(
     maxTokens,
     images,
   } = params;
-  const providerOptions = buildProviderOptions(reasoning);
   // `reasoning: false` still sends a floor thinking budget (see
-  // buildProviderOptions), so track full-reasoning intent off the flag itself.
+  // MIN_REASONING_TOKENS), so track full-reasoning intent off the flag itself.
   const reasoningUsed = reasoning !== false;
 
   // Build user content — plain text or multimodal with images
@@ -199,8 +221,7 @@ export async function chatJsonWithRetries<T = any>(
             attempt_remaining: retries - attempt,
           });
           const response = await generateText({
-            model: ensureModel(model),
-            providerOptions,
+            model: ensureModel(model, reasoning),
             temperature,
             ...(maxTokens !== undefined ? { maxOutputTokens: maxTokens } : {}),
             messages: [
