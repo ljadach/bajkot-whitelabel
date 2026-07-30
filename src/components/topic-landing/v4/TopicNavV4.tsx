@@ -7,7 +7,7 @@ import { CtaButton } from './CtaButton';
  * v4 sticky nav — lp-cream, book logo with tagline, single amber CTA
  * (matches public/proto1/v4.html). CTA hides once the wizard is in view.
  */
-export function TopicNavV4({ topicSlug }: { topicSlug: string }) {
+export function TopicNavV4({ topicSlug, ctaHref }: { topicSlug: string; ctaHref?: string }) {
   const hideCta = useWizardInView();
 
   return (
@@ -16,7 +16,7 @@ export function TopicNavV4({ topicSlug }: { topicSlug: string }) {
         <Link to="/" className="no-underline">
           <BrandLogo />
         </Link>
-        {!hideCta && <CtaButton topicSlug={topicSlug} location="nav_v4" size="sm" />}
+        {!hideCta && <CtaButton topicSlug={topicSlug} location="nav_v4" size="sm" href={ctaHref} />}
       </div>
     </nav>
   );

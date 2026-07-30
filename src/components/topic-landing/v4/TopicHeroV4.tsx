@@ -1,14 +1,53 @@
 import type { Topic } from '../../../data/topics';
-import { BOOK_PRICE_PDF_PLN, BOOK_PRICE_PRINT_PLN, GENERATION_MINUTES } from '../../../lib/pricing';
+import {
+  BOOK_PRICE_PDF_PLN,
+  BOOK_PRICE_PDF_REGULAR_PLN,
+  BOOK_PRICE_PDF_OMNIBUS_PLN,
+  BOOK_PRICE_PRINT_PLN,
+  GENERATION_MINUTES,
+} from '../../../lib/pricing';
 import { PRINT_GALLERY } from '../../../data/lpContent';
 import { PhotoCarousel } from './PhotoCarousel';
 import { CtaButton } from './CtaButton';
 
-const TRUST_BULLETS = [
-  `Książeczka w PDF — ${BOOK_PRICE_PDF_PLN} zł (gotowa w ${GENERATION_MINUTES} minut)`,
-  `Książeczka drukowana + książeczka w PDF — ${BOOK_PRICE_PRINT_PLN} zł`,
-  'Wysyłka po Polsce w cenie',
+const TRUST_BULLETS: { key: string; node: React.ReactNode }[] = [
+  {
+    key: 'pdf',
+    node: (
+      <>
+        Książeczka w PDF —{' '}
+        <s className="text-lp-ink-soft font-bold">{BOOK_PRICE_PDF_REGULAR_PLN} zł</s>{' '}
+        {BOOK_PRICE_PDF_PLN} zł* (gotowa w {GENERATION_MINUTES} minut)
+      </>
+    ),
+  },
+  {
+    key: 'print',
+    node: <>Książeczka drukowana + książeczka w PDF — {BOOK_PRICE_PRINT_PLN} zł</>,
+  },
+  { key: 'shipping', node: <>Wysyłka w Polsce w cenie</> },
 ];
+
+/** Price/shipping bullet list + Omnibus footnote — shared by topic hero and homepage hero. */
+export function HeroTrustBullets({ className = '' }: { className?: string }) {
+  return (
+    <div className={className}>
+      <ul className="grid gap-1.5 text-sm font-bold text-lp-navy">
+        {TRUST_BULLETS.map((b) => (
+          <li key={b.key}>
+            <span className="text-lp-teal-text font-black mr-1">✓</span>
+            <a href="#cennik" className="text-lp-navy">
+              {b.node}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <p className="text-xs text-lp-ink-soft mt-1.5">
+        * Najniższa cena z ostatnich 30 dni: {BOOK_PRICE_PDF_OMNIBUS_PLN} zł
+      </p>
+    </div>
+  );
+}
 
 export function TopicHeroV4({ topic }: { topic: Topic }) {
   return (
@@ -35,16 +74,7 @@ export function TopicHeroV4({ topic }: { topic: Topic }) {
           photos={PRINT_GALLERY}
           className="mt-5 md:mt-0 md:col-start-2 md:row-start-1 md:row-span-2"
         />
-        <ul className="grid gap-1.5 mt-5 text-sm font-bold text-lp-navy md:col-start-1">
-          {TRUST_BULLETS.map((b) => (
-            <li key={b}>
-              <span className="text-lp-teal-text font-black mr-1">✓</span>
-              <a href="#cennik" className="text-lp-navy">
-                {b}
-              </a>
-            </li>
-          ))}
-        </ul>
+        <HeroTrustBullets className="mt-5 md:col-start-1" />
       </div>
     </header>
   );

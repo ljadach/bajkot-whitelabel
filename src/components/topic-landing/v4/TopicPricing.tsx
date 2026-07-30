@@ -44,14 +44,14 @@ const CARDS: PriceCard[] = [
     features: [
       'Wszystko z wariantu PDF',
       'Profesjonalnie wydrukowana książka',
-      `Kurier w ${DELIVERY_DAYS_TEXT}, wysyłka po Polsce w cenie`,
+      `Kurier w ${DELIVERY_DAYS_TEXT}, wysyłka w Polsce w cenie`,
       'Prezent, w którym dziecko widzi siebie',
     ],
     location: 'pricing_print',
   },
 ];
 
-export function TopicPricing({ topic }: { topic: Topic }) {
+export function TopicPricing({ topic, ctaHref }: { topic: Pick<Topic, 'slug'>; ctaHref?: string }) {
   return (
     <Section id="cennik">
       <SectionHeading center sub={SECTION_COPY.pricing.sub}>
@@ -99,7 +99,12 @@ export function TopicPricing({ topic }: { topic: Topic }) {
                 <li key={f}>✓ {f}</li>
               ))}
             </ul>
-            <CtaButton topicSlug={topic.slug} location={card.location} className="mt-auto" />
+            <CtaButton
+              topicSlug={topic.slug}
+              location={card.location}
+              href={ctaHref}
+              className="mt-auto"
+            />
           </div>
         ))}
       </div>

@@ -3,7 +3,7 @@ import type { Topic } from '../../../data/topics';
 import { PROMO_VIDEO, SECTION_COPY } from '../../../data/lpContent';
 import { Section, SectionHeading } from './Section';
 
-export function TopicVideo({ topic }: { topic: Topic }) {
+export function TopicVideo({ topic }: { topic: Pick<Topic, 'slug'> }) {
   return (
     <Section id="film" className="bg-lp-cream">
       <SectionHeading sub={SECTION_COPY.video.sub}>{SECTION_COPY.video.heading}</SectionHeading>
