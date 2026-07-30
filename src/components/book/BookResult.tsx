@@ -388,13 +388,6 @@ interface BookPreviewScreenProps {
   onUnlock: (format: 'pdf' | 'pdf_print') => Promise<void>;
   /** Required for landing flow — capability token bound to the order. */
   accessToken?: string | null;
-  /**
-   * Let the parent switch PDF ⇄ PDF+print right here instead of being stuck
-   * with whatever intake picked. On for the landing paywall, which is also
-   * where admin-issued payment links land; the auth flow bills the stored
-   * format and doesn't offer the choice.
-   */
-  allowFormatChoice?: boolean;
 }
 
 /**
@@ -408,7 +401,6 @@ export function BookPreviewScreen({
   flow,
   onUnlock,
   accessToken,
-  allowFormatChoice = false,
 }: BookPreviewScreenProps) {
   const { t } = useTranslation('book');
   const [redirecting, setRedirecting] = useState(false);
@@ -417,6 +409,9 @@ export function BookPreviewScreen({
   // default, so an untouched choice bills exactly what it billed before.
   const [chosenFormat, setChosenFormat] = useState<'pdf' | 'pdf_print' | null>(null);
   const format = chosenFormat ?? preview?.format ?? 'pdf';
+  // Only the landing paywall can re-choose: `createLandingCheckoutSession`
+  // takes a format, the auth-flow `createCheckoutSession` bills the stored one.
+  const allowFormatChoice = flow === 'landing';
 
   const previewPdfUrl = useResolvedR2Url({
     orderId: bookOrderId as Id<'bookOrders'>,

@@ -6,6 +6,7 @@ import { internal } from './_generated/api';
 import { v } from 'convex/values';
 import { Id } from './_generated/dataModel';
 import { LANDING_USER_ID } from './lib/roles';
+import { bookFormatValidator } from './billing';
 
 function getStripeClient() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -135,7 +136,7 @@ export const createLandingCheckoutSession = action({
      * (normal flow, where intake already decided). Payment links send it
      * explicitly so the parent can upgrade to print at the last moment.
      */
-    format: v.optional(v.union(v.literal('pdf'), v.literal('pdf_print'))),
+    format: v.optional(bookFormatValidator),
   },
   returns: v.object({
     url: v.string(),
@@ -286,11 +287,13 @@ export const verifyWebhookEvent = internalAction({
         const { line1, line2, postal_code, city } = shipping.address;
         await ctx.runMutation(internal.billing.attachShippingAddress, {
           bookOrderId: rawBookOrderId as Id<'bookOrders'>,
-          fullName: shipping.name || session.customer_details?.name || '',
-          phone: session.customer_details?.phone ?? '',
-          street: [line1, line2].filter(Boolean).join(', '),
-          zip: postal_code ?? '',
-          city: city ?? '',
+          address: {
+            fullName: shipping.name || session.customer_details?.name || '',
+            phone: session.customer_details?.phone ?? '',
+            street: [line1, line2].filter(Boolean).join(', '),
+            zip: postal_code ?? '',
+            city: city ?? '',
+          },
         });
       }
 

@@ -62,6 +62,7 @@ import type * as lib_langfuseRest from '../lib/langfuseRest.js';
 import type * as lib_llmClient from '../lib/llmClient.js';
 import type * as lib_logger from '../lib/logger.js';
 import type * as lib_pageSequence from '../lib/pageSequence.js';
+import type * as lib_paymentLink from '../lib/paymentLink.js';
 import type * as lib_pipelineConfig from '../lib/pipelineConfig.js';
 import type * as lib_pipelineStateMachine from '../lib/pipelineStateMachine.js';
 import type * as lib_prompts from '../lib/prompts.js';
@@ -138,6 +139,7 @@ declare const fullApi: ApiFromModules<{
   'lib/llmClient': typeof lib_llmClient;
   'lib/logger': typeof lib_logger;
   'lib/pageSequence': typeof lib_pageSequence;
+  'lib/paymentLink': typeof lib_paymentLink;
   'lib/pipelineConfig': typeof lib_pipelineConfig;
   'lib/pipelineStateMachine': typeof lib_pipelineStateMachine;
   'lib/prompts': typeof lib_prompts;

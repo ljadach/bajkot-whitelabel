@@ -10,6 +10,15 @@ export const paymentStatusValidator = v.union(
 
 export const bookFormatValidator = v.union(v.literal('pdf'), v.literal('pdf_print'));
 
+/** Courier shipping details for print orders. Mirrors the `bookOrders` column. */
+export const shippingAddressValidator = v.object({
+  fullName: v.string(),
+  phone: v.string(),
+  street: v.string(),
+  zip: v.string(),
+  city: v.string(),
+});
+
 export const getBookOrderForCheckout = internalQuery({
   args: {
     bookOrderId: v.id('bookOrders'),
@@ -53,6 +62,7 @@ export const getLandingBookOrderForCheckout = internalQuery({
       paymentStatus: v.union(paymentStatusValidator, v.null()),
       stripeSessionId: v.union(v.string(), v.null()),
       format: v.union(bookFormatValidator, v.null()),
+      hasShippingAddress: v.boolean(),
     }),
   ),
   handler: async (ctx, args) => {
@@ -107,24 +117,14 @@ export const setOrderFormat = internalMutation({
 export const attachShippingAddress = internalMutation({
   args: {
     bookOrderId: v.id('bookOrders'),
-    fullName: v.string(),
-    phone: v.string(),
-    street: v.string(),
-    zip: v.string(),
-    city: v.string(),
+    address: shippingAddressValidator,
   },
   returns: v.null(),
   handler: async (ctx, args) => {
     const order = await ctx.db.get(args.bookOrderId);
     if (!order || order.shippingAddress) return null;
     await ctx.db.patch(args.bookOrderId, {
-      shippingAddress: {
-        fullName: args.fullName,
-        phone: args.phone,
-        street: args.street,
-        zip: args.zip,
-        city: args.city,
-      },
+      shippingAddress: args.address,
       updatedAt: Date.now(),
     });
     return null;
