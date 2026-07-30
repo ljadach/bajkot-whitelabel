@@ -49,7 +49,7 @@ function SampleBookModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-export function TopicProduct({ topic }: { topic: Topic }) {
+export function TopicProduct({ topic }: { topic: Pick<Topic, 'slug'> }) {
   const [viewerOpen, setViewerOpen] = useState(false);
 
   return (
@@ -62,7 +62,7 @@ export function TopicProduct({ topic }: { topic: Topic }) {
             src={SAMPLE_BOOK.cover}
             alt={`Okładka przykładowej bajki: ${SAMPLE_BOOK.title}`}
             loading="lazy"
-            className="max-w-[240px] rounded-2xl shadow-lg"
+            className="w-full max-w-[300px] mx-auto rounded-2xl shadow-lg"
             width={700}
             height={989}
           />

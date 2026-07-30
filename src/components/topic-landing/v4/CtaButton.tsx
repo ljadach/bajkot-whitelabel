@@ -14,17 +14,20 @@ export function CtaButton({
   location,
   className = '',
   size = 'md',
+  href = '#kreator',
   children = 'Stwórz bajkę',
 }: {
   topicSlug: string;
   location: string;
   className?: string;
   size?: keyof typeof SIZE;
+  /** Homepage has no inline wizard — its CTAs point at the topic grid instead. */
+  href?: string;
   children?: React.ReactNode;
 }) {
   return (
     <a
-      href="#kreator"
+      href={href}
       onClick={() => trackEvent('cta_create_book_clicked', { location, topicSlug })}
       className={`inline-block bg-lp-amber hover:-translate-y-0.5 text-lp-navy font-black rounded-full shadow-lp-amber/40 transition text-center no-underline ${SIZE[size]} ${className}`}
     >
