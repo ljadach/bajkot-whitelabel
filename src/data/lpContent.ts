@@ -34,7 +34,8 @@ export const SAMPLE_BOOK = {
   title: 'Maja i Lisek Iskra, Strażnik Snów',
   cover: '/lp/maja-cover.webp',
   pdf: '/lp/maja-bajka.pdf',
-  pages: 25,
+  /** Must match the PDF's real page count — the viewer shows "1 / N" next to this. */
+  pages: 24,
   illustrations: 13,
 };
 
