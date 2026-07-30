@@ -48,11 +48,12 @@ export function LandingBookResult() {
         bookOrderId={orderId}
         flow="landing"
         accessToken={accessToken}
-        onUnlock={async () => {
+        onUnlock={async (format) => {
           const session = await createLandingCheckoutSession({
             bookOrderId: orderId as Id<'bookOrders'>,
             accessToken,
             returnPath: `/landing/book/${orderId}/result`,
+            format,
           });
           if (typeof window !== 'undefined') window.location.assign(session.url);
         }}

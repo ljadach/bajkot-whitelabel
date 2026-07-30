@@ -601,6 +601,9 @@ function OrderDetailPanel({ orderId }: { orderId: Id<'bookOrders'> }) {
   const cancelOrderAction = useAction(api.admin.bookBatch.cancelOrder);
   const regeneratePdfAction = useAction(api.admin.bookBatch.regeneratePdf);
   const resolveDownloadUrl = useAction(api.admin.bookBatch.resolveDownloadUrl);
+  const createPaymentLink = useMutation(api.admin.paymentLink.createPaymentLink);
+  const [paymentLink, setPaymentLink] = useState<string | null>(null);
+  const [linking, setLinking] = useState(false);
   const [retrying, setRetrying] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
@@ -648,6 +651,24 @@ function OrderDetailPanel({ orderId }: { orderId: Id<'bookOrders'> }) {
       toast.error(`Pobieranie nie udało się: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const handlePaymentLink = async () => {
+    setLinking(true);
+    try {
+      const result = await createPaymentLink({ orderId });
+      setPaymentLink(result.url);
+      await navigator.clipboard.writeText(result.url).catch(() => {});
+      toast.success(
+        result.invalidatedPrevious
+          ? 'Link skopiowany. Poprzedni link do tego zamówienia przestał działać.'
+          : 'Link skopiowany do schowka.',
+      );
+    } catch (err) {
+      toast.error(`Nie udało się: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setLinking(false);
     }
   };
 
@@ -792,6 +813,33 @@ function OrderDetailPanel({ orderId }: { orderId: Id<'bookOrders'> }) {
           )}
         </div>
       </div>
+
+      {/* Link do płatności — dla zamówień wygenerowanych, ale nieopłaconych */}
+      {detail.paymentStatus !== 'completed' && (
+        <div className="rounded-lg border border-neutral-200 bg-white p-3 space-y-2">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => void handlePaymentLink()}
+              disabled={linking}
+              className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-40"
+            >
+              {linking ? 'Generuję...' : 'Link do płatności'}
+            </button>
+            <span className="text-xs text-neutral-400">
+              Klient wybiera PDF lub PDF+druk i płaci. Poprzedni link przestaje działać.
+            </span>
+          </div>
+          {paymentLink && (
+            <input
+              readOnly
+              value={paymentLink}
+              onFocus={(e) => e.currentTarget.select()}
+              className="w-full rounded-md border border-neutral-300 bg-neutral-50 px-2 py-1 font-mono text-xs"
+            />
+          )}
+        </div>
+      )}
 
       {/* Print-ready (plik drukarski) */}
       <PrintReadySection orderId={orderId} detail={detail} />
