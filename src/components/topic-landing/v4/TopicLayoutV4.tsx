@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react';
 import type { TopicV4 } from '../../../data/topicV4Content';
 import { SHOW_NAME_DEMO } from '../../../data/lpContent';
+import { useLpEngagement } from '../../../lib/telemetry';
 import { ClientOnly } from '../../ClientOnly';
 import { LandingOrderFlow } from '../../book/order-flow/LandingOrderFlow';
 import { WizardPlaceholder } from '../WizardPlaceholder';
@@ -27,6 +28,8 @@ const TopicNameDemo = lazy(() => import('./TopicNameDemo'));
  * same SEO meta — only the body of /problem/:slug changes.
  */
 export function TopicLayoutV4({ topic }: { topic: TopicV4 }) {
+  useLpEngagement({ surface: 'topic_landing', topicSlug: topic.slug });
+
   return (
     <div
       className="min-h-screen antialiased bg-lp-cream text-lp-ink selection:bg-lp-amber selection:text-lp-navy"

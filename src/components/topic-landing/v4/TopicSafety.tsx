@@ -17,6 +17,7 @@ export function TopicSafety({
 
   return (
     <Section
+      track="bezpieczenstwo"
       className="bg-lp-cream-dark"
       containerClassName="grid md:grid-cols-2 gap-8 items-center"
     >

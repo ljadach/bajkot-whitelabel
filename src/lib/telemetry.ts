@@ -328,6 +328,10 @@ export function useFeatureFlagWithPayload<T = unknown>(flagKey: string) {
  */
 export type FunnelEventName =
   | 'cta_create_book_clicked'
+  // Fired on the first real edit inside the intake form. `order_form_step_viewed`
+  // cannot play this role: the landing wizard is mounted inline on every topic
+  // page, so it fires for every visitor whether or not they touch the form.
+  | 'order_started'
   | 'order_form_step_viewed'
   | 'order_form_step_completed'
   | 'topic_selected'
@@ -344,7 +348,20 @@ export type FunnelEventName =
   | 'dedication_skipped'
   | 'result_viewed'
   | 'pdf_downloaded'
-  | 'print_thanks_viewed';
+  | 'print_thanks_viewed'
+  | 'print_requested_from_result'
+  | 'preview_paywall_viewed'
+  | 'preview_paywall_unlock_clicked'
+  | 'preview_open_in_new_tab'
+  // Landing-page engagement — how deep a visitor got before (not) converting.
+  | 'home_topic_clicked'
+  | 'lp_section_viewed'
+  | 'lp_scroll_depth'
+  | 'lp_faq_opened'
+  | 'lp_print_gallery_opened'
+  | 'lp_sample_book_opened'
+  | 'lp_promo_video_played'
+  | 'lp_name_demo_used';
 
 /**
  * Default flow tag attached to events when relevant. The caller component
@@ -440,6 +457,88 @@ export function useStepTransitionTracker(
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+}
+
+/** Scroll milestones reported by `useLpEngagement`, in percent of page height. */
+const SCROLL_DEPTH_MILESTONES = [25, 50, 75, 100] as const;
+
+/**
+ * Landing-page engagement tracking: which sections a visitor actually reached
+ * and how far down the page they scrolled. Both are the missing middle of the
+ * funnel — without them a bounce and a visitor who read to the pricing table
+ * look identical.
+ *
+ * Sections are discovered from `[data-lp-section]` (set by `Section`), so
+ * adding a section to a page is enough to get it tracked. Every milestone and
+ * every section fires at most once per page view.
+ */
+export function useLpEngagement(props: Record<string, unknown> = {}): void {
+  // Props are read inside listeners that must not be re-bound on every render.
+  const propsRef = useRef(props);
+  propsRef.current = props;
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const seenSections = new Set<string>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const name = entry.target.getAttribute('data-lp-section');
+          if (!name || seenSections.has(name)) continue;
+          seenSections.add(name);
+          trackEvent('lp_section_viewed', { ...propsRef.current, section: name });
+        }
+      },
+      // Half the section on screen — enough to count as "seen", not so much
+      // that tall sections never qualify on a phone.
+      { threshold: 0.5 },
+    );
+    for (const el of document.querySelectorAll('[data-lp-section]')) observer.observe(el);
+
+    const seenDepths = new Set<number>();
+    // The app shell scrolls `<main class="overflow-auto">`, not the window, so
+    // `window.scrollY` stays 0 and window scroll events never fire. Listening
+    // on document in the capture phase catches both cases: scroll events don't
+    // bubble, but they do propagate downward to the capture listener.
+    const onScroll = (event: Event) => {
+      const target = event.target;
+      let scrolled: number;
+      let viewport: number;
+      let total: number;
+
+      if (target === document || target === document.documentElement || target === document.body) {
+        scrolled = window.scrollY;
+        viewport = window.innerHeight;
+        total = document.documentElement.scrollHeight;
+      } else if (target instanceof HTMLElement) {
+        scrolled = target.scrollTop;
+        viewport = target.clientHeight;
+        total = target.scrollHeight;
+      } else {
+        return;
+      }
+
+      // Nothing to scroll — reporting 100% here would mark every visitor as
+      // having read the whole page.
+      if (total - viewport <= 0) return;
+
+      const percent = ((scrolled + viewport) / total) * 100;
+      for (const milestone of SCROLL_DEPTH_MILESTONES) {
+        if (percent >= milestone && !seenDepths.has(milestone)) {
+          seenDepths.add(milestone);
+          trackEvent('lp_scroll_depth', { ...propsRef.current, percent: milestone });
+        }
+      }
+    };
+    document.addEventListener('scroll', onScroll, { capture: true, passive: true });
+
+    return () => {
+      observer.disconnect();
+      document.removeEventListener('scroll', onScroll, { capture: true });
+    };
   }, []);
 }
 

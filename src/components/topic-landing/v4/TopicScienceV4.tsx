@@ -10,7 +10,7 @@ export function TopicScienceV4({ topic }: { topic: Topic }) {
   const cards = [topic.scienceCards[0], topic.scienceCards[1], HERO_SCIENCE_CARD];
 
   return (
-    <Section className="bg-lp-cream-dark">
+    <Section track="nauka" className="bg-lp-cream-dark">
       <SectionHeading>{topic.scienceHeadline}</SectionHeading>
       <div className="grid md:grid-cols-3 gap-4">
         {cards.map((card) => (

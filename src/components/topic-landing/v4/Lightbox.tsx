@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { GalleryPhoto } from '../../../data/lpContent';
+import { trackEvent } from '../../../lib/telemetry';
 import { ModalOverlay } from './ModalOverlay';
 import { cycle } from './cycle';
 
@@ -28,7 +29,10 @@ export function GalleryWithLightbox({ photos }: { photos: GalleryPhoto[] }) {
           <button
             key={p.src}
             type="button"
-            onClick={() => setOpen(i)}
+            onClick={() => {
+              setOpen(i);
+              trackEvent('lp_print_gallery_opened', { photo: p.src, index: i });
+            }}
             aria-label={`Powiększ: ${p.caption}`}
             className="relative rounded-2xl overflow-hidden group"
           >
