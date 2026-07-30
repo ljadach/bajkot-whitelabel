@@ -499,11 +499,33 @@ export function useLpEngagement(props: Record<string, unknown> = {}): void {
     for (const el of document.querySelectorAll('[data-lp-section]')) observer.observe(el);
 
     const seenDepths = new Set<number>();
-    const onScroll = () => {
-      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-      if (scrollable <= 0) return;
-      const percent =
-        ((window.scrollY + window.innerHeight) / document.documentElement.scrollHeight) * 100;
+    // The app shell scrolls `<main class="overflow-auto">`, not the window, so
+    // `window.scrollY` stays 0 and window scroll events never fire. Listening
+    // on document in the capture phase catches both cases: scroll events don't
+    // bubble, but they do propagate downward to the capture listener.
+    const onScroll = (event: Event) => {
+      const target = event.target;
+      let scrolled: number;
+      let viewport: number;
+      let total: number;
+
+      if (target === document || target === document.documentElement || target === document.body) {
+        scrolled = window.scrollY;
+        viewport = window.innerHeight;
+        total = document.documentElement.scrollHeight;
+      } else if (target instanceof HTMLElement) {
+        scrolled = target.scrollTop;
+        viewport = target.clientHeight;
+        total = target.scrollHeight;
+      } else {
+        return;
+      }
+
+      // Nothing to scroll — reporting 100% here would mark every visitor as
+      // having read the whole page.
+      if (total - viewport <= 0) return;
+
+      const percent = ((scrolled + viewport) / total) * 100;
       for (const milestone of SCROLL_DEPTH_MILESTONES) {
         if (percent >= milestone && !seenDepths.has(milestone)) {
           seenDepths.add(milestone);
@@ -511,12 +533,11 @@ export function useLpEngagement(props: Record<string, unknown> = {}): void {
         }
       }
     };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
+    document.addEventListener('scroll', onScroll, { capture: true, passive: true });
 
     return () => {
       observer.disconnect();
-      window.removeEventListener('scroll', onScroll);
+      document.removeEventListener('scroll', onScroll, { capture: true });
     };
   }, []);
 }
