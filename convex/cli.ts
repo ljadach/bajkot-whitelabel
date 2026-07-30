@@ -8,6 +8,7 @@ import { internalAction, internalMutation, internalQuery } from './_generated/se
 import { internal } from './_generated/api';
 import { v } from 'convex/values';
 import { BOOK_PROMPT_META, saveVersionSnapshot } from './admin/bookPrompts';
+import { generateLandingAccessToken, sha256Hex } from './lib/landingToken';
 
 // ── Create order (bypasses Clerk auth + rate limiting) ───────
 
@@ -168,6 +169,31 @@ export const forceSkipDedication = internalMutation({
       return `Unstuck ${orderId} from awaiting_dedication, composePdf scheduled`;
     }
     return `Patched dedicationDecided=true on ${orderId} (status was ${order.status})`;
+  },
+});
+
+// ── Payment link for an existing order ──────────────────────
+
+/**
+ * Headless twin of `admin/paymentLink.createPaymentLink` — same effect, no
+ * Clerk identity, so it works from `npx convex run`. Mints a fresh landing
+ * token, which invalidates any earlier link for the order.
+ */
+export const createPaymentLink = internalMutation({
+  args: { orderId: v.id('bookOrders') },
+  returns: v.string(),
+  handler: async (ctx, { orderId }) => {
+    const order = await ctx.db.get(orderId);
+    if (!order) throw new Error('Order not found');
+    if (order.paymentStatus === 'completed') throw new Error('Order already paid');
+    const appUrl = process.env.APP_URL;
+    if (!appUrl) throw new Error('APP_URL is not configured');
+    const rawToken = generateLandingAccessToken();
+    await ctx.db.patch(orderId, {
+      accessTokenHash: await sha256Hex(rawToken),
+      updatedAt: Date.now(),
+    });
+    return `${appUrl}/landing/book/${orderId}/result?t=${rawToken}`;
   },
 });
 

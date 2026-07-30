@@ -13,6 +13,7 @@ import type * as admin_bookBatch from '../admin/bookBatch.js';
 import type * as admin_bookPrompts from '../admin/bookPrompts.js';
 import type * as admin_config from '../admin/config.js';
 import type * as admin_email from '../admin/email.js';
+import type * as admin_paymentLink from '../admin/paymentLink.js';
 import type * as admin_printPdf from '../admin/printPdf.js';
 import type * as admin_stripe from '../admin/stripe.js';
 import type * as analytics from '../analytics.js';
@@ -88,6 +89,7 @@ declare const fullApi: ApiFromModules<{
   'admin/bookPrompts': typeof admin_bookPrompts;
   'admin/config': typeof admin_config;
   'admin/email': typeof admin_email;
+  'admin/paymentLink': typeof admin_paymentLink;
   'admin/printPdf': typeof admin_printPdf;
   'admin/stripe': typeof admin_stripe;
   analytics: typeof analytics;

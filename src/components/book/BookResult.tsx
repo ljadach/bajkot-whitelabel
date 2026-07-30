@@ -376,6 +376,7 @@ interface BookPreviewScreenProps {
         bookTitle: string | null;
         excerptPl: string | null;
         format: 'pdf' | 'pdf_print';
+        hasShippingAddress: boolean;
         problemId: string;
         illustrations: Array<{ illustrationId: string; url: string | null }>;
         previewPdfUrl: string | null;
@@ -589,7 +590,9 @@ export function BookPreviewScreen({
                     ? t('paywall.unlockCtaPrint', { price: formatPricePLN(priceValue) })
                     : t('paywall.unlockCta', { price: formatPricePLN(priceValue) })}
               </button>
-              {isPrint && allowFormatChoice && (
+              {/* Only promise an address step when Checkout will actually ask —
+                  orders that came in with an address skip it. */}
+              {isPrint && allowFormatChoice && preview?.hasShippingAddress === false && (
                 <p className="text-xs text-gray-500">{t('paywall.formatAddressNote')}</p>
               )}
               <p className="text-xs text-gray-500">{t('paywall.secureNote')}</p>
