@@ -5,7 +5,7 @@ import { Section, SectionHeading } from './Section';
 /** v4 pain section: four short scenes + a relief line (from topicV4Content). */
 export function TopicPainV4({ topic }: { topic: TopicV4 }) {
   return (
-    <Section>
+    <Section track="pain">
       <SectionHeading>{topic.painHeadline}</SectionHeading>
       <div className="grid gap-3 max-w-2xl mb-6">
         {topic.painScenes.map((scene) => (

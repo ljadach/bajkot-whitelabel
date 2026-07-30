@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { useStepTransitionTracker } from '../../../lib/telemetry';
+import { trackEvent, useStepTransitionTracker } from '../../../lib/telemetry';
 import { genitiveOrSelf } from '../../../lib/childNameInflect';
 import {
   ageLabel,
@@ -68,20 +68,35 @@ export function OrderWizard({
     errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [error]);
 
+  // The landing wizard is mounted inline on every topic page, so
+  // `order_form_step_viewed` fires for every visitor. This marks the first
+  // real edit instead — the funnel step that means "started filling the form".
+  const startedRef = useRef(false);
+  const markStarted = useCallback(
+    (field: string) => {
+      if (startedRef.current) return;
+      startedRef.current = true;
+      trackEvent('order_started', { surface: 'order_wizard', firstField: field, step });
+    },
+    [step],
+  );
+
   const update = useCallback(
     <K extends keyof IntakeState>(key: K, value: IntakeState[K]) => {
+      markStarted(String(key));
       onChange({ ...intake, [key]: value });
       setError('');
     },
-    [intake, onChange],
+    [intake, onChange, markStarted],
   );
 
   const updateAppearance = useCallback(
     <K extends keyof AppearanceData>(key: K, value: AppearanceData[K]) => {
+      markStarted(`appearance.${String(key)}`);
       onChange({ ...intake, appearance: { ...intake.appearance, [key]: value } });
       setError('');
     },
-    [intake, onChange],
+    [intake, onChange, markStarted],
   );
 
   const goToStep = useCallback((target: 1 | 2 | 3) => {

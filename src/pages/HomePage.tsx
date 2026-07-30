@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { JsonLd } from '../components/JsonLd';
 import { trackEvent } from '../lib/telemetry';
+import { useLpEngagement } from '../lib/telemetry';
 import { CATALOG_CATEGORIES, topicsByCategory, type CatalogCategory } from '../data/topics';
 import { LP_FAQ, PRINT_GALLERY } from '../data/lpContent';
 import { TopicNavV4 } from '../components/topic-landing/v4/TopicNavV4';
@@ -121,7 +122,17 @@ function TopicsGrid() {
           <Link
             key={topic.slug}
             to={`/problem/${topic.slug}`}
-            onClick={() => trackEvent('home_topic_clicked', { topicSlug: topic.slug })}
+            onClick={() => {
+              trackEvent('home_topic_clicked', { topicSlug: topic.slug });
+              // Same "topic committed" step as the catalog, so one funnel step
+              // covers both entry points.
+              trackEvent('topic_selected', {
+                flow: 'landing',
+                problemId: topic.slug,
+                isCustom: false,
+                trigger: 'user_choice',
+              });
+            }}
             className="bg-lp-cream rounded-3xl p-5 no-underline shadow-sm hover:shadow-md hover:-translate-y-0.5 transition flex flex-col gap-1.5"
           >
             <span className="text-3xl" aria-hidden>
@@ -148,6 +159,8 @@ function TopicsGrid() {
 }
 
 export function HomePage() {
+  useLpEngagement({ surface: 'homepage' });
+
   return (
     <div
       className="min-h-screen antialiased bg-lp-cream text-lp-ink selection:bg-lp-amber selection:text-lp-navy"
