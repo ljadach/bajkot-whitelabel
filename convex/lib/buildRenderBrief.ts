@@ -17,11 +17,21 @@ import {
 import { dlaName } from './childNameInflect';
 
 /**
- * Mirrors `drawParentCardPage` in bookComposer.ts: prefer A3 parentCard, fall
- * back to A2 blueprint fields when A3 didn't emit them. Without these
- * fallbacks the parent_card page renders empty for orders whose A3 prompt
- * skipped parentCard altogether.
+ * Polska reguła składu: jednoliterowe wyrazy (a, i, o, u, w, z) nie zostają
+ * na końcu wiersza. Zamieniamy spację po nich na twardą, więc łamacz musi
+ * przenieść je razem z następnym słowem.
+ *
+ * Robimy to tutaj, a nie w szablonie Typst, bo tekst ma jedno źródło i łatwo
+ * to pokryć testem. Wchodzi w parze z dzieleniem wyrazów (`hyphenate: auto`
+ * w main.typ) — bez niego twarde spacje pogłębiałyby rozstrzelenie zamiast
+ * je naprawiać.
  */
+export function hardenOrphans(text: string): string {
+  // Lookbehind, a nie grupa — zwykła grupa zjadłaby spację przed kolejnym
+  // spójnikiem i "i w lesie" naprawiłoby tylko pierwszy z nich.
+  return text.replace(/(?<=^|[\s(„"'*—-])([aiouwzAIOUWZ])[ \t]+/g, '$1\u00A0');
+}
+
 /**
  * LLM outputs occasionally violate the contracted shape — A2 has been seen
  * emitting parent_questions as `[{ question: "…" }, …]` instead of plain
@@ -52,6 +62,12 @@ function normalizeQuestions(raw: unknown): string[] {
   return out;
 }
 
+/**
+ * Mirrors `drawParentCardPage` in bookComposer.ts: prefer A3 parentCard, fall
+ * back to A2 blueprint fields when A3 didn't emit them. Without these
+ * fallbacks the parent_card page renders empty for orders whose A3 prompt
+ * skipped parentCard altogether.
+ */
 function formatParentCard(args: {
   parentCard: ParentCard | undefined | string;
   blueprint: StoryBlueprint | null;
@@ -237,13 +253,15 @@ export function buildRenderBrief(input: BuildBriefInput): RenderBrief {
       if (spec.beatId === '6' && isLastPart && !skipKoniec) {
         text = `${text}\n\n*Koniec*`;
       }
-      out.text = text || `[brak tekstu dla beatu ${spec.beatId}]`;
+      out.text = hardenOrphans(text || `[brak tekstu dla beatu ${spec.beatId}]`);
     } else if (spec.kind === 'parent_card') {
-      out.text = formatParentCard({
-        parentCard: draft.parentCard,
-        blueprint,
-        childName: order.childName,
-      });
+      out.text = hardenOrphans(
+        formatParentCard({
+          parentCard: draft.parentCard,
+          blueprint,
+          childName: order.childName,
+        }),
+      );
     }
 
     return out;
@@ -260,7 +278,7 @@ export function buildRenderBrief(input: BuildBriefInput): RenderBrief {
     outputKey: input.outputKey,
   };
   if (subtitle) brief.subtitle = subtitle;
-  if (dedication) brief.dedication = dedication;
+  if (dedication) brief.dedication = hardenOrphans(dedication);
   if (input.maxPages) brief.maxPages = input.maxPages;
   if (input.force) brief.force = true;
   if (input.experimental) brief.experimental = input.experimental;

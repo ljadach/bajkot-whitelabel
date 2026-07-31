@@ -230,9 +230,16 @@ export function splitBeatText(text: string): [string, string] {
  * fallback for outlier paragraphs.
  */
 export function charBudgetFor(bracket: AgeBracket): number {
-  if (bracket === '3-5') return 1000;
-  if (bracket === '6-8') return 1500;
-  return 1800;
+  // Skalibrowane 31.07.2026 na geometrii po poprawkach DTP (margines 44pt,
+  // interlinia 0.59em ≈ 130%). Binary search po długości tekstu w Typście:
+  // maksimum bez uruchomienia auto-shrinku czcionki to odpowiednio 762 / 1158
+  // / 1527 znaków — bierzemy ~92% tego zapasu, bo łamanie zależy od tego, jak
+  // wypadną konkretne słowa. Poprzednie wartości (1000/1500/1800) pochodziły
+  // z ciaśniejszego składu i tak przekraczały budżet, że każda strona tekstu
+  // renderowała się na najmniejszej czcionce z pięciu prób.
+  if (bracket === '3-5') return 700;
+  if (bracket === '6-8') return 1080;
+  return 1420;
 }
 
 /**
