@@ -194,6 +194,20 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
     }
   }, [progress, phase]);
 
+  // Odtwórz krok dedykacji ze stanu serwera. `phase` to stan lokalny, więc po
+  // odświeżeniu strony (albo powrocie z linku w mailu) formularz dedykacji
+  // przepadał — rodzic widział pasek postępu, a zamówienie stało w
+  // `awaiting_dedication` do auto-skipu po 5 minutach. Ref pilnuje, żeby po
+  // wysłaniu/pominięciu nie wrócić do formularza, zanim backend zdąży
+  // przestawić status.
+  const dedicationDoneRef = useRef(false);
+  useEffect(() => {
+    if (!progress || dedicationDoneRef.current) return;
+    if (progress.status === 'awaiting_dedication' && phase === 'progress') {
+      setPhase('dedication');
+    }
+  }, [progress, phase]);
+
   // Auto-redirect: result page only (vote is now inline).
   useEffect(() => {
     if (!progress || !orderId || redirectedRef.current) return;
@@ -266,6 +280,7 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
       // union confuses TS at the call site. Cast keeps the JS identical.
       await submitDedication({ ...args, dedication } as Parameters<typeof submitDedication>[0]);
       trackEvent('dedication_submitted', { flow, bookOrderId: orderId });
+      dedicationDoneRef.current = true;
       setPhase('progress');
     };
     const handleDedicationSkip = async () => {
@@ -274,6 +289,7 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
       // otherwise the composer waits forever in `awaiting_dedication`.
       await skipDedication(buildArgs({ orderId: orderId as Id<'bookOrders'> }));
       trackEvent('dedication_skipped', { flow, bookOrderId: orderId });
+      dedicationDoneRef.current = true;
       setPhase('progress');
     };
     return (

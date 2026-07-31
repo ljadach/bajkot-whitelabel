@@ -5,7 +5,9 @@ dotyczy książki A5 do druku. Zakres poszerzony o PDF klienta tam, gdzie zmiana
 i tak jest wspólna — wynika to z architektury, nie z ambicji (patrz „Ograniczenie
 pipeline'u").
 
-Stan: **plan, nic nie wdrożone**. Zmierzone na żywym składzie, nie na wyczuciu.
+Stan: **wdrożone 31.07.2026** (punkty 1–5). Pomiary poniżej opisują stan
+sprzed zmiany i cel; wartości po zmianie są w sekcji „Co poszło na produkcję".
+Punkt 4c (grzbiet asymetryczny) **odrzucony po analizie** — powód niżej.
 
 ## Ograniczenie pipeline'u, które determinuje wszystko
 
@@ -143,12 +145,26 @@ rastrze** (`fix_parent_page`, komentarz: „zmierzone na A5: 6mm od ciecia vs
 ~10mm"). Po naprawie u źródła hack można wyłączyć — sam się neutralizuje
 (`if scale >= 0.995: return`).
 
-**4c. Grzbiet asymetryczny (właściwa poprawka).** Marginesy wewnętrzne muszą być
-większe niż zewnętrzne, naprzemiennie recto/verso. Szablon dziś **nie wie, na
-której stronie jest** — `render-page` dostaje spec, nie indeks. Zmiana: `main.typ`
-w pętli zna `i`, więc przekazuje `recto: calc.even(i)` do `text-page` /
-`parent-card-page`, a te wybierają `(inside: m + gutter, outside: m)`.
-Gutter 5 mm = 20 pt na A4. Koszt: ~30 linii w dwóch plikach + proof.
+**4c. Grzbiet asymetryczny — ODRZUCONY, i to nie z lenistwa.**
+
+Pierwotny pomysł: `main.typ` w pętli zna indeks strony, więc mógłby przekazać
+`recto: calc.even(i)` do `text-page`, a ta wybrałaby `(inside: m + gutter,
+outside: m)`. Problem wyszedł przy sprawdzaniu, na której stronie gotowej
+książki ląduje dana strona renderu: **nigdzie tego nie wiadomo w momencie
+renderu**.
+
+`print_ready.py` przestawia kolejność stron — usuwa pustą po okładce, dokłada
+puste przed „Dla Rodzica"/„Koniec", dopycha blok do wielokrotności 4. Po tym
+przestawieniu źródłowa strona 3 (recto w renderze) staje się drugą stroną pliku
+drukarskiego, czyli verso. Parzystość renderu i druku są **różne i zależą od
+treści konkretnej książki**. Gutter wpisany w render trafiałby systematycznie
+w złą stronę — gorzej niż jego brak.
+
+Poprawne rozwiązania są dwa i oba są droższe niż zysk: renderować książkę drugi
+raz specjalnie pod druk (z sekwencją znaną z góry) albo przesuwać raster w
+`print_ready.py` po przestawieniu stron. Na dziś: **symetryczny margines z
+zapasem** (4a) daje 16,4 mm do kolumny tekstu, co po odjęciu 5–8 mm oprawy
+zostawia 8–11 mm i jest poprawne dla obu stron rozkładówki.
 
 Odrzucone: przesuwanie rastra w `print_ready.py`. Byłoby „tylko dla druku", ale
 tnie zewnętrzną krawędź i przesuwa ilustracje pełnospadowe — ryzyko większe niż
@@ -180,18 +196,34 @@ pliki drukarskie trzeba wygenerować od nowa po zmianach.
 
 ## Kolejność prac
 
-| #   | zadanie                             | gdzie                                 | efekt                        | ryzyko                         |
-| --- | ----------------------------------- | ------------------------------------- | ---------------------------- | ------------------------------ |
-| 1   | `lang: "pl"` + `hyphenate: auto`    | typst-render `main.typ`               | koniec rozstrzelenia         | niskie                         |
-| 2   | `leading` w em, 0,59 em             | typst-render `sizes.typ`              | interlinia 130%              | niskie                         |
-| 3   | margines 32 → 44 pt + karta rodzica | typst-render `sizes.typ`/`layout.typ` | oddech przy grzbiecie        | niskie                         |
-| 4   | rekalibracja `charBudgetFor`        | bajkot `pageSequence.ts`              | koniec auto-shrinku          | średnie — zmienia liczbę stron |
-| 5   | twarde spacje po spójnikach         | bajkot `buildRenderBrief.ts`          | brak wiszących liter         | niskie                         |
-| 6   | grzbiet asymetryczny                | typst-render `main.typ`/`layout.typ`  | poprawnie pod oprawę klejoną | średnie                        |
-| 7   | proof A5 + akcept Andrzeja          | admin → print-ready                   | —                            | —                              |
+| #   | zadanie                             | gdzie                                 | efekt                 | ryzyko                         |
+| --- | ----------------------------------- | ------------------------------------- | --------------------- | ------------------------------ |
+| 1   | `lang: "pl"` + `hyphenate: auto`    | typst-render `main.typ`               | koniec rozstrzelenia  | niskie                         |
+| 2   | `leading` w em, 0,59 em             | typst-render `sizes.typ`              | interlinia 130%       | niskie                         |
+| 3   | margines 32 → 44 pt + karta rodzica | typst-render `sizes.typ`/`layout.typ` | oddech przy grzbiecie | niskie                         |
+| 4   | rekalibracja `charBudgetFor`        | bajkot `pageSequence.ts`              | koniec auto-shrinku   | średnie — zmienia liczbę stron |
+| 5   | twarde spacje po spójnikach         | bajkot `buildRenderBrief.ts`          | brak wiszących liter  | niskie                         |
+| 6   | ~~grzbiet asymetryczny~~            | —                                     | odrzucone (patrz 4c)  | —                              |
+| 7   | proof A5 + akcept Andrzeja          | admin → print-ready                   | —                     | —                              |
 
-1–3 to jeden commit i jeden render. 4 wymaga przejścia po kilku zamówieniach
-testowych. 6 najlepiej po akceptacji 1–5, żeby nie mieszać zmiennych.
+## Co poszło na produkcję 31.07.2026
+
+Wszystkie punkty 1–5 w jednym wdrożeniu: typst-render (commit `4d5a209`,
+przebudowany obraz na Droplecie) + bajkot (Convex `wonderful-egret-522`).
+
+Zmierzone na proofie po zmianach (bracket 3-5, strona z 700 znakami):
+
+| metryka                       | przed                  | po                    |
+| ----------------------------- | ---------------------- | --------------------- |
+| rozmiar czcionki              | 21,2 pt (shrink −4 pt) | 25,2 pt (bez shrinku) |
+| interlinia                    | 22,9 pt = 108%         | 32,9 pt = **131%**    |
+| kolumna tekstu od cięcia (A4) | 16,9 mm                | 23,3 mm               |
+| to samo po skali na A5        | 11,9 mm                | **16,4 mm**           |
+| dzielenie wyrazów             | brak                   | polskie wzorce        |
+
+Budżet znaków skalibrowany binary searchem po długości tekstu w Typście
+(maksimum bez auto-shrinku: 762 / 1158 / 1527 znaków dla kolejnych przedziałów
+wiekowych); w kodzie ~92% tego zapasu: **700 / 1080 / 1420**.
 
 ## Czego ten plan nie obejmuje
 
