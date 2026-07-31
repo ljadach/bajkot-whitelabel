@@ -27,7 +27,16 @@ function readR2ConfigFromEnv(): R2Config {
   return { accessKeyId, secretAccessKey, bucket, endpoint };
 }
 
-const DEFAULT_TTL_SECONDS = 900;
+// 15 minut starczało wyłącznie na natychmiastowy klik. Zakładka z podglądem
+// potrafi wisieć otwarta godzinami (rodzic czyta bajkę, wraca po kawie), a
+// link „Otwórz PDF w nowej karcie" oddawał wtedy `<Error><Code>ExpiredRequest`
+// zamiast PDF-a (zgłoszenie z 31.07.2026). Godzina + odświeżanie po stronie
+// klienta (useResolvedR2Url) sprawia, że użytkownik nigdy nie trzyma w ręku
+// martwego linku. Dłużej nie dajemy — URL jest capability na plik.
+const DEFAULT_TTL_SECONDS = 3600;
+
+/** Ile żyje presign z domyślnym TTL — frontend odświeża się przed tym progiem. */
+export const PRESIGN_TTL_SECONDS = DEFAULT_TTL_SECONDS;
 
 let cachedClient: { config: R2Config; client: AwsClient } | null = null;
 
@@ -44,17 +53,25 @@ function getClient(): { config: R2Config; client: AwsClient } {
   return cachedClient;
 }
 
-/** Generate a presigned GET URL for an R2 object. */
+/**
+ * Generate a presigned GET URL for an R2 object.
+ *
+ * `disposition` decides what the browser does with the file: 'attachment'
+ * (default) zapisuje na dysk — tego chcemy dla przycisku pobrania. 'inline'
+ * otwiera plik w viewerze przeglądarki i jest właściwe dla linku „Otwórz PDF
+ * w nowej karcie", który obiecuje podgląd, a nie ściąganie.
+ */
 export async function presignR2GetUrl(
   key: string,
   ttlSeconds = DEFAULT_TTL_SECONDS,
   filename?: string,
+  disposition: 'attachment' | 'inline' = 'attachment',
 ): Promise<string> {
   const { config, client } = getClient();
   const params: string[] = [`X-Amz-Expires=${ttlSeconds}`];
   if (filename) {
-    const disposition = `attachment; filename="${filename}"`;
-    params.push(`response-content-disposition=${encodeURIComponent(disposition)}`);
+    const value = `${disposition}; filename="${filename}"`;
+    params.push(`response-content-disposition=${encodeURIComponent(value)}`);
   }
   const url = `${config.endpoint.replace(/\/$/, '')}/${config.bucket}/${encodeKey(key)}?${params.join('&')}`;
   const signed = await client.sign(url, { method: 'GET', aws: { signQuery: true } });

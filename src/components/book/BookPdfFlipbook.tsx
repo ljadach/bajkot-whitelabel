@@ -26,6 +26,7 @@ const MIN_WIDTH = 240;
 export function BookPdfFlipbook({ pdfUrl }: BookPdfFlipbookProps) {
   const [numPages, setNumPages] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [containerWidth, setContainerWidth] = useState<number>(MAX_WIDTH);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -67,8 +68,12 @@ export function BookPdfFlipbook({ pdfUrl }: BookPdfFlipbookProps) {
         <button
           type="button"
           onClick={() => {
+            // Bump attempt remontuje <Document>, więc pdf.js pobiera plik od
+            // nowa. Bez tego „spróbuj ponownie" tylko chowało komunikat —
+            // `file` miało tę samą tożsamość i nic się nie ładowało.
             setError(null);
             setNumPages(0);
+            setAttempt((a) => a + 1);
           }}
           className="text-sm font-bold text-magic-600 hover:text-magic-700 underline"
         >
@@ -82,6 +87,7 @@ export function BookPdfFlipbook({ pdfUrl }: BookPdfFlipbookProps) {
     <div ref={containerRef} className="relative w-full max-w-[560px] mx-auto">
       <div className="relative aspect-[5/7] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-calm-50 via-white to-magic-50 shadow-inner">
         <Document
+          key={attempt}
           file={file}
           onLoadSuccess={({ numPages: n }) => setNumPages(n)}
           onLoadError={(e) => setError(e.message)}

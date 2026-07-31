@@ -710,7 +710,14 @@ async function presignForOrder(
   const { presignR2GetUrl, r2KeyFor, bookPdfFilename } = await import('./lib/r2Presign');
   const key = r2KeyFor(order, kind);
   if (!key) return null;
-  return presignR2GetUrl(key, undefined, bookPdfFilename(order, kind));
+  // Preview idzie do viewera i pod link „Otwórz PDF w nowej karcie" — inline,
+  // żeby przeglądarka pokazała stronę zamiast ściągać plik na dysk.
+  return presignR2GetUrl(
+    key,
+    undefined,
+    bookPdfFilename(order, kind),
+    kind === 'preview' ? 'inline' : 'attachment',
+  );
 }
 
 export const resolveR2DownloadUrl = action({
