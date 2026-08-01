@@ -27,7 +27,37 @@ Konsekwencje:
 3. Skala A4 → A5 to ×0,705. Każdy margines podany w szablonie widać w druku
    **o 30% mniejszy**. To jest źródło problemu z marginesami.
 
-## 1. Justowanie / „rozstrzelenie" — przyczyna znaleziona
+## 0. Decyzja z 01.08.2026: skład chorągiewkowy zamiast justowania
+
+Po obejrzeniu efektu dzielenia wyrazów c3z wybrał wariant bez justowania.
+Pomiar tego samego fragmentu w pięciu ustawieniach (odstęp typowy / najszerszy
+/ rozjazd):
+
+| wariant                                                     | typowy     | najszerszy | rozjazd  |
+| ----------------------------------------------------------- | ---------- | ---------- | -------- |
+| justowanie + dzielenie                                      | 8,1 pt     | 14,5 pt    | 1,8×     |
+| justowanie, dzielenie awaryjnie (`costs.hyphenation: 600%`) | 12,1 pt    | 24,6 pt    | 2,0×     |
+| justowanie bez dzielenia                                    | 12,1 pt    | 24,6 pt    | 2,0×     |
+| **chorągiewka bez dzielenia (wdrożone)**                    | **6,3 pt** | **6,3 pt** | **1,0×** |
+| chorągiewka + dzielenie                                     | 6,3 pt     | 6,3 pt     | 1,0×     |
+
+Wniosek z pomiaru: wariant „justowanie, ale bez przenoszenia" nie istnieje.
+Kara za przeniesienia sprawia, że Typst przestaje ich używać i wychodzi
+zwykłe justowanie bez dzielenia, z rozstrzeleniem 2,0×. Równa prawa krawędź
+musi być czymś opłacona — albo przeniesieniami, albo spacjami.
+
+Chorągiewka zdejmuje ten kompromis i jest konwencją książek dla dzieci
+uczących się czytać (równy odstęp ułatwia dekodowanie, wyraz zostaje w
+całości, nierówna krawędź podpowiada koniec myśli).
+
+Skutek uboczny: strona bez justowania mieści **więcej** znaków (852/1308/1648
+vs 762/1158/1527), bo nie trzeba nic rozpychać. Budżet znaków celowo nie
+urósł proporcjonalnie — `PAGE_FILL_RATIO` spadł do 0,82, żeby strona dla
+czterolatka miała oddech, a liczba stron została ta sama.
+
+Porównanie do oglądania: `Bajkoterapia_warianty_justowania.pdf`.
+
+## 1. Justowanie / „rozstrzelenie" — przyczyna znaleziona (stan sprzed 01.08)
 
 `templates/main.typ` linia 16:
 
