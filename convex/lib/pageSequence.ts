@@ -225,21 +225,23 @@ export function splitBeatText(text: string): [string, string] {
 /**
  * Maksymalna liczba znaków, jaka mieści się na stronie tekstowej bez
  * zmniejszania czcionki — zmierzona binary searchem w Typście na prawdziwym
- * tekście bajki, na geometrii po poprawkach DTP z 31.07.2026 (margines 44pt,
- * interlinia 130% wielkości fontu).
+ * tekście bajki, na geometrii produkcyjnej (margines 44pt, interlinia 130%,
+ * skład chorągiewkowy bez dzielenia wyrazów, 01.08.2026). Justowanie mieściło
+ * mniej (762/1158/1527), bo rozpychanie spacji kosztuje wiersze.
  */
 const MEASURED_PAGE_CAPACITY: Record<AgeBracket, number> = {
-  '3-5': 762,
-  '6-8': 1158,
-  '9+': 1527,
+  '3-5': 852,
+  '6-8': 1308,
+  '9+': 1648,
 };
 
 /**
- * Ile prozy pakujemy na jedną stronę. Bierzemy zapas pod pomiar, bo łamanie
- * zależy od tego, jak wypadną konkretne słowa — bez zapasu część stron
- * schodziłaby na mniejszą czcionkę (auto-shrink w text-page).
+ * Ile z tej pojemności faktycznie zapełniamy. Zapas idzie na dwie rzeczy:
+ * łamanie zależy od tego, jak wypadną konkretne słowa (bez marginesu część
+ * stron schodziłaby na mniejszą czcionkę), a strona dla czterolatka ma mieć
+ * oddech, nie być zapchana tekstem po brzegi.
  */
-const PAGE_FILL_RATIO = 0.92;
+const PAGE_FILL_RATIO = 0.82;
 
 export function charBudgetFor(bracket: AgeBracket): number {
   return Math.round(MEASURED_PAGE_CAPACITY[bracket] * PAGE_FILL_RATIO);
