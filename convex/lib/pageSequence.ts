@@ -223,23 +223,26 @@ export function splitBeatText(text: string): [string, string] {
 }
 
 /**
- * Approx character budget per page. Sized for the production single-A4
- * portrait format (the booklet A5 mode is now opt-in); A4 single has ~67%
- * more text area than the booklet A5 page, so budgets are raised
- * accordingly. The Typst template still applies a small font-shrink
- * fallback for outlier paragraphs.
+ * Maksymalna liczba znaków, jaka mieści się na stronie tekstowej bez
+ * zmniejszania czcionki — zmierzona binary searchem w Typście na prawdziwym
+ * tekście bajki, na geometrii po poprawkach DTP z 31.07.2026 (margines 44pt,
+ * interlinia 130% wielkości fontu).
  */
+const MEASURED_PAGE_CAPACITY: Record<AgeBracket, number> = {
+  '3-5': 762,
+  '6-8': 1158,
+  '9+': 1527,
+};
+
+/**
+ * Ile prozy pakujemy na jedną stronę. Bierzemy zapas pod pomiar, bo łamanie
+ * zależy od tego, jak wypadną konkretne słowa — bez zapasu część stron
+ * schodziłaby na mniejszą czcionkę (auto-shrink w text-page).
+ */
+const PAGE_FILL_RATIO = 0.92;
+
 export function charBudgetFor(bracket: AgeBracket): number {
-  // Skalibrowane 31.07.2026 na geometrii po poprawkach DTP (margines 44pt,
-  // interlinia 0.59em ≈ 130%). Binary search po długości tekstu w Typście:
-  // maksimum bez uruchomienia auto-shrinku czcionki to odpowiednio 762 / 1158
-  // / 1527 znaków — bierzemy ~92% tego zapasu, bo łamanie zależy od tego, jak
-  // wypadną konkretne słowa. Poprzednie wartości (1000/1500/1800) pochodziły
-  // z ciaśniejszego składu i tak przekraczały budżet, że każda strona tekstu
-  // renderowała się na najmniejszej czcionce z pięciu prób.
-  if (bracket === '3-5') return 700;
-  if (bracket === '6-8') return 1080;
-  return 1420;
+  return Math.round(MEASURED_PAGE_CAPACITY[bracket] * PAGE_FILL_RATIO);
 }
 
 /**

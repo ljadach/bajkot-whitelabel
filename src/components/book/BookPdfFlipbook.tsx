@@ -27,6 +27,12 @@ export function BookPdfFlipbook({ pdfUrl }: BookPdfFlipbookProps) {
   const [numPages, setNumPages] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState<number>(0);
+  // Presign odświeża się w tle (useResolvedR2Url), więc `pdfUrl` zmienia
+  // string co ~45 minut mimo tego samego pliku. Renderujemy z przypiętej
+  // kopii, żeby odświeżenie nie przeładowało dokumentu i nie wyrzuciło
+  // czytelnika na pierwszą stronę; świeży URL bierzemy dopiero wtedy, gdy
+  // faktycznie jest potrzebny — przy ponownej próbie po błędzie.
+  const [source, setSource] = useState<string>(pdfUrl);
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [containerWidth, setContainerWidth] = useState<number>(MAX_WIDTH);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -47,7 +53,14 @@ export function BookPdfFlipbook({ pdfUrl }: BookPdfFlipbookProps) {
     return () => ro.disconnect();
   }, []);
 
-  const file = useMemo(() => ({ url: pdfUrl }), [pdfUrl]);
+  const file = useMemo(() => ({ url: source }), [source]);
+
+  const retry = () => {
+    setError(null);
+    setNumPages(0);
+    setSource(pdfUrl); // najświeższy podpis — stary mógł już wygasnąć
+    setAttempt((a) => a + 1);
+  };
 
   const canPrev = currentPage > 0;
   const canNext = currentPage < numPages - 1;
@@ -67,14 +80,10 @@ export function BookPdfFlipbook({ pdfUrl }: BookPdfFlipbookProps) {
         <p className="text-sm text-gray-600">Nie udało się załadować podglądu.</p>
         <button
           type="button"
-          onClick={() => {
-            // Bump attempt remontuje <Document>, więc pdf.js pobiera plik od
-            // nowa. Bez tego „spróbuj ponownie" tylko chowało komunikat —
-            // `file` miało tę samą tożsamość i nic się nie ładowało.
-            setError(null);
-            setNumPages(0);
-            setAttempt((a) => a + 1);
-          }}
+          // Bump attempt remontuje <Document>, więc pdf.js pobiera plik od
+          // nowa. Bez tego „spróbuj ponownie" tylko chowało komunikat —
+          // `file` miało tę samą tożsamość i nic się nie ładowało.
+          onClick={retry}
           className="text-sm font-bold text-magic-600 hover:text-magic-700 underline"
         >
           Spróbuj ponownie

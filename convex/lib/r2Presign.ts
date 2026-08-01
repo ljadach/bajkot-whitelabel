@@ -35,9 +35,6 @@ function readR2ConfigFromEnv(): R2Config {
 // martwego linku. Dłużej nie dajemy — URL jest capability na plik.
 const DEFAULT_TTL_SECONDS = 3600;
 
-/** Ile żyje presign z domyślnym TTL — frontend odświeża się przed tym progiem. */
-export const PRESIGN_TTL_SECONDS = DEFAULT_TTL_SECONDS;
-
 let cachedClient: { config: R2Config; client: AwsClient } | null = null;
 
 function getClient(): { config: R2Config; client: AwsClient } {
@@ -59,7 +56,9 @@ function getClient(): { config: R2Config; client: AwsClient } {
  * `disposition` decides what the browser does with the file: 'attachment'
  * (default) zapisuje na dysk — tego chcemy dla przycisku pobrania. 'inline'
  * otwiera plik w viewerze przeglądarki i jest właściwe dla linku „Otwórz PDF
- * w nowej karcie", który obiecuje podgląd, a nie ściąganie.
+ * w nowej karcie", który obiecuje podgląd, a nie ściąganie. Nagłówek idzie
+ * niezależnie od `filename` — inaczej dyspozycja znikałaby po cichu przy
+ * wywołaniach bez nazwy pliku (np. admin/printPdf).
  */
 export async function presignR2GetUrl(
   key: string,
@@ -69,10 +68,8 @@ export async function presignR2GetUrl(
 ): Promise<string> {
   const { config, client } = getClient();
   const params: string[] = [`X-Amz-Expires=${ttlSeconds}`];
-  if (filename) {
-    const value = `${disposition}; filename="${filename}"`;
-    params.push(`response-content-disposition=${encodeURIComponent(value)}`);
-  }
+  const value = filename ? `${disposition}; filename="${filename}"` : disposition;
+  params.push(`response-content-disposition=${encodeURIComponent(value)}`);
   const url = `${config.endpoint.replace(/\/$/, '')}/${config.bucket}/${encodeKey(key)}?${params.join('&')}`;
   const signed = await client.sign(url, { method: 'GET', aws: { signQuery: true } });
   return signed.url;
@@ -158,4 +155,28 @@ export function bookPdfFilename(order: Doc<'bookOrders'>, kind: R2Kind = 'full')
   const safeName = sanitizeNameForFilename(order.childName ?? '');
   const stem = safeName ? `Bajka_${safeName}_${tail}` : `Bajka_${tail}`;
   return kind === 'preview' ? `${stem}_preview.pdf` : `${stem}.pdf`;
+}
+
+/**
+ * Presign an order's PDF with the right filename and disposition in one place.
+ *
+ * Dyspozycja wynika z rodzaju pliku: preview ogląda się w przeglądarce
+ * (`inline` — link „Otwórz PDF w nowej karcie" ma pokazać, nie ściągnąć),
+ * pełny plik pobiera się na dysk. Wcześniej każdy wywołujący składał klucz,
+ * nazwę i dyspozycję sam, więc admin dostawał `attachment` tam, gdzie flow
+ * klienta dostawał `inline`.
+ */
+export async function presignBookPdf(
+  order: Doc<'bookOrders'>,
+  kind: R2Kind,
+  ttlSeconds?: number,
+): Promise<string | null> {
+  const key = r2KeyFor(order, kind);
+  if (!key) return null;
+  return presignR2GetUrl(
+    key,
+    ttlSeconds,
+    bookPdfFilename(order, kind),
+    kind === 'preview' ? 'inline' : 'attachment',
+  );
 }

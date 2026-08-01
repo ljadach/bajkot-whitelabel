@@ -297,6 +297,8 @@ export const getOrderProgress = query({
     completedAt: v.union(v.number(), v.null()),
     hasStyleVoteImages: v.boolean(),
     chosenStyle: v.union(v.string(), v.null()),
+    /** Rodzic wpisał dedykację albo ją pominął — frontend odtwarza z tego krok. */
+    dedicationDecided: v.boolean(),
     hasPdf: v.boolean(),
     childName: v.string(),
     ageNumber: v.union(v.number(), v.null()),
@@ -314,6 +316,7 @@ export const getOrderProgress = query({
       completedAt: order.completedAt ?? null,
       hasStyleVoteImages: !!(order.styleVoteImageA && order.styleVoteImageB),
       chosenStyle: order.chosenStyle ?? null,
+      dedicationDecided: order.dedicationDecided === true,
       hasPdf: !!order.pdfStorageId,
       childName: order.childName,
       ageNumber: order.ageNumber ?? null,
@@ -707,17 +710,8 @@ async function presignForOrder(
   if (kind === 'full') {
     if ((order.paymentStatus ?? null) !== 'completed') return null;
   }
-  const { presignR2GetUrl, r2KeyFor, bookPdfFilename } = await import('./lib/r2Presign');
-  const key = r2KeyFor(order, kind);
-  if (!key) return null;
-  // Preview idzie do viewera i pod link „Otwórz PDF w nowej karcie" — inline,
-  // żeby przeglądarka pokazała stronę zamiast ściągać plik na dysk.
-  return presignR2GetUrl(
-    key,
-    undefined,
-    bookPdfFilename(order, kind),
-    kind === 'preview' ? 'inline' : 'attachment',
-  );
+  const { presignBookPdf } = await import('./lib/r2Presign');
+  return presignBookPdf(order, kind);
 }
 
 export const resolveR2DownloadUrl = action({
@@ -873,6 +867,8 @@ export const getLandingOrderProgress = query({
     completedAt: v.union(v.number(), v.null()),
     hasStyleVoteImages: v.boolean(),
     chosenStyle: v.union(v.string(), v.null()),
+    /** Rodzic wpisał dedykację albo ją pominął — frontend odtwarza z tego krok. */
+    dedicationDecided: v.boolean(),
     hasPdf: v.boolean(),
     childName: v.string(),
     ageNumber: v.union(v.number(), v.null()),
@@ -890,6 +886,7 @@ export const getLandingOrderProgress = query({
       completedAt: order.completedAt ?? null,
       hasStyleVoteImages: !!(order.styleVoteImageA && order.styleVoteImageB),
       chosenStyle: order.chosenStyle ?? null,
+      dedicationDecided: order.dedicationDecided === true,
       hasPdf: !!order.pdfStorageId,
       childName: order.childName,
       ageNumber: order.ageNumber ?? null,

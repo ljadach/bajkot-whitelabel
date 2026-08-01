@@ -484,9 +484,9 @@ export const resolveDownloadUrl = action({
     if (!order) return null;
 
     const which = kind ?? 'full';
-    const { presignR2GetUrl, r2KeyFor, bookPdfFilename } = await import('../lib/r2Presign');
-    const r2Key = r2KeyFor(order, which);
-    if (r2Key) return presignR2GetUrl(r2Key, undefined, bookPdfFilename(order, which));
+    const { presignBookPdf } = await import('../lib/r2Presign');
+    const presigned = await presignBookPdf(order, which);
+    if (presigned) return presigned;
 
     // Legacy fallback — orders composed via the in-Convex pdfkit path.
     const storageId = which === 'preview' ? order.previewPdfStorageId : order.pdfStorageId;

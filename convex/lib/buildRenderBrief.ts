@@ -253,16 +253,19 @@ export function buildRenderBrief(input: BuildBriefInput): RenderBrief {
       if (spec.beatId === '6' && isLastPart && !skipKoniec) {
         text = `${text}\n\n*Koniec*`;
       }
-      out.text = hardenOrphans(text || `[brak tekstu dla beatu ${spec.beatId}]`);
+      out.text = text || `[brak tekstu dla beatu ${spec.beatId}]`;
     } else if (spec.kind === 'parent_card') {
-      out.text = hardenOrphans(
-        formatParentCard({
-          parentCard: draft.parentCard,
-          blueprint,
-          childName: order.childName,
-        }),
-      );
+      out.text = formatParentCard({
+        parentCard: draft.parentCard,
+        blueprint,
+        childName: order.childName,
+      });
     }
+
+    // Jedno miejsce dla całej prozy strony — kolejny rodzaj strony z tekstem
+    // dostanie regułę bez dopisywania wywołania.
+    if (out.text) out.text = hardenOrphans(out.text);
+    if (out.title) out.title = hardenOrphans(out.title);
 
     return out;
   });
@@ -271,13 +274,13 @@ export function buildRenderBrief(input: BuildBriefInput): RenderBrief {
     jobId: input.jobId,
     mode: input.mode,
     bracket,
-    title,
+    title: hardenOrphans(title),
     childName: order.childName,
     pages: briefPages,
     illustrations: input.illustrations,
     outputKey: input.outputKey,
   };
-  if (subtitle) brief.subtitle = subtitle;
+  if (subtitle) brief.subtitle = hardenOrphans(subtitle);
   if (dedication) brief.dedication = hardenOrphans(dedication);
   if (input.maxPages) brief.maxPages = input.maxPages;
   if (input.force) brief.force = true;
