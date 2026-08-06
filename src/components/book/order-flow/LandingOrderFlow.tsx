@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useAction } from 'convex/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../../convex/_generated/api';
@@ -23,19 +23,18 @@ import {
   type OrderFormat,
 } from './types';
 
-type Screen = 'wizard' | 'preview' | 'checkout';
-
 // ── Draft persistence ────────────────────────────────
 // The flow lives on its own route (/problem/:slug/zamow), so navigating back
 // to the LP unmounts it. sessionStorage keeps the parent's answers for the
 // tab's lifetime; cleared on successful submit. Child data stays
-// session-scoped on purpose (PII — never localStorage).
+// session-scoped on purpose (PII — never localStorage). The current step is
+// NOT part of the draft — it lives in the URL (?krok=), so refresh and
+// browser back/forward handle it natively.
 
-const DRAFT_VERSION = 1;
+const DRAFT_VERSION = 2;
 
 interface OrderDraft {
   v: number;
-  screen: Screen;
   intake: Omit<IntakeState, 'topic'>;
 }
 
@@ -52,19 +51,20 @@ function withSessionStorage<T>(fn: (storage: Storage) => T): T | null {
   }
 }
 
-function loadDraft(slug: string): OrderDraft | null {
+function loadDraftIntake(slug: string): IntakeState | null {
   return withSessionStorage((storage) => {
     const raw = storage.getItem(draftKey(slug));
     if (!raw) return null;
     const parsed = JSON.parse(raw) as OrderDraft;
-    return parsed.v === DRAFT_VERSION && parsed.intake ? parsed : null;
+    if (parsed.v !== DRAFT_VERSION || !parsed.intake) return null;
+    return { ...INITIAL_INTAKE, ...parsed.intake };
   });
 }
 
-function saveDraft(slug: string, screen: Screen, intake: IntakeState) {
+function saveDraft(slug: string, intake: IntakeState) {
   withSessionStorage((storage) => {
     const { topic: _topic, ...rest } = intake;
-    storage.setItem(draftKey(slug), JSON.stringify({ v: DRAFT_VERSION, screen, intake: rest }));
+    storage.setItem(draftKey(slug), JSON.stringify({ v: DRAFT_VERSION, intake: rest }));
   });
 }
 
@@ -72,36 +72,83 @@ function clearDraft(slug: string) {
   withSessionStorage((storage) => storage.removeItem(draftKey(slug)));
 }
 
-/**
- * Restore a same-session draft so a refresh or a "let me re-read the LP"
- * round-trip doesn't wipe the form. Screen is only restored when the child
- * profile is complete (checkout with no child data would dead-end).
- */
-function initialFlowState(topic: Topic): { screen: Screen; intake: IntakeState } {
-  const draft = loadDraft(topic.slug);
-  if (!draft) return { screen: 'wizard', intake: { ...INITIAL_INTAKE, topic } };
-  const intake = { ...INITIAL_INTAKE, ...draft.intake, topic };
-  return { screen: isChildProfileComplete(intake) ? draft.screen : 'wizard', intake };
+// ── Step ↔ URL mapping ───────────────────────────────
+// Flow steps 1-4 (situation, child, preview, checkout). Step 1 is the bare
+// URL; deeper steps carry ?krok=N. Every forward transition is a history
+// push, so the browser back button (and the header back button) walk the
+// steps instead of dumping the user out of the flow.
+
+type FlowStep = 1 | 2 | 3 | 4;
+
+function stepSearch(step: FlowStep): string {
+  return step === 1 ? '' : `?krok=${step}`;
+}
+
+/** True when this tab's history has an entry before the current one —
+ * React Router data routers stamp their index on history.state. */
+function canGoBack(): boolean {
+  if (typeof window === 'undefined') return false;
+  const state = window.history.state as { idx?: number } | null;
+  return (state?.idx ?? 0) > 0;
 }
 
 /**
  * Landing order flow — standalone page at /problem/:slug/zamow.
- * Topic preselected from the URL. wizard → preview → checkout, with a fixed
- * progress header ("Krok X z 4") and scroll-to-top on every screen change.
+ * Topic preselected from the URL, current step in ?krok=. wizard → preview →
+ * checkout, with a fixed progress header ("Krok X z 4"), native browser
+ * back/forward between steps, and scroll-to-top on every step change.
  */
 export function LandingOrderFlow({ topic }: { topic: Topic }) {
   const { t } = useTranslation('book');
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const startLandingOrder = useAction(api.bookPipeline.startLandingOrder);
 
-  const [initial] = useState(() => initialFlowState(topic));
-  const [screen, setScreen] = useState<Screen>(initial.screen);
-  const [intake, setIntake] = useState<IntakeState>(initial.intake);
-  // Wizard step is controlled here (2=situation, 3=child) so the progress
-  // header and the rendered step share one source of truth.
-  const [wizardStep, setWizardStep] = useState<2 | 3>(2);
+  const [intake, setIntake] = useState<IntakeState>(() => {
+    const draft = loadDraftIntake(topic.slug);
+    return draft ? { ...draft, topic } : { ...INITIAL_INTAKE, topic };
+  });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Current step comes from the URL; preview/checkout additionally require a
+  // complete child profile (a deep link or stale draft can't dead-end there).
+  const rawStep = Number(searchParams.get('krok') ?? '1');
+  const urlStep: FlowStep = rawStep >= 1 && rawStep <= 4 ? (rawStep as FlowStep) : 1;
+  const flowStep: FlowStep = urlStep >= 3 && !isChildProfileComplete(intake) ? 1 : urlStep;
+
+  // If the guard demoted the step, make the URL agree (replace, not push —
+  // the unreachable step must not stay in history).
+  useEffect(() => {
+    if (flowStep !== urlStep) {
+      void navigate({ search: stepSearch(flowStep) }, { replace: true });
+    }
+  }, [flowStep, urlStep, navigate]);
+
+  const goToStep = useCallback(
+    (target: FlowStep) => {
+      void navigate({ search: stepSearch(target) });
+    },
+    [navigate],
+  );
+
+  // Back = browser back whenever this tab has history to walk (keeps
+  // back/forward symmetric with on-page buttons). Deep entries fall back to
+  // an explicit replace so we never dump the user out of an unfamiliar tab.
+  const goBack = useCallback(
+    (from: FlowStep) => {
+      if (canGoBack()) {
+        void navigate(-1);
+      } else if (from === 1) {
+        void navigate(topicPath(topic.slug));
+      } else {
+        void navigate({ search: stepSearch((from - 1) as FlowStep) }, { replace: true });
+      }
+    },
+    [navigate, topic.slug],
+  );
+
+  const handleHeaderBack = useCallback(() => goBack(flowStep), [goBack, flowStep]);
 
   // Capture access token on mount (preserves landing-flow intake gate).
   useEffect(() => captureTokenFromUrl(), []);
@@ -126,21 +173,26 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
 
   // Persist the draft on every change.
   useEffect(() => {
-    saveDraft(topic.slug, screen, intake);
-  }, [topic.slug, screen, intake]);
+    saveDraft(topic.slug, intake);
+  }, [topic.slug, intake]);
 
-  // Every screen change is a "new page": snap the scrollable <main> to top.
+  // Every step change is a "new page": snap the scrollable <main> to top.
+  // (Root ScrollToTop only watches pathname; ?krok= changes land here.)
   useEffect(() => {
     scrollAppToTop();
-  }, [screen]);
+  }, [flowStep]);
 
-  // Global flow progress: situation → child → preview → checkout.
-  const flowStep = screen === 'wizard' ? wizardStep - 1 : screen === 'preview' ? 3 : 4;
-
-  const handleWizardStep = useCallback((step: 1 | 2 | 3) => {
-    // Step 1 (topic confirmation) is skipped in the landing flow.
-    if (step === 2 || step === 3) setWizardStep(step);
-  }, []);
+  // Wizard-internal step for flow steps 1-2 (2=situation, 3=child).
+  const wizardStep: 2 | 3 = flowStep === 2 ? 3 : 2;
+  const handleWizardStep = useCallback(
+    (step: 1 | 2 | 3) => {
+      // The wizard reports its internal target; 1 (topic confirm) is skipped
+      // in this flow. Child (3) is forward, situation (2) is backward.
+      if (step === 3) goToStep(2);
+      else if (step === 2) goBack(2);
+    },
+    [goToStep, goBack],
+  );
 
   const handleChangeFormat = useCallback((format: OrderFormat) => {
     setIntake((prev) => ({ ...prev, format }));
@@ -197,12 +249,12 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
 
   return (
     <>
-      <OrderFlowHeader backTo={topicPath(topic.slug)} step={flowStep} />
-      {screen === 'wizard' && (
+      <OrderFlowHeader onBack={handleHeaderBack} step={flowStep} />
+      {flowStep <= 2 && (
         <OrderWizard
           intake={intake}
           onChange={setIntake}
-          onSubmit={() => setScreen('preview')}
+          onSubmit={() => goToStep(3)}
           onChangeTopic={() => {
             // Send the parent to the standalone catalog to pick a different
             // topic — their own LP is one click behind in history anyway.
@@ -214,20 +266,20 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
           onStepChange={handleWizardStep}
         />
       )}
-      {screen === 'preview' && (
+      {flowStep === 3 && (
         <OrderPreview
           intake={intake}
           onChangeFormat={handleChangeFormat}
-          onContinue={() => setScreen('checkout')}
-          onBack={() => setScreen('wizard')}
+          onContinue={() => goToStep(4)}
+          onBack={() => goBack(3)}
         />
       )}
-      {screen === 'checkout' && (
+      {flowStep === 4 && (
         <OrderCheckout
           intake={intake}
           onChangeFormat={handleChangeFormat}
           onSubmit={handleCheckoutSubmit}
-          onBack={() => setScreen('preview')}
+          onBack={() => goBack(4)}
           isSubmitting={submitting}
           externalError={submitError}
         />

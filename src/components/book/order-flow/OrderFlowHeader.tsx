@@ -1,5 +1,4 @@
 import { memo } from 'react';
-import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { BrandLogo } from '../../BrandLogo';
 
@@ -7,15 +6,16 @@ const TOTAL_STEPS = 4;
 
 /**
  * Fixed header for the standalone landing order page (/problem/:slug/zamow).
- * Shows a back link to the topic LP and a "Krok X z 4" progress indicator —
- * the flow screens keep their pt-28 clearance, same as under the LP navs.
+ * The back button steps backwards through the flow (mirroring browser back —
+ * steps live in the URL); from step 1 it leaves to the topic LP. Screens keep
+ * their pt-28 clearance, same as under the LP navs.
  * Memoized: the flow re-renders on every keystroke, the header only on step.
  */
 export const OrderFlowHeader = memo(function OrderFlowHeader({
-  backTo,
+  onBack,
   step,
 }: {
-  backTo: string;
+  onBack: () => void;
   step: number;
 }) {
   const { t } = useTranslation('book');
@@ -29,14 +29,15 @@ export const OrderFlowHeader = memo(function OrderFlowHeader({
   return (
     <header className="fixed top-0 inset-x-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
       <div className="max-w-4xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between gap-3">
-        <Link
-          to={backTo}
-          className="flex items-center gap-2 no-underline text-calm-700 hover:text-calm-900 transition shrink-0"
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex items-center gap-2 text-calm-700 hover:text-calm-900 transition shrink-0 cursor-pointer"
         >
           <i className="fa-solid fa-arrow-left text-sm" aria-hidden="true" />
           <BrandLogo withTagline={false} className="hidden sm:block" />
           <span className="sm:hidden font-bold text-sm">{t('flowHeader.back')}</span>
-        </Link>
+        </button>
 
         {/* Mobile: compact counter with the current step name. */}
         <div className="md:hidden text-sm font-bold text-calm-900">
