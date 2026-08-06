@@ -23,7 +23,11 @@ export function OrderCatalog({ onSelect }: Props) {
 
   const handleSelect = useCallback(
     (topic: SelectedTopic) => {
-      trackEvent('topic_selected', { flow: 'auth', problemId: topic.slug });
+      trackEvent('topic_selected', {
+        flow: 'auth',
+        problemId: topic.slug,
+        trigger: 'user_choice',
+      });
       onSelect(topic);
     },
     [onSelect],

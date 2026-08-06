@@ -35,6 +35,9 @@ export function BookPdfFlipbook({ pdfUrl }: BookPdfFlipbookProps) {
   const [source, setSource] = useState<string>(pdfUrl);
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [containerWidth, setContainerWidth] = useState<number>(MAX_WIDTH);
+  // Real page proportions, measured after load. Hardcoding an aspect class
+  // cropped covers whenever the PDF wasn't square (e.g. the A4 sample book).
+  const [pageAspect, setPageAspect] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -94,7 +97,10 @@ export function BookPdfFlipbook({ pdfUrl }: BookPdfFlipbookProps) {
 
   return (
     <div ref={containerRef} className="relative w-full max-w-[560px] mx-auto">
-      <div className="relative aspect-[5/7] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-calm-50 via-white to-magic-50 shadow-inner">
+      <div
+        className="relative w-full overflow-hidden rounded-2xl bg-gradient-to-br from-calm-50 via-white to-magic-50 shadow-inner"
+        style={{ aspectRatio: pageAspect ?? 5 / 7 }}
+      >
         <Document
           key={attempt}
           file={file}
@@ -113,6 +119,7 @@ export function BookPdfFlipbook({ pdfUrl }: BookPdfFlipbookProps) {
               key={currentPage}
               pageNumber={currentPage + 1}
               width={containerWidth}
+              onLoadSuccess={(page) => setPageAspect(page.originalWidth / page.originalHeight)}
               renderAnnotationLayer={false}
               renderTextLayer={false}
               className="bajkot-pdf-page"

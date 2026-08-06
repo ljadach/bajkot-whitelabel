@@ -5,7 +5,7 @@
 
 import { action, internalMutation, internalQuery, mutation, query } from './_generated/server';
 import { internal } from './_generated/api';
-import { ConvexError, v } from 'convex/values';
+import { ConvexError, v, type Infer } from 'convex/values';
 import { Id } from './_generated/dataModel';
 import { assertOrderOwner, assertLandingOrder, LANDING_USER_ID } from './lib/roles';
 import { toAgeBracket, type AgeBracket } from './lib/ageBracket';
@@ -540,6 +540,8 @@ interface PreviewResult {
   problemId: string;
   /** 'pdf' or 'pdf_print' — drives the unlock CTA price (49 vs 99 PLN) + shipping copy. */
   format: 'pdf' | 'pdf_print';
+  /** True when an address is already on file, so Checkout won't ask for one. */
+  hasShippingAddress: boolean;
   illustrations: Array<{ illustrationId: string; url: string | null }>;
   excerptPl: string | null;
   /**
@@ -561,6 +563,13 @@ const previewReturnValidator = v.object({
   /** Topic the order targets — drives category-level conversion analytics. */
   problemId: v.string(),
   format: v.union(v.literal('pdf'), v.literal('pdf_print')),
+  /**
+   * Whether the order already carries a shipping address. Drives the paywall's
+   * "you'll enter the address next" line: when it's false and print is picked,
+   * Stripe Checkout collects one — when it's true, it doesn't, and promising
+   * an address step would be a lie.
+   */
+  hasShippingAddress: v.boolean(),
   illustrations: v.array(
     v.object({ illustrationId: v.string(), url: v.union(v.string(), v.null()) }),
   ),
@@ -603,6 +612,13 @@ async function buildPreviewResult(
     r2FullKey?: string;
     r2PreviewKey?: string;
     format?: 'pdf' | 'pdf_print';
+    shippingAddress?: {
+      fullName: string;
+      phone: string;
+      street: string;
+      zip: string;
+      city: string;
+    };
     problemId: string;
     _id: Id<'bookOrders'>;
   },
@@ -630,6 +646,7 @@ async function buildPreviewResult(
     paymentStatus: order.paymentStatus ?? null,
     problemId: order.problemId,
     format: order.format ?? 'pdf',
+    hasShippingAddress: Boolean(order.shippingAddress),
     illustrations: previewIllustrations,
     excerptPl: extractFirstBeatExcerpt(order.storyDraft),
     previewPdfUrl,

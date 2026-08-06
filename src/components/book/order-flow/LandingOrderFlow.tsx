@@ -44,11 +44,17 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
   // Topic is preselected via URL — record a `topic_selected` per spec
   // section 7 so the funnel has a single source of truth for "topic
   // committed", regardless of catalog vs. topic-landing entry.
+  //
+  // `trigger` matters for funnels: here the event fires on mount for every
+  // visitor of the topic page, so it measures arrival, not intent. Filter on
+  // `trigger = 'user_choice'` (catalog / homepage grid) when you want an
+  // actual choice, and use `order_started` for "began filling the form".
   useEffect(() => {
     trackEvent('topic_selected', {
       flow: 'landing',
       problemId: topic.slug,
       isCustom: false,
+      trigger: 'landing_preselect',
     });
   }, [topic.slug]);
 

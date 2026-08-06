@@ -3,7 +3,7 @@ import { Section, SectionHeading } from './Section';
 
 export function TopicReviews() {
   return (
-    <Section>
+    <Section track="opinie">
       <SectionHeading>{SECTION_COPY.reviews.heading}</SectionHeading>
       <div className="grid md:grid-cols-2 gap-4">
         {REVIEWS.map((r) => (

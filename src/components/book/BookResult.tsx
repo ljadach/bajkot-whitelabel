@@ -304,6 +304,71 @@ export function BookSuccessScreen({
   );
 }
 
+/**
+ * PDF vs PDF+print picker on the paywall. Two tiles rather than a dropdown —
+ * the print option is the upsell and has to read as an offer, not a setting.
+ */
+function FormatChoice({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: 'pdf' | 'pdf_print';
+  onChange: (format: 'pdf' | 'pdf_print') => void;
+  disabled: boolean;
+}) {
+  const { t } = useTranslation('book');
+  const options = [
+    {
+      id: 'pdf' as const,
+      price: BOOK_PRICE_PDF_PLN,
+      title: t('paywall.formatPdfTitle'),
+      desc: t('paywall.formatPdfDesc'),
+    },
+    {
+      id: 'pdf_print' as const,
+      price: BOOK_PRICE_PRINT_PLN,
+      title: t('paywall.formatPrintTitle'),
+      desc: t('paywall.formatPrintDesc'),
+    },
+  ];
+  return (
+    <fieldset className="text-left space-y-2" disabled={disabled}>
+      <legend className="text-sm font-bold text-calm-900 mb-2 text-center w-full">
+        {t('paywall.chooseFormat')}
+      </legend>
+      {options.map((option) => (
+        <label
+          key={option.id}
+          className={`flex gap-3 items-start rounded-2xl border-2 p-4 cursor-pointer transition ${
+            value === option.id
+              ? 'border-magic-500 bg-magic-50'
+              : 'border-gray-200 hover:border-gray-300'
+          } ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
+        >
+          <input
+            type="radio"
+            name="book-format"
+            value={option.id}
+            checked={value === option.id}
+            onChange={() => onChange(option.id)}
+            className="mt-1 accent-magic-500"
+          />
+          <span className="flex-1">
+            <span className="flex items-baseline justify-between gap-2">
+              <span className="font-bold text-calm-900">{option.title}</span>
+              <span className="font-black text-calm-900 whitespace-nowrap">
+                {formatPricePLN(option.price)}
+              </span>
+            </span>
+            <span className="block text-sm text-gray-500 mt-0.5">{option.desc}</span>
+          </span>
+        </label>
+      ))}
+    </fieldset>
+  );
+}
+
 interface BookPreviewScreenProps {
   preview:
     | {
@@ -311,6 +376,7 @@ interface BookPreviewScreenProps {
         bookTitle: string | null;
         excerptPl: string | null;
         format: 'pdf' | 'pdf_print';
+        hasShippingAddress: boolean;
         problemId: string;
         illustrations: Array<{ illustrationId: string; url: string | null }>;
         previewPdfUrl: string | null;
@@ -319,7 +385,7 @@ interface BookPreviewScreenProps {
     | undefined;
   bookOrderId: string;
   flow: 'auth' | 'landing';
-  onUnlock: () => Promise<void>;
+  onUnlock: (format: 'pdf' | 'pdf_print') => Promise<void>;
   /** Required for landing flow — capability token bound to the order. */
   accessToken?: string | null;
 }
@@ -339,6 +405,13 @@ export function BookPreviewScreen({
   const { t } = useTranslation('book');
   const [redirecting, setRedirecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // `null` until preview data arrives — then the order's own format is the
+  // default, so an untouched choice bills exactly what it billed before.
+  const [chosenFormat, setChosenFormat] = useState<'pdf' | 'pdf_print' | null>(null);
+  const format = chosenFormat ?? preview?.format ?? 'pdf';
+  // Only the landing paywall can re-choose: `createLandingCheckoutSession`
+  // takes a format, the auth-flow `createCheckoutSession` bills the stored one.
+  const allowFormatChoice = flow === 'landing';
 
   const previewPdfUrl = useResolvedR2Url({
     orderId: bookOrderId as Id<'bookOrders'>,
@@ -378,8 +451,8 @@ export function BookPreviewScreen({
     setRedirecting(true);
     setError(null);
     try {
-      trackEvent('preview_paywall_unlock_clicked', { flow, bookOrderId });
-      await onUnlock();
+      trackEvent('preview_paywall_unlock_clicked', { flow, bookOrderId, format });
+      await onUnlock(format);
     } catch (e) {
       setRedirecting(false);
       setError(e instanceof Error ? e.message : t('paywall.error'));
@@ -473,10 +546,10 @@ export function BookPreviewScreen({
           </>
         )}
 
-        {/* Unlock CTA — price + body adapt to the order's format. pdf_print
-            shows the 99 PLN total and the shipping reassurance line. */}
+        {/* Unlock CTA — price + body follow the selected format. pdf_print
+            shows the print total and the shipping reassurance line. */}
         {(() => {
-          const isPrint = preview?.format === 'pdf_print';
+          const isPrint = format === 'pdf_print';
           const priceValue = isPrint ? BOOK_PRICE_PRINT_PLN : BOOK_PRICE_PDF_PLN;
           const unlockBody = isPrint ? t('paywall.unlockBodyPrint') : t('paywall.unlockBody');
           return (
@@ -485,7 +558,15 @@ export function BookPreviewScreen({
               <h2 className="text-xl md:text-2xl font-black text-calm-900">
                 {t('paywall.unlockHeading')}
               </h2>
-              <p className="text-gray-600 max-w-md mx-auto">{unlockBody}</p>
+              {allowFormatChoice ? (
+                <FormatChoice
+                  value={format}
+                  onChange={setChosenFormat}
+                  disabled={redirecting || !preview}
+                />
+              ) : (
+                <p className="text-gray-600 max-w-md mx-auto">{unlockBody}</p>
+              )}
               {error && (
                 <div role="alert" className="text-sm text-red-600 font-medium">
                   {error}
@@ -500,8 +581,15 @@ export function BookPreviewScreen({
                 <i className="fa-solid fa-lock-open" />
                 {redirecting
                   ? t('paywall.redirecting')
-                  : t('paywall.unlockCta', { price: formatPricePLN(priceValue) })}
+                  : isPrint
+                    ? t('paywall.unlockCtaPrint', { price: formatPricePLN(priceValue) })
+                    : t('paywall.unlockCta', { price: formatPricePLN(priceValue) })}
               </button>
+              {/* Only promise an address step when Checkout will actually ask —
+                  orders that came in with an address skip it. */}
+              {isPrint && allowFormatChoice && preview?.hasShippingAddress === false && (
+                <p className="text-xs text-gray-500">{t('paywall.formatAddressNote')}</p>
+              )}
               <p className="text-xs text-gray-500">{t('paywall.secureNote')}</p>
             </div>
           );

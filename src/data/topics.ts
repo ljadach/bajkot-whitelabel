@@ -2103,7 +2103,7 @@ export const TOPICS: Topic[] = [
         icon: 'fa-solid fa-book-open',
         title: 'Nauka = klucz',
         description:
-          'Bajka pokazuje, jak konkretna wiedza pomaga bohaterowi rozwiązać przygodę. Nauka zyskuje sens i smak zwycięstwa.',
+          'Bajka pokazuje, jak konkretna wiedza pomaga bohaterowi rozwiązać zagadkę i rozwinąć przygodę. Nauka zyskuje sens i smak zwycięstwa.',
       },
       {
         icon: 'fa-solid fa-shield-halved',

@@ -8,6 +8,7 @@ import { internalAction, internalMutation, internalQuery } from './_generated/se
 import { internal } from './_generated/api';
 import { v } from 'convex/values';
 import { BOOK_PROMPT_META, saveVersionSnapshot } from './admin/bookPrompts';
+import { mintPaymentLink } from './lib/paymentLink';
 
 // ── Create order (bypasses Clerk auth + rate limiting) ───────
 
@@ -169,6 +170,18 @@ export const forceSkipDedication = internalMutation({
     }
     return `Patched dedicationDecided=true on ${orderId} (status was ${order.status})`;
   },
+});
+
+// ── Payment link for an existing order ──────────────────────
+
+/**
+ * Headless twin of `admin/paymentLink.createPaymentLink` — same core, no Clerk
+ * identity and no audit entry, so it works from `npx convex run`.
+ */
+export const createPaymentLink = internalMutation({
+  args: { orderId: v.id('bookOrders') },
+  returns: v.string(),
+  handler: async (ctx, { orderId }) => (await mintPaymentLink(ctx, orderId)).url,
 });
 
 // ── Resolve short ID suffix to full order ID ────────────────

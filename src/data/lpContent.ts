@@ -34,7 +34,8 @@ export const SAMPLE_BOOK = {
   title: 'Maja i Lisek Iskra, Strażnik Snów',
   cover: '/lp/maja-cover.webp',
   pdf: '/lp/maja-bajka.pdf',
-  pages: 25,
+  /** Must match the PDF's real page count — the viewer shows "1 / N" next to this. */
+  pages: 24,
   illustrations: 13,
 };
 
@@ -81,7 +82,7 @@ export const LP_FAQ: { q: string; a: string }[] = [
   },
   {
     q: 'Kiedy dojdzie drukowana wersja?',
-    a: `PDF dostajesz od razu po opłaceniu. Drukowana książka dociera kurierem w ${DELIVERY_DAYS_TEXT} — wysyłka po Polsce w cenie.`,
+    a: `PDF dostajesz od razu po opłaceniu. Drukowana książka dociera kurierem w ${DELIVERY_DAYS_TEXT} — wysyłka w Polsce w cenie.`,
   },
   {
     q: 'Ile trwa przygotowanie bajki?',
@@ -146,7 +147,7 @@ export function topicSafetyImage(slug: string, shortDesc: string) {
 export const SECTION_COPY = {
   product: {
     heading: 'Dostajesz książkę przygotowaną specjalnie dla Twojego dziecka',
-    sub: 'Przejrzyj przykładową bajkę i zobacz, jak wygląda wydrukowana wersja — zanim cokolwiek zapłacisz.',
+    sub: 'Przejrzyj przykładową bajkę i zobacz, jak wygląda wydrukowana wersja.',
   },
   video: {
     heading: 'Zobacz, jakie to proste w praktyce',

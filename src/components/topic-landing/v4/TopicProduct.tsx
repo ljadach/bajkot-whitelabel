@@ -11,6 +11,15 @@ const BookPdfFlipbook = lazy(() =>
   import('../../book/BookPdfFlipbook').then((m) => ({ default: m.BookPdfFlipbook })),
 );
 
+/** Polish plural for "strona": 1 strona, 2–4 strony, 5+ stron (12–14 take the 5+ form). */
+function pagesNoun(n: number): string {
+  if (n === 1) return 'strona';
+  const last = n % 10;
+  const lastTwo = n % 100;
+  if (last >= 2 && last <= 4 && !(lastTwo >= 12 && lastTwo <= 14)) return 'strony';
+  return 'stron';
+}
+
 function SampleBookModal({ onClose }: { onClose: () => void }) {
   return (
     <ModalOverlay
@@ -49,7 +58,7 @@ function SampleBookModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-export function TopicProduct({ topic }: { topic: Topic }) {
+export function TopicProduct({ topic }: { topic: Pick<Topic, 'slug'> }) {
   const [viewerOpen, setViewerOpen] = useState(false);
 
   return (
@@ -62,14 +71,15 @@ export function TopicProduct({ topic }: { topic: Topic }) {
             src={SAMPLE_BOOK.cover}
             alt={`Okładka przykładowej bajki: ${SAMPLE_BOOK.title}`}
             loading="lazy"
-            className="max-w-[240px] rounded-2xl shadow-lg"
+            className="w-full max-w-[300px] mx-auto rounded-2xl shadow-lg"
             width={700}
             height={989}
           />
           <p className="text-sm text-lp-ink-soft">
-            „{SAMPLE_BOOK.title}” — {SAMPLE_BOOK.pages} stron i {SAMPLE_BOOK.illustrations} pełnych
-            ilustracji. <b className="text-lp-navy">Podobny plik otrzymasz dla Twojego dziecka</b> —
-            z jego imieniem, wyglądem i jego wersją tej przygody.
+            „{SAMPLE_BOOK.title}” — {SAMPLE_BOOK.pages} {pagesNoun(SAMPLE_BOOK.pages)} i{' '}
+            {SAMPLE_BOOK.illustrations} pełnych ilustracji.{' '}
+            <b className="text-lp-navy">Podobny plik otrzymasz dla Twojego dziecka</b> — z jego
+            imieniem, wyglądem i jego wersją tej przygody.
           </p>
           <button
             type="button"

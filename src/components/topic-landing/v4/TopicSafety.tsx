@@ -3,11 +3,21 @@ import { SAFETY_POINTS, SECTION_COPY, topicSafetyImage } from '../../../data/lpC
 import { CtaButton } from './CtaButton';
 import { Section, SectionHeading } from './Section';
 
-export function TopicSafety({ topic }: { topic: Topic }) {
-  const image = topicSafetyImage(topic.slug, topic.catalog.shortDesc);
+export function TopicSafety({
+  topic,
+  ctaHref,
+  image: imageOverride,
+}: {
+  topic: Pick<Topic, 'slug'> & Partial<Pick<Topic, 'catalog'>>;
+  ctaHref?: string;
+  /** Homepage has no per-topic safety image — it passes a shared one. */
+  image?: { src: string; alt: string };
+}) {
+  const image = imageOverride ?? topicSafetyImage(topic.slug, topic.catalog?.shortDesc ?? '');
 
   return (
     <Section
+      track="bezpieczenstwo"
       className="bg-lp-cream-dark"
       containerClassName="grid md:grid-cols-2 gap-8 items-center"
     >
@@ -32,7 +42,7 @@ export function TopicSafety({ topic }: { topic: Topic }) {
           Ci ani jednego pytania.
         </div>
         <div className="mt-5">
-          <CtaButton topicSlug={topic.slug} location="safety_v4" />
+          <CtaButton topicSlug={topic.slug} location="safety_v4" href={ctaHref} />
         </div>
       </div>
       <img

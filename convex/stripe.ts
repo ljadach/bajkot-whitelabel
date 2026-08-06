@@ -6,6 +6,7 @@ import { internal } from './_generated/api';
 import { v } from 'convex/values';
 import { Id } from './_generated/dataModel';
 import { LANDING_USER_ID } from './lib/roles';
+import { bookFormatValidator } from './billing';
 
 function getStripeClient() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -130,6 +131,12 @@ export const createLandingCheckoutSession = action({
     bookOrderId: v.id('bookOrders'),
     accessToken: v.string(),
     returnPath: v.optional(v.string()),
+    /**
+     * Format chosen at the paywall. Omit to bill the order's stored format
+     * (normal flow, where intake already decided). Payment links send it
+     * explicitly so the parent can upgrade to print at the last moment.
+     */
+    format: v.optional(bookFormatValidator),
   },
   returns: v.object({
     url: v.string(),
@@ -161,27 +168,48 @@ export const createLandingCheckoutSession = action({
       throw new Error('Book order already paid');
     }
 
+    // Format may be re-chosen at the paywall (payment links). Persist it first
+    // so price, metadata, the fulfilment alert and the result page all agree —
+    // the webhook reads the order, not this session.
+    const format = args.format ?? order.format ?? 'pdf';
+    if (args.format && args.format !== order.format) {
+      await ctx.runMutation(internal.billing.setOrderFormat, {
+        bookOrderId: args.bookOrderId,
+        format: args.format,
+      });
+    }
+
     const stripe = getStripeClient();
     const appUrl = getAppUrl();
+
+    // Print with no address on file (upgraded after intake) — let Checkout
+    // collect it; the webhook writes it back before the fulfilment alert.
+    const needsShipping = format === 'pdf_print' && !order.hasShippingAddress;
 
     const returnPath = args.returnPath ?? `/landing/book/${args.bookOrderId}/progress`;
     const session: Stripe.Checkout.Session = await stripe.checkout.sessions.create({
       mode: 'payment',
       allow_promotion_codes: true,
-      line_items: [{ price: resolvePriceId(order.format), quantity: 1 }],
+      line_items: [{ price: resolvePriceId(format), quantity: 1 }],
       billing_address_collection: 'auto',
+      ...(needsShipping
+        ? {
+            shipping_address_collection: { allowed_countries: ['PL' as const] },
+            phone_number_collection: { enabled: true },
+          }
+        : {}),
       automatic_tax: { enabled: true },
       client_reference_id: args.bookOrderId,
       metadata: {
         bookOrderId: args.bookOrderId,
         landing: 'true',
-        format: order.format ?? 'pdf',
+        format,
       },
       payment_intent_data: {
         metadata: {
           bookOrderId: args.bookOrderId,
           landing: 'true',
-          format: order.format ?? 'pdf',
+          format,
         },
       },
       success_url: `${appUrl}${returnPath}?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
@@ -249,6 +277,24 @@ export const verifyWebhookEvent = internalAction({
       if (!rawBookOrderId) {
         console.error(`[stripe-webhook] Missing bookOrderId on session ${session.id}`);
         return null;
+      }
+
+      // Address Checkout collected for a print upgrade. Written first —
+      // `markBookOrderPaid` schedules the fulfilment alert, and an alert
+      // without an address is a package nobody can send.
+      const shipping = session.collected_information?.shipping_details;
+      if (shipping?.address) {
+        const { line1, line2, postal_code, city } = shipping.address;
+        await ctx.runMutation(internal.billing.attachShippingAddress, {
+          bookOrderId: rawBookOrderId as Id<'bookOrders'>,
+          address: {
+            fullName: shipping.name || session.customer_details?.name || '',
+            phone: session.customer_details?.phone ?? '',
+            street: [line1, line2].filter(Boolean).join(', '),
+            zip: postal_code ?? '',
+            city: city ?? '',
+          },
+        });
       }
 
       await ctx.runMutation(internal.billing.markBookOrderPaid, {

@@ -3,22 +3,31 @@
  * `flushTop` glues a section to the previous one when both share a background
  * (FAQ sits directly under Safety). `containerClassName` extends the inner
  * wrapper — e.g. for grid layouts.
+ *
+ * `track` (falling back to `id`) names the section for `lp_section_viewed` —
+ * `useLpEngagement` picks it up from the `data-lp-section` attribute.
  */
 export function Section({
   id,
+  track,
   className = 'bg-white',
   containerClassName = '',
   flushTop = false,
   children,
 }: {
   id?: string;
+  track?: string;
   className?: string;
   containerClassName?: string;
   flushTop?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className={`${flushTop ? 'pb-12' : 'py-12'} px-6 ${className}`}>
+    <section
+      id={id}
+      data-lp-section={track ?? id}
+      className={`${flushTop ? 'pb-12' : 'py-12'} px-6 ${className}`}
+    >
       <div className={`max-w-6xl mx-auto ${containerClassName}`}>{children}</div>
     </section>
   );

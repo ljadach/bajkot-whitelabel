@@ -10,6 +10,15 @@ export const paymentStatusValidator = v.union(
 
 export const bookFormatValidator = v.union(v.literal('pdf'), v.literal('pdf_print'));
 
+/** Courier shipping details for print orders. Mirrors the `bookOrders` column. */
+export const shippingAddressValidator = v.object({
+  fullName: v.string(),
+  phone: v.string(),
+  street: v.string(),
+  zip: v.string(),
+  city: v.string(),
+});
+
 export const getBookOrderForCheckout = internalQuery({
   args: {
     bookOrderId: v.id('bookOrders'),
@@ -53,6 +62,7 @@ export const getLandingBookOrderForCheckout = internalQuery({
       paymentStatus: v.union(paymentStatusValidator, v.null()),
       stripeSessionId: v.union(v.string(), v.null()),
       format: v.union(bookFormatValidator, v.null()),
+      hasShippingAddress: v.boolean(),
     }),
   ),
   handler: async (ctx, args) => {
@@ -64,7 +74,60 @@ export const getLandingBookOrderForCheckout = internalQuery({
       paymentStatus: order.paymentStatus ?? null,
       stripeSessionId: order.stripeSessionId ?? null,
       format: order.format ?? null,
+      hasShippingAddress: Boolean(order.shippingAddress),
     };
+  },
+});
+
+/**
+ * Switch an unpaid order between PDF and PDF+print.
+ *
+ * The format is normally frozen at intake, but a payment link lets the parent
+ * pick at checkout time — the book itself is identical, only fulfilment and
+ * price differ. Refuses once paid so a completed order can never be silently
+ * repriced.
+ */
+export const setOrderFormat = internalMutation({
+  args: {
+    bookOrderId: v.id('bookOrders'),
+    format: bookFormatValidator,
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.bookOrderId);
+    if (!order) throw new Error('Book order not found');
+    if (order.paymentStatus === 'completed') {
+      throw new Error('Cannot change format on a paid order');
+    }
+    if (order.format === args.format) return null;
+    await ctx.db.patch(args.bookOrderId, { format: args.format, updatedAt: Date.now() });
+    return null;
+  },
+});
+
+/**
+ * Persist the shipping address Stripe Checkout collected for us.
+ *
+ * Orders placed through the normal flow carry an address from the intake form;
+ * ones upgraded to print via a payment link don't, so Checkout collects it and
+ * the webhook lands it here. Must run *before* `markBookOrderPaid` — that's
+ * what schedules the fulfilment alert, which is useless without an address.
+ * Never overwrites an address the parent already gave us.
+ */
+export const attachShippingAddress = internalMutation({
+  args: {
+    bookOrderId: v.id('bookOrders'),
+    address: shippingAddressValidator,
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.bookOrderId);
+    if (!order || order.shippingAddress) return null;
+    await ctx.db.patch(args.bookOrderId, {
+      shippingAddress: args.address,
+      updatedAt: Date.now(),
+    });
+    return null;
   },
 });
 
