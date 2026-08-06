@@ -201,9 +201,6 @@
     "back": "Wróć",
     "secureNote": "Bajka generuje się od razu — płatność za PDF dopiero po wygenerowaniu, na ekranie wyniku z podglądem 3 stron.",
     "errorEmail": "Podaj poprawny adres e-mail.",
-    "errorConsentTerms": "Musisz zaakceptować Regulamin i Politykę Prywatności.",
-    "errorConsentSpecial": "Bez zgody na przetwarzanie danych szczególnych kategorii dziecka nie możemy stworzyć bajki.",
-    "errorAddress": "Uzupełnij wszystkie pola adresu wysyłki.",
     "errorFieldRequired": "Uzupełnij to pole."
   },
   "flow": {

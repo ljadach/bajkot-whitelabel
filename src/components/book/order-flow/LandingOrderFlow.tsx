@@ -8,15 +8,17 @@ import { saveLandingOrderToken } from '../../../hooks/useLandingOrderToken';
 import type { Topic } from '../../../data/topics';
 import { setFunnelSuperProperties, trackEvent } from '../../../lib/telemetry';
 import { extractErrorMessage } from '../../../lib/convexErrors';
+import { scrollAppToTop } from '../../../lib/appScroll';
+import { topicPath } from '../../../lib/paths';
 import { OrderWizard } from './OrderWizard';
 import { OrderPreview } from './OrderPreview';
 import { OrderCheckout, type CheckoutSubmitPayload } from './OrderCheckout';
 import { OrderFlowHeader } from './OrderFlowHeader';
-import { scrollFlowToTop } from './scroll';
 import {
   INITIAL_INTAKE,
   buildConsentsPayload,
   intakeToOrderArgs,
+  isChildProfileComplete,
   type IntakeState,
   type OrderFormat,
 } from './types';
@@ -24,9 +26,9 @@ import {
 type Screen = 'wizard' | 'preview' | 'checkout';
 
 // ── Draft persistence ────────────────────────────────
-// The flow lives on its own route now (/problem/:slug/zamow), so navigating
-// back to the LP unmounts it. sessionStorage keeps the parent's answers for
-// the tab's lifetime; cleared on successful submit. Child data stays
+// The flow lives on its own route (/problem/:slug/zamow), so navigating back
+// to the LP unmounts it. sessionStorage keeps the parent's answers for the
+// tab's lifetime; cleared on successful submit. Child data stays
 // session-scoped on purpose (PII — never localStorage).
 
 const DRAFT_VERSION = 1;
@@ -41,37 +43,45 @@ function draftKey(slug: string): string {
   return `bajkot_order_draft:${slug}`;
 }
 
-function loadDraft(slug: string): OrderDraft | null {
-  if (typeof sessionStorage === 'undefined') return null;
+/** Drafts are best-effort: SSR, private mode and quota failures all no-op. */
+function withSessionStorage<T>(fn: (storage: Storage) => T): T | null {
   try {
-    const raw = sessionStorage.getItem(draftKey(slug));
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as OrderDraft;
-    if (parsed.v !== DRAFT_VERSION || !parsed.intake) return null;
-    return parsed;
+    return fn(sessionStorage);
   } catch {
     return null;
   }
 }
 
+function loadDraft(slug: string): OrderDraft | null {
+  return withSessionStorage((storage) => {
+    const raw = storage.getItem(draftKey(slug));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as OrderDraft;
+    return parsed.v === DRAFT_VERSION && parsed.intake ? parsed : null;
+  });
+}
+
 function saveDraft(slug: string, screen: Screen, intake: IntakeState) {
-  if (typeof sessionStorage === 'undefined') return;
-  try {
+  withSessionStorage((storage) => {
     const { topic: _topic, ...rest } = intake;
-    const draft: OrderDraft = { v: DRAFT_VERSION, screen, intake: rest };
-    sessionStorage.setItem(draftKey(slug), JSON.stringify(draft));
-  } catch {
-    // Quota/private-mode failures must never break the flow.
-  }
+    storage.setItem(draftKey(slug), JSON.stringify({ v: DRAFT_VERSION, screen, intake: rest }));
+  });
 }
 
 function clearDraft(slug: string) {
-  if (typeof sessionStorage === 'undefined') return;
-  try {
-    sessionStorage.removeItem(draftKey(slug));
-  } catch {
-    // ignore
-  }
+  withSessionStorage((storage) => storage.removeItem(draftKey(slug)));
+}
+
+/**
+ * Restore a same-session draft so a refresh or a "let me re-read the LP"
+ * round-trip doesn't wipe the form. Screen is only restored when the child
+ * profile is complete (checkout with no child data would dead-end).
+ */
+function initialFlowState(topic: Topic): { screen: Screen; intake: IntakeState } {
+  const draft = loadDraft(topic.slug);
+  if (!draft) return { screen: 'wizard', intake: { ...INITIAL_INTAKE, topic } };
+  const intake = { ...INITIAL_INTAKE, ...draft.intake, topic };
+  return { screen: isChildProfileComplete(intake) ? draft.screen : 'wizard', intake };
 }
 
 /**
@@ -84,21 +94,12 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
   const navigate = useNavigate();
   const startLandingOrder = useAction(api.bookPipeline.startLandingOrder);
 
-  // Restore a same-session draft so a refresh or a "let me re-read the LP"
-  // round-trip doesn't wipe the form. Screen is only restored when the data
-  // supports it (checkout with no child data would dead-end).
-  const [screen, setScreen] = useState<Screen>(() => {
-    const draft = loadDraft(topic.slug);
-    if (!draft) return 'wizard';
-    const { name, age, gender } = draft.intake;
-    return name && age && gender ? draft.screen : 'wizard';
-  });
-  const [intake, setIntake] = useState<IntakeState>(() => {
-    const draft = loadDraft(topic.slug);
-    return draft ? { ...INITIAL_INTAKE, ...draft.intake, topic } : { ...INITIAL_INTAKE, topic };
-  });
-  // Wizard-internal step (2=situation, 3=child) lifted for the progress bar.
-  const [wizardStep, setWizardStep] = useState<1 | 2 | 3>(2);
+  const [initial] = useState(() => initialFlowState(topic));
+  const [screen, setScreen] = useState<Screen>(initial.screen);
+  const [intake, setIntake] = useState<IntakeState>(initial.intake);
+  // Wizard step is controlled here (2=situation, 3=child) so the progress
+  // header and the rendered step share one source of truth.
+  const [wizardStep, setWizardStep] = useState<2 | 3>(2);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -120,7 +121,7 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
 
   // Re-sync if user navigates between topic order pages (defensive).
   useEffect(() => {
-    setIntake((prev) => ({ ...prev, topic }));
+    setIntake((prev) => (prev.topic === topic ? prev : { ...prev, topic }));
   }, [topic]);
 
   // Persist the draft on every change.
@@ -129,13 +130,17 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
   }, [topic.slug, screen, intake]);
 
   // Every screen change is a "new page": snap the scrollable <main> to top.
-  // (window.scrollTo is a no-op here — the app shell scrolls <main>.)
   useEffect(() => {
-    scrollFlowToTop();
+    scrollAppToTop();
   }, [screen]);
 
   // Global flow progress: situation → child → preview → checkout.
-  const flowStep = screen === 'wizard' ? (wizardStep === 3 ? 2 : 1) : screen === 'preview' ? 3 : 4;
+  const flowStep = screen === 'wizard' ? wizardStep - 1 : screen === 'preview' ? 3 : 4;
+
+  const handleWizardStep = useCallback((step: 1 | 2 | 3) => {
+    // Step 1 (topic confirmation) is skipped in the landing flow.
+    if (step === 2 || step === 3) setWizardStep(step);
+  }, []);
 
   const handleChangeFormat = useCallback((format: OrderFormat) => {
     setIntake((prev) => ({ ...prev, format }));
@@ -145,7 +150,7 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
     async (
       checkoutPayload: CheckoutSubmitPayload,
     ): Promise<{ orderId: string; format: OrderFormat } | null> => {
-      if (!intake.topic || !intake.age || !intake.gender) {
+      if (!intake.topic || !isChildProfileComplete(intake)) {
         setSubmitError(t('flow.errorMissingData'));
         return null;
       }
@@ -192,7 +197,7 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
 
   return (
     <>
-      <OrderFlowHeader backTo={`/problem/${topic.slug}`} step={flowStep} />
+      <OrderFlowHeader backTo={topicPath(topic.slug)} step={flowStep} />
       {screen === 'wizard' && (
         <OrderWizard
           intake={intake}
@@ -205,7 +210,8 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
           }}
           showProgressNav={false}
           skipTopicStep
-          onStepChange={setWizardStep}
+          step={wizardStep}
+          onStepChange={handleWizardStep}
         />
       )}
       {screen === 'preview' && (
@@ -213,12 +219,7 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
           intake={intake}
           onChangeFormat={handleChangeFormat}
           onContinue={() => setScreen('checkout')}
-          onBack={() => {
-            // Wizard always remounts at its first step — reset the lifted
-            // step so the progress header doesn't disagree with the screen.
-            setWizardStep(2);
-            setScreen('wizard');
-          }}
+          onBack={() => setScreen('wizard')}
         />
       )}
       {screen === 'checkout' && (

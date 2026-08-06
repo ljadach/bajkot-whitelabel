@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { trackEvent, useStepTransitionTracker } from '../../../lib/telemetry';
 import { genitiveOrSelf } from '../../../lib/childNameInflect';
+import { FieldError } from './FieldError';
+import { errorBorderClass } from './fieldStyles';
 import {
   ageLabel,
   type AppearanceData,
@@ -25,7 +27,12 @@ interface Props {
    * dead click between the CTA and the actual form.
    */
   skipTopicStep?: boolean;
-  /** Reports internal step changes so the flow can drive a global progress bar. */
+  /**
+   * Controlled step. When provided (with onStepChange) the parent owns the
+   * step — the landing flow uses this to keep its progress header and the
+   * rendered step from ever disagreeing. Uncontrolled otherwise (auth flow).
+   */
+  step?: 1 | 2 | 3;
   onStepChange?: (step: 1 | 2 | 3) => void;
 }
 
@@ -59,10 +66,12 @@ export function OrderWizard({
   onChangeTopic,
   showProgressNav = true,
   skipTopicStep = false,
+  step: controlledStep,
   onStepChange,
 }: Props) {
   const { t } = useTranslation('book');
-  const [step, setStep] = useState<1 | 2 | 3>(skipTopicStep ? 2 : 1);
+  const [internalStep, setInternalStep] = useState<1 | 2 | 3>(skipTopicStep ? 2 : 1);
+  const step = controlledStep ?? internalStep;
   const [fieldErrors, setFieldErrors] = useState<ChildFieldErrors>({});
   const formCardRef = useRef<HTMLDivElement | null>(null);
   const nameRef = useRef<HTMLInputElement | null>(null);
@@ -122,7 +131,7 @@ export function OrderWizard({
   const goToStep = useCallback(
     (target: 1 | 2 | 3) => {
       setFieldErrors({});
-      setStep(target);
+      setInternalStep(target);
       onStepChange?.(target);
     },
     [onStepChange],
@@ -425,9 +434,9 @@ function StepChild({
             placeholder={t('wizard.childNamePlaceholder')}
             maxLength={30}
             aria-invalid={!!fieldErrors.name}
-            className={`w-full p-4 bg-gray-50 border-2 rounded-2xl focus:border-magic-500 focus:bg-white outline-none transition font-semibold text-lg ${
-              fieldErrors.name ? 'border-red-300 bg-red-50/50' : 'border-gray-100'
-            }`}
+            className={`w-full p-4 bg-gray-50 border-2 rounded-2xl focus:border-magic-500 focus:bg-white outline-none transition font-semibold text-lg ${errorBorderClass(
+              !!fieldErrors.name,
+            )}`}
           />
           <FieldError message={fieldErrors.name} />
         </div>
@@ -440,9 +449,9 @@ function StepChild({
             value={intake.age ?? ''}
             onChange={(e) => onChangeAge(e.target.value ? Number(e.target.value) : null)}
             aria-invalid={!!fieldErrors.age}
-            className={`w-full p-4 bg-gray-50 border-2 rounded-2xl focus:border-magic-500 outline-none transition font-semibold text-lg cursor-pointer ${
-              fieldErrors.age ? 'border-red-300 bg-red-50/50' : 'border-gray-100'
-            }`}
+            className={`w-full p-4 bg-gray-50 border-2 rounded-2xl focus:border-magic-500 outline-none transition font-semibold text-lg cursor-pointer ${errorBorderClass(
+              !!fieldErrors.age,
+            )}`}
           >
             <option value="" disabled>
               {t('wizard.agePlaceholder')}
@@ -564,16 +573,6 @@ function StepChild({
         </button>
       </div>
     </div>
-  );
-}
-
-function FieldError({ message }: { message?: string }) {
-  if (!message) return null;
-  return (
-    <p role="alert" className="text-sm text-red-600 font-medium mt-2">
-      <i className="fa-solid fa-circle-exclamation mr-1" aria-hidden="true" />
-      {message}
-    </p>
   );
 }
 

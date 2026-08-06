@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router';
+import { scrollAppToTop } from '../lib/appScroll';
 
 /**
  * The app shell wraps `<Outlet />` in a scrollable `<main>`, so React Router's
@@ -11,7 +12,7 @@ import { useLocation } from 'react-router';
 export function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
-    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'auto' });
+    scrollAppToTop();
   }, [pathname]);
   return null;
 }

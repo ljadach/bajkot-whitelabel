@@ -80,6 +80,16 @@ export function resolveProblemId(topic: SelectedTopic): string {
 }
 
 /**
+ * Single definition of "the child profile is complete" — used by the wizard's
+ * submit gate and the landing draft-restore gate, so the two can't drift.
+ */
+export function isChildProfileComplete(
+  intake: Pick<IntakeState, 'name' | 'age' | 'gender'>,
+): boolean {
+  return intake.name.trim().length >= 2 && intake.age !== null && intake.gender !== null;
+}
+
+/**
  * Shared mapping from intake state to the args expected by both the auth
  * (`startOrder`) and landing (`startLandingOrder`) Convex actions.
  *

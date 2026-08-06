@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router';
 import { BrandLogo } from '../BrandLogo';
+import { topicOrderPath } from '../../lib/paths';
 
 const HOME_ANCHORS = [
   { hash: 'jak-to-dziala', label: 'Jak to działa' },
@@ -14,16 +15,13 @@ const CENNIK_PATH = '/cennik';
 const CTA_CLASS =
   'bg-magic-500 hover:bg-magic-600 text-white px-5 py-2 rounded-full font-bold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm md:text-base shrink-0 no-underline transition';
 
-export function TopicNav() {
+/** `topicSlug` set (topic LP): CTA goes to that topic's order page; unset
+ * (catalog/cennik/opinie): CTA falls back to the catalog. */
+export function TopicNav({ topicSlug }: { topicSlug?: string }) {
   const location = useLocation();
   const isHome = location.pathname === '/';
   const isCatalog = location.pathname === '/katalog';
   const isCennik = location.pathname === CENNIK_PATH;
-
-  // On a topic LP the CTA navigates to that topic's standalone order page.
-  const topicSlug = location.pathname.startsWith('/problem/')
-    ? location.pathname.split('/')[2]
-    : null;
 
   return (
     <nav className="w-full py-4 px-6 fixed top-0 bg-white/90 backdrop-blur-md z-50 border-b border-gray-100 shadow-sm">
@@ -57,7 +55,7 @@ export function TopicNav() {
           </li>
         </ul>
         {!isCatalog && (
-          <Link to={topicSlug ? `/problem/${topicSlug}/zamow` : '/katalog'} className={CTA_CLASS}>
+          <Link to={topicSlug ? topicOrderPath(topicSlug) : '/katalog'} className={CTA_CLASS}>
             Stwórz Bajkę
           </Link>
         )}

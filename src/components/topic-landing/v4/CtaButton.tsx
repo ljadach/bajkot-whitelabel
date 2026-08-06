@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { trackEvent } from '../../../lib/telemetry';
+import { topicOrderPath } from '../../../lib/paths';
 
 const SIZE = {
   md: 'text-[0.95rem] px-6 py-3 shadow-lg',
@@ -42,7 +43,7 @@ export function CtaButton({
     );
   }
   return (
-    <Link to={`/problem/${topicSlug}/zamow`} onClick={track} className={cls}>
+    <Link to={topicOrderPath(topicSlug)} onClick={track} className={cls}>
       {children}
     </Link>
   );

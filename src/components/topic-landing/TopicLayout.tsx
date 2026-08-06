@@ -20,7 +20,7 @@ export function TopicLayout({ topic }: { topic: Topic }) {
       className="min-h-screen antialiased selection:bg-magic-400 selection:text-white"
       style={{ fontFamily: "'Nunito', sans-serif", backgroundColor: '#FAFAFA', color: '#334155' }}
     >
-      <TopicNav />
+      <TopicNav topicSlug={topic.slug} />
       <TopicHero topic={topic} />
       <TopicPain topic={topic} />
       <TopicScience topic={topic} />

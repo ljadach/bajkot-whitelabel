@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { BrandLogo } from '../../BrandLogo';
@@ -8,8 +9,15 @@ const TOTAL_STEPS = 4;
  * Fixed header for the standalone landing order page (/problem/:slug/zamow).
  * Shows a back link to the topic LP and a "Krok X z 4" progress indicator —
  * the flow screens keep their pt-28 clearance, same as under the LP navs.
+ * Memoized: the flow re-renders on every keystroke, the header only on step.
  */
-export function OrderFlowHeader({ backTo, step }: { backTo: string; step: number }) {
+export const OrderFlowHeader = memo(function OrderFlowHeader({
+  backTo,
+  step,
+}: {
+  backTo: string;
+  step: number;
+}) {
   const { t } = useTranslation('book');
   const stepLabels = [
     t('flowHeader.step1'),
@@ -63,4 +71,4 @@ export function OrderFlowHeader({ backTo, step }: { backTo: string; step: number
       </div>
     </header>
   );
-}
+});

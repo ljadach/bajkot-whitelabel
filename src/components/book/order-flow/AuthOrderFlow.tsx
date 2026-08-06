@@ -12,7 +12,7 @@ import { OrderCatalog } from './OrderCatalog';
 import { OrderWizard } from './OrderWizard';
 import { OrderPreview } from './OrderPreview';
 import { OrderCheckout, type CheckoutSubmitPayload } from './OrderCheckout';
-import { scrollFlowToTop } from './scroll';
+import { scrollAppToTop } from '../../../lib/appScroll';
 import {
   INITIAL_INTAKE,
   buildConsentsPayload,
@@ -39,10 +39,8 @@ export function AuthOrderFlow() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Every screen change is a "new page": snap the scrollable <main> to top.
-  // (The previous window.scrollTo calls were silent no-ops — the app shell
-  // scrolls <main>, not window.)
   useEffect(() => {
-    scrollFlowToTop();
+    scrollAppToTop();
   }, [screen]);
 
   const handleSelectTopic = useCallback((topic: SelectedTopic) => {

@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { trackEvent } from '../../../lib/telemetry';
 import { genitiveOrSelf } from '../../../lib/childNameInflect';
+import { FieldError } from './FieldError';
+import { errorBorderClass } from './fieldStyles';
 import type { IntakeState, OrderFormat } from './types';
 
 export interface ShippingAddress {
@@ -101,7 +103,7 @@ export function OrderCheckout({
         if (!address[key].trim()) errors[key] = t('checkout.errorFieldRequired');
       }
     }
-    if (Object.values(errors).some(Boolean)) {
+    if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       if (errors.email) {
         emailRef.current?.scrollIntoView({ behavior: 'auto', block: 'center' });
@@ -114,7 +116,6 @@ export function OrderCheckout({
     // Consents guard — normally unreachable, the submit button is disabled
     // until both are checked.
     if (!termsAccepted || !specialDataAccepted) return;
-    setFieldErrors({});
     trackEvent('checkout_submit_clicked', { format: intake.format });
     await onSubmit({
       email: email.trim(),
@@ -186,11 +187,11 @@ export function OrderCheckout({
               }}
               placeholder={t('checkout.emailPlaceholder')}
               aria-invalid={!!fieldErrors.email}
-              className={`w-full p-4 bg-gray-50 border-2 rounded-2xl focus:border-magic-500 focus:bg-white outline-none transition font-semibold text-lg ${
-                fieldErrors.email ? 'border-red-300 bg-red-50/50' : 'border-gray-100'
-              }`}
+              className={`w-full p-4 bg-gray-50 border-2 rounded-2xl focus:border-magic-500 focus:bg-white outline-none transition font-semibold text-lg ${errorBorderClass(
+                !!fieldErrors.email,
+              )}`}
             />
-            <CheckoutFieldError message={fieldErrors.email} />
+            <FieldError message={fieldErrors.email} />
             <p className="text-xs text-gray-400 mt-1">{t('checkout.emailHint')}</p>
           </div>
 
@@ -408,16 +409,6 @@ function DeliveryRadio({
   );
 }
 
-function CheckoutFieldError({ message }: { message?: string }) {
-  if (!message) return null;
-  return (
-    <p role="alert" className="text-sm text-red-600 font-medium mt-2">
-      <i className="fa-solid fa-circle-exclamation mr-1" aria-hidden="true" />
-      {message}
-    </p>
-  );
-}
-
 function AddressField({
   label,
   placeholder,
@@ -442,11 +433,11 @@ function AddressField({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         aria-invalid={!!error}
-        className={`w-full p-4 bg-gray-50 border-2 rounded-2xl focus:border-magic-500 focus:bg-white outline-none transition font-semibold ${
-          error ? 'border-red-300 bg-red-50/50' : 'border-gray-100'
-        }`}
+        className={`w-full p-4 bg-gray-50 border-2 rounded-2xl focus:border-magic-500 focus:bg-white outline-none transition font-semibold ${errorBorderClass(
+          !!error,
+        )}`}
       />
-      <CheckoutFieldError message={error} />
+      <FieldError message={error} />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { JsonLd } from '../components/JsonLd';
 import { PageShell } from '../components/layout/PageShell';
 import { LandingCta } from '../components/landing/LandingCta';
 import { buildFaqPageGroups, type FaqItemData } from '../lib/faqHelpers';
+import { scrollAppToTop } from '../lib/appScroll';
 import { useLangFromUrl } from '../hooks/useLangFromUrl';
 
 type Category = string;
@@ -177,14 +178,14 @@ export function FaqPage() {
           label: t('cta.contact'),
           onClick: () => {
             void navigate(`/${lang}/about/contact`);
-            document.querySelector('main')?.scrollTo(0, 0);
+            scrollAppToTop();
           },
         }}
         secondaryCta={{
           label: t('cta.feedback'),
           onClick: () => {
             void navigate('/opinie');
-            document.querySelector('main')?.scrollTo(0, 0);
+            scrollAppToTop();
           },
         }}
       />

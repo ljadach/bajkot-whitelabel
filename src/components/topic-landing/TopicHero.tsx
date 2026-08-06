@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import type { Topic } from '../../data/topics';
 import { trackEvent } from '../../lib/telemetry';
+import { topicOrderPath } from '../../lib/paths';
 
 export function TopicHero({ topic }: { topic: Topic }) {
   return (
@@ -19,7 +20,7 @@ export function TopicHero({ topic }: { topic: Topic }) {
           </p>
           <div className="pt-4 flex flex-col sm:flex-row gap-4 items-center sm:items-start">
             <Link
-              to={`/problem/${topic.slug}/zamow`}
+              to={topicOrderPath(topic.slug)}
               onClick={() =>
                 trackEvent('cta_create_book_clicked', {
                   location: 'topic_hero',
