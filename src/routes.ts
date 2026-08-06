@@ -9,6 +9,7 @@ export default [
   route('opinie', 'routes/feedback.tsx', { id: 'feedback' }),
   route('support/faq', 'routes/faq.tsx', { id: 'faq' }),
   route('problem/:slug', 'routes/topic.tsx', { id: 'topic' }),
+  route('problem/:slug/zamow', 'routes/topic-order.tsx', { id: 'topic-order' }),
   route('jak-zlozyc-ksiazke', 'routes/jak-zlozyc-ksiazke.tsx', { id: 'fold-guide' }),
   route('regulamin', 'routes/regulamin.tsx', { id: 'regulamin' }),
   route('polityka-prywatnosci', 'routes/polityka-prywatnosci.tsx', { id: 'polityka-prywatnosci' }),

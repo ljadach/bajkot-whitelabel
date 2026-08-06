@@ -1,14 +1,11 @@
 import type { Topic } from '../../data/topics';
-import { ClientOnly } from '../ClientOnly';
 import { TopicNav } from './TopicNav';
 import { TopicHero } from './TopicHero';
 import { TopicPain } from './TopicPain';
 import { TopicScience } from './TopicScience';
-import { LandingOrderFlow } from '../book/order-flow/LandingOrderFlow';
 import { TopicFooter } from './TopicFooter';
 import { TopicLayoutV4 } from './v4/TopicLayoutV4';
 import { TOPIC_V4_CONTENT } from '../../data/topicV4Content';
-import { WizardPlaceholder } from './WizardPlaceholder';
 
 export function TopicLayout({ topic }: { topic: Topic }) {
   // A topic with v4 copy renders the v4 layout; the map covers all topics, so
@@ -27,11 +24,6 @@ export function TopicLayout({ topic }: { topic: Topic }) {
       <TopicHero topic={topic} />
       <TopicPain topic={topic} />
       <TopicScience topic={topic} />
-      <ClientOnly fallback={<WizardPlaceholder />}>
-        <div id="kreator">
-          <LandingOrderFlow topic={topic} />
-        </div>
-      </ClientOnly>
       <TopicFooter />
     </div>
   );

@@ -120,8 +120,8 @@ There are two user flows: authenticated (via Clerk) and landing (token-gated, no
 **Landing flow** (public, token-gated):
 
 1. **Home** (`/?token=<ACCESS_TOKEN>`) → Token saved to localStorage.
-2. **Topic page** (`/problem/:slug`) → SEO landing page per child problem (15 topics, SSG prerendered).
-3. **Wizard** → Inline 4-step form on topic page (`TopicWizard.tsx`), submits order via `startLandingOrder` (Convex action, validates token).
+2. **Topic page** (`/problem/:slug`) → SEO landing page per child problem (15 topics, SSG prerendered). All CTAs navigate to the order page (no inline wizard since 2026-08-06).
+3. **Order page** (`/problem/:slug/zamow`) → Standalone step form (`LandingOrderFlow`): situation → child → preview → checkout, with a fixed "Krok X z 4" progress header (`OrderFlowHeader`) and a sessionStorage draft per slug. Submits via `startLandingOrder` (Convex action). Noindex.
 4. **Progress** (`/landing/book/:id/progress`) → Real-time progress, shares `ProgressJourney.tsx` with auth flow (no auth, checks `clerkUserId === 'landing-user'`).
 5. **Style Vote** (`/landing/book/:id/vote`) → Pick illustration style. Same dedication transition as auth flow — `phase` → `'dedication'` → `DedicationForm.tsx` → redirect to progress.
 6. **Result** (`/landing/book/:id/result`) → Mock cover + download + upsell card (no print link in landing flow).

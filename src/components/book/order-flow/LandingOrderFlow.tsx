@@ -11,6 +11,8 @@ import { extractErrorMessage } from '../../../lib/convexErrors';
 import { OrderWizard } from './OrderWizard';
 import { OrderPreview } from './OrderPreview';
 import { OrderCheckout, type CheckoutSubmitPayload } from './OrderCheckout';
+import { OrderFlowHeader } from './OrderFlowHeader';
+import { scrollFlowToTop } from './scroll';
 import {
   INITIAL_INTAKE,
   buildConsentsPayload,
@@ -21,34 +23,92 @@ import {
 
 type Screen = 'wizard' | 'preview' | 'checkout';
 
+// ── Draft persistence ────────────────────────────────
+// The flow lives on its own route now (/problem/:slug/zamow), so navigating
+// back to the LP unmounts it. sessionStorage keeps the parent's answers for
+// the tab's lifetime; cleared on successful submit. Child data stays
+// session-scoped on purpose (PII — never localStorage).
+
+const DRAFT_VERSION = 1;
+
+interface OrderDraft {
+  v: number;
+  screen: Screen;
+  intake: Omit<IntakeState, 'topic'>;
+}
+
+function draftKey(slug: string): string {
+  return `bajkot_order_draft:${slug}`;
+}
+
+function loadDraft(slug: string): OrderDraft | null {
+  if (typeof sessionStorage === 'undefined') return null;
+  try {
+    const raw = sessionStorage.getItem(draftKey(slug));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as OrderDraft;
+    if (parsed.v !== DRAFT_VERSION || !parsed.intake) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function saveDraft(slug: string, screen: Screen, intake: IntakeState) {
+  if (typeof sessionStorage === 'undefined') return;
+  try {
+    const { topic: _topic, ...rest } = intake;
+    const draft: OrderDraft = { v: DRAFT_VERSION, screen, intake: rest };
+    sessionStorage.setItem(draftKey(slug), JSON.stringify(draft));
+  } catch {
+    // Quota/private-mode failures must never break the flow.
+  }
+}
+
+function clearDraft(slug: string) {
+  if (typeof sessionStorage === 'undefined') return;
+  try {
+    sessionStorage.removeItem(draftKey(slug));
+  } catch {
+    // ignore
+  }
+}
+
 /**
- * Landing order flow: topic preselected from URL, no catalog screen.
- * wizard → preview → checkout. Stripe checkout on submit.
+ * Landing order flow — standalone page at /problem/:slug/zamow.
+ * Topic preselected from the URL. wizard → preview → checkout, with a fixed
+ * progress header ("Krok X z 4") and scroll-to-top on every screen change.
  */
 export function LandingOrderFlow({ topic }: { topic: Topic }) {
   const { t } = useTranslation('book');
   const navigate = useNavigate();
   const startLandingOrder = useAction(api.bookPipeline.startLandingOrder);
 
-  const [screen, setScreen] = useState<Screen>('wizard');
-  const [intake, setIntake] = useState<IntakeState>(() => ({
-    ...INITIAL_INTAKE,
-    topic,
-  }));
+  // Restore a same-session draft so a refresh or a "let me re-read the LP"
+  // round-trip doesn't wipe the form. Screen is only restored when the data
+  // supports it (checkout with no child data would dead-end).
+  const [screen, setScreen] = useState<Screen>(() => {
+    const draft = loadDraft(topic.slug);
+    if (!draft) return 'wizard';
+    const { name, age, gender } = draft.intake;
+    return name && age && gender ? draft.screen : 'wizard';
+  });
+  const [intake, setIntake] = useState<IntakeState>(() => {
+    const draft = loadDraft(topic.slug);
+    return draft ? { ...INITIAL_INTAKE, ...draft.intake, topic } : { ...INITIAL_INTAKE, topic };
+  });
+  // Wizard-internal step (2=situation, 3=child) lifted for the progress bar.
+  const [wizardStep, setWizardStep] = useState<1 | 2 | 3>(2);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Capture access token on mount (preserves landing-flow intake gate).
   useEffect(() => captureTokenFromUrl(), []);
 
-  // Topic is preselected via URL — record a `topic_selected` per spec
-  // section 7 so the funnel has a single source of truth for "topic
-  // committed", regardless of catalog vs. topic-landing entry.
-  //
-  // `trigger` matters for funnels: here the event fires on mount for every
-  // visitor of the topic page, so it measures arrival, not intent. Filter on
-  // `trigger = 'user_choice'` (catalog / homepage grid) when you want an
-  // actual choice, and use `order_started` for "began filling the form".
+  // Single source of truth for "topic committed" (spec section 7). Since the
+  // flow moved to its own route this fires on the order-page mount — i.e.
+  // after an actual CTA click, no longer for every LP visitor. `trigger`
+  // stays for funnel continuity; `order_started` still marks the first edit.
   useEffect(() => {
     trackEvent('topic_selected', {
       flow: 'landing',
@@ -58,10 +118,24 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
     });
   }, [topic.slug]);
 
-  // Re-sync if user navigates between topic pages (defensive).
+  // Re-sync if user navigates between topic order pages (defensive).
   useEffect(() => {
     setIntake((prev) => ({ ...prev, topic }));
   }, [topic]);
+
+  // Persist the draft on every change.
+  useEffect(() => {
+    saveDraft(topic.slug, screen, intake);
+  }, [topic.slug, screen, intake]);
+
+  // Every screen change is a "new page": snap the scrollable <main> to top.
+  // (window.scrollTo is a no-op here — the app shell scrolls <main>.)
+  useEffect(() => {
+    scrollFlowToTop();
+  }, [screen]);
+
+  // Global flow progress: situation → child → preview → checkout.
+  const flowStep = screen === 'wizard' ? (wizardStep === 3 ? 2 : 1) : screen === 'preview' ? 3 : 4;
 
   const handleChangeFormat = useCallback((format: OrderFormat) => {
     setIntake((prev) => ({ ...prev, format }));
@@ -94,6 +168,7 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
         // locked out of progress/result/vote/dedication.
         saveLandingOrderToken(orderId, result.accessToken);
         setFunnelSuperProperties({ bookOrderId: orderId, flow: 'landing' });
+        clearDraft(topic.slug);
         return { orderId, format: checkoutPayload.format };
       } catch (err) {
         setSubmitError(extractErrorMessage(err, t('flow.errorGeneric')));
@@ -101,13 +176,8 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
         return null;
       }
     },
-    [intake, startLandingOrder, t],
+    [intake, startLandingOrder, t, topic.slug],
   );
-
-  const handlePreviewContinue = useCallback(() => {
-    setScreen('checkout');
-    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
 
   const handleCheckoutSubmit = useCallback(
     async (payload: CheckoutSubmitPayload) => {
@@ -122,30 +192,33 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
 
   return (
     <>
+      <OrderFlowHeader backTo={`/problem/${topic.slug}`} step={flowStep} />
       {screen === 'wizard' && (
         <OrderWizard
           intake={intake}
           onChange={setIntake}
-          onSubmit={() => {
-            setScreen('preview');
-            if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onSubmit={() => setScreen('preview')}
           onChangeTopic={() => {
-            // Landing user is already on `/problem/<slug>` — sending them
-            // back to the same URL would no-op. Send them to the standalone
-            // catalog where they can pick a different topic.
+            // Send the parent to the standalone catalog to pick a different
+            // topic — their own LP is one click behind in history anyway.
             void navigate('/katalog');
           }}
           showProgressNav={false}
           skipTopicStep
+          onStepChange={setWizardStep}
         />
       )}
       {screen === 'preview' && (
         <OrderPreview
           intake={intake}
           onChangeFormat={handleChangeFormat}
-          onContinue={handlePreviewContinue}
-          onBack={() => setScreen('wizard')}
+          onContinue={() => setScreen('checkout')}
+          onBack={() => {
+            // Wizard always remounts at its first step — reset the lifted
+            // step so the progress header doesn't disagree with the screen.
+            setWizardStep(2);
+            setScreen('wizard');
+          }}
         />
       )}
       {screen === 'checkout' && (
