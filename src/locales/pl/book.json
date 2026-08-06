@@ -203,11 +203,20 @@
     "errorEmail": "Podaj poprawny adres e-mail.",
     "errorConsentTerms": "Musisz zaakceptować Regulamin i Politykę Prywatności.",
     "errorConsentSpecial": "Bez zgody na przetwarzanie danych szczególnych kategorii dziecka nie możemy stworzyć bajki.",
-    "errorAddress": "Uzupełnij wszystkie pola adresu wysyłki."
+    "errorAddress": "Uzupełnij wszystkie pola adresu wysyłki.",
+    "errorFieldRequired": "Uzupełnij to pole."
   },
   "flow": {
     "errorMissingData": "Brakuje danych — wróć do kreatora.",
     "errorGeneric": "Wystąpił błąd. Spróbuj ponownie."
+  },
+  "flowHeader": {
+    "back": "Wróć",
+    "step": "Krok {{current}} z {{total}}",
+    "step1": "Sytuacja",
+    "step2": "Dziecko",
+    "step3": "Podgląd",
+    "step4": "Zamówienie"
   },
   "preview": {
     "kicker": "Co otrzymasz?",

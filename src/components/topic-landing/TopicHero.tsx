@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import type { Topic } from '../../data/topics';
 import { trackEvent } from '../../lib/telemetry';
 
@@ -17,19 +18,19 @@ export function TopicHero({ topic }: { topic: Topic }) {
             {topic.intro}
           </p>
           <div className="pt-4 flex flex-col sm:flex-row gap-4 items-center sm:items-start">
-            <a
-              href="#kreator"
+            <Link
+              to={`/problem/${topic.slug}/zamow`}
               onClick={() =>
                 trackEvent('cta_create_book_clicked', {
                   location: 'topic_hero',
                   topicSlug: topic.slug,
                 })
               }
-              className="w-full sm:w-auto bg-magic-500 hover:bg-magic-600 text-white px-8 py-4 rounded-full font-extrabold text-lg shadow-xl shadow-magic-500/30 transition transform hover:-translate-y-1 text-center"
+              className="w-full sm:w-auto bg-magic-500 hover:bg-magic-600 text-white px-8 py-4 rounded-full font-extrabold text-lg shadow-xl shadow-magic-500/30 transition transform hover:-translate-y-1 text-center no-underline"
             >
               <i className="fa-solid fa-wand-magic-sparkles mr-2" />
               WYGENERUJ BAJKĘ DLA MOJEGO DZIECKA
-            </a>
+            </Link>
           </div>
           <p className="text-sm text-gray-500 font-semibold text-center sm:text-left">
             <i className="fa-regular fa-clock text-calm-500 mr-1" />

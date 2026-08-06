@@ -1,6 +1,5 @@
 import { Link, useLocation } from 'react-router';
 import { BrandLogo } from '../BrandLogo';
-import { useWizardInView } from '../../hooks/useWizardInView';
 
 const HOME_ANCHORS = [
   { hash: 'jak-to-dziala', label: 'Jak to działa' },
@@ -21,10 +20,10 @@ export function TopicNav() {
   const isCatalog = location.pathname === '/katalog';
   const isCennik = location.pathname === CENNIK_PATH;
 
-  // Hide the "Stwórz Bajkę" CTA once the user has scrolled the wizard into
-  // view — the same button is right below them, so the nav copy is redundant.
-  // Pages without a #kreator anchor (HP, /katalog) keep the CTA visible.
-  const hideCta = useWizardInView([location.pathname]);
+  // On a topic LP the CTA navigates to that topic's standalone order page.
+  const topicSlug = location.pathname.startsWith('/problem/')
+    ? location.pathname.split('/')[2]
+    : null;
 
   return (
     <nav className="w-full py-4 px-6 fixed top-0 bg-white/90 backdrop-blur-md z-50 border-b border-gray-100 shadow-sm">
@@ -57,17 +56,11 @@ export function TopicNav() {
             </Link>
           </li>
         </ul>
-        {!isCatalog &&
-          !hideCta &&
-          (isHome || isCennik ? (
-            <Link to="/katalog" className={CTA_CLASS}>
-              Stwórz Bajkę
-            </Link>
-          ) : (
-            <a href="#kreator" className={CTA_CLASS}>
-              Stwórz Bajkę
-            </a>
-          ))}
+        {!isCatalog && (
+          <Link to={topicSlug ? `/problem/${topicSlug}/zamow` : '/katalog'} className={CTA_CLASS}>
+            Stwórz Bajkę
+          </Link>
+        )}
       </div>
     </nav>
   );

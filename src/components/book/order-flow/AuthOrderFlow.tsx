@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAction } from 'convex/react';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +12,7 @@ import { OrderCatalog } from './OrderCatalog';
 import { OrderWizard } from './OrderWizard';
 import { OrderPreview } from './OrderPreview';
 import { OrderCheckout, type CheckoutSubmitPayload } from './OrderCheckout';
+import { scrollFlowToTop } from './scroll';
 import {
   INITIAL_INTAKE,
   buildConsentsPayload,
@@ -37,10 +38,16 @@ export function AuthOrderFlow() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // Every screen change is a "new page": snap the scrollable <main> to top.
+  // (The previous window.scrollTo calls were silent no-ops — the app shell
+  // scrolls <main>, not window.)
+  useEffect(() => {
+    scrollFlowToTop();
+  }, [screen]);
+
   const handleSelectTopic = useCallback((topic: SelectedTopic) => {
     setIntake((prev) => ({ ...prev, topic }));
     setScreen('wizard');
-    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   const handleChangeFormat = useCallback((format: OrderFormat) => {
@@ -81,7 +88,6 @@ export function AuthOrderFlow() {
 
   const handlePreviewContinue = useCallback(() => {
     setScreen('checkout');
-    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   const handleCheckoutSubmit = useCallback(
@@ -103,14 +109,8 @@ export function AuthOrderFlow() {
         <OrderWizard
           intake={intake}
           onChange={setIntake}
-          onSubmit={() => {
-            setScreen('preview');
-            if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
-          onChangeTopic={() => {
-            setScreen('catalog');
-            if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onSubmit={() => setScreen('preview')}
+          onChangeTopic={() => setScreen('catalog')}
         />
       )}
       {screen === 'preview' && (

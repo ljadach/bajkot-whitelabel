@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { trackEvent, useStepTransitionTracker } from '../../../lib/telemetry';
@@ -25,6 +25,15 @@ interface Props {
    * dead click between the CTA and the actual form.
    */
   skipTopicStep?: boolean;
+  /** Reports internal step changes so the flow can drive a global progress bar. */
+  onStepChange?: (step: 1 | 2 | 3) => void;
+}
+
+/** Per-field validation errors for the child step. */
+interface ChildFieldErrors {
+  name?: string;
+  age?: string;
+  gender?: string;
 }
 
 // Spec section 3.4 mandates age list 2-12. Pipeline maps age 2 to the
@@ -50,27 +59,35 @@ export function OrderWizard({
   onChangeTopic,
   showProgressNav = true,
   skipTopicStep = false,
+  onStepChange,
 }: Props) {
   const { t } = useTranslation('book');
   const [step, setStep] = useState<1 | 2 | 3>(skipTopicStep ? 2 : 1);
-  const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<ChildFieldErrors>({});
   const formCardRef = useRef<HTMLDivElement | null>(null);
-  const errorRef = useRef<HTMLDivElement | null>(null);
+  const nameRef = useRef<HTMLInputElement | null>(null);
+  const ageRef = useRef<HTMLSelectElement | null>(null);
+  const genderRef = useRef<HTMLDivElement | null>(null);
 
   // Fires `order_form_step_viewed` and `order_form_step_completed` with
   // durationMs so we can analyse drop-off per step (spec section 7.1).
   useStepTransitionTracker(step, { surface: 'order_wizard' });
 
-  // Pull validation errors into the viewport — they're rendered at the top
-  // of the form card and otherwise scroll past the user when shown.
+  // Scroll to the top of the form card AFTER the new step has rendered.
+  // Doing it inside the click handler measured the old layout (React hasn't
+  // flushed yet), so the smooth scroll landed mid-step and then the card
+  // resized under the animation — the "jumping form" bug.
+  const skipStepScroll = useRef(true);
   useEffect(() => {
-    if (!error) return;
-    errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, [error]);
+    if (skipStepScroll.current) {
+      skipStepScroll.current = false;
+      return;
+    }
+    formCardRef.current?.scrollIntoView({ behavior: 'auto', block: 'start' });
+  }, [step]);
 
-  // The landing wizard is mounted inline on every topic page, so
-  // `order_form_step_viewed` fires for every visitor. This marks the first
-  // real edit instead — the funnel step that means "started filling the form".
+  // Marks the first real edit — the funnel step that means "started filling
+  // the form", as opposed to merely viewing it (`order_form_step_viewed`).
   const startedRef = useRef(false);
   const markStarted = useCallback(
     (field: string) => {
@@ -85,7 +102,11 @@ export function OrderWizard({
     <K extends keyof IntakeState>(key: K, value: IntakeState[K]) => {
       markStarted(String(key));
       onChange({ ...intake, [key]: value });
-      setError('');
+      // Clear only the edited field's error — dropping all of them resized
+      // the card mid-typing (the old single-banner behavior).
+      if (key === 'name' || key === 'age' || key === 'gender') {
+        setFieldErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
+      }
     },
     [intake, onChange, markStarted],
   );
@@ -94,31 +115,41 @@ export function OrderWizard({
     <K extends keyof AppearanceData>(key: K, value: AppearanceData[K]) => {
       markStarted(`appearance.${String(key)}`);
       onChange({ ...intake, appearance: { ...intake.appearance, [key]: value } });
-      setError('');
     },
     [intake, onChange, markStarted],
   );
 
-  const goToStep = useCallback((target: 1 | 2 | 3) => {
-    setError('');
-    setStep(target);
-    // Nudge the form card into view rather than jumping all the way to the
-    // top of the page — the previous `window.scrollTo({top: 0})` overshot
-    // and disorientated users when the form card was already visible.
-    formCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }, []);
+  const goToStep = useCallback(
+    (target: 1 | 2 | 3) => {
+      setFieldErrors({});
+      setStep(target);
+      onStepChange?.(target);
+    },
+    [onStepChange],
+  );
 
   const handleFinish = useCallback(() => {
+    const errors: ChildFieldErrors = {};
     if (!intake.name.trim() || intake.name.trim().length < 2) {
-      setError(t('wizard.errorName'));
-      return;
+      errors.name = t('wizard.errorName');
     }
     if (!intake.age) {
-      setError(t('wizard.errorAge'));
-      return;
+      errors.age = t('wizard.errorAge');
     }
     if (!intake.gender) {
-      setError(t('wizard.errorGender'));
+      errors.gender = t('wizard.errorGender');
+    }
+    if (errors.name || errors.age || errors.gender) {
+      setFieldErrors(errors);
+      // Take the parent straight to the first missing field instead of a
+      // banner rendered screens above the submit button.
+      const target = errors.name ? nameRef.current : errors.age ? ageRef.current : null;
+      if (target) {
+        target.scrollIntoView({ behavior: 'auto', block: 'center' });
+        target.focus({ preventScroll: true });
+      } else {
+        genderRef.current?.scrollIntoView({ behavior: 'auto', block: 'center' });
+      }
       return;
     }
     onSubmit();
@@ -163,7 +194,7 @@ export function OrderWizard({
 
         <div
           ref={formCardRef}
-          className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden"
+          className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden scroll-mt-24"
         >
           {showProgressNav && (
             <div className="bg-calm-50 px-6 py-4 border-b border-calm-100 flex justify-between items-center text-xs md:text-sm font-bold text-gray-400 gap-2 flex-wrap">
@@ -186,16 +217,6 @@ export function OrderWizard({
           )}
 
           <div className="p-6 md:p-10">
-            {error && (
-              <div
-                ref={errorRef}
-                role="alert"
-                className="mb-6 rounded-2xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-700 font-medium"
-              >
-                {error}
-              </div>
-            )}
-
             {step === 1 && (
               <StepTopic topic={intake.topic} onNext={() => goToStep(2)} onChange={onChangeTopic} />
             )}
@@ -221,6 +242,10 @@ export function OrderWizard({
                 onBack={() => goToStep(2)}
                 onSubmit={handleFinish}
                 trimmedName={trimmedName}
+                fieldErrors={fieldErrors}
+                nameRef={nameRef}
+                ageRef={ageRef}
+                genderRef={genderRef}
               />
             )}
           </div>
@@ -360,6 +385,10 @@ function StepChild({
   onBack,
   onSubmit,
   trimmedName,
+  fieldErrors,
+  nameRef,
+  ageRef,
+  genderRef,
 }: {
   intake: IntakeState;
   onChangeName: (v: string) => void;
@@ -370,6 +399,10 @@ function StepChild({
   onBack: () => void;
   onSubmit: () => void;
   trimmedName: string;
+  fieldErrors: ChildFieldErrors;
+  nameRef: RefObject<HTMLInputElement | null>;
+  ageRef: RefObject<HTMLSelectElement | null>;
+  genderRef: RefObject<HTMLDivElement | null>;
 }) {
   const { t } = useTranslation('book');
 
@@ -385,22 +418,31 @@ function StepChild({
             {t('wizard.childName')} <span className="text-red-500">*</span>
           </label>
           <input
+            ref={nameRef}
             type="text"
             value={intake.name}
             onChange={(e) => onChangeName(e.target.value)}
             placeholder={t('wizard.childNamePlaceholder')}
             maxLength={30}
-            className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-magic-500 focus:bg-white outline-none transition font-semibold text-lg"
+            aria-invalid={!!fieldErrors.name}
+            className={`w-full p-4 bg-gray-50 border-2 rounded-2xl focus:border-magic-500 focus:bg-white outline-none transition font-semibold text-lg ${
+              fieldErrors.name ? 'border-red-300 bg-red-50/50' : 'border-gray-100'
+            }`}
           />
+          <FieldError message={fieldErrors.name} />
         </div>
         <div>
           <label className="block text-sm font-bold text-calm-900 mb-2">
             {t('wizard.age')} <span className="text-red-500">*</span>
           </label>
           <select
+            ref={ageRef}
             value={intake.age ?? ''}
             onChange={(e) => onChangeAge(e.target.value ? Number(e.target.value) : null)}
-            className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-magic-500 outline-none transition font-semibold text-lg cursor-pointer"
+            aria-invalid={!!fieldErrors.age}
+            className={`w-full p-4 bg-gray-50 border-2 rounded-2xl focus:border-magic-500 outline-none transition font-semibold text-lg cursor-pointer ${
+              fieldErrors.age ? 'border-red-300 bg-red-50/50' : 'border-gray-100'
+            }`}
           >
             <option value="" disabled>
               {t('wizard.agePlaceholder')}
@@ -411,10 +453,11 @@ function StepChild({
               </option>
             ))}
           </select>
+          <FieldError message={fieldErrors.age} />
         </div>
       </div>
 
-      <div>
+      <div ref={genderRef} className="scroll-mt-24">
         <label className="block text-sm font-bold text-calm-900 mb-3">
           {t('wizard.gender')} <span className="text-red-500">*</span>
         </label>
@@ -438,6 +481,7 @@ function StepChild({
             </label>
           ))}
         </div>
+        <FieldError message={fieldErrors.gender} />
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
@@ -520,6 +564,16 @@ function StepChild({
         </button>
       </div>
     </div>
+  );
+}
+
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <p role="alert" className="text-sm text-red-600 font-medium mt-2">
+      <i className="fa-solid fa-circle-exclamation mr-1" aria-hidden="true" />
+      {message}
+    </p>
   );
 }
 

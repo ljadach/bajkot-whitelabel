@@ -3,8 +3,6 @@ import type { TopicV4 } from '../../../data/topicV4Content';
 import { SHOW_NAME_DEMO } from '../../../data/lpContent';
 import { useLpEngagement } from '../../../lib/telemetry';
 import { ClientOnly } from '../../ClientOnly';
-import { LandingOrderFlow } from '../../book/order-flow/LandingOrderFlow';
-import { WizardPlaceholder } from '../WizardPlaceholder';
 import { TopicFooter } from '../TopicFooter';
 import { TopicNavV4 } from './TopicNavV4';
 import { TopicHeroV4 } from './TopicHeroV4';
@@ -24,8 +22,9 @@ const TopicNameDemo = lazy(() => import('./TopicNameDemo'));
 /**
  * LP v4 section skeleton (docs/spec-lp-v4-rollout.md):
  * hero → product → video → pain → science → reviews → objections (safety+FAQ)
- * → pricing → engagement (hidden name demo + inline wizard). Same route,
- * same SEO meta — only the body of /problem/:slug changes.
+ * → pricing → engagement (hidden name demo). Same route, same SEO meta —
+ * only the body of /problem/:slug changes. The order wizard moved to its own
+ * page (/problem/:slug/zamow); every CTA navigates there.
  */
 export function TopicLayoutV4({ topic }: { topic: TopicV4 }) {
   useLpEngagement({ surface: 'topic_landing', topicSlug: topic.slug });
@@ -52,11 +51,6 @@ export function TopicLayoutV4({ topic }: { topic: TopicV4 }) {
           </Suspense>
         </ClientOnly>
       )}
-      <ClientOnly fallback={<WizardPlaceholder className="bg-lp-cream" />}>
-        <div id="kreator">
-          <LandingOrderFlow topic={topic} />
-        </div>
-      </ClientOnly>
       <TopicFooter />
     </div>
   );

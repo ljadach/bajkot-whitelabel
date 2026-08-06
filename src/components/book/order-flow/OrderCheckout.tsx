@@ -59,7 +59,11 @@ export function OrderCheckout({
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [specialDataAccepted, setSpecialDataAccepted] = useState(false);
   const [address, setAddress] = useState<ShippingAddress>(INITIAL_ADDRESS);
-  const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<'email' | keyof ShippingAddress, string>>
+  >({});
+  const emailRef = useRef<HTMLInputElement>(null);
+  const addressSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     trackEvent('checkout_viewed', { format: intake.format });
@@ -82,36 +86,35 @@ export function OrderCheckout({
 
   const updateAddress = <K extends keyof ShippingAddress>(key: K, val: ShippingAddress[K]) => {
     setAddress((prev) => ({ ...prev, [key]: val }));
-    setError('');
+    setFieldErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
   };
 
   const handleSubmit = async () => {
+    // Validate inline, per field — a single banner at the top of the card
+    // scrolled the user away from the field they had to fix.
+    const errors: typeof fieldErrors = {};
     if (!email.trim() || !email.includes('@')) {
-      setError(t('checkout.errorEmail'));
-      return;
-    }
-    if (!termsAccepted) {
-      setError(t('checkout.errorConsentTerms'));
-      return;
-    }
-    if (!specialDataAccepted) {
-      setError(t('checkout.errorConsentSpecial'));
-      return;
+      errors.email = t('checkout.errorEmail');
     }
     if (isPrint) {
-      const a = address;
-      if (
-        !a.fullName.trim() ||
-        !a.phone.trim() ||
-        !a.street.trim() ||
-        !a.zip.trim() ||
-        !a.city.trim()
-      ) {
-        setError(t('checkout.errorAddress'));
-        return;
+      for (const key of ['fullName', 'phone', 'street', 'zip', 'city'] as const) {
+        if (!address[key].trim()) errors[key] = t('checkout.errorFieldRequired');
       }
     }
-    setError('');
+    if (Object.values(errors).some(Boolean)) {
+      setFieldErrors(errors);
+      if (errors.email) {
+        emailRef.current?.scrollIntoView({ behavior: 'auto', block: 'center' });
+        emailRef.current?.focus({ preventScroll: true });
+      } else {
+        addressSectionRef.current?.scrollIntoView({ behavior: 'auto', block: 'start' });
+      }
+      return;
+    }
+    // Consents guard — normally unreachable, the submit button is disabled
+    // until both are checked.
+    if (!termsAccepted || !specialDataAccepted) return;
+    setFieldErrors({});
     trackEvent('checkout_submit_clicked', { format: intake.format });
     await onSubmit({
       email: email.trim(),
@@ -121,16 +124,13 @@ export function OrderCheckout({
     });
   };
 
-  const displayError = externalError || error;
-
-  // Submit lives below the fold, so a validation error at the top of the form
-  // would otherwise stay invisible. Scroll the message into view (and announce
-  // it to screen readers via aria-live below) whenever it changes.
+  // Server errors (Stripe/pipeline start) still surface as a banner — scroll
+  // it into view and announce via aria-live.
   const errorRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (!displayError) return;
+    if (!externalError) return;
     errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, [displayError]);
+  }, [externalError]);
 
   return (
     <section className="pt-28 pb-20 px-6 bg-gray-50 min-h-screen">
@@ -146,26 +146,28 @@ export function OrderCheckout({
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-10 space-y-8">
-          {displayError && (
+          {externalError && (
             <div
               ref={errorRef}
               role="alert"
               aria-live="polite"
               className="rounded-2xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-700 font-medium"
             >
-              {displayError}
+              {externalError}
             </div>
           )}
 
           {/* Order Summary */}
           <div className="bg-calm-50 rounded-2xl p-6 border border-calm-100">
             <h3 className="font-bold text-calm-900 mb-3">{t('checkout.summaryHeading')}</h3>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center gap-4">
               <div>
                 <p className="font-bold text-calm-900">{productName}</p>
                 {topicLine && <p className="text-sm text-gray-500">{topicLine}</p>}
               </div>
-              <p className="text-2xl font-black text-calm-900">{price}</p>
+              <p className="text-2xl font-black text-calm-900 shrink-0 whitespace-nowrap">
+                {price}
+              </p>
             </div>
           </div>
 
@@ -175,12 +177,20 @@ export function OrderCheckout({
               {t('checkout.email')} <span className="text-red-500">*</span>
             </label>
             <input
+              ref={emailRef}
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setFieldErrors((prev) => (prev.email ? { ...prev, email: undefined } : prev));
+              }}
               placeholder={t('checkout.emailPlaceholder')}
-              className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-magic-500 focus:bg-white outline-none transition font-semibold text-lg"
+              aria-invalid={!!fieldErrors.email}
+              className={`w-full p-4 bg-gray-50 border-2 rounded-2xl focus:border-magic-500 focus:bg-white outline-none transition font-semibold text-lg ${
+                fieldErrors.email ? 'border-red-300 bg-red-50/50' : 'border-gray-100'
+              }`}
             />
+            <CheckoutFieldError message={fieldErrors.email} />
             <p className="text-xs text-gray-400 mt-1">{t('checkout.emailHint')}</p>
           </div>
 
@@ -215,7 +225,7 @@ export function OrderCheckout({
 
           {/* Address fields (when PDF+Print) */}
           {isPrint && (
-            <div className="space-y-4 animate-fadeIn">
+            <div ref={addressSectionRef} className="space-y-4 animate-fadeIn scroll-mt-24">
               <h4 className="font-bold text-calm-900">{t('checkout.addressHeading')}</h4>
               <div className="grid md:grid-cols-2 gap-4">
                 <AddressField
@@ -223,6 +233,7 @@ export function OrderCheckout({
                   placeholder={t('checkout.addressFullNamePlaceholder')}
                   value={address.fullName}
                   onChange={(v) => updateAddress('fullName', v)}
+                  error={fieldErrors.fullName}
                 />
                 <AddressField
                   label={t('checkout.addressPhone')}
@@ -230,6 +241,7 @@ export function OrderCheckout({
                   value={address.phone}
                   onChange={(v) => updateAddress('phone', v)}
                   type="tel"
+                  error={fieldErrors.phone}
                 />
               </div>
               <AddressField
@@ -237,6 +249,7 @@ export function OrderCheckout({
                 placeholder={t('checkout.addressStreetPlaceholder')}
                 value={address.street}
                 onChange={(v) => updateAddress('street', v)}
+                error={fieldErrors.street}
               />
               <div className="grid grid-cols-3 gap-4">
                 <AddressField
@@ -244,6 +257,7 @@ export function OrderCheckout({
                   placeholder={t('checkout.addressZipPlaceholder')}
                   value={address.zip}
                   onChange={(v) => updateAddress('zip', v)}
+                  error={fieldErrors.zip}
                 />
                 <div className="col-span-2">
                   <AddressField
@@ -251,6 +265,7 @@ export function OrderCheckout({
                     placeholder={t('checkout.addressCityPlaceholder')}
                     value={address.city}
                     onChange={(v) => updateAddress('city', v)}
+                    error={fieldErrors.city}
                   />
                 </div>
               </div>
@@ -393,18 +408,30 @@ function DeliveryRadio({
   );
 }
 
+function CheckoutFieldError({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <p role="alert" className="text-sm text-red-600 font-medium mt-2">
+      <i className="fa-solid fa-circle-exclamation mr-1" aria-hidden="true" />
+      {message}
+    </p>
+  );
+}
+
 function AddressField({
   label,
   placeholder,
   value,
   onChange,
   type = 'text',
+  error,
 }: {
   label: string;
   placeholder: string;
   value: string;
   onChange: (v: string) => void;
   type?: string;
+  error?: string;
 }) {
   return (
     <div>
@@ -414,8 +441,12 @@ function AddressField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-magic-500 focus:bg-white outline-none transition font-semibold"
+        aria-invalid={!!error}
+        className={`w-full p-4 bg-gray-50 border-2 rounded-2xl focus:border-magic-500 focus:bg-white outline-none transition font-semibold ${
+          error ? 'border-red-300 bg-red-50/50' : 'border-gray-100'
+        }`}
       />
+      <CheckoutFieldError message={error} />
     </div>
   );
 }
