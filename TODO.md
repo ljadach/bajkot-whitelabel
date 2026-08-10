@@ -5,6 +5,12 @@
 > **AKTUALIZACJA 2026-07-28:** nowy audyt — `docs/security-audit-2026-07-28.md` (33 ustalenia).
 > Dwie dziury niżej dalej otwarte, doszły trzy nowe klasy ryzyka: płatność, wyciek tokena
 > i zgodność prawna. Skrót w sekcji „Nowe z audytu 2026-07-28" na dole tego pliku.
+>
+> **AKTUALIZACJA 2026-08-10:** audyt niezawodności pipeline'u + promptów —
+> `docs/reliability-audit-2026-08-10.md` (4×critical, 10×high, 9×medium; plan
+> implementacji z checkboxami). Najgorsze: gate psychologiczny A4 failuje open,
+> Stripe webhook może zgubić opłacone zamówienie, A7 podatne na cichą śmierć jak
+> incydent A5 z 10.08. Uwaga operacyjna: saldo OpenRouter $6.53 — doładować.
 
 ---
 
