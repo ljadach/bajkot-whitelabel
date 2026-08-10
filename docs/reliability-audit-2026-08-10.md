@@ -95,7 +95,7 @@ ale transient failure mutacji (deployment skew, chwilowy błąd infrastruktury C
 walidacja) też tam wpada. Nie ma żadnego trwałego zapisu surowego eventu.
 
 **Scenariusz:** klient płaci 49 zł, `markBookOrderPaid` rzuca raz (np. deploy w toku),
-zwracamy 200, Stripe uznaje за dostarczone. Zamówienie na zawsze `pending`, klient
+zwracamy 200, Stripe uznaje za dostarczone. Zamówienie na zawsze `pending`, klient
 bez PDF-a i bez maila, operator bez jakiegokolwiek rekordu do odtworzenia.
 
 **Fix (wzorzec webhook inbox):**
