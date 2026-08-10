@@ -34,6 +34,10 @@ export interface StageConfig {
    * at 32768 — see the per-stage note below.
    */
   maxTokens?: number;
+  /** Per-attempt request timeout override; default lives in llmClient
+   * (REQUEST_TIMEOUT_MS). Raise only for stages whose healthy generation
+   * legitimately runs longer than the default. */
+  timeoutMs?: number;
   expect?: 'object' | 'array' | 'any';
 }
 
@@ -99,10 +103,19 @@ const DEFAULT_LLM_CONFIG: LlmConfig = {
     // claude-3.5-sonnet is deprecated on OpenRouter — sonnet-4.6 is the
     // current Anthropic flagship and was empirically verified to handle
     // the A5 prompt that Gemini hard-blocks (PROHIBITED_CONTENT).
+    //
+    // reasoning MUST stay off: with thinking enabled, dynamic budgets on
+    // unlucky inputs spend 14k+ tokens thinking and push generation past
+    // the Convex action limit — orders jn72f8b7… and jn72repet… died there
+    // silently (2026-08-10 devlog). Without thinking the same payload
+    // returns valid JSON in ~124s (3.5-sonnet, A5's original model, had no
+    // thinking either). timeoutMs 360s = ~3× that healthy baseline.
     model: 'anthropic/claude-sonnet-4.6',
     temperature: 0.6,
     retries: 4,
     baseDelayMs: 250,
+    reasoning: false,
+    timeoutMs: 360_000,
     expect: 'object',
   },
   'book.visualQa': {

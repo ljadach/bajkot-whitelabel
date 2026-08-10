@@ -20,16 +20,27 @@ const openrouterApiKey = process.env.OPENROUTER_API_KEY;
 const fallbackModel = 'google/gemini-2.0-flash-001';
 
 /**
- * Per-attempt wall-clock cap on a single LLM request. Without it a hung
- * OpenRouter request runs until the Convex action limit kills the whole
- * action — bypassing both the retry loop and the caller's catch, so the
- * order never flips to `failed` and just sits in its current status with
- * zero logged error (prod orders jn72f8b7… and jn72repet…, both stuck at
- * A5 on 2026-08-06/10). Longest healthy call on record is ~204s
- * (gemini-2.5-pro, A3), so 240s only cuts pathological requests; the abort
- * surfaces as a normal error → retried → caught → order marked failed.
+ * Per-attempt wall-clock cap on a single LLM request (overridable per stage
+ * via `timeoutMs`). Without it a slow or hung OpenRouter request runs until
+ * the Convex action limit kills the whole action — bypassing both the retry
+ * loop and the caller's catch, so the order never flips to `failed` and just
+ * sits in its current status with zero logged error (prod orders jn72f8b7…
+ * and jn72repet…, both stuck at A5 on 2026-08-06/10). Longest healthy call
+ * on record is ~204s (gemini-2.5-pro, A3), so 240s only cuts pathological
+ * requests; the abort surfaces as a normal error → retried → caught →
+ * order marked failed.
  */
 const REQUEST_TIMEOUT_MS = 240_000;
+
+/**
+ * Total budget for all attempts of one call. Convex kills 'use node' actions
+ * at 10 minutes with no catch and no trace; stopping ourselves at 8.5 leaves
+ * room to store the error log and mark the order failed. An attempt never
+ * gets a signal longer than what's left of this budget, and when under 10s
+ * remain we skip straight to the failure path instead of starting an
+ * attempt that can't finish.
+ */
+const OVERALL_DEADLINE_MS = 510_000;
 
 /**
  * Reasoning toggle is forwarded to OpenRouter as a top-level `reasoning` field.
@@ -88,8 +99,23 @@ function makeProvider(reasoning: Record<string, unknown>) {
     : null;
 }
 
-const openrouterCapped = makeProvider({ max_tokens: MIN_REASONING_TOKENS });
-const openrouterThinking = makeProvider({ enabled: true });
+/**
+ * `reasoning: false` means "as little thinking as possible" — which differs
+ * per provider. Claude can turn thinking off entirely (and pre-4.6 A5 ran on
+ * claude-3.5-sonnet, which had none — that's the behavior being restored).
+ * Gemini 2.5 Pro can't disable thinking at all, so it gets the budget floor
+ * instead (see MIN_REASONING_TOKENS above); 128 is also below Anthropic's
+ * minimum budget of 1024, so the floor must never be sent to Claude.
+ */
+function reasoningDirective(
+  modelName: string,
+  reasoning: boolean | undefined,
+): Record<string, unknown> {
+  if (reasoning !== false) return { enabled: true };
+  return modelName.startsWith('anthropic/')
+    ? { enabled: false }
+    : { max_tokens: MIN_REASONING_TOKENS };
+}
 
 // Type for action context (simplified)
 type ActionCtx = {
@@ -97,7 +123,7 @@ type ActionCtx = {
 };
 
 function ensureModel(modelName: string, reasoning: boolean | undefined) {
-  const provider = reasoning === false ? openrouterCapped : openrouterThinking;
+  const provider = makeProvider(reasoningDirective(modelName, reasoning));
   if (!provider) {
     throw new Error('OpenRouter not configured. Set OPENROUTER_API_KEY in Convex environment.');
   }
@@ -125,6 +151,9 @@ export interface ChatJsonParams {
   /** Hard cap on output tokens. Forwarded to the model as `maxOutputTokens`
    * so prose generation isn't silently truncated by OpenRouter's default. */
   maxTokens?: number;
+  /** Per-attempt request timeout; defaults to REQUEST_TIMEOUT_MS. Raise for
+   * stages whose healthy generation legitimately runs long (A5). */
+  timeoutMs?: number;
   images?: Array<{ data: Uint8Array; mimeType: string }>;
 }
 
@@ -149,6 +178,7 @@ export async function chatJsonWithRetries<T = any>(
     action = 'llm.chat',
     reasoning,
     maxTokens,
+    timeoutMs = REQUEST_TIMEOUT_MS,
     images,
   } = params;
   // `reasoning: false` still sends a floor thinking budget (see
@@ -223,9 +253,17 @@ export async function chatJsonWithRetries<T = any>(
     async (span: Observation) => {
       span.update({ ...spanAttributes, input: promptPreview });
       const traceId = span.context().traceId || undefined;
+      const deadline = startTime + OVERALL_DEADLINE_MS;
       let lastErr: any;
 
       for (let attempt = 0; attempt < retries; attempt++) {
+        const remainingMs = deadline - Date.now();
+        if (remainingMs < 10_000) {
+          console.warn(
+            `[${action}] Overall deadline reached — recording failure before Convex kills the action`,
+          );
+          break;
+        }
         let rawText = '';
         try {
           span.update({
@@ -235,7 +273,7 @@ export async function chatJsonWithRetries<T = any>(
           const response = await generateText({
             model: ensureModel(model, reasoning),
             temperature,
-            abortSignal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+            abortSignal: AbortSignal.timeout(Math.min(timeoutMs, remainingMs)),
             ...(maxTokens !== undefined ? { maxOutputTokens: maxTokens } : {}),
             messages: [
               { role: 'system', content: system },
@@ -336,6 +374,7 @@ export async function chatJsonForStage<T = any>(
       expect: config.expect,
       reasoning: config.reasoning,
       maxTokens: config.maxTokens,
+      timeoutMs: config.timeoutMs,
       action: stage,
     },
     config.retries,
@@ -365,6 +404,7 @@ export async function chatJsonForStageWithImages<T = any>(
       expect: config.expect,
       reasoning: config.reasoning,
       maxTokens: config.maxTokens,
+      timeoutMs: config.timeoutMs,
       action: stage,
       images: params.images,
     },
