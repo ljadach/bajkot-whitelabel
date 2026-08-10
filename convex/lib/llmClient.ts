@@ -20,6 +20,18 @@ const openrouterApiKey = process.env.OPENROUTER_API_KEY;
 const fallbackModel = 'google/gemini-2.0-flash-001';
 
 /**
+ * Per-attempt wall-clock cap on a single LLM request. Without it a hung
+ * OpenRouter request runs until the Convex action limit kills the whole
+ * action — bypassing both the retry loop and the caller's catch, so the
+ * order never flips to `failed` and just sits in its current status with
+ * zero logged error (prod orders jn72f8b7… and jn72repet…, both stuck at
+ * A5 on 2026-08-06/10). Longest healthy call on record is ~204s
+ * (gemini-2.5-pro, A3), so 240s only cuts pathological requests; the abort
+ * surfaces as a normal error → retried → caught → order marked failed.
+ */
+const REQUEST_TIMEOUT_MS = 240_000;
+
+/**
  * Reasoning toggle is forwarded to OpenRouter as a top-level `reasoning` field.
  * Per-model support varies (Gemini 2.5 supports it, GPT-4o doesn't); an
  * unrecognised field is ignored, so no stage-specific gating is needed.
@@ -223,6 +235,7 @@ export async function chatJsonWithRetries<T = any>(
           const response = await generateText({
             model: ensureModel(model, reasoning),
             temperature,
+            abortSignal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
             ...(maxTokens !== undefined ? { maxOutputTokens: maxTokens } : {}),
             messages: [
               { role: 'system', content: system },

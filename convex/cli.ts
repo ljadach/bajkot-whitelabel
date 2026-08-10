@@ -81,9 +81,9 @@ export const startPipeline = internalAction({
 // ── Retry failed order from its current agent ───────────────
 
 export const retryOrder = internalAction({
-  args: { orderId: v.id('bookOrders') },
+  args: { orderId: v.id('bookOrders'), force: v.optional(v.boolean()) },
   returns: v.string(),
-  handler: async (ctx, { orderId }): Promise<string> => {
+  handler: async (ctx, { orderId, force }): Promise<string> => {
     const agentFunctions: Record<string, any> = {
       A0: internal.bookAgents.intake,
       A1: internal.bookAgents.profileChild,
@@ -101,7 +101,11 @@ export const retryOrder = internalAction({
 
     const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, { orderId });
     if (!order) throw new Error('Order not found');
-    if (order.status !== 'failed') throw new Error(`Order is not failed (status: ${order.status})`);
+    if (order.status === 'completed') throw new Error('Order already completed');
+    // `force` re-runs an order stuck mid-status — e.g. an agent silently
+    // killed by the action time limit, which leaves no error and no `failed`.
+    if (order.status !== 'failed' && !force)
+      throw new Error(`Order is not failed (status: ${order.status}) — use --force if it is stuck`);
     const agent: string = order.currentAgent ?? '';
     if (!agent) throw new Error('No currentAgent on failed order');
     const fn = agentFunctions[agent];

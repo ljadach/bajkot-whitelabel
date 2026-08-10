@@ -493,9 +493,10 @@ program
   .description('Retry a failed order from its last agent')
   .argument('<orderId>', 'Order ID (full or short suffix)')
   .option('-w, --watch', 'Watch pipeline progress after retrying')
+  .option('-f, --force', 'Retry even if the order is not failed (stuck mid-status)')
   .action(async (rawId, opts) => {
     const orderId = resolveId(rawId);
-    const raw = convexRun('cli:retryOrder', { orderId });
+    const raw = convexRun('cli:retryOrder', { orderId, ...(opts.force ? { force: true } : {}) });
     const result = parseResult(raw);
     console.log(`\x1b[32m✓ ${result}\x1b[0m`);
 
