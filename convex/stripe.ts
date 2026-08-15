@@ -300,6 +300,11 @@ export const verifyWebhookEvent = internalAction({
       await ctx.runMutation(internal.billing.markBookOrderPaid, {
         bookOrderId: rawBookOrderId as Id<'bookOrders'>,
         stripeSessionId: session.id,
+        // The amount that actually moved, for the Meta Purchase conversion.
+        // `amount_total` is in minor units and only ever null for sessions
+        // that were never completed — which this one demonstrably was.
+        amountTotalMinor: session.amount_total ?? undefined,
+        currency: session.currency ?? undefined,
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);

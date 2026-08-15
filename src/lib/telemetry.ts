@@ -15,6 +15,13 @@ import {
 import posthog from 'posthog-js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { setAnalyticsConsent } from './gtag';
+import {
+  setMarketingConsent,
+  trackMetaCustom,
+  trackMetaStandard,
+  type MetaCustomEvent,
+  type MetaStandardEvent,
+} from './metaPixel';
 
 // Re-export React components from @posthog/react
 export { PostHogFeature, PostHogCaptureOnViewed } from '@posthog/react';
@@ -137,6 +144,24 @@ const ANALYTICS_KEY = 'analyticsEnabled';
 export type ConsentStatus = 'accepted' | 'rejected' | 'custom' | 'dismissed' | null;
 
 /**
+ * Push one consent decision out to every third party that needs it.
+ *
+ * Decision 2026-08-15: the Meta pixel rides the SAME banner toggle as GA4
+ * instead of getting its own "marketing" category. That toggle has always
+ * granted Google's `ad_storage` / `ad_user_data` / `ad_personalization`,
+ * so it already means advertising consent — splitting it now would only
+ * shrink an already small retargeting pool without changing what the user
+ * is actually agreeing to.
+ *
+ * Every flip goes through here so a future third platform cannot be added
+ * to four of the five call sites and forgotten on the fifth.
+ */
+function applyTrackingConsent(granted: boolean): void {
+  setAnalyticsConsent(granted);
+  setMarketingConsent(granted);
+}
+
+/**
  * Hook for managing cookie/analytics consent.
  *
  * @example
@@ -176,7 +201,7 @@ export function useConsent() {
     setConsentStatus('accepted');
     setIsAnalyticsEnabled(true);
     posthog?.opt_in_capturing();
-    setAnalyticsConsent(true);
+    applyTrackingConsent(true);
   }, [posthog]);
 
   const rejectAll = useCallback(() => {
@@ -185,7 +210,7 @@ export function useConsent() {
     setConsentStatus('rejected');
     setIsAnalyticsEnabled(false);
     posthog?.opt_out_capturing();
-    setAnalyticsConsent(false);
+    applyTrackingConsent(false);
   }, [posthog]);
 
   const dismiss = useCallback(() => {
@@ -194,7 +219,7 @@ export function useConsent() {
     setConsentStatus('dismissed');
     setIsAnalyticsEnabled(false);
     posthog?.opt_out_capturing();
-    setAnalyticsConsent(false);
+    applyTrackingConsent(false);
   }, [posthog]);
 
   const setCustomConsent = useCallback(
@@ -205,7 +230,7 @@ export function useConsent() {
       setIsAnalyticsEnabled(analytics);
       if (analytics) posthog?.opt_in_capturing();
       else posthog?.opt_out_capturing();
-      setAnalyticsConsent(analytics);
+      applyTrackingConsent(analytics);
     },
     [posthog],
   );
@@ -217,7 +242,7 @@ export function useConsent() {
 
     if (savedConsent && analyticsEnabled) {
       posthog?.opt_in_capturing();
-      setAnalyticsConsent(true);
+      applyTrackingConsent(true);
     }
   }, [posthog]);
 
@@ -370,15 +395,58 @@ export type FunnelEventName =
 export type FunnelFlow = 'auth' | 'landing';
 
 /**
+ * Funnel events that also mean something to Meta, and what they mean.
+ *
+ * Kept as a table next to `trackEvent` rather than sprinkled through the
+ * components on purpose: the Meta pixel and PostHog must describe the same
+ * funnel, and the only way to guarantee that is one call site. Adding a
+ * row here is the whole cost of putting a new stage in front of Meta.
+ *
+ * Only mid-funnel stages live here. `ViewContent` rides route changes
+ * (see `trackMetaRouteChange`) and `Purchase` rides `trackPurchase` in
+ * gtag.ts, which already owns the once-per-order conversion guard.
+ */
+const META_FUNNEL_MAP: Partial<
+  Record<FunnelEventName, { standard: MetaStandardEvent } | { custom: MetaCustomEvent }>
+> = {
+  // First real edit inside the intake form. No Meta standard event fits
+  // "started filling in a form", so it stays custom — audience-only, not
+  // something Meta can optimise delivery towards.
+  order_started: { custom: 'OrderStarted' },
+  // The paywall is where the parent has seen the finished book and is
+  // deciding. In Meta's vocabulary that is the cart, not the checkout.
+  preview_paywall_viewed: { standard: 'AddToCart' },
+  checkout_submit_clicked: { standard: 'InitiateCheckout' },
+};
+
+/** Mirror a funnel event to Meta when the map has a row for it. */
+function mirrorToMeta(name: FunnelEventName, properties?: Record<string, unknown>): void {
+  const mapping = META_FUNNEL_MAP[name];
+  if (!mapping) return;
+  const params = {
+    content_type: 'product',
+    content_ids: properties?.problemId ? [properties.problemId] : undefined,
+  };
+  if ('standard' in mapping) trackMetaStandard(mapping.standard, params);
+  else trackMetaCustom(mapping.custom, params);
+}
+
+/**
  * Fire a PostHog event without going through the React hook plumbing.
  * Safe before opt-in and safe during SSR — both branches no-op silently.
  *
  * Use this from event handlers, useEffect mount hooks, or anywhere you
  * don't already have a PostHog instance from `useAnalytics()`. When you
  * already have a hook context (rendering body), prefer `useAnalytics`.
+ *
+ * Also mirrors the event to Meta when `META_FUNNEL_MAP` has a row for it.
+ * The mirror runs BEFORE the PostHog readiness guard: the two SDKs load
+ * independently, and a slow PostHog must not silently cost us a Meta
+ * audience membership.
  */
 export function trackEvent(name: FunnelEventName, properties?: Record<string, unknown>): void {
   if (typeof window === 'undefined') return;
+  mirrorToMeta(name, properties);
   // posthog-js exposes `__loaded` only after init(); reading capture before
   // init() throws. The singleton is initialised in entry.client.tsx.
   const ph = posthog as unknown as { __loaded?: boolean; capture?: typeof posthog.capture };

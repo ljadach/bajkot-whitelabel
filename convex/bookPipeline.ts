@@ -16,6 +16,7 @@ import {
   consentsArgsValidator,
   consentRecordStoreValidator,
 } from './lib/consents';
+import { metaAttributionValidator } from './schema';
 
 // Schema validators reused across entry-point mutations.
 const ageBracketValidator = v.union(v.literal('3-5'), v.literal('6-8'), v.literal('9+'));
@@ -250,6 +251,8 @@ export const createOrder = internalMutation({
      */
     skipQaReviews: v.optional(v.boolean()),
     fastImage: v.optional(v.boolean()),
+    /** Meta Conversions API match keys — see the schema comment on the column. */
+    metaAttribution: v.optional(metaAttributionValidator),
   },
   returns: v.id('bookOrders'),
   handler: async (ctx, args) => {
@@ -276,6 +279,7 @@ export const createOrder = internalMutation({
       accessTokenRaw: args.accessTokenRaw,
       skipQaReviews: args.skipQaReviews,
       fastImage: args.fastImage,
+      metaAttribution: args.metaAttribution,
       status: 'intake',
       createdAt: Date.now(),
     });
@@ -799,6 +803,15 @@ export const startLandingOrder = action({
     format: v.optional(formatValidator),
     shippingAddress: v.optional(shippingAddressValidator),
     consents: consentsArgsValidator,
+    /**
+     * Meta Conversions API match keys, read from the browser at submit time.
+     * Optional: an order placed with the pixel unconfigured, blocked, or
+     * consent-rejected simply arrives without them, and the Purchase is
+     * then never sent server-side. Client-supplied and therefore untrusted —
+     * these values only ever travel back OUT to Meta, they gate nothing and
+     * grant nothing here.
+     */
+    metaAttribution: v.optional(metaAttributionValidator),
   },
   returns: v.object({ orderId: v.id('bookOrders'), accessToken: v.string() }),
   handler: async (ctx, args): Promise<{ orderId: Id<'bookOrders'>; accessToken: string }> => {
@@ -866,6 +879,7 @@ export const startLandingOrder = action({
       // users should ever see. Trusted server default; clients never touch
       // these flags.
       skipQaReviews: true,
+      metaAttribution: args.metaAttribution,
     });
 
     await ctx.scheduler.runAfter(0, internal.bookAgents.intake, { orderId });

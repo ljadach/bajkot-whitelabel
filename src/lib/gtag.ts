@@ -14,6 +14,7 @@
 
 import { BOOK_PRICE_PDF_PLN, BOOK_PRICE_PRINT_PLN } from '@lib/pricing';
 import { getAttribution } from '@lib/attribution';
+import { metaPurchaseEventId, trackMetaStandard } from '@lib/metaPixel';
 import { categoryForProblemId, categoryForLandingPath } from '../data/topics';
 
 export const GA_MEASUREMENT_ID = 'G-3QB3EX66Z2';
@@ -108,7 +109,11 @@ export function markPurchaseTrackedOnce(orderId: string): boolean {
 }
 
 /**
- * Fire a purchase event into GA4 + optionally a Google Ads conversion.
+ * Fire a purchase event into GA4, optionally Google Ads, and Meta.
+ *
+ * This is the single place the purchase conversion leaves the browser for
+ * any ad platform. Callers gate it with `markPurchaseTrackedOnce`, so the
+ * once-per-order guarantee holds for all three destinations at once.
  *
  * - GA4 always gets the `purchase` event (gated only by Consent Mode v2),
  *   carrying value/format/category so revenue can be sliced by product and
@@ -167,6 +172,27 @@ export function trackPurchase(args: {
       currency,
     });
   }
+
+  // Meta Purchase. Lives here rather than in the funnel-event mirror
+  // because this function already owns the once-per-order guarantee (the
+  // callers gate on `markPurchaseTrackedOnce`); routing the conversion
+  // through a second path would reintroduce the double-count this guard
+  // exists to prevent.
+  //
+  // The `eventID` is the deduplication handshake with the Conversions API:
+  // the Stripe webhook sends the same Purchase with the same id, so Meta
+  // counts one sale whether the browser event survives ad-blockers or not.
+  trackMetaStandard(
+    'Purchase',
+    {
+      value,
+      currency,
+      content_type: 'product',
+      content_ids: category ? [category] : undefined,
+      content_name: format === 'pdf_print' ? 'Bajka PDF + druk' : 'Bajka PDF',
+    },
+    metaPurchaseEventId(args.transactionId),
+  );
 }
 
 /**
