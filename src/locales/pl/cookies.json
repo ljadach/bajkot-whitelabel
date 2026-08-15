@@ -1,6 +1,6 @@
 {
   "title": "Preferencje plików cookie",
-  "description": "Używamy niezbędnych plików cookie, a za Twoją zgodą także analitycznych i marketingowych (PostHog, Google, Meta). Te ostatnie pozwalają nam mierzyć ruch w serwisie i kierować reklamy do osób, które już go odwiedziły.",
+  "description": "Używamy niezbędnych plików cookie, a za Twoją zgodą także analitycznych i marketingowych (PostHog, Google, Meta).",
   "settingsTitle": "Ustawienia plików cookie",
   "settingsDescription": "Wybierz, które pliki cookie chcesz zezwolić. Niezbędne pliki cookie są zawsze włączone.",
   "buttons": {
@@ -18,6 +18,6 @@
   },
   "analytics": {
     "title": "Pliki cookie analityczne i marketingowe",
-    "description": "Pozwalają nam zrozumieć, jak odwiedzający korzystają z serwisu (PostHog, Google Analytics), oraz prowadzić remarketing w serwisach Meta - Facebook i Instagram - a także w Google Ads. Nie sprzedajemy danych osobowych. Zgodę możesz wycofać w każdej chwili. Szczegóły w Polityce Prywatności."
+    "description": "Pozwalają nam zrozumieć, jak odwiedzający korzystają z serwisu (PostHog, Google Analytics), oraz prowadzić działania reklamowe w serwisach Meta (Facebook, Instagram) i Google - w tym przypominać o Bajkoterapii osobom, które już odwiedziły stronę. Nie sprzedajemy danych osobowych. Zgodę możesz wycofać w każdej chwili. Szczegóły w Polityce Prywatności."
   }
 }
