@@ -49,6 +49,33 @@ The domain-verification token is **hardcoded** in `src/lib/metaPixel.ts`
 the domain rather than to an environment, and it never rotates — an env var
 would only add a step whose one possible outcome is forgetting it.
 
+### Google Ads, while you are in the same settings page
+
+Not Meta, but the same deploy and the same failure mode — recorded here
+because there is nowhere better and because it was missing for months.
+
+| Variable                         | Value            | Effect if unset                      |
+| -------------------------------- | ---------------- | ------------------------------------ |
+| `VITE_GOOGLE_ADS_ID`             | `AW-18164650689` | No Google Ads tag on the site at all |
+| `VITE_GOOGLE_ADS_PURCHASE_LABEL` | **leave unset**  | Correct — see below                  |
+
+**Verified on production 2026-08-15: the Google Ads tag was not installed.**
+`curl -sL https://bajkoterapia.org/` returned `G-3QB3EX66Z2` and no `AW-`
+tag; Google's own Data Manager reported _"No data has been received from
+your tag"_ for `AW-18164650689`. Root cause: `root.tsx` emits
+`gtag('config', 'AW-…')` only when `VITE_GOOGLE_ADS_ID` is set, and it was
+not set in Vercel. Thirty-eight campaigns had been running since
+2026-07-20 with no Google Ads tag on the site.
+
+**`VITE_GOOGLE_ADS_PURCHASE_LABEL` must stay unset**, and this is a trap
+worth stating loudly. Purchase conversions are imported from GA4
+(Ads → Goals → Conversions → Import → Google Analytics 4), which is how
+czytam.club has always measured on the same account. Setting the label as
+well would make the tag fire a second conversion for the same sale, and
+Smart Bidding would optimise against an inflated count. `trackPurchase`
+checks both variables and skips the Ads conversion event when the label is
+absent, so leaving it unset is a supported configuration, not a gap.
+
 ### Convex (runtime, per deployment)
 
 | Variable                 | Where to find it                                                              | Effect if unset                       |
