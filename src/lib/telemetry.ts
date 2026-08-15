@@ -419,14 +419,19 @@ const META_FUNNEL_MAP: Partial<
   checkout_submit_clicked: { standard: 'InitiateCheckout' },
 };
 
-/** Mirror a funnel event to Meta when the map has a row for it. */
-function mirrorToMeta(name: FunnelEventName, properties?: Record<string, unknown>): void {
+/**
+ * Mirror a funnel event to Meta when the map has a row for it.
+ *
+ * `properties` is deliberately NOT forwarded. Funnel events carry
+ * `problemId`, and every problem on this site describes a child's
+ * behavioural or health difficulty — special-category data under RODO
+ * art. 9 that must never reach an ad platform. See the note at the top of
+ * `metaPixel.ts`; the privacy policy states this to users as a commitment.
+ */
+function mirrorToMeta(name: FunnelEventName): void {
   const mapping = META_FUNNEL_MAP[name];
   if (!mapping) return;
-  const params = {
-    content_type: 'product',
-    content_ids: properties?.problemId ? [properties.problemId] : undefined,
-  };
+  const params = { content_type: 'product' };
   if ('standard' in mapping) trackMetaStandard(mapping.standard, params);
   else trackMetaCustom(mapping.custom, params);
 }
@@ -446,7 +451,7 @@ function mirrorToMeta(name: FunnelEventName, properties?: Record<string, unknown
  */
 export function trackEvent(name: FunnelEventName, properties?: Record<string, unknown>): void {
   if (typeof window === 'undefined') return;
-  mirrorToMeta(name, properties);
+  mirrorToMeta(name);
   // posthog-js exposes `__loaded` only after init(); reading capture before
   // init() throws. The singleton is initialised in entry.client.tsx.
   const ph = posthog as unknown as { __loaded?: boolean; capture?: typeof posthog.capture };

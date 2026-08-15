@@ -48,6 +48,31 @@ export const META_PIXEL_ID = (import.meta.env.VITE_META_PIXEL_ID as string | und
  */
 export const META_DOMAIN_VERIFICATION = 'x7llhzebi6a8xfdwdqjg3jrrtmube5';
 
+/**
+ * WHAT WE NEVER SEND TO META, AND WHY.
+ *
+ * No event in this module carries the problem topic — not the slug
+ * (`moczenie-nocne`), not the catalog category (`sen`, `leki`, `higiena`),
+ * not the child's name, age or appearance.
+ *
+ * Every topic on this site describes a child's behavioural, emotional or
+ * health difficulty. "This person read the bedwetting page" is data
+ * revealing the health of a child, i.e. a special category under RODO
+ * art. 9, and consent to analytics cookies is not consent to send that to
+ * an advertising platform. Meta's own terms also forbid transmitting
+ * sensitive-category data through the pixel.
+ *
+ * The cost is per-topic audiences. That cost is close to zero in practice:
+ * the entire consented visitor pool was ~213 people in August 2026, so
+ * per-topic segments would be too small to deliver against anyway. If the
+ * site ever grows enough for per-topic retargeting to matter, the answer is
+ * a coarse non-clinical bucket agreed with counsel — not the raw slug.
+ *
+ * Section 8 of the privacy policy (`src/data/legalDocs.ts`) states this to
+ * users as a commitment. Adding a topic identifier to any event below
+ * makes that published statement false.
+ */
+
 type FbqFn = ((...args: unknown[]) => void) & { loaded?: boolean };
 
 function getFbq(): FbqFn | null {
@@ -121,13 +146,10 @@ export function trackMetaRouteChange(pathname: string): void {
 
   fbq('track', 'PageView');
 
-  const topicMatch = pathname.match(/^\/problem\/([^/]+)/);
-  if (topicMatch) {
-    fbq('track', 'ViewContent', {
-      content_type: 'product',
-      content_ids: [topicMatch[1]],
-      content_category: 'bajka-terapeutyczna',
-    });
+  // Fires on any topic landing page, but deliberately carries NO topic
+  // identifier — see the note below on why.
+  if (/^\/problem\/[^/]+/.test(pathname)) {
+    fbq('track', 'ViewContent', { content_type: 'product' });
   }
 }
 
@@ -212,7 +234,13 @@ export function buildMetaOrderAttribution(fallbackFbclid?: string, fallbackTimes
   return {
     ...match,
     userAgent: navigator.userAgent,
-    eventSourceUrl: window.location.href,
+    // ORIGIN ONLY — never `location.href`. The order flow lives at
+    // /problem/<topic>/zamow, so the full URL would tell Meta which
+    // difficulty the child has. Meta uses event_source_url for domain
+    // matching, and the bare origin satisfies that. The browser pixel
+    // transmits the full URL automatically and we cannot prevent it; this
+    // server-side event is the one place we control, so we do.
+    eventSourceUrl: window.location.origin,
     marketingConsent: true,
   };
 }

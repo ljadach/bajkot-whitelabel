@@ -71,15 +71,55 @@ nothing into the ad account.
 
 ## What fires, and when
 
-| Funnel moment                      | Source                              | Meta event                           |
-| ---------------------------------- | ----------------------------------- | ------------------------------------ |
-| Any page                           | route change                        | `PageView`                           |
-| `/problem/<slug>`                  | route change                        | `ViewContent`, `content_ids: [slug]` |
-| First real edit in the intake form | `order_started`                     | custom `OrderStarted`                |
-| Paywall / preview seen             | `preview_paywall_viewed`            | `AddToCart`                          |
-| Checkout clicked                   | `checkout_submit_clicked`           | `InitiateCheckout`                   |
-| Paid (browser)                     | `trackPurchase` in `gtag.ts`        | `Purchase` + `eventID`               |
-| Paid (server)                      | Stripe `checkout.session.completed` | `Purchase` + same `event_id`         |
+| Funnel moment                      | Source                              | Meta event                   |
+| ---------------------------------- | ----------------------------------- | ---------------------------- |
+| Any page                           | route change                        | `PageView`                   |
+| `/problem/<slug>`                  | route change                        | `ViewContent` (no topic id)  |
+| First real edit in the intake form | `order_started`                     | custom `OrderStarted`        |
+| Paywall / preview seen             | `preview_paywall_viewed`            | `AddToCart`                  |
+| Checkout clicked                   | `checkout_submit_clicked`           | `InitiateCheckout`           |
+| Paid (browser)                     | `trackPurchase` in `gtag.ts`        | `Purchase` + `eventID`       |
+| Paid (server)                      | Stripe `checkout.session.completed` | `Purchase` + same `event_id` |
+
+## What must never be sent — RODO art. 9
+
+**No event carries the problem topic.** Not the slug (`moczenie-nocne`), not
+the catalog category (`sen`, `leki`, `higiena`, `emocje`, `relacje`,
+`trudne`), not the child's name, age or appearance.
+
+Every topic on this site names a child's behavioural, emotional or health
+difficulty. "This person read the bedwetting page" is data revealing the
+health of a child — a special category under RODO art. 9. Consent to
+analytics cookies is not consent to send that to an ad platform, and Meta's
+own terms forbid transmitting sensitive-category data through the pixel.
+
+Three enforcement points, because this is the kind of thing that gets
+helpfully "improved" back in:
+
+1. `mirrorToMeta` in `telemetry.ts` takes **no** properties argument. Funnel
+   events carry `problemId`; the mirror cannot forward what it never
+   receives.
+2. `trackPurchase` in `gtag.ts` passes `category` to GA4 but **not** to
+   Meta. GA4 is our own analytics under a processing agreement; Meta is an
+   advertising audience.
+3. `buildMetaOrderAttribution` sends `window.location.origin`, never
+   `location.href` — the order flow lives at `/problem/<topic>/zamow`.
+   `tests/unit/metaPixel.test.ts` asserts the serialised payload contains
+   neither `/problem/` nor a topic slug.
+
+**What we cannot prevent:** the browser pixel transmits the page URL with
+every event. That is inherent to how ad pixels work, and for a topic page
+the URL reveals the topic. Section 8 of the privacy policy discloses this
+plainly rather than implying otherwise. It is also why the pixel is fully
+inert before consent.
+
+**Consequence for campaigns:** no per-topic retargeting audiences. Build on
+funnel depth instead — `OrderStarted` without `Purchase`, `AddToCart`
+without `Purchase`, all visitors without `Purchase`. Meta's personal-
+attributes ad policy would block topic-specific creative anyway, so the
+targeting would carry the legal risk without delivering the payoff. If
+traffic ever makes per-topic pools servable, the answer is a coarse
+non-clinical bucket agreed with counsel, not the raw slug.
 
 Mid-funnel mappings live in one table, `META_FUNNEL_MAP` in
 `src/lib/telemetry.ts`, next to the PostHog dispatch. Adding a stage means

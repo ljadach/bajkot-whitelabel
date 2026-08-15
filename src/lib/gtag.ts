@@ -182,13 +182,20 @@ export function trackPurchase(args: {
   // The `eventID` is the deduplication handshake with the Conversions API:
   // the Stripe webhook sends the same Purchase with the same id, so Meta
   // counts one sale whether the browser event survives ad-blockers or not.
+  //
+  // `category` is deliberately NOT forwarded, unlike to GA4 above. The
+  // catalog categories are `emocje`, `leki`, `sen`, `higiena`, `relacje`,
+  // `trudne` — each reveals the nature of a child's difficulty, which is
+  // special-category data under RODO art. 9 and must not reach an ad
+  // platform. GA4 is a different case: it is our own analytics, covered by
+  // a processing agreement, not an advertising audience. Only the product
+  // format and the money go to Meta.
   trackMetaStandard(
     'Purchase',
     {
       value,
       currency,
       content_type: 'product',
-      content_ids: category ? [category] : undefined,
       content_name: format === 'pdf_print' ? 'Bajka PDF + druk' : 'Bajka PDF',
     },
     metaPurchaseEventId(args.transactionId),

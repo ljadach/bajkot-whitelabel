@@ -8,7 +8,13 @@
  */
 
 export const TERMS_VERSION = '2026-05-14';
-export const PRIVACY_VERSION = '2026-05-14';
+/**
+ * Bumped 2026-08-15 for the Meta pixel + Conversions API: recipients,
+ * advertising cookies, and transfers outside the EEA. Consents recorded
+ * before that date stay tied to `2026-05-14`, which is the point of
+ * versioning these strings.
+ */
+export const PRIVACY_VERSION = '2026-08-15';
 
 export interface LegalSection {
   heading: string;
@@ -91,7 +97,7 @@ export const TERMS_DOC: LegalDoc = {
 
 export const PRIVACY_DOC: LegalDoc = {
   version: PRIVACY_VERSION,
-  effectiveDate: '2026-05-14',
+  effectiveDate: '2026-08-15',
   title: 'Polityka Prywatności serwisu Bajkoterapia.org',
   sections: [
     {
@@ -126,6 +132,9 @@ export const PRIVACY_DOC: LegalDoc = {
         'Firmy kurierskie — w celu dostarczenia Produktu Fizycznego.',
         'Biuro rachunkowe — w celach rozliczeniowych.',
         'Dostawcy usług hostingowych i narzędzi IT niezbędnych do wygenerowania pliku PDF.',
+        'PostHog — analityka produktowa. Dane przetwarzane są na serwerach w Unii Europejskiej. Wyłącznie po wyrażeniu zgody na pliki cookie analityczne i marketingowe.',
+        'Google Ireland Limited — Google Analytics 4 oraz Google Ads. Wyłącznie po wyrażeniu zgody na pliki cookie analityczne i marketingowe.',
+        'Meta Platforms Ireland Limited (4 Grand Canal Square, Grand Canal Harbour, Dublin 2, Irlandia) — piksel Meta oraz Conversions API, wykorzystywane do prowadzenia i mierzenia skuteczności reklam w serwisach Facebook i Instagram. Wyłącznie po wyrażeniu zgody na pliki cookie analityczne i marketingowe. Szczegóły w sekcji 8.',
       ],
     },
     {
@@ -153,8 +162,31 @@ export const PRIVACY_DOC: LegalDoc = {
     {
       heading: '7. Pliki Cookies',
       paragraphs: [
-        'Serwis wykorzystuje pliki cookies niezbędne do prawidłowego funkcjonowania procesu zakupowego (zapamiętywanie koszyka, obsługa sesji płatniczej).',
-        'Po uzyskaniu zgody Użytkownika Serwis może korzystać z plików cookies analitycznych (Google Analytics, PostHog) do anonimowej analizy ruchu. Zgoda może być wycofana w każdej chwili przez ustawienia banneru cookies.',
+        'Serwis wykorzystuje pliki cookies niezbędne do prawidłowego funkcjonowania procesu zakupowego (zapamiętywanie koszyka, obsługa sesji płatniczej). Są one stosowane niezależnie od zgody, ponieważ bez nich usługa nie może zostać wykonana.',
+        'Po uzyskaniu zgody Użytkownika Serwis korzysta z plików cookies analitycznych i marketingowych. Jedno ustawienie w banerze obejmuje obie kategorie: analitykę ruchu (Google Analytics 4, PostHog) oraz narzędzia reklamowe (piksel Meta, Google Ads), w tym remarketing, czyli kierowanie reklam do osób, które wcześniej odwiedziły Serwis.',
+        'Do czasu wyrażenia zgody narzędzia reklamowe i analityczne pozostają wyłączone, a odpowiadające im pliki cookies nie są zapisywane na urządzeniu Użytkownika.',
+        'Zgoda jest dobrowolna i może zostać wycofana w każdej chwili przez ustawienia banera cookies. Wycofanie zgody nie wpływa na zgodność z prawem przetwarzania dokonanego przed jej wycofaniem i nie ogranicza możliwości korzystania z Serwisu ani zakupu Produktu.',
+      ],
+    },
+    {
+      heading: '8. Narzędzia reklamowe Meta (Facebook, Instagram)',
+      paragraphs: [
+        'Za zgodą Użytkownika Serwis korzysta z piksela Meta oraz interfejsu Conversions API, dostarczanych przez Meta Platforms Ireland Limited. Celem jest mierzenie skuteczności reklam oraz remarketing — prezentowanie reklam Serwisu osobom, które wcześniej odwiedziły stronę, lecz nie dokończyły zamówienia.',
+        'Przekazywane są: adres IP, informacje o przeglądarce i urządzeniu, adres odwiedzanej podstrony oraz identyfikatory plików cookies Meta (_fbp, _fbc), a także zdarzenia opisujące etap ścieżki zakupowej (wyświetlenie strony tematu, rozpoczęcie zamówienia, wyświetlenie podglądu, przejście do płatności, zakup) wraz z wartością zamówienia.',
+        'Uczciwie zaznaczamy, czego nie da się uniknąć: wraz z każdym zdarzeniem Meta otrzymuje adres odwiedzanej podstrony, a w przypadku stron tematycznych adres ten wskazuje, jakiego zagadnienia dotyczyła wizyta. Jest to nieodłączna cecha działania pikseli reklamowych. Właśnie dlatego narzędzie uruchamiane jest wyłącznie po wyrażeniu przez Użytkownika zgody i pozostaje całkowicie nieaktywne w razie jej braku lub wycofania.',
+        'Poza tym ograniczamy zakres przekazywanych danych do niezbędnego minimum. Zdarzenia wysyłane do Meta opisują wyłącznie etap ścieżki zakupowej oraz wartość zamówienia. Nie przekazujemy identyfikatora problemu ani kategorii tematycznej jako odrębnych parametrów zdarzeń, nie budujemy też grup odbiorców reklam w oparciu o wybrany problem terapeutyczny. Nie przekazujemy żadnych danych wprowadzonych w formularzu zamówienia: imienia dziecka, jego wieku, płci, cech wyglądu, dedykacji ani treści wygenerowanej bajki.',
+        'Informacja o dokonanym zakupie przekazywana jest dodatkowo z naszego serwera (Conversions API). W tym przypadku adres e-mail Kupującego przekazywany jest wyłącznie w postaci nieodwracalnego skrótu kryptograficznego SHA-256 — Meta nie otrzymuje adresu e-mail w postaci jawnej. Zdarzenie to nie zawiera adresu podstrony tematycznej, a wyłącznie adres domeny.',
+        'W zakresie zbierania danych za pośrednictwem piksela i przesyłania ich do Meta, Trustee Interactive Sp. z o.o. oraz Meta Platforms Ireland Limited są współadministratorami w rozumieniu art. 26 RODO. Za dalsze przetwarzanie tych danych we własnych celach odpowiada wyłącznie Meta, na zasadach opisanych w jej polityce prywatności (https://www.facebook.com/privacy/policy).',
+        'Podstawą przetwarzania jest zgoda — art. 6 ust. 1 lit. a RODO. Poza wycofaniem zgody w banerze cookies Użytkownik może również ograniczyć personalizację reklam bezpośrednio w ustawieniach swojego konta Meta.',
+      ],
+    },
+    {
+      heading: '9. Przekazywanie danych poza Europejski Obszar Gospodarczy',
+      paragraphs: [
+        'Dane związane z realizacją umowy (personalizacja, generowanie bajki, płatności) przetwarzane są w Unii Europejskiej lub przez podmioty zapewniające odpowiedni poziom ochrony.',
+        'Narzędzia analityczne i reklamowe wskazane w sekcjach 4, 7 i 8 mogą wiązać się z przekazaniem danych do Stanów Zjednoczonych — do spółek Meta Platforms, Inc. oraz Google LLC. Odbywa się to na podstawie decyzji wykonawczej Komisji Europejskiej stwierdzającej odpowiedni stopień ochrony danych (EU-U.S. Data Privacy Framework), a w zakresie nieobjętym tą decyzją — na podstawie standardowych klauzul umownych zatwierdzonych przez Komisję Europejską.',
+        'Przekazanie to następuje wyłącznie po wyrażeniu przez Użytkownika zgody na pliki cookies analityczne i marketingowe. Brak zgody oznacza, że żadne dane nie są przekazywane do tych podmiotów.',
+        'PostHog przetwarza dane na serwerach w Unii Europejskiej i przekazanie poza EOG nie następuje.',
       ],
     },
   ],

@@ -75,7 +75,12 @@ describe('getMetaMatchParams', () => {
 
 describe('buildMetaOrderAttribution', () => {
   const stubBrowser = (consent: string | null, cookie = '') => {
-    vi.stubGlobal('window', { location: { href: 'https://bajkoterapia.org/problem/zlosc/zamow' } });
+    vi.stubGlobal('window', {
+      location: {
+        href: 'https://bajkoterapia.org/problem/moczenie-nocne/zamow',
+        origin: 'https://bajkoterapia.org',
+      },
+    });
     vi.stubGlobal('document', { cookie });
     vi.stubGlobal('navigator', { userAgent: 'Mozilla/5.0 (test)' });
     vi.stubGlobal('localStorage', {
@@ -112,8 +117,26 @@ describe('buildMetaOrderAttribution', () => {
     expect(buildMetaOrderAttribution()).toEqual({
       fbp: 'fb.1.1700000000000.42',
       userAgent: 'Mozilla/5.0 (test)',
-      eventSourceUrl: 'https://bajkoterapia.org/problem/zlosc/zamow',
+      eventSourceUrl: 'https://bajkoterapia.org',
       marketingConsent: true,
     });
+  });
+
+  /**
+   * The one property here with legal consequences rather than merely
+   * analytical ones. Every topic on this site names a child's behavioural
+   * or health difficulty, so a URL like /problem/moczenie-nocne/zamow is
+   * special-category data under RODO art. 9. Section 8 of the privacy
+   * policy promises users we do not send it. This test is what keeps that
+   * promise true when someone later "fixes" the source URL to be more
+   * useful for reporting.
+   */
+  it('never leaks the problem topic in the server-side source URL', () => {
+    stubBrowser('true', '_fbp=fb.1.1700000000000.42');
+    const attribution = buildMetaOrderAttribution();
+    const serialised = JSON.stringify(attribution);
+    expect(serialised).not.toContain('moczenie-nocne');
+    expect(serialised).not.toContain('/problem/');
+    expect(attribution?.eventSourceUrl).toBe('https://bajkoterapia.org');
   });
 });
