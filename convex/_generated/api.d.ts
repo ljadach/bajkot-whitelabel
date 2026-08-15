@@ -75,6 +75,7 @@ import type * as lib_security from '../lib/security.js';
 import type * as lib_userSentinels from '../lib/userSentinels.js';
 import type * as lib_utils from '../lib/utils.js';
 import type * as llmLogs from '../llmLogs.js';
+import type * as metaCapi from '../metaCapi.js';
 import type * as pipelineConfig from '../pipelineConfig.js';
 import type * as printPdfHttp from '../printPdfHttp.js';
 import type * as prompts from '../prompts.js';
@@ -152,6 +153,7 @@ declare const fullApi: ApiFromModules<{
   'lib/userSentinels': typeof lib_userSentinels;
   'lib/utils': typeof lib_utils;
   llmLogs: typeof llmLogs;
+  metaCapi: typeof metaCapi;
   pipelineConfig: typeof pipelineConfig;
   printPdfHttp: typeof printPdfHttp;
   prompts: typeof prompts;

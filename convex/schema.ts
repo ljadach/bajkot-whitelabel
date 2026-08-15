@@ -1,6 +1,34 @@
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
 
+/**
+ * Meta Conversions API match keys, snapshotted at order creation.
+ *
+ * The Purchase conversion is sent server-side from the Stripe webhook, and
+ * by then the browser is long gone — no cookies, no user agent, and an IP
+ * belonging to Stripe rather than the customer. Meta cannot attribute a
+ * server event to an ad click without at least one of these, so they are
+ * captured while the parent is still on the page and read back at payment
+ * time.
+ *
+ * `marketingConsent` gates the send: an order placed by someone who
+ * rejected the cookie banner must never reach Meta, browser or server.
+ *
+ * Deliberately no `client_ip_address` — we do not hold the customer's real
+ * IP on this path, and sending Stripe's would corrupt Meta's geo matching
+ * rather than improve it.
+ *
+ * Exported so the column, `bookPipeline.createOrder` and the Conversions
+ * API reader all describe the same shape instead of three hand-copies.
+ */
+export const metaAttributionValidator = v.object({
+  fbp: v.optional(v.string()),
+  fbc: v.optional(v.string()),
+  userAgent: v.optional(v.string()),
+  eventSourceUrl: v.optional(v.string()),
+  marketingConsent: v.boolean(),
+});
+
 const applicationTables = {
   config: defineTable({
     type: v.string(),
@@ -324,6 +352,9 @@ const applicationTables = {
       v.union(v.literal('pending'), v.literal('completed'), v.literal('failed')),
     ),
     stripeSessionId: v.optional(v.string()),
+
+    // Meta Conversions API match keys — see `metaAttributionValidator`.
+    metaAttribution: v.optional(metaAttributionValidator),
 
     // GDPR consent log per order — RODO accountability (art. 7 ust. 1).
     // Exact wording + document version + server timestamp are persisted so

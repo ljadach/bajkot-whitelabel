@@ -7,6 +7,8 @@ import { captureTokenFromUrl, getAccessToken } from '../../../hooks/useAccessTok
 import { saveLandingOrderToken } from '../../../hooks/useLandingOrderToken';
 import type { Topic } from '../../../data/topics';
 import { setFunnelSuperProperties, trackEvent } from '../../../lib/telemetry';
+import { getAttribution } from '../../../lib/attribution';
+import { buildMetaOrderAttribution } from '../../../lib/metaPixel';
 import { extractErrorMessage } from '../../../lib/convexErrors';
 import { scrollAppToTop } from '../../../lib/appScroll';
 import { topicPath } from '../../../lib/paths';
@@ -215,9 +217,15 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
           shippingAddress: checkoutPayload.shippingAddress,
           consents: buildConsentsPayload(checkoutPayload.consents),
         });
+        // Meta match keys are snapshotted HERE, at submit, and not at
+        // payment: by the time Stripe's webhook fires the browser that owns
+        // the `_fbp` / `_fbc` cookies is gone. Falls back to the `fbclid`
+        // in our own attribution snapshot when Meta's cookie is missing.
+        const attribution = getAttribution();
         const result = await startLandingOrder({
           accessToken: getAccessToken() ?? '',
           ...baseArgs,
+          metaAttribution: buildMetaOrderAttribution(attribution?.fbclid, attribution?.capturedAt),
         });
         const orderId = result.orderId;
         // Persist the per-order capability token so subsequent screens can

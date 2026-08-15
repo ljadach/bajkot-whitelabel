@@ -14,6 +14,7 @@
 
 import { BOOK_PRICE_PDF_PLN, BOOK_PRICE_PRINT_PLN } from '@lib/pricing';
 import { getAttribution } from '@lib/attribution';
+import { metaPurchaseEventId, trackMetaStandard } from '@lib/metaPixel';
 import { categoryForProblemId, categoryForLandingPath } from '../data/topics';
 
 export const GA_MEASUREMENT_ID = 'G-3QB3EX66Z2';
@@ -71,6 +72,28 @@ export function trackGaPageview(path: string): void {
 }
 
 /**
+ * Fire a mid-funnel event into GA4.
+ *
+ * GA4 historically saw only `page_view`, `purchase` and `book_generated`,
+ * while the whole middle of the funnel went to PostHog alone. That is fine
+ * for product analytics and useless for advertising: a Google Ads
+ * remarketing audience can only be built from what GA4 actually received,
+ * so "visited and did not buy" was reachable but "started an order and
+ * abandoned it" — the group worth the most — was not.
+ *
+ * No event properties are accepted. Funnel events carry `problemId`, and
+ * every problem on this site names a child's behavioural or health
+ * difficulty. Section 8 of the privacy policy commits us to not building
+ * ad audiences on it, and that commitment names no platform, so it binds
+ * Google exactly as it binds Meta.
+ */
+export function trackGaFunnelEvent(event: string): void {
+  const gtag = getGtag();
+  if (!gtag) return;
+  gtag('event', event);
+}
+
+/**
  * List price per format in PLN — the value we report to GA4/Ads. The real
  * billed amount lives on the Stripe session (not echoed back to the client),
  * but for value-based bidding the list price is the right signal since there
@@ -108,7 +131,11 @@ export function markPurchaseTrackedOnce(orderId: string): boolean {
 }
 
 /**
- * Fire a purchase event into GA4 + optionally a Google Ads conversion.
+ * Fire a purchase event into GA4, optionally Google Ads, and Meta.
+ *
+ * This is the single place the purchase conversion leaves the browser for
+ * any ad platform. Callers gate it with `markPurchaseTrackedOnce`, so the
+ * once-per-order guarantee holds for all three destinations at once.
  *
  * - GA4 always gets the `purchase` event (gated only by Consent Mode v2),
  *   carrying value/format/category so revenue can be sliced by product and
@@ -167,6 +194,34 @@ export function trackPurchase(args: {
       currency,
     });
   }
+
+  // Meta Purchase. Lives here rather than in the funnel-event mirror
+  // because this function already owns the once-per-order guarantee (the
+  // callers gate on `markPurchaseTrackedOnce`); routing the conversion
+  // through a second path would reintroduce the double-count this guard
+  // exists to prevent.
+  //
+  // The `eventID` is the deduplication handshake with the Conversions API:
+  // the Stripe webhook sends the same Purchase with the same id, so Meta
+  // counts one sale whether the browser event survives ad-blockers or not.
+  //
+  // `category` is deliberately NOT forwarded, unlike to GA4 above. The
+  // catalog categories are `emocje`, `leki`, `sen`, `higiena`, `relacje`,
+  // `trudne` — each reveals the nature of a child's difficulty, which is
+  // special-category data under RODO art. 9 and must not reach an ad
+  // platform. GA4 is a different case: it is our own analytics, covered by
+  // a processing agreement, not an advertising audience. Only the product
+  // format and the money go to Meta.
+  trackMetaStandard(
+    'Purchase',
+    {
+      value,
+      currency,
+      content_type: 'product',
+      content_name: format === 'pdf_print' ? 'Bajka PDF + druk' : 'Bajka PDF',
+    },
+    metaPurchaseEventId(args.transactionId),
+  );
 }
 
 /**
