@@ -72,6 +72,28 @@ export function trackGaPageview(path: string): void {
 }
 
 /**
+ * Fire a mid-funnel event into GA4.
+ *
+ * GA4 historically saw only `page_view`, `purchase` and `book_generated`,
+ * while the whole middle of the funnel went to PostHog alone. That is fine
+ * for product analytics and useless for advertising: a Google Ads
+ * remarketing audience can only be built from what GA4 actually received,
+ * so "visited and did not buy" was reachable but "started an order and
+ * abandoned it" — the group worth the most — was not.
+ *
+ * No event properties are accepted. Funnel events carry `problemId`, and
+ * every problem on this site names a child's behavioural or health
+ * difficulty. Section 8 of the privacy policy commits us to not building
+ * ad audiences on it, and that commitment names no platform, so it binds
+ * Google exactly as it binds Meta.
+ */
+export function trackGaFunnelEvent(event: string): void {
+  const gtag = getGtag();
+  if (!gtag) return;
+  gtag('event', event);
+}
+
+/**
  * List price per format in PLN — the value we report to GA4/Ads. The real
  * billed amount lives on the Stripe session (not echoed back to the client),
  * but for value-based bidding the list price is the right signal since there

@@ -14,7 +14,7 @@ import {
 } from '@posthog/react';
 import posthog from 'posthog-js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { setAnalyticsConsent } from './gtag';
+import { setAnalyticsConsent, trackGaFunnelEvent } from './gtag';
 import {
   setMarketingConsent,
   trackMetaCustom,
@@ -420,20 +420,45 @@ const META_FUNNEL_MAP: Partial<
 };
 
 /**
- * Mirror a funnel event to Meta when the map has a row for it.
+ * The same funnel stages, named for GA4.
  *
- * `properties` is deliberately NOT forwarded. Funnel events carry
- * `problemId`, and every problem on this site describes a child's
- * behavioural or health difficulty — special-category data under RODO
- * art. 9 that must never reach an ad platform. See the note at the top of
- * `metaPixel.ts`; the privacy policy states this to users as a commitment.
+ * Separate map from Meta's because the vocabularies differ and forcing one
+ * shared name on both would mean picking a loser. Where GA4 has a
+ * recommended ecommerce event we use it — Google Ads reads those natively
+ * for bidding and audience building — and where it does not, the PostHog
+ * name carries over so all three systems stay legible side by side.
+ *
+ * Why GA4 needs this at all: it previously saw only `page_view`,
+ * `purchase` and `book_generated`, so a Google Ads audience could express
+ * "visited and did not buy" but not "started an order and abandoned it".
  */
-function mirrorToMeta(name: FunnelEventName): void {
-  const mapping = META_FUNNEL_MAP[name];
-  if (!mapping) return;
-  const params = { content_type: 'product' };
-  if ('standard' in mapping) trackMetaStandard(mapping.standard, params);
-  else trackMetaCustom(mapping.custom, params);
+const GA4_FUNNEL_MAP: Partial<Record<FunnelEventName, string>> = {
+  order_started: 'order_started',
+  preview_paywall_viewed: 'add_to_cart',
+  checkout_submit_clicked: 'begin_checkout',
+};
+
+/**
+ * Mirror a funnel event to the ad platforms when the maps have a row.
+ *
+ * `properties` is deliberately NOT forwarded to either. Funnel events
+ * carry `problemId`, and every problem on this site describes a child's
+ * behavioural or health difficulty — special-category data under RODO
+ * art. 9 that must never reach an advertising platform. See the note at
+ * the top of `metaPixel.ts`. Section 8 of the privacy policy states this
+ * to users as a commitment and names no platform, so it binds Google
+ * exactly as it binds Meta.
+ */
+function mirrorToAdPlatforms(name: FunnelEventName): void {
+  const meta = META_FUNNEL_MAP[name];
+  if (meta) {
+    const params = { content_type: 'product' };
+    if ('standard' in meta) trackMetaStandard(meta.standard, params);
+    else trackMetaCustom(meta.custom, params);
+  }
+
+  const ga4 = GA4_FUNNEL_MAP[name];
+  if (ga4) trackGaFunnelEvent(ga4);
 }
 
 /**
@@ -444,14 +469,14 @@ function mirrorToMeta(name: FunnelEventName): void {
  * don't already have a PostHog instance from `useAnalytics()`. When you
  * already have a hook context (rendering body), prefer `useAnalytics`.
  *
- * Also mirrors the event to Meta when `META_FUNNEL_MAP` has a row for it.
- * The mirror runs BEFORE the PostHog readiness guard: the two SDKs load
- * independently, and a slow PostHog must not silently cost us a Meta
+ * Also mirrors the event to Meta and GA4 when the funnel maps have a row
+ * for it. The mirror runs BEFORE the PostHog readiness guard: the SDKs
+ * load independently, and a slow PostHog must not silently cost us an ad
  * audience membership.
  */
 export function trackEvent(name: FunnelEventName, properties?: Record<string, unknown>): void {
   if (typeof window === 'undefined') return;
-  mirrorToMeta(name);
+  mirrorToAdPlatforms(name);
   // posthog-js exposes `__loaded` only after init(); reading capture before
   // init() throws. The singleton is initialised in entry.client.tsx.
   const ph = posthog as unknown as { __loaded?: boolean; capture?: typeof posthog.capture };

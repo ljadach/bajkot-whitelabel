@@ -81,6 +81,26 @@ nothing into the ad account.
 | Paid (browser)                     | `trackPurchase` in `gtag.ts`        | `Purchase` + `eventID`       |
 | Paid (server)                      | Stripe `checkout.session.completed` | `Purchase` + same `event_id` |
 
+## GA4 gets the same funnel stages
+
+`GA4_FUNNEL_MAP` in `src/lib/telemetry.ts` mirrors the same three mid-funnel
+stages into GA4, under GA4's own vocabulary:
+
+| Funnel stage              | GA4 event        |
+| ------------------------- | ---------------- |
+| `order_started`           | `order_started`  |
+| `preview_paywall_viewed`  | `add_to_cart`    |
+| `checkout_submit_clicked` | `begin_checkout` |
+
+GA4 previously received only `page_view`, `purchase` and `book_generated`,
+so a Google Ads remarketing audience could express "visited and did not
+buy" but not "started an order and abandoned it" — the group worth the
+most. Recommended GA4 ecommerce names are used where they exist, because
+Google Ads reads those natively for bidding and audience building.
+
+Separate map from Meta's on purpose: the two vocabularies differ, and
+forcing one shared name on both would mean picking a loser.
+
 ## What must never be sent — RODO art. 9
 
 **No event carries the problem topic.** Not the slug (`moczenie-nocne`), not
