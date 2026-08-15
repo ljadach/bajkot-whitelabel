@@ -31,14 +31,23 @@ make the test pass by construction even after a drift.
 
 ### Vercel (build time — Vite inlines these)
 
-| Variable                        | Where to find it                                                                        | Effect if unset                                                     |
-| ------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `VITE_META_PIXEL_ID`            | Events Manager → your dataset → the 15-16 digit id                                      | No pixel script injected at all                                     |
-| `VITE_META_DOMAIN_VERIFICATION` | Business settings → Brand safety → Domains → Meta-tag verification, the `content` value | No verification tag; Aggregated Event Measurement stays unavailable |
+| Variable             | Where to find it                                   | Effect if unset                 |
+| -------------------- | -------------------------------------------------- | ------------------------------- |
+| `VITE_META_PIXEL_ID` | Events Manager → your dataset → the 15-16 digit id | No pixel script injected at all |
 
-**These are build-time.** Setting them in Vercel is not enough — deploys
-here are manual (`npm run deploy`), so the next build after setting them is
-what actually carries the values.
+Current value: `4481352568789657` (dataset `Bajkoterapia Web`, portfolio
+`Trustee Interactive`). Env-driven rather than hardcoded so dev and preview
+builds stay silent instead of polluting the production audience with our own
+testing.
+
+**This is build-time.** Setting it in Vercel is not enough — deploys here are
+manual (`npm run deploy`), so the next build after setting it is what
+actually carries the value.
+
+The domain-verification token is **hardcoded** in `src/lib/metaPixel.ts`
+(`META_DOMAIN_VERIFICATION`), not an env var. It is public, it belongs to
+the domain rather than to an environment, and it never rotates — an env var
+would only add a step whose one possible outcome is forgetting it.
 
 ### Convex (runtime, per deployment)
 

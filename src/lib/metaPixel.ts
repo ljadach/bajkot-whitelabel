@@ -34,12 +34,19 @@
 export const META_PIXEL_ID = (import.meta.env.VITE_META_PIXEL_ID as string | undefined) ?? '';
 
 /**
- * Content of Meta's domain-verification meta tag, from Business settings →
- * Brand safety → Domains. Needed for Aggregated Event Measurement (the iOS
- * event-priority list) and to stop anyone else claiming bajkoterapia.org.
+ * Meta's domain-verification token for bajkoterapia.org, from Business
+ * settings → Brand safety → Domains (portfolio `Trustee Interactive`).
+ * Needed for Aggregated Event Measurement — the iOS event-priority list —
+ * and to stop anyone else claiming the domain in their own Business
+ * Manager.
+ *
+ * Hardcoded rather than env-driven on purpose, unlike the pixel id above.
+ * It is public (it renders into the HTML of every page), it is a property
+ * of the domain rather than of an environment, and it never rotates. An
+ * env var would add a build-time step whose only possible outcome is
+ * forgetting it and silently never being verified.
  */
-export const META_DOMAIN_VERIFICATION =
-  (import.meta.env.VITE_META_DOMAIN_VERIFICATION as string | undefined) ?? '';
+export const META_DOMAIN_VERIFICATION = 'x7llhzebi6a8xfdwdqjg3jrrtmube5';
 
 type FbqFn = ((...args: unknown[]) => void) & { loaded?: boolean };
 
