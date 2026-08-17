@@ -14,8 +14,8 @@
     "heading": "Stwórz bajkę dla swojego dziecka",
     "topicLabel": "Temat:",
     "navTopic": "Temat",
-    "navSituation": "Sytuacja",
-    "navChild": "Dziecko",
+    "navSituation": "Dziecko",
+    "navChild": "Wygląd",
     "selectedTopicHeading": "Wybrany temat",
     "selectedTopicHint": "Potwierdź wybrany temat lub zmień go.",
     "changeTopic": "Zmień temat",
@@ -25,7 +25,7 @@
     "situationLabel": "Opis sytuacji",
     "situationPlaceholder": "Opisz sytuację...",
     "situationNudge": "Im więcej napiszesz, tym bardziej dopasowana będzie bajka.",
-    "nextChild": "Dalej: O dziecku",
+    "nextChild": "Dalej: Wygląd bohatera",
     "childHeading": "Opowiedz nam o swoim dziecku",
     "childHint": "Dzięki temu stworzymy ilustracje, na których się rozpozna. 🎨",
     "childName": "Imię dziecka",
@@ -60,6 +60,8 @@
     "back": "Wróć",
     "submit": "Chcę dedykowaną książkę!",
     "submitFor": "Chcę dedykowaną książkę dla {{nameGen}}!",
+    "submitNoteHeading": "Jeszcze nie kupujesz",
+    "submitNote": "Po kliknięciu wygenerujemy podgląd książki. Dopiero wtedy decydujesz, czy chcesz ją kupić i w jakiej formie: PDF za {{pdfPrice}} albo wersja drukowana z wysyłką za {{printPrice}}.",
     "errorName": "Proszę podać imię dziecka.",
     "errorAge": "Proszę wybrać wiek dziecka.",
     "errorGender": "Proszę wybrać płeć dziecka.",
@@ -195,11 +197,13 @@
     "consentTermsMiddle": "oraz zapoznałem się z",
     "consentPrivacyLink": "Polityką Prywatności",
     "consentTermsSuffix": ".",
-    "consentSpecialData": "Wyrażam zgodę na przetwarzanie danych szczególnych kategorii mojego dziecka (informacje o wybranym problemie emocjonalnym) przez Trustee Interactive Sp. z o.o. wyłącznie w celu wygenerowania i dostarczenia personalizowanej bajki. Rozumiem, że zgodę mogę wycofać w dowolnym momencie.",
-    "submit": "Generuj bajkę",
+    "consentSpecialData": "Wyrażam zgodę na przetwarzanie danych szczególnych kategorii mojego dziecka (wybrany problem emocjonalny) przez Trustee Interactive Sp. z o.o. wyłącznie w celu stworzenia i dostarczenia bajki. Zgodę mogę wycofać w każdej chwili.",
+    "submit": "Twórz bajkę",
     "submitting": "Uruchamiam tworzenie książki...",
     "back": "Wróć",
     "secureNote": "Bajka generuje się od razu — płatność za PDF dopiero po wygenerowaniu, na ekranie wyniku z podglądem 3 stron.",
+    "noPaymentNowTitle": "Teraz nie płacisz.",
+    "noPaymentNowBody": "Gdy książka będzie gotowa, zobaczysz jej <strong>podgląd</strong> i dopiero wtedy zdecydujesz, czy chcesz ją kupić i w jakiej formie: PDF za {{pdfPrice}} albo wersja drukowana z wysyłką za {{printPrice}}.",
     "errorEmail": "Podaj poprawny adres e-mail.",
     "errorFieldRequired": "Uzupełnij to pole."
   },
@@ -210,10 +214,8 @@
   "flowHeader": {
     "back": "Wróć",
     "step": "Krok {{current}} z {{total}}",
-    "step1": "Sytuacja",
-    "step2": "Dziecko",
-    "step3": "Podgląd",
-    "step4": "Zamówienie"
+    "step1": "Dziecko i sytuacja",
+    "step2": "Wygląd i zamówienie"
   },
   "preview": {
     "kicker": "Co otrzymasz?",
@@ -232,6 +234,8 @@
     "include5Body": "Po przeczytaniu książki, by pogłębić efekt."
   },
   "progress": {
+    "keepOpenTitle": "Nie zamykaj tej karty!",
+    "keepOpenBody": "Tworzenie książki trwa do {{minutes}} minut i po drodze zadamy Ci jeszcze kilka pytań. Jeśli zamkniesz przeglądarkę, przerwiesz tworzenie książki.",
     "kicker": "Trwa magia",
     "heading": "Tworzymy historię...",
     "description": "To zajmie tylko chwilę. Przygotowujemy coś wyjątkowego.",

@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BrandLogo } from '../../BrandLogo';
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 2;
 
 /**
  * Fixed header for the standalone landing order page (/problem/:slug/zamow).
@@ -19,12 +19,7 @@ export const OrderFlowHeader = memo(function OrderFlowHeader({
   step: number;
 }) {
   const { t } = useTranslation('book');
-  const stepLabels = [
-    t('flowHeader.step1'),
-    t('flowHeader.step2'),
-    t('flowHeader.step3'),
-    t('flowHeader.step4'),
-  ];
+  const stepLabels = [t('flowHeader.step1'), t('flowHeader.step2')];
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
@@ -39,13 +34,11 @@ export const OrderFlowHeader = memo(function OrderFlowHeader({
           <span className="sm:hidden font-bold text-sm">{t('flowHeader.back')}</span>
         </button>
 
-        {/* Mobile: compact counter with the current step name. */}
-        <div className="md:hidden text-sm font-bold text-calm-900">
-          {t('flowHeader.step', { current: step, total: TOTAL_STEPS })}
-          <span className="text-magic-600"> · {stepLabels[step - 1]}</span>
-        </div>
+        {/* Mobile: just the current step name — with two steps a "Krok 1 z 2"
+            counter carries no information the progress bar doesn't. */}
+        <div className="md:hidden text-sm font-bold text-magic-600">{stepLabels[step - 1]}</div>
 
-        {/* Desktop: all four step labels with the active one highlighted. */}
+        {/* Desktop: both step labels with the active one highlighted. */}
         <ol className="hidden md:flex items-center gap-2 text-xs font-bold">
           {stepLabels.map((label, i) => {
             const n = i + 1;

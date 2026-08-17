@@ -7,7 +7,12 @@ import { CATALOG_CATEGORIES, topicsByCategory, type CatalogCategory } from '../d
 import { LP_FAQ, PRINT_GALLERY } from '../data/lpContent';
 import { TopicNavV4 } from '../components/topic-landing/v4/TopicNavV4';
 import { PhotoCarousel } from '../components/topic-landing/v4/PhotoCarousel';
-import { CtaButton } from '../components/topic-landing/v4/CtaButton';
+import {
+  BOOK_PRICE_PDF_PLN,
+  BOOK_PRICE_PRINT_PLN,
+  GENERATION_MINUTES,
+  formatPricePLN,
+} from '../lib/pricing';
 import { HeroTrustBullets } from '../components/topic-landing/v4/TopicHeroV4';
 import { Section, SectionHeading } from '../components/topic-landing/v4/Section';
 import { TopicProduct } from '../components/topic-landing/v4/TopicProduct';
@@ -36,37 +41,82 @@ const HOME_SAFETY_IMAGE = {
   alt: 'Rozkładówka bajki terapeutycznej na drewnianym stole',
 };
 
+/**
+ * The homepage hero explains the service and then gets out of the way: the
+ * topic grid below it is the real call to action, so there is no button here
+ * that only scrolls the page. The print carousel keeps the right-hand column
+ * on desktop, where the short copy leaves it free; on a phone that column does
+ * not exist, so the carousel is rendered once more under "Jak to działa"
+ * (`md:hidden`) instead of pushing the topics below the fold.
+ */
 function HomeHero() {
   return (
-    <header className="pt-24 pb-10 px-6 bg-lp-cream">
+    <header className="pt-24 pb-6 px-6 bg-lp-cream">
       <div className="max-w-6xl mx-auto grid md:grid-cols-[1.1fr_0.9fr] gap-x-8 items-center">
         <div className="flex flex-col md:col-start-1">
-          <span className="self-start bg-lp-teal/10 text-lp-teal-text font-extrabold text-xs px-3 py-1.5 rounded-full mb-4">
-            Dla dzieci 2–12 lat · gotowa w jeden wieczór
-          </span>
           <h1 className="text-2xl md:text-4xl font-black text-lp-navy leading-tight mb-3">
-            Bajka, w której Twoje dziecko jest bohaterem{' '}
-            <span className="text-lp-amber-dark">— i wygrywa ze swoją trudnością</span>
+            Terapeutyczna bajka napisana dla jednego dziecka{' '}
+            <span className="text-lp-amber-dark">— Twojego</span>
           </h1>
-          <p className="text-base text-lp-ink-soft max-w-xl mb-4">
-            <b className="text-lp-navy">Dedykowana książka dla Twojego dziecka.</b> Wybierz temat —
-            od lęku przed ciemnością po pierwsze dni w przedszkolu — a my napiszemy bajkę z
-            imieniem, wyglądem i wyzwaniem Twojego malucha.
+          <p className="text-base text-lp-ink-soft max-w-xl">
+            Wybierasz trudność, opisujesz sytuację i swoje dziecko. W {GENERATION_MINUTES} minut
+            dostajesz książkę, w której ono jest bohaterem — z jego imieniem, wyglądem i tym
+            konkretnym wyzwaniem.
           </p>
-          <div>
-            <CtaButton topicSlug={HOME_SLUG} location="hero_home" href={TOPICS_ANCHOR} />
-            <p className="text-sm text-lp-ink-soft mt-2.5">
-              Najpierw czytasz, potem decydujesz, czy kupujesz.
-            </p>
-          </div>
+          <p className="text-base text-lp-navy font-bold max-w-xl mt-3">
+            Czytasz podgląd, dopiero potem decydujesz o zakupie.
+          </p>
+          <HeroTrustBullets className="mt-5" />
         </div>
         <PhotoCarousel
           photos={PRINT_GALLERY}
-          className="mt-5 md:mt-0 md:col-start-2 md:row-start-1 md:row-span-2"
+          className="hidden md:block md:col-start-2 md:row-start-1"
         />
-        <HeroTrustBullets className="mt-5 md:col-start-1" />
       </div>
     </header>
+  );
+}
+
+const HOW_IT_WORKS: { title: string; body: string }[] = [
+  {
+    title: 'Wybierasz trudność',
+    body: 'Sen, złość, przedszkole, lęki, rodzeństwo — i kilkadziesiąt innych tematów.',
+  },
+  {
+    title: 'Opisujesz dziecko i sytuację',
+    body: 'Imię, wiek, wygląd i to, co dzieje się u Was w domu. Dwa krótkie kroki.',
+  },
+  {
+    title: 'Czytasz podgląd i decydujesz',
+    body: `PDF za ${formatPricePLN(BOOK_PRICE_PDF_PLN)} albo drukowana książka za ${formatPricePLN(
+      BOOK_PRICE_PRINT_PLN,
+    )}. Bez zobowiązań.`,
+  },
+];
+
+function HowItWorks() {
+  return (
+    <Section id="jak-to-dziala" className="bg-white">
+      <SectionHeading center sub="Od wyboru tematu do gotowej bajki w jeden wieczór.">
+        Jak to działa
+      </SectionHeading>
+      <ol className="grid md:grid-cols-3 gap-6 list-none p-0 m-0">
+        {HOW_IT_WORKS.map((step, i) => (
+          <li key={step.title} className="flex gap-3 items-start">
+            <span className="shrink-0 w-7 h-7 rounded-full bg-lp-navy text-white font-black text-sm flex items-center justify-center">
+              {i + 1}
+            </span>
+            <div>
+              <b className="block text-lp-navy">{step.title}</b>
+              <span className="text-sm text-lp-ink-soft">{step.body}</span>
+            </div>
+          </li>
+        ))}
+      </ol>
+      {/* Phone-only twin of the hero carousel — same photos, so the browser
+          fetches each file once. */}
+      <PhotoCarousel photos={PRINT_GALLERY} className="md:hidden mt-8" />
+    </Section>
   );
 }
 
@@ -180,6 +230,7 @@ export function HomePage() {
       <TopicNavV4 topicSlug={HOME_SLUG} ctaHref={TOPICS_ANCHOR} />
       <HomeHero />
       <TopicsGrid />
+      <HowItWorks />
       <TopicProduct topic={{ slug: HOME_SLUG }} />
       <TopicVideo topic={{ slug: HOME_SLUG }} />
       <TopicReviews />

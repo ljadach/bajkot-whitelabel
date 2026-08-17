@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { trackEvent, useStepTransitionTracker } from '../../../lib/telemetry';
 import { genitiveOrSelf } from '../../../lib/childNameInflect';
+import { BOOK_PRICE_PDF_PLN, BOOK_PRICE_PRINT_PLN, formatPricePLN } from '../../../lib/pricing';
 import { FieldError } from './FieldError';
 import { errorBorderClass } from './fieldStyles';
 import {
@@ -34,6 +35,18 @@ interface Props {
    */
   step?: 1 | 2 | 3;
   onStepChange?: (step: 1 | 2 | 3) => void;
+  /**
+   * Landing flow: the child step and the checkout share one screen, so the
+   * wizard's own "Chcę dedykowaną książkę!" row would be a second CTA above
+   * the real one. The checkout below supplies the only submit button.
+   */
+  hideChildSubmit?: boolean;
+  /**
+   * Hands the child-field validator to the parent, so a submit button living
+   * outside this component still gets per-field errors and the scroll-to-first
+   * -missing-field behaviour instead of a generic "fill in the form".
+   */
+  onRegisterValidateChild?: (validate: () => boolean) => void;
 }
 
 /** Per-field validation errors for the child step. */
@@ -68,6 +81,8 @@ export function OrderWizard({
   skipTopicStep = false,
   step: controlledStep,
   onStepChange,
+  hideChildSubmit = false,
+  onRegisterValidateChild,
 }: Props) {
   const { t } = useTranslation('book');
   const [internalStep, setInternalStep] = useState<1 | 2 | 3>(skipTopicStep ? 2 : 1);
@@ -137,7 +152,11 @@ export function OrderWizard({
     [onStepChange],
   );
 
-  const handleFinish = useCallback(() => {
+  /** True when the required child fields (name, age, gender — all on the
+   *  situation step) are filled; otherwise marks and scrolls to the first
+   *  missing one. Guards the step-1 → step-2 transition, the wizard's own CTA
+   *  and, via `onRegisterValidateChild`, a submit button rendered outside. */
+  const validateChild = useCallback((): boolean => {
     const errors: ChildFieldErrors = {};
     if (!intake.name.trim() || intake.name.trim().length < 2) {
       errors.name = t('wizard.errorName');
@@ -159,23 +178,39 @@ export function OrderWizard({
       } else {
         genderRef.current?.scrollIntoView({ behavior: 'auto', block: 'center' });
       }
-      return;
+      return false;
     }
+    return true;
+  }, [intake, t]);
+
+  const handleFinish = useCallback(() => {
+    if (!validateChild()) return;
     onSubmit();
-  }, [intake, t, onSubmit]);
+  }, [validateChild, onSubmit]);
+
+  /** Leaving the situation step means the required child fields are on screen
+   *  right there — validate before moving on rather than at submit. */
+  const handleWhoNext = useCallback(() => {
+    if (!validateChild()) return;
+    goToStep(3);
+  }, [validateChild, goToStep]);
+
+  useEffect(() => {
+    onRegisterValidateChild?.(validateChild);
+  }, [onRegisterValidateChild, validateChild]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Enter' || !(e.ctrlKey || e.metaKey)) return;
       e.preventDefault();
       if (step === 1) goToStep(2);
-      else if (step === 2) goToStep(3);
+      else if (step === 2) handleWhoNext();
       else handleFinish();
       // step 1 is unreachable when skipTopicStep is set; the branch is harmless.
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [step, goToStep, handleFinish]);
+  }, [step, goToStep, handleWhoNext, handleFinish]);
 
   const trimmedName = intake.name.trim();
 
@@ -184,7 +219,7 @@ export function OrderWizard({
   }
 
   return (
-    <section className="pt-28 pb-20 px-6 bg-gray-50 min-h-screen">
+    <section className={`pt-28 px-6 bg-gray-50 ${hideChildSubmit ? 'pb-6' : 'pb-20 min-h-screen'}`}>
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-10">
           <span className="text-magic-500 font-bold uppercase tracking-widest text-sm mb-2 block">
@@ -232,29 +267,31 @@ export function OrderWizard({
 
             {step === 2 && (
               <StepSituation
+                intake={intake}
                 value={intake.situation}
                 onChangeValue={(v) => update('situation', v)}
+                onChangeName={(v) => update('name', v)}
+                onChangeAge={(v) => update('age', v)}
+                onChangeGender={(v) => update('gender', v)}
                 onBack={skipTopicStep ? undefined : () => goToStep(1)}
-                onNext={() => goToStep(3)}
+                onNext={handleWhoNext}
                 placeholder={situationPlaceholder(intake.topic, t)}
+                fieldErrors={fieldErrors}
+                nameRef={nameRef}
+                ageRef={ageRef}
+                genderRef={genderRef}
               />
             )}
 
             {step === 3 && (
               <StepChild
                 intake={intake}
-                onChangeName={(v) => update('name', v)}
-                onChangeAge={(v) => update('age', v)}
-                onChangeGender={(v) => update('gender', v)}
                 onChangeAppearance={updateAppearance}
                 onChangeToy={(v) => update('favoriteToy', v)}
                 onBack={() => goToStep(2)}
                 onSubmit={handleFinish}
+                hideSubmit={hideChildSubmit}
                 trimmedName={trimmedName}
-                fieldErrors={fieldErrors}
-                nameRef={nameRef}
-                ageRef={ageRef}
-                genderRef={genderRef}
               />
             )}
           </div>
@@ -323,104 +360,43 @@ function StepTopic({
 // ── Step 2: situation ────────────────────────────────
 
 function StepSituation({
+  intake,
   value,
   onChangeValue,
-  onBack,
-  onNext,
-  placeholder,
-}: {
-  value: string;
-  onChangeValue: (v: string) => void;
-  /** Omitted when the topic step is skipped — there is nowhere to go back to. */
-  onBack?: () => void;
-  onNext: () => void;
-  placeholder: string;
-}) {
-  const { t } = useTranslation('book');
-  const showNudge = value.trim().length === 0;
-
-  return (
-    <div className="space-y-8 animate-fadeIn">
-      <div>
-        <label className="block text-sm font-bold text-calm-900 mb-2">
-          {t('wizard.situationLabel')}
-        </label>
-        <textarea
-          rows={6}
-          value={value}
-          onChange={(e) => onChangeValue(e.target.value)}
-          placeholder={placeholder}
-          className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-magic-500 focus:bg-white outline-none transition font-semibold text-base resize-none"
-        />
-        {showNudge && (
-          <p className="text-sm text-magic-600 mt-2">
-            <i className="fa-solid fa-lightbulb mr-1" />
-            {t('wizard.situationNudge')}
-          </p>
-        )}
-      </div>
-
-      <div className="flex gap-4 pt-4">
-        {onBack && (
-          <button
-            type="button"
-            onClick={onBack}
-            className="w-1/3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-4 rounded-2xl transition"
-          >
-            {t('wizard.back')}
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={onNext}
-          className={`${onBack ? 'w-2/3' : 'w-full'} bg-magic-500 hover:bg-magic-600 text-white font-bold py-4 rounded-2xl text-lg shadow-lg shadow-magic-500/30 transition`}
-        >
-          {t('wizard.nextChild')} <i className="fa-solid fa-arrow-right ml-2" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ── Step 3: child details (consolidated) ─────────────
-
-function StepChild({
-  intake,
   onChangeName,
   onChangeAge,
   onChangeGender,
-  onChangeAppearance,
-  onChangeToy,
   onBack,
-  onSubmit,
-  trimmedName,
+  onNext,
+  placeholder,
   fieldErrors,
   nameRef,
   ageRef,
   genderRef,
 }: {
   intake: IntakeState;
+  value: string;
+  onChangeValue: (v: string) => void;
   onChangeName: (v: string) => void;
   onChangeAge: (v: number | null) => void;
   onChangeGender: (v: Gender) => void;
-  onChangeAppearance: <K extends keyof AppearanceData>(key: K, value: AppearanceData[K]) => void;
-  onChangeToy: (v: string) => void;
-  onBack: () => void;
-  onSubmit: () => void;
-  trimmedName: string;
+  /** Omitted when the topic step is skipped — there is nowhere to go back to. */
+  onBack?: () => void;
+  onNext: () => void;
+  placeholder: string;
   fieldErrors: ChildFieldErrors;
   nameRef: RefObject<HTMLInputElement | null>;
   ageRef: RefObject<HTMLSelectElement | null>;
   genderRef: RefObject<HTMLDivElement | null>;
 }) {
   const { t } = useTranslation('book');
-
-  const submitLabel = trimmedName
-    ? t('wizard.submitFor', { nameGen: genitiveOrSelf(trimmedName) })
-    : t('wizard.submit');
+  const showNudge = value.trim().length === 0;
 
   return (
     <div className="space-y-8 animate-fadeIn">
+      {/* Who the book is for comes first: three trivial fields the parent
+          answers in seconds, before the one question that costs real effort.
+          The appearance details stay on the next step. */}
       <div className="grid md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-bold text-calm-900 mb-2">
@@ -492,7 +468,74 @@ function StepChild({
         </div>
         <FieldError message={fieldErrors.gender} />
       </div>
+      <div>
+        <label className="block text-sm font-bold text-calm-900 mb-2">
+          {t('wizard.situationLabel')}
+        </label>
+        <textarea
+          rows={6}
+          value={value}
+          onChange={(e) => onChangeValue(e.target.value)}
+          placeholder={placeholder}
+          className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-magic-500 focus:bg-white outline-none transition font-semibold text-base resize-none"
+        />
+        {showNudge && (
+          <p className="text-sm text-magic-600 mt-2">
+            <i className="fa-solid fa-lightbulb mr-1" />
+            {t('wizard.situationNudge')}
+          </p>
+        )}
+      </div>
 
+      <div className="flex gap-4 pt-4">
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="w-1/3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-4 rounded-2xl transition"
+          >
+            {t('wizard.back')}
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={onNext}
+          className={`${onBack ? 'w-2/3' : 'w-full'} bg-magic-500 hover:bg-magic-600 text-white font-bold py-4 rounded-2xl text-lg shadow-lg shadow-magic-500/30 transition`}
+        >
+          {t('wizard.nextChild')} <i className="fa-solid fa-arrow-right ml-2" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Step 3: child details (consolidated) ─────────────
+
+function StepChild({
+  intake,
+  onChangeAppearance,
+  onChangeToy,
+  onBack,
+  onSubmit,
+  hideSubmit,
+  trimmedName,
+}: {
+  intake: IntakeState;
+  onChangeAppearance: <K extends keyof AppearanceData>(key: K, value: AppearanceData[K]) => void;
+  onChangeToy: (v: string) => void;
+  onBack: () => void;
+  onSubmit: () => void;
+  hideSubmit?: boolean;
+  trimmedName: string;
+}) {
+  const { t } = useTranslation('book');
+
+  const submitLabel = trimmedName
+    ? t('wizard.submitFor', { nameGen: genitiveOrSelf(trimmedName) })
+    : t('wizard.submit');
+
+  return (
+    <div className="space-y-8 animate-fadeIn">
       <div className="grid md:grid-cols-3 gap-6">
         <SelectField
           label={t('wizard.eyeColor')}
@@ -556,22 +599,41 @@ function StepChild({
         </div>
       </div>
 
-      <div className="flex gap-4 pt-4">
-        <button
-          type="button"
-          onClick={onBack}
-          className="w-1/3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-4 rounded-2xl transition"
-        >
-          {t('wizard.back')}
-        </button>
-        <button
-          type="button"
-          onClick={onSubmit}
-          className="w-2/3 bg-magic-500 hover:bg-magic-600 text-white font-bold py-4 rounded-2xl text-lg shadow-lg shadow-magic-500/30 transition"
-        >
-          {submitLabel} <i className="fa-solid fa-arrow-right ml-2" />
-        </button>
-      </div>
+      {/* Hidden when the checkout shares this screen — it owns the only CTA. */}
+      {!hideSubmit && (
+        <>
+          <div className="flex gap-4 pt-4">
+            <button
+              type="button"
+              onClick={onBack}
+              className="w-1/3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-4 rounded-2xl transition"
+            >
+              {t('wizard.back')}
+            </button>
+            <button
+              type="button"
+              onClick={onSubmit}
+              className="w-2/3 bg-magic-500 hover:bg-magic-600 text-white font-bold py-4 rounded-2xl text-lg shadow-lg shadow-magic-500/30 transition"
+            >
+              {submitLabel} <i className="fa-solid fa-arrow-right ml-2" />
+            </button>
+          </div>
+
+          {/* The preview screen is gone from the flow, so this is where the
+              parent learns that clicking is not a purchase: the book is
+              generated first, the buy/format decision comes after it. */}
+          <div className="mt-4 flex gap-3 rounded-2xl bg-magic-50 border border-magic-100 p-4">
+            <i className="fa-solid fa-circle-info text-magic-500 mt-0.5" aria-hidden="true" />
+            <p className="text-sm text-calm-700 leading-relaxed">
+              <span className="font-bold text-calm-900">{t('wizard.submitNoteHeading')}</span>{' '}
+              {t('wizard.submitNote', {
+                pdfPrice: formatPricePLN(BOOK_PRICE_PDF_PLN),
+                printPrice: formatPricePLN(BOOK_PRICE_PRINT_PLN),
+              })}
+            </p>
+          </div>
+        </>
+      )}
     </div>
   );
 }

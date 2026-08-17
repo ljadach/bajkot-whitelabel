@@ -156,14 +156,14 @@ export function ProgressJourney({
           {/* Tip card */}
           <div className="bg-calm-50 rounded-2xl p-5 border border-calm-100 mt-6 transition-opacity duration-300">
             <div className="flex items-start gap-3">
-              <div className="text-2xl mt-0.5 shrink-0" aria-hidden>
+              <div className="text-3xl mt-0.5 shrink-0" aria-hidden>
                 {tips[tipIndex]?.emoji}
               </div>
               <div>
-                <p className="text-xs font-bold text-magic-600 uppercase tracking-wider mb-1">
+                <p className="text-sm font-bold text-magic-600 uppercase tracking-wider mb-1.5">
                   {t('progress.tipHeading')}
                 </p>
-                <p className="text-gray-700 font-medium leading-relaxed text-sm">
+                <p className="text-gray-700 font-medium leading-relaxed text-lg">
                   {tips[tipIndex]?.text}
                 </p>
               </div>

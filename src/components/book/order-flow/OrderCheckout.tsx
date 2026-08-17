@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { trackEvent } from '../../../lib/telemetry';
-import { genitiveOrSelf } from '../../../lib/childNameInflect';
+import { BOOK_PRICE_PDF_PLN, BOOK_PRICE_PRINT_PLN, formatPricePLN } from '../../../lib/pricing';
 import { FieldError } from './FieldError';
 import { errorBorderClass } from './fieldStyles';
 import type { IntakeState, OrderFormat } from './types';
@@ -35,13 +35,22 @@ export interface CheckoutSubmitPayload {
 
 interface Props {
   intake: IntakeState;
-  onChangeFormat: (fmt: OrderFormat) => void;
   onSubmit: (payload: CheckoutSubmitPayload) => Promise<void> | void;
   onBack: () => void;
   /** External submitting flag (Stripe redirect / pipeline start in flight). */
   isSubmitting: boolean;
   /** External error string. */
   externalError?: string | null;
+  /**
+   * Rendered under the child step on one shared screen instead of as its own
+   * full-height page: drops the fixed-header clearance and the min-height.
+   */
+  embedded?: boolean;
+  /**
+   * Runs before this screen's own validation and blocks submit when it returns
+   * false. The merged step uses it to validate the child fields above.
+   */
+  beforeSubmit?: () => boolean;
 }
 
 /**
@@ -50,11 +59,12 @@ interface Props {
  */
 export function OrderCheckout({
   intake,
-  onChangeFormat,
   onSubmit,
   onBack,
   isSubmitting,
   externalError,
+  embedded = false,
+  beforeSubmit,
 }: Props) {
   const { t } = useTranslation('book');
   const [email, setEmail] = useState('');
@@ -66,25 +76,37 @@ export function OrderCheckout({
   >({});
   const emailRef = useRef<HTMLInputElement>(null);
   const addressSectionRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
 
+  // Embedded, the checkout is the lower half of the child step, so mounting
+  // says nothing about the parent having reached it — the funnel step is
+  // "scrolled it into view". Standalone it still fires on mount.
   useEffect(() => {
-    trackEvent('checkout_viewed', { format: intake.format });
+    const fire = () => trackEvent('checkout_viewed', { format: intake.format });
+    if (!embedded) {
+      fire();
+      return;
+    }
+    const node = sectionRef.current;
+    if (!node || typeof IntersectionObserver === 'undefined') {
+      fire();
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        fire();
+      },
+      { threshold: 0.25 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
     // mount-only — format change is captured separately
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleChangeFormat = (fmt: OrderFormat) => {
-    trackEvent('checkout_format_changed', { format: fmt });
-    onChangeFormat(fmt);
-  };
-
-  const trimmedName = intake.name.trim();
-  const productName = trimmedName
-    ? t('checkout.summaryProductFor', { nameGen: genitiveOrSelf(trimmedName) })
-    : t('checkout.summaryProduct');
-  const topicLine = intake.topic ? intake.topic.catalog.shortTitle : '';
   const isPrint = intake.format === 'pdf_print';
-  const price = isPrint ? t('previewScreen.formatPrintPrice') : t('previewScreen.formatPdfPrice');
 
   const updateAddress = <K extends keyof ShippingAddress>(key: K, val: ShippingAddress[K]) => {
     setAddress((prev) => ({ ...prev, [key]: val }));
@@ -92,6 +114,9 @@ export function OrderCheckout({
   };
 
   const handleSubmit = async () => {
+    // Fields above this block (the child step, when merged) come first: their
+    // own validator marks and scrolls to whatever is missing up there.
+    if (beforeSubmit && !beforeSubmit()) return;
     // Validate inline, per field — a single banner at the top of the card
     // scrolled the user away from the field they had to fix.
     const errors: typeof fieldErrors = {};
@@ -134,18 +159,11 @@ export function OrderCheckout({
   }, [externalError]);
 
   return (
-    <section className="pt-28 pb-20 px-6 bg-gray-50 min-h-screen">
+    <section
+      ref={sectionRef}
+      className={embedded ? 'pb-20 px-6 bg-gray-50' : 'pt-28 pb-20 px-6 bg-gray-50 min-h-screen'}
+    >
       <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-10">
-          <span className="text-magic-500 font-bold uppercase tracking-widest text-sm mb-2 block">
-            {t('checkout.kicker')}
-          </span>
-          <h1 className="text-3xl md:text-4xl font-black text-calm-900 mb-4">
-            {t('checkout.heading')}
-          </h1>
-          <p className="text-gray-600 text-lg">{t('checkout.subheading')}</p>
-        </div>
-
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-10 space-y-8">
           {externalError && (
             <div
@@ -157,20 +175,6 @@ export function OrderCheckout({
               {externalError}
             </div>
           )}
-
-          {/* Order Summary */}
-          <div className="bg-calm-50 rounded-2xl p-6 border border-calm-100">
-            <h3 className="font-bold text-calm-900 mb-3">{t('checkout.summaryHeading')}</h3>
-            <div className="flex justify-between items-center gap-4">
-              <div>
-                <p className="font-bold text-calm-900">{productName}</p>
-                {topicLine && <p className="text-sm text-gray-500">{topicLine}</p>}
-              </div>
-              <p className="text-2xl font-black text-calm-900 shrink-0 whitespace-nowrap">
-                {price}
-              </p>
-            </div>
-          </div>
 
           {/* Email */}
           <div>
@@ -193,35 +197,6 @@ export function OrderCheckout({
             />
             <FieldError message={fieldErrors.email} />
             <p className="text-xs text-gray-400 mt-1">{t('checkout.emailHint')}</p>
-          </div>
-
-          {/* Delivery option */}
-          <div>
-            <label className="block text-sm font-bold text-calm-900 mb-3">
-              {t('checkout.deliveryHeading')}
-            </label>
-            <div className="space-y-3">
-              <DeliveryRadio
-                value="pdf"
-                selected={intake.format}
-                onSelect={handleChangeFormat}
-                emoji="📱"
-                label={t('checkout.deliveryPdf')}
-                price={t('previewScreen.formatPdfPrice')}
-              />
-              <DeliveryRadio
-                value="pdf_print"
-                selected={intake.format}
-                onSelect={handleChangeFormat}
-                emoji="📚"
-                label={t('checkout.deliveryPrint')}
-                price={t('previewScreen.formatPrintPrice')}
-              />
-            </div>
-            <p className="mt-3 text-xs text-gray-500 leading-relaxed">
-              <i className="fa-solid fa-circle-info text-calm-500 mr-1" />
-              {t('checkout.printDispatchNote')}
-            </p>
           </div>
 
           {/* Address fields (when PDF+Print) */}
@@ -356,56 +331,24 @@ export function OrderCheckout({
             </button>
           </div>
 
-          <p className="text-center text-xs text-gray-400">
-            <i className="fa-solid fa-shield-halved mr-1" /> {t('checkout.secureNote')}
-          </p>
+          <div className="flex gap-3 rounded-2xl bg-calm-50 border border-calm-100 p-4">
+            <i className="fa-solid fa-circle-info text-magic-500 mt-0.5" aria-hidden="true" />
+            <p className="text-sm text-calm-700 leading-relaxed">
+              <span className="font-bold text-calm-900">{t('checkout.noPaymentNowTitle')}</span>{' '}
+              <Trans
+                i18nKey="checkout.noPaymentNowBody"
+                ns="book"
+                values={{
+                  pdfPrice: formatPricePLN(BOOK_PRICE_PDF_PLN),
+                  printPrice: formatPricePLN(BOOK_PRICE_PRINT_PLN),
+                }}
+                components={{ strong: <strong className="font-bold text-calm-900" /> }}
+              />
+            </p>
+          </div>
         </div>
       </div>
     </section>
-  );
-}
-
-function DeliveryRadio({
-  value,
-  selected,
-  onSelect,
-  emoji,
-  label,
-  price,
-}: {
-  value: OrderFormat;
-  selected: OrderFormat;
-  onSelect: (v: OrderFormat) => void;
-  emoji: string;
-  label: string;
-  price: string;
-}) {
-  const checked = selected === value;
-  return (
-    <label className="cursor-pointer relative block">
-      <input
-        type="radio"
-        name="checkout-delivery"
-        value={value}
-        checked={checked}
-        onChange={() => onSelect(value)}
-        className="peer sr-only"
-      />
-      <div
-        className={`p-4 border-2 rounded-2xl flex items-center justify-between transition ${
-          checked ? 'border-magic-500 bg-amber-50' : 'border-gray-100 hover:bg-gray-50'
-        }`}
-      >
-        <div className="flex items-center gap-3">
-          <div className="text-xl">{emoji}</div>
-          <span className="font-bold text-calm-900">{label}</span>
-        </div>
-        <span className="font-black text-calm-900">{price}</span>
-        {checked && (
-          <i className="fa-solid fa-circle-check text-magic-500 absolute top-4 right-4" />
-        )}
-      </div>
-    </label>
   );
 }
 
