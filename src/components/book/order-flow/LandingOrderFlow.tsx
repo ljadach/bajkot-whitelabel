@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useAction } from 'convex/react';
 import { useTranslation } from 'react-i18next';
@@ -13,14 +13,15 @@ import { extractErrorMessage } from '../../../lib/convexErrors';
 import { scrollAppToTop } from '../../../lib/appScroll';
 import { topicPath } from '../../../lib/paths';
 import { OrderWizard } from './OrderWizard';
-import { OrderPreview } from './OrderPreview';
 import { OrderCheckout, type CheckoutSubmitPayload } from './OrderCheckout';
 import { OrderFlowHeader } from './OrderFlowHeader';
 import {
+  INITIAL_CHECKOUT_STATE,
   INITIAL_INTAKE,
   buildConsentsPayload,
   intakeToOrderArgs,
   isChildProfileComplete,
+  type CheckoutFormState,
   type IntakeState,
   type OrderFormat,
 } from './types';
@@ -75,12 +76,12 @@ function clearDraft(slug: string) {
 }
 
 // ── Step ↔ URL mapping ───────────────────────────────
-// Flow steps 1-4 (situation, child, preview, checkout). Step 1 is the bare
-// URL; deeper steps carry ?krok=N. Every forward transition is a history
-// push, so the browser back button (and the header back button) walk the
-// steps instead of dumping the user out of the flow.
+// Flow steps 1-2 (situation, then child data + checkout on one screen).
+// Step 1 is the bare URL; step 2 carries ?krok=2. Every forward transition
+// is a history push, so the browser back button (and the header back button)
+// walk the steps instead of dumping the user out of the flow.
 
-type FlowStep = 1 | 2 | 3 | 4;
+type FlowStep = 1 | 2;
 
 function stepSearch(step: FlowStep): string {
   return step === 1 ? '' : `?krok=${step}`;
@@ -96,9 +97,10 @@ function canGoBack(): boolean {
 
 /**
  * Landing order flow — standalone page at /problem/:slug/zamow.
- * Topic preselected from the URL, current step in ?krok=. wizard → preview →
- * checkout, with a fixed progress header ("Krok X z 4"), native browser
- * back/forward between steps, and scroll-to-top on every step change.
+ * Topic preselected from the URL, current step in ?krok=. Situation, then
+ * child data and checkout together on one screen, with a fixed progress
+ * header, native browser back/forward between steps, and scroll-to-top on
+ * every step change.
  */
 export function LandingOrderFlow({ topic }: { topic: Topic }) {
   const { t } = useTranslation('book');
@@ -112,12 +114,16 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  // Lifted out of OrderCheckout so it survives that component unmounting when
+  // the parent steps back to step 1 (only its own field-validation errors
+  // reset, not the values themselves).
+  const [checkoutState, setCheckoutState] = useState<CheckoutFormState>(INITIAL_CHECKOUT_STATE);
 
-  // Current step comes from the URL; preview/checkout additionally require a
-  // complete child profile (a deep link or stale draft can't dead-end there).
+  // Current step comes from the URL. Name, age and gender live on step 1, so
+  // step 2 requires them — a deep link or a stale draft can't dead-end there.
   const rawStep = Number(searchParams.get('krok') ?? '1');
-  const urlStep: FlowStep = rawStep >= 1 && rawStep <= 4 ? (rawStep as FlowStep) : 1;
-  const flowStep: FlowStep = urlStep >= 3 && !isChildProfileComplete(intake) ? 1 : urlStep;
+  const urlStep: FlowStep = rawStep === 2 ? 2 : 1;
+  const flowStep: FlowStep = urlStep === 2 && !isChildProfileComplete(intake) ? 1 : urlStep;
 
   // If the guard demoted the step, make the URL agree (replace, not push —
   // the unreachable step must not stay in history).
@@ -184,6 +190,14 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
     scrollAppToTop();
   }, [flowStep]);
 
+  // The child fields live in the wizard but the only submit button lives in
+  // the checkout below it, so the wizard hands its validator up here.
+  const validateChildRef = useRef<(() => boolean) | null>(null);
+  const registerValidateChild = useCallback((validate: () => boolean) => {
+    validateChildRef.current = validate;
+  }, []);
+  const validateChild = useCallback(() => validateChildRef.current?.() ?? true, []);
+
   // Wizard-internal step for flow steps 1-2 (2=situation, 3=child).
   const wizardStep: 2 | 3 = flowStep === 2 ? 3 : 2;
   const handleWizardStep = useCallback(
@@ -195,10 +209,6 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
     },
     [goToStep, goBack],
   );
-
-  const handleChangeFormat = useCallback((format: OrderFormat) => {
-    setIntake((prev) => ({ ...prev, format }));
-  }, []);
 
   const submitOrder = useCallback(
     async (
@@ -258,38 +268,36 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
   return (
     <>
       <OrderFlowHeader onBack={handleHeaderBack} step={flowStep} />
-      {flowStep <= 2 && (
-        <OrderWizard
-          intake={intake}
-          onChange={setIntake}
-          onSubmit={() => goToStep(3)}
-          onChangeTopic={() => {
-            // Send the parent to the standalone catalog to pick a different
-            // topic — their own LP is one click behind in history anyway.
-            void navigate('/katalog');
-          }}
-          showProgressNav={false}
-          skipTopicStep
-          step={wizardStep}
-          onStepChange={handleWizardStep}
-        />
-      )}
-      {flowStep === 3 && (
-        <OrderPreview
-          intake={intake}
-          onChangeFormat={handleChangeFormat}
-          onContinue={() => goToStep(4)}
-          onBack={() => goBack(3)}
-        />
-      )}
-      {flowStep === 4 && (
+      <OrderWizard
+        intake={intake}
+        onChange={setIntake}
+        onSubmit={() => goToStep(2)}
+        onChangeTopic={() => {
+          // Send the parent to the standalone catalog to pick a different
+          // topic — their own LP is one click behind in history anyway.
+          void navigate('/katalog');
+        }}
+        showProgressNav={false}
+        skipTopicStep
+        step={wizardStep}
+        onStepChange={handleWizardStep}
+        hideChildSubmit={flowStep === 2}
+        onRegisterValidateChild={registerValidateChild}
+      />
+      {/* Step 2 is child data + checkout on one screen: e-mail and consents
+          alone never justified a step of their own, and the click cost real
+          completions. */}
+      {flowStep === 2 && (
         <OrderCheckout
           intake={intake}
-          onChangeFormat={handleChangeFormat}
+          value={checkoutState}
+          onChange={setCheckoutState}
           onSubmit={handleCheckoutSubmit}
-          onBack={() => goBack(4)}
+          onBack={() => goBack(2)}
           isSubmitting={submitting}
           externalError={submitError}
+          embedded
+          beforeSubmit={validateChild}
         />
       )}
     </>

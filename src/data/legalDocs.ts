@@ -200,5 +200,10 @@ export const PRIVACY_DOC: LegalDoc = {
 export const CONSENT_CLAUSE_TERMS =
   'Akceptuję Regulamin serwisu oraz zapoznałem się z Polityką Prywatności.';
 
+// Must stay byte-identical to `checkout.consentSpecialData` in
+// src/locales/pl/book.json — this is the string persisted as `clauseText` in
+// the order's consent log, so a divergence would record wording the parent
+// never saw. Shortened 2026-08-17; the privacy document itself did not change,
+// hence PRIVACY_VERSION stays put.
 export const CONSENT_CLAUSE_SPECIAL_DATA =
-  'Wyrażam zgodę na przetwarzanie danych szczególnych kategorii mojego dziecka (informacje o wybranym problemie emocjonalnym) przez Trustee Interactive Sp. z o.o. wyłącznie w celu wygenerowania i dostarczenia personalizowanej bajki. Rozumiem, że zgodę mogę wycofać w dowolnym momencie.';
+  'Wyrażam zgodę na przetwarzanie danych szczególnych kategorii mojego dziecka (wybrany problem emocjonalny) przez Trustee Interactive Sp. z o.o. wyłącznie w celu stworzenia i dostarczenia bajki. Zgodę mogę wycofać w każdej chwili.';

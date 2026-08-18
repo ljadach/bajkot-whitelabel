@@ -17,6 +17,8 @@ export const BOOK_PRICE_PDF_REGULAR_PLN = 59;
 export const BOOK_PRICE_PDF_OMNIBUS_PLN = 49;
 /** One number everywhere for "gotowa w X minut" claims. */
 export const GENERATION_MINUTES = 20;
+/** Upper bound quoted where the parent is asked to keep the tab open. */
+export const GENERATION_MINUTES_MAX = 15;
 /** One phrase everywhere for courier delivery claims. */
 export const DELIVERY_DAYS_TEXT = '5–10 dni roboczych';
 

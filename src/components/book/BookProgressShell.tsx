@@ -7,6 +7,7 @@ import { Id } from '../../../convex/_generated/dataModel';
 import { PIPELINE_STEPS } from '@lib/bookData';
 import { friendlyBookError } from '@lib/bookErrors';
 import { trackEvent } from '@lib/telemetry';
+import { GENERATION_MINUTES_MAX } from '@lib/pricing';
 import { trackPurchase, markPurchaseTrackedOnce } from '@lib/gtag';
 import { getAttributionProps } from '@lib/attribution';
 import { captureLandingOrderTokenFromUrl } from '../../hooks/useLandingOrderToken';
@@ -286,7 +287,7 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
       setPhase('progress');
     };
     return (
-      <ProgressLayout flow={flow}>
+      <ProgressLayout flow={flow} keepTabOpenNotice>
         <DedicationForm
           onSubmit={handleDedicationSubmit}
           onSkip={() => void handleDedicationSkip()}
@@ -323,7 +324,7 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
     };
 
     return (
-      <ProgressLayout flow={flow}>
+      <ProgressLayout flow={flow} keepTabOpenNotice>
         <StyleVoteCards
           imageUrlA={styleVoteImages.imageUrlA ?? null}
           imageUrlB={styleVoteImages.imageUrlB ?? null}
@@ -353,7 +354,7 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
   // no step list, no internal stage names — to keep the magic intact.
   const isLanding = flow === 'landing';
   return (
-    <ProgressLayout flow={flow}>
+    <ProgressLayout flow={flow} keepTabOpenNotice>
       <ProgressJourney
         status={progress.status}
         pipelineSteps={PIPELINE_STEPS}
@@ -368,7 +369,38 @@ export function BookProgressShell({ flow }: { flow: ProgressFlow }) {
   );
 }
 
-function ProgressLayout({ children, flow }: { children: React.ReactNode; flow: ProgressFlow }) {
+/**
+ * Loud, deliberately hard to miss: the pipeline asks the parent follow-up
+ * questions (style vote, dedication) while the book is being written, so a
+ * closed tab stalls the order. Shown on every live phase of this page and
+ * never on the error/paused screens, where the work has already stopped.
+ */
+function KeepTabOpenNotice() {
+  const { t } = useTranslation('book');
+  return (
+    <div className="px-6 pt-24 md:pt-28">
+      <div className="max-w-2xl mx-auto rounded-2xl border-2 border-amber-400 bg-amber-50 p-5 text-center">
+        <p className="text-lg font-black text-amber-900 uppercase tracking-wide">
+          <i className="fa-solid fa-triangle-exclamation mr-2" aria-hidden="true" />
+          {t('progress.keepOpenTitle')}
+        </p>
+        <p className="mt-2 text-sm font-semibold text-amber-900 leading-relaxed">
+          {t('progress.keepOpenBody', { minutes: GENERATION_MINUTES_MAX })}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function ProgressLayout({
+  children,
+  flow,
+  keepTabOpenNotice = false,
+}: {
+  children: React.ReactNode;
+  flow: ProgressFlow;
+  keepTabOpenNotice?: boolean;
+}) {
   // Auth flow keeps the global <Header> (Panel + avatar are useful there).
   // Landing flow hides the global header in root.tsx and renders this
   // wordmark-only BrandHeader instead — no menu, no CTA, no auth chrome.
@@ -376,6 +408,7 @@ function ProgressLayout({ children, flow }: { children: React.ReactNode; flow: P
   return (
     <>
       {isLanding && <BrandHeader />}
+      {keepTabOpenNotice && <KeepTabOpenNotice />}
       {children}
       <BrandFooter />
     </>

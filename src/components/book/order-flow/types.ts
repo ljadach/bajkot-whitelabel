@@ -65,6 +65,43 @@ export const INITIAL_INTAKE: IntakeState = {
   format: 'pdf',
 };
 
+export interface ShippingAddress {
+  fullName: string;
+  phone: string;
+  street: string;
+  zip: string;
+  city: string;
+}
+
+export const INITIAL_ADDRESS: ShippingAddress = {
+  fullName: '',
+  phone: '',
+  street: '',
+  zip: '',
+  city: '',
+};
+
+/**
+ * Email + consents + address from the checkout screen. Owned by the parent
+ * flow (like `IntakeState`) rather than by `OrderCheckout` itself, so that
+ * navigating back to an earlier step - which unmounts the checkout - and
+ * forward again does not wipe what the parent already typed in. Only the
+ * checkout's own field-validation errors reset on remount.
+ */
+export interface CheckoutFormState {
+  email: string;
+  termsAccepted: boolean;
+  specialDataAccepted: boolean;
+  address: ShippingAddress;
+}
+
+export const INITIAL_CHECKOUT_STATE: CheckoutFormState = {
+  email: '',
+  termsAccepted: false,
+  specialDataAccepted: false,
+  address: { ...INITIAL_ADDRESS },
+};
+
 /** Polish singular/plural for ages 1..12. */
 export function ageLabel(age: number): string {
   if (age === 1) return `${age} rok`;
@@ -144,7 +181,7 @@ export interface IntakeOrderArgs {
   outfit: string;
   email: string;
   format: OrderFormat;
-  shippingAddress?: import('./OrderCheckout').ShippingAddress;
+  shippingAddress?: ShippingAddress;
   consents: ConsentsPayload;
 }
 

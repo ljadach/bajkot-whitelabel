@@ -14,9 +14,11 @@ import { OrderPreview } from './OrderPreview';
 import { OrderCheckout, type CheckoutSubmitPayload } from './OrderCheckout';
 import { scrollAppToTop } from '../../../lib/appScroll';
 import {
+  INITIAL_CHECKOUT_STATE,
   INITIAL_INTAKE,
   buildConsentsPayload,
   intakeToOrderArgs,
+  type CheckoutFormState,
   type IntakeState,
   type OrderFormat,
   type SelectedTopic,
@@ -37,6 +39,9 @@ export function AuthOrderFlow() {
   const [intake, setIntake] = useState<IntakeState>(INITIAL_INTAKE);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  // Lifted out of OrderCheckout so going back to 'preview' and forward again
+  // doesn't wipe email/consents (same fix as the landing flow).
+  const [checkoutState, setCheckoutState] = useState<CheckoutFormState>(INITIAL_CHECKOUT_STATE);
 
   // Every screen change is a "new page": snap the scrollable <main> to top.
   useEffect(() => {
@@ -122,7 +127,8 @@ export function AuthOrderFlow() {
       {screen === 'checkout' && (
         <OrderCheckout
           intake={intake}
-          onChangeFormat={handleChangeFormat}
+          value={checkoutState}
+          onChange={setCheckoutState}
           onSubmit={handleCheckoutSubmit}
           onBack={() => setScreen('preview')}
           isSubmitting={submitting}

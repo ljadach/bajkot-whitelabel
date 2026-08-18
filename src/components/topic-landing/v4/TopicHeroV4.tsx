@@ -32,7 +32,7 @@ const TRUST_BULLETS: { key: string; node: React.ReactNode }[] = [
 export function HeroTrustBullets({ className = '' }: { className?: string }) {
   return (
     <div className={className}>
-      <ul className="grid gap-1.5 text-sm font-bold text-lp-navy">
+      <ul className="grid gap-1.5 text-sm text-lp-navy">
         {TRUST_BULLETS.map((b) => (
           <li key={b.key}>
             <span className="text-lp-teal-text font-black mr-1">✓</span>
@@ -65,7 +65,9 @@ export function TopicHeroV4({ topic }: { topic: Topic }) {
           </p>
           <div>
             <CtaButton topicSlug={topic.slug} location="hero_v4" />
-            <p className="text-sm text-lp-ink-soft mt-2.5">
+            <p className="text-sm font-bold text-lp-navy mt-2.5">
+              Bez zobowiązań!
+              <br />
               Najpierw czytasz, potem decydujesz, czy kupujesz.
             </p>
           </div>
