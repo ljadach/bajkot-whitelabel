@@ -16,10 +16,12 @@ import { OrderWizard } from './OrderWizard';
 import { OrderCheckout, type CheckoutSubmitPayload } from './OrderCheckout';
 import { OrderFlowHeader } from './OrderFlowHeader';
 import {
+  INITIAL_CHECKOUT_STATE,
   INITIAL_INTAKE,
   buildConsentsPayload,
   intakeToOrderArgs,
   isChildProfileComplete,
+  type CheckoutFormState,
   type IntakeState,
   type OrderFormat,
 } from './types';
@@ -112,6 +114,10 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  // Lifted out of OrderCheckout so it survives that component unmounting when
+  // the parent steps back to step 1 (only its own field-validation errors
+  // reset, not the values themselves).
+  const [checkoutState, setCheckoutState] = useState<CheckoutFormState>(INITIAL_CHECKOUT_STATE);
 
   // Current step comes from the URL. Name, age and gender live on step 1, so
   // step 2 requires them — a deep link or a stale draft can't dead-end there.
@@ -284,6 +290,8 @@ export function LandingOrderFlow({ topic }: { topic: Topic }) {
       {flowStep === 2 && (
         <OrderCheckout
           intake={intake}
+          value={checkoutState}
+          onChange={setCheckoutState}
           onSubmit={handleCheckoutSubmit}
           onBack={() => goBack(2)}
           isSubmitting={submitting}

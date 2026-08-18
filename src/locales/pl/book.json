@@ -202,7 +202,7 @@
     "submitting": "Uruchamiam tworzenie książki...",
     "back": "Wróć",
     "secureNote": "Bajka generuje się od razu — płatność za PDF dopiero po wygenerowaniu, na ekranie wyniku z podglądem 3 stron.",
-    "noPaymentNowTitle": "Teraz nie płacisz.",
+    "noPaymentNowTitle": "Teraz nie płacisz!",
     "noPaymentNowBody": "Gdy książka będzie gotowa, zobaczysz jej <strong>podgląd</strong> i dopiero wtedy zdecydujesz, czy chcesz ją kupić i w jakiej formie: PDF za {{pdfPrice}} albo wersja drukowana z wysyłką za {{printPrice}}.",
     "errorEmail": "Podaj poprawny adres e-mail.",
     "errorFieldRequired": "Uzupełnij to pole."

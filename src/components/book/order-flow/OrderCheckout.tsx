@@ -4,23 +4,12 @@ import { trackEvent } from '../../../lib/telemetry';
 import { BOOK_PRICE_PDF_PLN, BOOK_PRICE_PRINT_PLN, formatPricePLN } from '../../../lib/pricing';
 import { FieldError } from './FieldError';
 import { errorBorderClass } from './fieldStyles';
-import type { IntakeState, OrderFormat } from './types';
+import type { CheckoutFormState, IntakeState, OrderFormat, ShippingAddress } from './types';
 
-export interface ShippingAddress {
-  fullName: string;
-  phone: string;
-  street: string;
-  zip: string;
-  city: string;
-}
-
-const INITIAL_ADDRESS: ShippingAddress = {
-  fullName: '',
-  phone: '',
-  street: '',
-  zip: '',
-  city: '',
-};
+// ShippingAddress, CheckoutFormState and INITIAL_CHECKOUT_STATE live in
+// ./types alongside the other shared flow state (keeps this file
+// components-only for fast refresh).
+export type { ShippingAddress, CheckoutFormState } from './types';
 
 export interface CheckoutSubmitPayload {
   email: string;
@@ -35,6 +24,9 @@ export interface CheckoutSubmitPayload {
 
 interface Props {
   intake: IntakeState;
+  /** Controlled by the parent flow — see `CheckoutFormState`. */
+  value: CheckoutFormState;
+  onChange: (next: CheckoutFormState) => void;
   onSubmit: (payload: CheckoutSubmitPayload) => Promise<void> | void;
   onBack: () => void;
   /** External submitting flag (Stripe redirect / pipeline start in flight). */
@@ -59,6 +51,8 @@ interface Props {
  */
 export function OrderCheckout({
   intake,
+  value,
+  onChange,
   onSubmit,
   onBack,
   isSubmitting,
@@ -67,10 +61,7 @@ export function OrderCheckout({
   beforeSubmit,
 }: Props) {
   const { t } = useTranslation('book');
-  const [email, setEmail] = useState('');
-  const [termsAccepted, setTermsAccepted] = useState(false);
-  const [specialDataAccepted, setSpecialDataAccepted] = useState(false);
-  const [address, setAddress] = useState<ShippingAddress>(INITIAL_ADDRESS);
+  const { email, termsAccepted, specialDataAccepted, address } = value;
   const [fieldErrors, setFieldErrors] = useState<
     Partial<Record<'email' | keyof ShippingAddress, string>>
   >({});
@@ -109,7 +100,7 @@ export function OrderCheckout({
   const isPrint = intake.format === 'pdf_print';
 
   const updateAddress = <K extends keyof ShippingAddress>(key: K, val: ShippingAddress[K]) => {
-    setAddress((prev) => ({ ...prev, [key]: val }));
+    onChange({ ...value, address: { ...address, [key]: val } });
     setFieldErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
   };
 
@@ -186,7 +177,7 @@ export function OrderCheckout({
               type="email"
               value={email}
               onChange={(e) => {
-                setEmail(e.target.value);
+                onChange({ ...value, email: e.target.value });
                 setFieldErrors((prev) => (prev.email ? { ...prev, email: undefined } : prev));
               }}
               placeholder={t('checkout.emailPlaceholder')}
@@ -258,7 +249,7 @@ export function OrderCheckout({
               <input
                 type="checkbox"
                 checked={termsAccepted}
-                onChange={(e) => setTermsAccepted(e.target.checked)}
+                onChange={(e) => onChange({ ...value, termsAccepted: e.target.checked })}
                 aria-required="true"
                 className="w-5 h-5 mt-1 shrink-0 text-magic-500 border-gray-300 rounded focus:ring-magic-500"
               />
@@ -292,7 +283,7 @@ export function OrderCheckout({
               <input
                 type="checkbox"
                 checked={specialDataAccepted}
-                onChange={(e) => setSpecialDataAccepted(e.target.checked)}
+                onChange={(e) => onChange({ ...value, specialDataAccepted: e.target.checked })}
                 aria-required="true"
                 className="w-5 h-5 mt-1 shrink-0 text-magic-500 border-gray-300 rounded focus:ring-magic-500"
               />
@@ -334,7 +325,8 @@ export function OrderCheckout({
           <div className="flex gap-3 rounded-2xl bg-calm-50 border border-calm-100 p-4">
             <i className="fa-solid fa-circle-info text-magic-500 mt-0.5" aria-hidden="true" />
             <p className="text-sm text-calm-700 leading-relaxed">
-              <span className="font-bold text-calm-900">{t('checkout.noPaymentNowTitle')}</span>{' '}
+              <span className="font-bold text-calm-900">{t('checkout.noPaymentNowTitle')}</span>
+              <br />
               <Trans
                 i18nKey="checkout.noPaymentNowBody"
                 ns="book"
