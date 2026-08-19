@@ -17,7 +17,10 @@ export function extractErrorMessage(err: unknown, fallback: string): string {
   if (err instanceof ConvexError && typeof err.data === 'string' && err.data.trim()) {
     return err.data;
   }
-  if (err instanceof Error && err.message && err.message !== 'Server Error') {
+  // Convex prefixes the sanitized message with "[CONVEX A(...)] [Request ID:
+  // ...]", so an exact !== 'Server Error' check let the raw prefixed string
+  // through to the UI (prod incident 2026-08-19).
+  if (err instanceof Error && err.message && !err.message.includes('Server Error')) {
     return err.message;
   }
   return fallback;

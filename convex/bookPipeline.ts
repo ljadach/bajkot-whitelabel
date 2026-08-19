@@ -50,19 +50,24 @@ function extractBookTitle(storyDraft: string | null | undefined): string | null 
   return null;
 }
 
+// ConvexError, not Error — plain Error.message gets sanitized to
+// "Server Error" before reaching the client, so the parent would see an
+// unactionable red box (prod incident 2026-08-19: >500-char problemDetail).
 function validateOrderInput(args: {
   childName: string;
   problemDetail?: string;
   favoriteToy?: string;
 }) {
   if (args.childName.length < 2 || args.childName.length > 30) {
-    throw new Error('childName must be 2-30 characters');
+    throw new ConvexError('Imię dziecka musi mieć od 2 do 30 znaków.');
   }
   if (args.problemDetail && args.problemDetail.length > 500) {
-    throw new Error('problemDetail must be max 500 characters');
+    throw new ConvexError(
+      'Opis sytuacji może mieć maksymalnie 500 znaków — skróć go i spróbuj ponownie.',
+    );
   }
   if (args.favoriteToy && args.favoriteToy.length > 100) {
-    throw new Error('favoriteToy must be max 100 characters');
+    throw new ConvexError('Ulubiona zabawka może mieć maksymalnie 100 znaków.');
   }
 }
 
