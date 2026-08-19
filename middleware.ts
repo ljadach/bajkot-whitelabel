@@ -4,7 +4,18 @@
 const SKIP_PREFIXES = ['/_', '/api', '/admin', '/book', '/sign-in', '/sign-up', '/__nitro', '/ingest'];
 const ASSET_EXT = /\.(?:png|jpe?g|svg|webp|gif|ico|css|js|map|woff2?|ttf|otf|txt|xml|json|pdf|mp4|webm)$/i;
 
+/**
+ * Files handed out by link alone — no page in the site links to them, so a hit
+ * here IS the download and the only way to count one. They are the deliberate
+ * exception to the asset filter above; every other `.pdf` stays noise.
+ * A repeat download served from the visitor's own browser cache never reaches
+ * this code, so the count is "how many people fetched it", not "how many
+ * clicks happened".
+ */
+const TRACKED_FILES = new Set(['/przyklad-bajki-michalina.pdf', '/infopack-bajkoterapia.pdf']);
+
 function shouldSkip(path: string): boolean {
+  if (TRACKED_FILES.has(path)) return false;
   if (ASSET_EXT.test(path)) return true;
   for (const prefix of SKIP_PREFIXES) {
     if (path === prefix || path.startsWith(`${prefix}/`)) {
