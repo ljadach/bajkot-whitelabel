@@ -60,6 +60,10 @@ interface ChildFieldErrors {
 // smallest bracket ('3-5') in convex/lib/ageBracket.ts.
 const AGE_OPTIONS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
+// Mirrors the problemDetail cap in convex/bookPipeline.ts validateOrderInput —
+// without the client-side cap the backend rejects the whole submit.
+const SITUATION_MAX = 500;
+
 const EYE_OPTIONS = ['Niebieskie', 'Zielone', 'Brązowe', 'Szare'];
 const HAIR_COLOR_OPTIONS = ['Blond', 'Brązowe', 'Czarne', 'Rude'];
 const HAIR_LENGTH_OPTIONS = ['Krótkie', 'Średnie', 'Długie'];
@@ -477,8 +481,18 @@ function StepSituation({
           value={value}
           onChange={(e) => onChangeValue(e.target.value)}
           placeholder={placeholder}
+          maxLength={SITUATION_MAX}
           className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-magic-500 focus:bg-white outline-none transition font-semibold text-base resize-none"
         />
+        {value.length >= SITUATION_MAX * 0.8 && (
+          <p
+            className={`text-sm mt-2 text-right ${
+              value.length >= SITUATION_MAX ? 'text-red-500' : 'text-gray-400'
+            }`}
+          >
+            {value.length}/{SITUATION_MAX}
+          </p>
+        )}
         {showNudge && (
           <p className="text-sm text-magic-600 mt-2">
             <i className="fa-solid fa-lightbulb mr-1" />
