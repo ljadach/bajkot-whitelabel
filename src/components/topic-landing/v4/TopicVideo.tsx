@@ -2,11 +2,26 @@ import { trackEvent } from '../../../lib/telemetry';
 import type { Topic } from '../../../data/topics';
 import { PROMO_VIDEO, SECTION_COPY } from '../../../data/lpContent';
 import { Section, SectionHeading } from './Section';
+import { HowItWorksSteps } from './HowItWorksSteps';
 
-export function TopicVideo({ topic }: { topic: Pick<Topic, 'slug'> }) {
+/**
+ * `steps` opens the section with the numbered "Jak to działa" list instead of
+ * the one-line subtitle (2026-08-19) — /problem/:slug has no such section of
+ * its own, while the homepage carries it a screen above and would repeat it.
+ */
+export function TopicVideo({
+  topic,
+  steps = false,
+}: {
+  topic: Pick<Topic, 'slug'>;
+  steps?: boolean;
+}) {
   return (
     <Section id="film" className="bg-lp-cream">
-      <SectionHeading sub={SECTION_COPY.video.sub}>{SECTION_COPY.video.heading}</SectionHeading>
+      <SectionHeading sub={steps ? undefined : SECTION_COPY.video.sub}>
+        {SECTION_COPY.video.heading}
+      </SectionHeading>
+      {steps && <HowItWorksSteps className="mb-8" />}
       <video
         controls
         muted

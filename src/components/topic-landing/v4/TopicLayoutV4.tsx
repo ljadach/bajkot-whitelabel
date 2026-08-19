@@ -34,10 +34,10 @@ export function TopicLayoutV4({ topic }: { topic: TopicV4 }) {
       className="min-h-screen antialiased bg-lp-cream text-lp-ink selection:bg-lp-amber selection:text-lp-navy"
       style={{ fontFamily: "'Nunito', sans-serif" }}
     >
-      <TopicNavV4 topicSlug={topic.slug} />
+      <TopicNavV4 topicSlug={topic.slug} showCta={false} />
       <TopicHeroV4 topic={topic} />
       <TopicProduct topic={topic} />
-      <TopicVideo topic={topic} />
+      <TopicVideo topic={topic} steps />
       <TopicPainV4 topic={topic} />
       <TopicScienceV4 topic={topic} />
       <TopicReviews />
