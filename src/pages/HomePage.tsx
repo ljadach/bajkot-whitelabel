@@ -5,15 +5,10 @@ import { trackEvent } from '../lib/telemetry';
 import { useLpEngagement } from '../lib/telemetry';
 import { CATALOG_CATEGORIES, topicsByCategory, type CatalogCategory } from '../data/topics';
 import { LP_FAQ, PRINT_GALLERY } from '../data/lpContent';
+import { HowItWorksSteps } from '../components/topic-landing/v4/HowItWorksSteps';
 import { TopicNavV4 } from '../components/topic-landing/v4/TopicNavV4';
 import { PhotoCarousel } from '../components/topic-landing/v4/PhotoCarousel';
-import {
-  BOOK_PRICE_PDF_PLN,
-  BOOK_PRICE_PRINT_PLN,
-  GENERATION_MINUTES,
-  formatPricePLN,
-} from '../lib/pricing';
-import { HeroTrustBullets } from '../components/topic-landing/v4/TopicHeroV4';
+import { GENERATION_MINUTES } from '../lib/pricing';
 import { Section, SectionHeading } from '../components/topic-landing/v4/Section';
 import { TopicProduct } from '../components/topic-landing/v4/TopicProduct';
 import { TopicVideo } from '../components/topic-landing/v4/TopicVideo';
@@ -46,8 +41,8 @@ const HOME_SAFETY_IMAGE = {
  * topic grid below it is the real call to action, so there is no button here
  * that only scrolls the page. The print carousel keeps the right-hand column
  * on desktop, where the short copy leaves it free; on a phone that column does
- * not exist, so the carousel is rendered once more under "Jak to działa"
- * (`md:hidden`) instead of pushing the topics below the fold.
+ * not exist, so a `md:hidden` twin closes the hero in the slot the price
+ * bullets used to occupy — those moved to the price section at the bottom.
  */
 function HomeHero() {
   return (
@@ -66,7 +61,9 @@ function HomeHero() {
           <p className="text-base text-lp-navy font-bold max-w-xl mt-3">
             Czytasz podgląd, dopiero potem decydujesz o zakupie.
           </p>
-          <HeroTrustBullets className="mt-5" />
+          {/* Phone-only twin of the desktop carousel on the right — same photos,
+              so the browser fetches each file once. */}
+          <PhotoCarousel photos={PRINT_GALLERY} className="md:hidden mt-5" />
         </div>
         <PhotoCarousel
           photos={PRINT_GALLERY}
@@ -77,45 +74,13 @@ function HomeHero() {
   );
 }
 
-const HOW_IT_WORKS: { title: string; body: string }[] = [
-  {
-    title: 'Wybierasz trudność',
-    body: 'Sen, złość, przedszkole, lęki, rodzeństwo — i kilkadziesiąt innych tematów.',
-  },
-  {
-    title: 'Opisujesz dziecko i sytuację',
-    body: 'Imię, wiek, wygląd i to, co dzieje się u Was w domu. Dwa krótkie kroki.',
-  },
-  {
-    title: 'Czytasz podgląd i decydujesz',
-    body: `PDF za ${formatPricePLN(BOOK_PRICE_PDF_PLN)} albo drukowana książka za ${formatPricePLN(
-      BOOK_PRICE_PRINT_PLN,
-    )}. Bez zobowiązań.`,
-  },
-];
-
 function HowItWorks() {
   return (
     <Section id="jak-to-dziala" className="bg-white">
       <SectionHeading center sub="Od wyboru tematu do gotowej bajki w jeden wieczór.">
         Jak to działa
       </SectionHeading>
-      <ol className="grid md:grid-cols-3 gap-6 list-none p-0 m-0">
-        {HOW_IT_WORKS.map((step, i) => (
-          <li key={step.title} className="flex gap-3 items-start">
-            <span className="shrink-0 w-7 h-7 rounded-full bg-lp-navy text-white font-black text-sm flex items-center justify-center">
-              {i + 1}
-            </span>
-            <div>
-              <b className="block text-lp-navy">{step.title}</b>
-              <span className="text-sm text-lp-ink-soft">{step.body}</span>
-            </div>
-          </li>
-        ))}
-      </ol>
-      {/* Phone-only twin of the hero carousel — same photos, so the browser
-          fetches each file once. */}
-      <PhotoCarousel photos={PRINT_GALLERY} className="md:hidden mt-8" />
+      <HowItWorksSteps />
     </Section>
   );
 }
@@ -140,7 +105,7 @@ function TopicsGrid() {
   ];
 
   return (
-    <Section id="tematy" className="bg-white">
+    <Section id="tematy" className="bg-white scroll-mt-20">
       <SectionHeading
         center
         sub="Wybierz temat — bajka Twojego dziecka zmierzy się dokładnie z tą trudnością."
@@ -155,6 +120,14 @@ function TopicsGrid() {
             onClick={() => {
               setCategory(tab.id);
               setExpanded(false);
+              // Picking a category shortens the grid under the tabs, which on a
+              // phone leaves the visitor mid-page looking at whitespace. Pull
+              // the section heading back to the top of the viewport instead —
+              // `scroll-mt-20` keeps it clear of the sticky nav.
+              document.getElementById('tematy')?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+              });
             }}
             className={`text-sm font-bold px-4 py-2 rounded-full transition ${
               category === tab.id

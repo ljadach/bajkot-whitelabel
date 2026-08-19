@@ -3,7 +3,13 @@
  * Per c3z decision (2026-07-28): print photos, promo video, sample book and
  * reviews stay shared across all topics — no per-problem variants planned.
  */
-import { GENERATION_MINUTES, DELIVERY_DAYS_TEXT } from '../lib/pricing';
+import {
+  GENERATION_MINUTES,
+  DELIVERY_DAYS_TEXT,
+  BOOK_PRICE_PDF_PLN,
+  BOOK_PRICE_PRINT_PLN,
+  formatPricePLN,
+} from '../lib/pricing';
 
 /**
  * "Wpisz imię" demo stays hidden until the storyOpenings copy is reviewed
@@ -144,6 +150,27 @@ export function topicSafetyImage(slug: string, shortDesc: string) {
  * Plain-text copy of the shared (topic-independent) sections, in one
  * reviewable place. Fragments with inline markup stay in their components.
  */
+/**
+ * The three-step "Jak to działa" list — homepage section and, since
+ * 2026-08-19, the block that opens the video section on /problem/:slug.
+ */
+export const HOW_IT_WORKS: { title: string; body: string }[] = [
+  {
+    title: 'Wybierasz trudność',
+    body: 'Sen, złość, przedszkole, lęki, rodzeństwo — i kilkadziesiąt innych tematów.',
+  },
+  {
+    title: 'Opisujesz dziecko i sytuację',
+    body: 'Imię, wiek, wygląd i to, co dzieje się u Was w domu. Dwa krótkie kroki.',
+  },
+  {
+    title: 'Czytasz podgląd i decydujesz',
+    body: `PDF za ${formatPricePLN(BOOK_PRICE_PDF_PLN)} albo drukowana książka za ${formatPricePLN(
+      BOOK_PRICE_PRINT_PLN,
+    )}. Bez zobowiązań.`,
+  },
+];
+
 export const SECTION_COPY = {
   product: {
     heading: 'Dostajesz książkę przygotowaną specjalnie dla Twojego dziecka',
