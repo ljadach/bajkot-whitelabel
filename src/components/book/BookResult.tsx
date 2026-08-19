@@ -12,11 +12,22 @@ import { ClientOnly } from '../ClientOnly';
 import { genitiveOrSelf } from '@lib/childNameInflect';
 import { useResolvedR2Url } from '../../hooks/useResolvedR2Url';
 
-// PDF viewer is heavy (pdfjs-dist + react-pdf). Lazy-load so the
-// success-screen path (post-payment) doesn't pull it in.
+// PDF viewer is heavy (pdfjs-dist + react-pdf). Lazy-loaded on both result
+// screens — the pre-payment preview and, since 2026-08-19, the success screen —
+// so it never lands in the initial bundle.
 const BookPdfFlipbook = lazy(() =>
   import('./BookPdfFlipbook').then((m) => ({ default: m.BookPdfFlipbook })),
 );
+
+/** Placeholder held in the flipbook's slot while pdfjs and the file load. */
+function FlipbookLoading() {
+  return (
+    <div className="aspect-[5/7] w-full max-w-[560px] mx-auto rounded-2xl bg-gradient-to-br from-calm-50 via-white to-magic-50 flex items-center justify-center gap-2">
+      <div className="w-5 h-5 spinner" />
+      <span className="text-sm text-gray-500">Ładowanie podglądu...</span>
+    </div>
+  );
+}
 
 /**
  * Build a deeplink to the contact form, pre-selected to "print upgrade" inquiry
@@ -201,16 +212,27 @@ export function BookSuccessScreen({
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-10 space-y-6">
-          {/* Mock book cover */}
-          <div className="bg-gradient-to-br from-calm-500 to-calm-800 rounded-3xl p-8 text-white text-center mx-auto max-w-xs aspect-[3/4] flex flex-col items-center justify-center relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-              <div className="absolute top-4 left-4 text-5xl">✨</div>
-              <div className="absolute bottom-4 right-4 text-5xl">🌟</div>
+          {/* The bought book itself, page by page (2026-08-19) — it replaced a
+              mock cover, so the parent reads the story here instead of having
+              to download the file first. The mock cover survives only as the
+              placeholder for the seconds before the PDF URL resolves. */}
+          {downloadUrl ? (
+            <ClientOnly fallback={<FlipbookLoading />}>
+              <Suspense fallback={<FlipbookLoading />}>
+                <BookPdfFlipbook pdfUrl={downloadUrl} />
+              </Suspense>
+            </ClientOnly>
+          ) : (
+            <div className="bg-gradient-to-br from-calm-500 to-calm-800 rounded-3xl p-8 text-white text-center mx-auto max-w-xs aspect-[3/4] flex flex-col items-center justify-center relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+                <div className="absolute top-4 left-4 text-5xl">✨</div>
+                <div className="absolute bottom-4 right-4 text-5xl">🌟</div>
+              </div>
+              <div className="text-6xl mb-4">📖</div>
+              <h2 className="text-xl md:text-2xl font-black mb-2">Twoja bajka</h2>
+              <p className="text-calm-100 text-xs md:text-sm">Bajkoterapia</p>
             </div>
-            <div className="text-6xl mb-4">📖</div>
-            <h2 className="text-xl md:text-2xl font-black mb-2">Twoja bajka</h2>
-            <p className="text-calm-100 text-xs md:text-sm">Bajkoterapia</p>
-          </div>
+          )}
 
           {downloadUrl ? (
             <div className="flex flex-col items-center gap-3">
@@ -476,22 +498,8 @@ export function BookPreviewScreen({
             before the preview PDF feature shipped (previewPdfUrl === null). */}
         {previewPdfUrl ? (
           <div className="space-y-3">
-            <ClientOnly
-              fallback={
-                <div className="aspect-[5/7] w-full max-w-[560px] mx-auto rounded-2xl bg-gradient-to-br from-calm-50 via-white to-magic-50 flex items-center justify-center gap-2">
-                  <div className="w-5 h-5 spinner" />
-                  <span className="text-sm text-gray-500">Ładowanie podglądu...</span>
-                </div>
-              }
-            >
-              <Suspense
-                fallback={
-                  <div className="aspect-[5/7] w-full max-w-[560px] mx-auto rounded-2xl bg-gradient-to-br from-calm-50 via-white to-magic-50 flex items-center justify-center gap-2">
-                    <div className="w-5 h-5 spinner" />
-                    <span className="text-sm text-gray-500">Ładowanie podglądu...</span>
-                  </div>
-                }
-              >
+            <ClientOnly fallback={<FlipbookLoading />}>
+              <Suspense fallback={<FlipbookLoading />}>
                 <BookPdfFlipbook pdfUrl={previewPdfUrl} />
               </Suspense>
             </ClientOnly>
