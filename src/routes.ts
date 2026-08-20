@@ -14,6 +14,11 @@ export default [
   route('regulamin', 'routes/regulamin.tsx', { id: 'regulamin' }),
   route('polityka-prywatnosci', 'routes/polityka-prywatnosci.tsx', { id: 'polityka-prywatnosci' }),
 
+  // Printed QR codes from the kindergarten mailing: /p/<ID> → home page with
+  // the campaign UTMs attached. Path-based so the edge middleware can count a
+  // scan without cookie consent. See `routes/qr-przedszkole.ts`.
+  route('p/:id', 'routes/qr-przedszkole.ts', { id: 'qr-przedszkole' }),
+
   // Server-side beacon for SPA navigation tracking (forwards to Convex /track).
   route('api/track', 'routes/api.track.ts', { id: 'api-track' }),
 
