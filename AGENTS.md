@@ -2,19 +2,19 @@
 
 ## Project Structure & Module Organization
 
-Frontend React/TypeScript code lives in `src/`, with entry point in `src/root.tsx` (React Router v7 with SSR). Public pages are in `src/pages/`, book feature components in `src/components/book/`, landing page sections in `src/components/landing/`, and shared UI in `src/components/`. Client helpers live in `src/lib/`, translations in `src/locales/` (EN/PL/DE).
+White-label order flow for personalised storybooks (see `README.md`). Frontend React/TypeScript code lives in `src/`: the root layout in `src/root.tsx` (React Router v7 with SSR), routes in `src/routes.ts` + `src/routes/`, the order flow and book screens in `src/components/book/`, theming in `src/lib/theme.ts`. Translations live in `src/locales/pl/book.json` (Polish only).
 
-Convex backend modules (queries, mutations, actions, schema) live under `convex/`, with book pipeline agents in `convex/bookAgents.ts` and pipeline orchestration in `convex/bookPipeline.ts`. Admin functions are in `convex/admin/`. Shared libraries (LLM client, logging, config) are in `convex/lib/`. Anything inside `convex/_generated` is auto-created — never edit it manually.
+Convex backend modules (queries, mutations, actions, schema) live under `convex/`, with book pipeline agents in `convex/bookAgents.ts` and the order API in `convex/bookPipeline.ts`. Shared libraries (LLM client, partners, topics, pricing, Stripe mode) are in `convex/lib/`; `convex/lib/partners.ts` and `convex/lib/topics.ts` are imported by the frontend too. Anything inside `convex/_generated` is auto-created — never edit it manually.
 
-Tailwind/Vite/ESLint configs stay at the repo root, project docs sit in `docs/`, and build artifacts land in `dist/` (leave untracked).
+Tailwind/Vite/ESLint configs stay at the repo root, project docs sit in `docs/`, and build artifacts land in `build/` (leave untracked).
 
 ## Build, Test, and Development Commands
 
-Run `npm install` once, then use `npm run dev` for the full stack (spawns Vite + `convex dev`). Use `npm run dev:frontend` or `npm run dev:backend` when focusing on one side. `npm run build` creates the production bundle. `npm run lint` type-checks both projects, runs the Convex schema validation (`convex dev --once`), and builds to verify artifacts.
+Run `npm install` once, then use `npm run dev` for the full stack (spawns the React Router dev server + `convex dev`). `npm run lint` type-checks both projects (`tsc -p convex`, `tsc -p tsconfig.app.json`), runs ESLint, pushes the Convex schema (`convex dev --once`) and builds. `npm test` runs the unit tests in `tests/unit/`.
 
 ## Coding Style & Naming Conventions
 
-Stick to TypeScript with React functional components, 2-space indentation, and default Prettier formatting (`npx prettier --write src convex`). Components and hooks use `PascalCase` and `useCamelCase`; utility modules favor lowercase hyphenated filenames, and Convex files stay domain-focused (`bookPipeline.ts`, `leads.ts`). Tailwind utility classes handle styling — avoid ad-hoc CSS unless it belongs in `src/index.css`.
+Stick to TypeScript with React functional components, 2-space indentation, and default Prettier formatting (`npm run format`). Components and hooks use `PascalCase` and `useCamelCase`. Tailwind utility classes handle styling; brand colours come from the partner theme (`primary-*`, `accent-*`, `text-on-accent`, `text-accent-ink`) — never hardcode a brand colour or name.
 
 ## Convex Conventions
 
@@ -28,12 +28,8 @@ Read file `.cursor/rules/convex_rules.mdc` to understand how to use Convex. Key 
 
 ## Testing Guidelines
 
-E2E tests live in `e2e/tests/` using Playwright. Book-specific tests: `10-book-order-form.spec.ts`, `11-book-pipeline-smoke.spec.ts`. Page objects in `e2e/pages/`. All changes must pass `npm run lint`.
-
-## Internationalization
-
-All user-facing strings go through `react-i18next`. Translation files in `src/locales/{en,pl,de}/`. Namespaces: `common`, `app`, `cookies`, `contact`, `faq`, `book`. Never hardcode user-visible strings in components.
+Unit tests live in `tests/unit/` (vitest). `partners.test.ts` validates the partner registry, URL builders and consent payloads; add a partner and run `npm test`. All changes must pass `npm run lint`.
 
 ## Security & Configuration Tips
 
-Keep secrets in `.env.local` files consumed by Vite (`import.meta.env`) or Convex (`convex dev --env`). Never commit deployment keys or the generated `convex/_generated` output. When touching auth logic (`convex/auth.ts`, `auth.config.ts`), verify access rules, and inject API keys at runtime rather than hardcoding them.
+Keep secrets in `.env.local` (Vite) or the Convex dashboard env. Never commit deployment keys. There is no login: order data is protected by per-order capability tokens (`convex/lib/roles.ts`), and return/e-mail URLs are always built server-side from `convex/lib/partners.ts`.

@@ -1,94 +1,106 @@
-# Bajkot — Personalized Therapeutic Storybooks
+# Personalised storybooks — white-label demo
 
-Bajkot generates personalized illustrated therapeutic stories for children. Parents describe their child's challenges, and the platform creates a custom story with therapeutic elements — delivered as a beautiful PDF.
+A white-label build of the personalised therapeutic storybook service: only the
+order flow, from picking a topic to downloading the book, in a partner's name,
+logo and colours. Used to pitch the product to B2B partners.
 
-Built with [Convex](https://convex.dev) (backend) and React + Vite (frontend).
+It is a fork of [`c3z/bajkot`](https://github.com/c3z/bajkot) (full git history
+kept, so pipeline fixes can be cherry-picked from upstream). Everything outside
+the order flow — marketing site, topic landing pages, FAQ, pricing, contact,
+legal pages, login, dashboard, admin panel, analytics — has been removed.
 
-Connected to Convex deployment [`accomplished-schnauzer-177`](https://dashboard.convex.dev/d/accomplished-schnauzer-177).
+Built with [Convex](https://convex.dev) (backend + the LLM/image pipeline) and
+React Router v7 (SSR on Vercel). Polish only.
+
+## The flow
+
+| Step | URL                     | What happens                                                            |
+| ---- | ----------------------- | ----------------------------------------------------------------------- |
+| 1    | `/`                     | Pick a topic (39 topics in 7 categories)                                |
+| 2–3  | `/zamow/<topic>`        | Child, situation, appearance, e-mail, consents → the book starts        |
+| —    | `/bajka/<order>`        | Live progress; the parent picks the illustration style and a dedication |
+| —    | `/bajka/<order>/gotowa` | 7-page preview → Stripe Checkout (PDF or PDF + print) → flipbook + PDF  |
+
+E-mails (payment confirmation, book ready) link back to the order in the same
+partner theme.
+
+## Partners (themes chosen by the link)
+
+The first path segment picks the theme:
+
+- `https://<domain>/` — the neutral placeholder brand, "Twoja Marka"
+- `https://<domain>/przyklad` — the example partner (own logo, light accent)
+- `https://<domain>/?partner=przyklad` — same thing; redirects to `/przyklad`
+
+Unknown partner ids 404. The theme applies everywhere: header, favicon, page
+titles, buttons, consent wording, e-mails, the Stripe Checkout note. Every
+order remembers its partner.
+
+**Adding a partner** — edit `convex/lib/partners.ts`:
+
+```ts
+{
+  id: 'acme',                       // URL slug: /acme
+  name: 'Acme Books',
+  tagline: 'bajki dla najmłodszych', // optional
+  logoUrl: '/partners/acme.png',    // optional, file in public/partners/ (PNG shows in e-mails, SVG doesn't)
+  colors: { primary: '#0f766e', accent: '#f59e0b' }, // any brand colours — text contrast is automatic
+  supportEmail: 'bajki@acme.pl',    // optional: footer, e-mail reply-to, print requests
+  legalEntity: 'Acme Sp. z o.o.',   // optional: named in the consent checkbox
+  termsUrl: 'https://…',            // optional: links in the consent checkbox
+  privacyUrl: 'https://…',
+},
+```
+
+then `npm test` (validates the registry) and `npm run deploy`.
+
+## Stripe: test and live mode
+
+Both key sets live side by side in the Convex env and `STRIPE_MODE` picks one
+(`test` unless it is exactly `live`). Switching takes effect immediately, no
+redeploy:
+
+```bash
+npx convex env set STRIPE_MODE live --prod   # real payments
+npx convex env set STRIPE_MODE test --prod   # demo: card 4242 4242 4242 4242
+```
+
+In test mode the paywall shows the test card. A test-mode payment never unlocks
+an order while the site is in live mode. Details:
+[`docs/whitelabel-setup.md`](docs/whitelabel-setup.md#stripe).
 
 ## Quick start
 
 ```bash
 npm install
-npm run dev        # Start frontend + backend
+npm run dev        # frontend + `convex dev` (first run creates a Convex dev deployment)
 ```
 
-`npm install` automatycznie ustawia git hooks (`prepare` script). Zero dodatkowej konfiguracji.
-
-## Project structure
-
-- `src/` — Frontend (React, React Router v7, Tailwind CSS)
-- `convex/` — Backend (Convex functions, schema, pipeline agents)
-- `docs/` — Documentation and devlog
+A new environment needs a Convex project, Vercel project, Stripe, Resend and
+LLM keys — follow [`docs/whitelabel-setup.md`](docs/whitelabel-setup.md).
 
 ## Commands
 
 ```bash
-npm run dev              # Full stack dev server
-npm run build            # Production build
-npm run lint             # Type-check + schema validation + build
-npm run format           # Prettier na całym repo
-npm run check:dead-code  # Knip — znajdź nieużywany kod
-npm run analyze          # Sonda — analiza bundle size
-npm run deploy:staging   # Deploy na staging
+npm run dev              # full stack
+npm run lint             # typecheck (convex + app), eslint, schema push, build
+npm test                 # unit tests (vitest)
+npm run format           # prettier
+npm run check:dead-code  # knip
+npm run deploy           # convex deploy + vercel --prod
+npm run cli -- <cmd>     # pipeline CLI — see cli/README.md
 ```
 
-## Developer tooling
+## Project structure
 
-Cały DX tooling działa automatycznie — nie musisz nic konfigurować poza `npm install`.
+- `src/` — frontend: routes (`src/routes.ts`), order flow and book screens
+  (`src/components/book/`), theming (`src/lib/theme.ts`)
+- `convex/` — backend: order intake and pipeline (`bookPipeline.ts`,
+  `bookAgents.ts`), Stripe (`stripe.ts`, `billing.ts`, `lib/stripeMode.ts`),
+  e-mails (`email.ts`, `lib/email.ts`)
+- `convex/lib/partners.ts` — partner themes + URL builders, shared by both halves
+- `convex/lib/topics.ts` — the topic catalog (next to the backend data its `problemId`s key)
+- `cli/` — ops CLI (create/watch/retry orders, logs, prompts)
+- `docs/` — setup checklist, pipeline architecture, devlog
 
-### Git hooks (pre-commit)
-
-Każdy commit automatycznie odpala:
-
-| Pliki                      | Co robi                                |
-| -------------------------- | -------------------------------------- |
-| `src/**/*.{ts,tsx}`        | Prettier + ESLint (`--max-warnings=0`) |
-| `convex/**/*.ts`           | Prettier                               |
-| `*.{json,md,css,yml,yaml}` | Prettier                               |
-
-**Dlaczego:** Żaden brzydki ani zepsuty kod nie trafia do repo. Nie musisz pamiętać o formatowaniu — hook robi to za ciebie. ESLint z `--max-warnings=0` oznacza zero tolerancji dla warningów — albo napraw, albo nie commitniesz.
-
-Stack: `simple-git-hooks` + `lint-staged`. Lekkie, zero dependencji runtime.
-
-### CI (GitHub Actions)
-
-Każdy push na `main` i każdy PR odpala:
-
-1. TypeScript — osobno convex i frontend
-2. ESLint
-3. Build produkcyjny
-
-**Dlaczego:** Łapie rzeczy, które hook nie złapie (np. typy zepsute przez zmiany w innym pliku). Jeśli CI jest zielone, merge jest bezpieczny.
-
-### Knip — dead code detection
-
-```bash
-npm run check:dead-code
-```
-
-Skanuje repo i znajduje: nieużywane pliki, nieużywane exporty, nieużywane dependencje.
-
-**Dlaczego:** Codebase rośnie — Knip mówi ci co możesz bezpiecznie usunąć. Uruchamiaj po większych refaktorach żeby nie zostawiać śmieci.
-
-### Sonda — bundle analysis
-
-```bash
-npm run analyze
-```
-
-Buduje produkcyjny build i otwiera interaktywną wizualizację bundle'a — widać co ile waży, które dependencje są największe.
-
-**Dlaczego:** Kiedy strona ładuje się wolno, Sonda pokaże ci co zjada kilobajty. Uruchamiaj przed i po dodaniu nowej dependencji.
-
-### Prettier + EditorConfig
-
-Prettier config: `printWidth: 100`, `singleQuote: true`, `trailingComma: all`.
-
-`.editorconfig` ustawia: UTF-8, LF, 2 spacje, trim trailing whitespace. Działa w każdym edytorze (VS Code, Cursor, JetBrains) bez pluginów.
-
-**Dlaczego:** Jeden styl kodu w całym repo. Koniec kłótni o formatowanie.
-
-## More docs
-
-See `CLAUDE.md` for detailed architecture documentation.
+See `CLAUDE.md` for the detailed architecture.
