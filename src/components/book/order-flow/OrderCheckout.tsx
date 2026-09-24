@@ -1,15 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { trackEvent } from '../../../lib/telemetry';
 import { BOOK_PRICE_PDF_PLN, BOOK_PRICE_PRINT_PLN, formatPricePLN } from '../../../lib/pricing';
+import { usePartner } from '../../../hooks/usePartner';
+import { clauseLinkHref, consentClauses, type ClausePart } from '../../../lib/consents';
 import { FieldError } from './FieldError';
 import { errorBorderClass } from './fieldStyles';
 import type { CheckoutFormState, IntakeState, OrderFormat, ShippingAddress } from './types';
-
-// ShippingAddress, CheckoutFormState and INITIAL_CHECKOUT_STATE live in
-// ./types alongside the other shared flow state (keeps this file
-// components-only for fast refresh).
-export type { ShippingAddress, CheckoutFormState } from './types';
 
 export interface CheckoutSubmitPayload {
   email: string;
@@ -29,25 +25,21 @@ interface Props {
   onChange: (next: CheckoutFormState) => void;
   onSubmit: (payload: CheckoutSubmitPayload) => Promise<void> | void;
   onBack: () => void;
-  /** External submitting flag (Stripe redirect / pipeline start in flight). */
+  /** Order start in flight. */
   isSubmitting: boolean;
-  /** External error string. */
+  /** Server error to show above the form. */
   externalError?: string | null;
   /**
-   * Rendered under the child step on one shared screen instead of as its own
-   * full-height page: drops the fixed-header clearance and the min-height.
-   */
-  embedded?: boolean;
-  /**
    * Runs before this screen's own validation and blocks submit when it returns
-   * false. The merged step uses it to validate the child fields above.
+   * false. The flow uses it to validate the child fields above.
    */
   beforeSubmit?: () => boolean;
 }
 
 /**
- * "Ostatni krok!" checkout screen — mirrors `#screen-checkout` from
- * docs/protos_v2/Bajkoterapia-Nowy-Flow.html.
+ * Last part of the order form, rendered under the appearance fields: e-mail,
+ * shipping address (print orders), consents and the submit button. Nothing
+ * is paid here — the book is generated first, payment comes on the preview.
  */
 export function OrderCheckout({
   intake,
@@ -57,45 +49,17 @@ export function OrderCheckout({
   onBack,
   isSubmitting,
   externalError,
-  embedded = false,
   beforeSubmit,
 }: Props) {
   const { t } = useTranslation('book');
+  const partner = usePartner();
+  const clauses = consentClauses(partner);
   const { email, termsAccepted, specialDataAccepted, address } = value;
   const [fieldErrors, setFieldErrors] = useState<
     Partial<Record<'email' | keyof ShippingAddress, string>>
   >({});
   const emailRef = useRef<HTMLInputElement>(null);
   const addressSectionRef = useRef<HTMLDivElement>(null);
-  const sectionRef = useRef<HTMLElement>(null);
-
-  // Embedded, the checkout is the lower half of the child step, so mounting
-  // says nothing about the parent having reached it — the funnel step is
-  // "scrolled it into view". Standalone it still fires on mount.
-  useEffect(() => {
-    const fire = () => trackEvent('checkout_viewed', { format: intake.format });
-    if (!embedded) {
-      fire();
-      return;
-    }
-    const node = sectionRef.current;
-    if (!node || typeof IntersectionObserver === 'undefined') {
-      fire();
-      return;
-    }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (!entries.some((entry) => entry.isIntersecting)) return;
-        observer.disconnect();
-        fire();
-      },
-      { threshold: 0.25 },
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-    // mount-only — format change is captured separately
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const isPrint = intake.format === 'pdf_print';
 
@@ -105,8 +69,8 @@ export function OrderCheckout({
   };
 
   const handleSubmit = async () => {
-    // Fields above this block (the child step, when merged) come first: their
-    // own validator marks and scrolls to whatever is missing up there.
+    // Fields above this block (the child step) come first: their own
+    // validator marks and scrolls to whatever is missing up there.
     if (beforeSubmit && !beforeSubmit()) return;
     // Validate inline, per field — a single banner at the top of the card
     // scrolled the user away from the field they had to fix.
@@ -132,7 +96,6 @@ export function OrderCheckout({
     // Consents guard — normally unreachable, the submit button is disabled
     // until both are checked.
     if (!termsAccepted || !specialDataAccepted) return;
-    trackEvent('checkout_submit_clicked', { format: intake.format });
     await onSubmit({
       email: email.trim(),
       format: intake.format,
@@ -141,19 +104,34 @@ export function OrderCheckout({
     });
   };
 
-  // Server errors (Stripe/pipeline start) still surface as a banner — scroll
-  // it into view and announce via aria-live.
+  // Server errors (pipeline start) surface as a banner — scroll it into view
+  // and announce via aria-live.
   const errorRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!externalError) return;
     errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [externalError]);
 
+  const renderClause = (parts: ClausePart[]) =>
+    parts.map((part, i) => {
+      const href = clauseLinkHref(partner, part.link);
+      return href ? (
+        <a
+          key={i}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-accent-ink font-semibold underline hover:opacity-80"
+        >
+          {part.text}
+        </a>
+      ) : (
+        <Fragment key={i}>{part.text}</Fragment>
+      );
+    });
+
   return (
-    <section
-      ref={sectionRef}
-      className={embedded ? 'pb-20 px-6 bg-gray-50' : 'pt-28 pb-20 px-6 bg-gray-50 min-h-screen'}
-    >
+    <section className="pb-20 px-6 bg-gray-50">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-10 space-y-8">
           {externalError && (
@@ -169,7 +147,7 @@ export function OrderCheckout({
 
           {/* Email */}
           <div>
-            <label className="block text-sm font-bold text-calm-900 mb-2">
+            <label className="block text-sm font-bold text-primary-900 mb-2">
               {t('checkout.email')} <span className="text-red-500">*</span>
             </label>
             <input
@@ -182,7 +160,7 @@ export function OrderCheckout({
               }}
               placeholder={t('checkout.emailPlaceholder')}
               aria-invalid={!!fieldErrors.email}
-              className={`w-full p-4 bg-gray-50 border-2 rounded-2xl focus:border-magic-500 focus:bg-white outline-none transition font-semibold text-lg ${errorBorderClass(
+              className={`w-full p-4 bg-gray-50 border-2 rounded-2xl focus:border-accent-500 focus:bg-white outline-none transition font-semibold text-lg ${errorBorderClass(
                 !!fieldErrors.email,
               )}`}
             />
@@ -193,7 +171,7 @@ export function OrderCheckout({
           {/* Address fields (when PDF+Print) */}
           {isPrint && (
             <div ref={addressSectionRef} className="space-y-4 animate-fadeIn scroll-mt-24">
-              <h4 className="font-bold text-calm-900">{t('checkout.addressHeading')}</h4>
+              <h4 className="font-bold text-primary-900">{t('checkout.addressHeading')}</h4>
               <div className="grid md:grid-cols-2 gap-4">
                 <AddressField
                   label={t('checkout.addressFullName')}
@@ -239,9 +217,10 @@ export function OrderCheckout({
             </div>
           )}
 
-          {/* Consents — RODO-compliant. Both required to enable submit. */}
+          {/* Consents — both required to enable submit. Wording and the
+              data controller come from the partner theme. */}
           <fieldset className="rounded-2xl border border-gray-100 bg-gray-50/60 p-5 space-y-4">
-            <legend className="px-2 text-xs font-bold uppercase tracking-widest text-calm-500">
+            <legend className="px-2 text-xs font-bold uppercase tracking-widest text-primary-ink">
               {t('checkout.consentsHeading')}
             </legend>
 
@@ -251,31 +230,13 @@ export function OrderCheckout({
                 checked={termsAccepted}
                 onChange={(e) => onChange({ ...value, termsAccepted: e.target.checked })}
                 aria-required="true"
-                className="w-5 h-5 mt-1 shrink-0 text-magic-500 border-gray-300 rounded focus:ring-magic-500"
+                className="w-5 h-5 mt-1 shrink-0 accent-accent-500 border-gray-300 rounded"
               />
               <span className="text-sm text-gray-700 leading-relaxed">
                 <span className="text-red-500 font-bold mr-1" aria-hidden>
                   *
                 </span>
-                {t('checkout.consentTermsPrefix')}{' '}
-                <a
-                  href="/regulamin"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-magic-600 font-semibold underline hover:text-magic-700"
-                >
-                  {t('checkout.consentTermsLink')}
-                </a>{' '}
-                {t('checkout.consentTermsMiddle')}{' '}
-                <a
-                  href="/polityka-prywatnosci"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-magic-600 font-semibold underline hover:text-magic-700"
-                >
-                  {t('checkout.consentPrivacyLink')}
-                </a>
-                {t('checkout.consentTermsSuffix')}
+                {renderClause(clauses.terms)}
               </span>
             </label>
 
@@ -285,18 +246,18 @@ export function OrderCheckout({
                 checked={specialDataAccepted}
                 onChange={(e) => onChange({ ...value, specialDataAccepted: e.target.checked })}
                 aria-required="true"
-                className="w-5 h-5 mt-1 shrink-0 text-magic-500 border-gray-300 rounded focus:ring-magic-500"
+                className="w-5 h-5 mt-1 shrink-0 accent-accent-500 border-gray-300 rounded"
               />
               <span className="text-sm text-gray-700 leading-relaxed">
                 <span className="text-red-500 font-bold mr-1" aria-hidden>
                   *
                 </span>
-                {t('checkout.consentSpecialData')}
+                {renderClause(clauses.specialData)}
               </span>
             </label>
           </fieldset>
 
-          {/* Pay button */}
+          {/* Submit */}
           <div className="flex gap-4">
             <button
               type="button"
@@ -311,21 +272,21 @@ export function OrderCheckout({
               onClick={() => void handleSubmit()}
               disabled={isSubmitting || !termsAccepted || !specialDataAccepted}
               aria-busy={isSubmitting}
-              className="w-2/3 bg-magic-500 hover:bg-magic-600 text-white font-extrabold py-4 rounded-2xl text-lg shadow-xl shadow-magic-500/30 transition transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none"
+              className="w-2/3 bg-accent-500 hover:bg-accent-600 text-on-accent font-extrabold py-4 rounded-2xl text-lg shadow-xl shadow-accent-500/30 transition transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none"
             >
               {isSubmitting ? (
                 <i className="fa-solid fa-circle-notch fa-spin mr-2" aria-hidden="true" />
               ) : (
-                <i className="fa-solid fa-lock mr-2" aria-hidden="true" />
+                <i className="fa-solid fa-wand-magic-sparkles mr-2" aria-hidden="true" />
               )}
               {isSubmitting ? t('checkout.submitting') : t('checkout.submit')}
             </button>
           </div>
 
-          <div className="flex gap-3 rounded-2xl bg-calm-50 border border-calm-100 p-4">
-            <i className="fa-solid fa-circle-info text-magic-500 mt-0.5" aria-hidden="true" />
-            <p className="text-sm text-calm-700 leading-relaxed">
-              <span className="font-bold text-calm-900">{t('checkout.noPaymentNowTitle')}</span>
+          <div className="flex gap-3 rounded-2xl bg-primary-50 border border-primary-100 p-4">
+            <i className="fa-solid fa-circle-info text-primary-ink mt-0.5" aria-hidden="true" />
+            <p className="text-sm text-primary-800 leading-relaxed">
+              <span className="font-bold text-primary-900">{t('checkout.noPaymentNowTitle')}</span>
               <br />
               <Trans
                 i18nKey="checkout.noPaymentNowBody"
@@ -334,7 +295,7 @@ export function OrderCheckout({
                   pdfPrice: formatPricePLN(BOOK_PRICE_PDF_PLN),
                   printPrice: formatPricePLN(BOOK_PRICE_PRINT_PLN),
                 }}
-                components={{ strong: <strong className="font-bold text-calm-900" /> }}
+                components={{ strong: <strong className="font-bold text-primary-900" /> }}
               />
             </p>
           </div>
@@ -361,14 +322,14 @@ function AddressField({
 }) {
   return (
     <div>
-      <label className="block text-sm font-bold text-calm-900 mb-2">{label}</label>
+      <label className="block text-sm font-bold text-primary-900 mb-2">{label}</label>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         aria-invalid={!!error}
-        className={`w-full p-4 bg-gray-50 border-2 rounded-2xl focus:border-magic-500 focus:bg-white outline-none transition font-semibold ${errorBorderClass(
+        className={`w-full p-4 bg-gray-50 border-2 rounded-2xl focus:border-accent-500 focus:bg-white outline-none transition font-semibold ${errorBorderClass(
           !!error,
         )}`}
       />

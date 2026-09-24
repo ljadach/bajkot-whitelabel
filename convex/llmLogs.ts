@@ -1,8 +1,8 @@
-import { query, mutation, internalMutation } from './_generated/server';
+import { internalMutation } from './_generated/server';
 import { v } from 'convex/values';
-import { assertAdmin } from './lib/roles';
 
-// Internal mutation to store LLM logs (called from actions)
+// Internal mutation to store LLM logs (called from actions). Read them with
+// `npm run cli -- logs` — there is no admin panel in the white-label build.
 export const storeLlmLog = internalMutation({
   args: {
     clerkUserId: v.string(),
@@ -54,113 +54,5 @@ export const storeLlmLog = internalMutation({
       retryCount: args.retryCount,
       timestamp: Date.now(),
     });
-  },
-});
-
-// Query to fetch LLM logs (admin only - for debugging)
-export const getLlmLogs = query({
-  args: {
-    limit: v.optional(v.number()),
-    clerkUserId: v.optional(v.string()),
-  },
-  returns: v.array(v.any()),
-  handler: async (ctx, args) => {
-    // Admin only - debug functionality
-    await assertAdmin(ctx);
-
-    const identity = await ctx.auth.getUserIdentity();
-    const limit = args.limit ?? 20;
-    const targetUserId = args.clerkUserId || identity!.subject;
-
-    const logs = await ctx.db
-      .query('llmLogs')
-      .withIndex('by_clerk_user', (q) => q.eq('clerkUserId', targetUserId))
-      .order('desc')
-      .take(limit);
-
-    return logs;
-  },
-});
-
-// Query to get all users who have LLM logs (admin only - for debug user switcher)
-export const getAllLogUsers = query({
-  args: {},
-  returns: v.array(
-    v.object({
-      clerkUserId: v.string(),
-      logCount: v.number(),
-      lastActivity: v.number(),
-    }),
-  ),
-  handler: async (ctx) => {
-    // Admin only - debug functionality
-    await assertAdmin(ctx);
-
-    // Get all unique clerkUserIds from logs
-    const allLogs = await ctx.db.query('llmLogs').collect();
-    const userMap = new Map<
-      string,
-      { clerkUserId: string; logCount: number; lastActivity: number }
-    >();
-
-    for (const log of allLogs) {
-      // Skip logs without clerkUserId (legacy data)
-      if (!log.clerkUserId) continue;
-
-      const existing = userMap.get(log.clerkUserId);
-      if (existing) {
-        existing.logCount++;
-        existing.lastActivity = Math.max(existing.lastActivity, log.timestamp);
-      } else {
-        userMap.set(log.clerkUserId, {
-          clerkUserId: log.clerkUserId,
-          logCount: 1,
-          lastActivity: log.timestamp,
-        });
-      }
-    }
-
-    // Convert to array and sort alphabetically by clerkUserId
-    return Array.from(userMap.values()).sort((a, b) => a.clerkUserId.localeCompare(b.clerkUserId));
-  },
-});
-
-// Mutation to delete all LLM logs for a given user (admin only)
-export const deleteLlmLogsForUser = mutation({
-  args: {
-    clerkUserId: v.optional(v.string()),
-  },
-  returns: v.number(),
-  handler: async (ctx, args) => {
-    await assertAdmin(ctx);
-
-    const identity = await ctx.auth.getUserIdentity();
-    const targetUserId = args.clerkUserId || identity!.subject;
-
-    const logs = await ctx.db
-      .query('llmLogs')
-      .withIndex('by_clerk_user', (q) => q.eq('clerkUserId', targetUserId))
-      .collect();
-
-    for (const log of logs) {
-      await ctx.db.delete(log._id);
-    }
-
-    return logs.length;
-  },
-});
-
-// Query to fetch a single log by ID (admin only - for debugging)
-export const getLlmLogById = query({
-  args: {
-    logId: v.id('llmLogs'),
-  },
-  returns: v.union(v.any(), v.null()),
-  handler: async (ctx, args) => {
-    // Admin only - debug functionality
-    await assertAdmin(ctx);
-
-    const log = await ctx.db.get(args.logId);
-    return log;
   },
 });

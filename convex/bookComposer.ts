@@ -755,15 +755,6 @@ function drawColophonPage(doc: PDFKit.PDFDocument, r: RenderCtx) {
       align: 'center',
     });
   }
-
-  doc
-    .font('Body')
-    .fontSize(r.fs.small - 2)
-    .fillColor(C.brownMuted);
-  doc.text('bajkoterapia.org', MARGIN, PAGE_H - MARGIN - 10, {
-    width: PAGE_W - MARGIN * 2,
-    align: 'center',
-  });
 }
 
 /**

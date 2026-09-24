@@ -1,4 +1,4 @@
-import { Suspense, lazy, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import {
   Links,
   Meta,
@@ -9,127 +9,46 @@ import {
   useLocation,
   useRouteError,
 } from 'react-router';
-import { Toaster } from 'sonner';
 import './index.css';
 import './lib/i18n';
 
-import { useEffect, useRef } from 'react';
-import { Header } from './components/Header';
-import { ClientOnly } from './components/ClientOnly';
 import { ScrollToTop } from './components/ScrollToTop';
-import { useLangFromUrl } from './hooks/useLangFromUrl';
-import { captureTokenFromUrl } from './hooks/useAccessToken';
-import { captureAttributionFromUrl, getAttributionProps } from './lib/attribution';
-import { setFunnelSuperProperties } from './lib/telemetry';
-import { GA_MEASUREMENT_ID, GOOGLE_ADS_ID, trackGaPageview } from './lib/gtag';
-import { META_PIXEL_ID, META_DOMAIN_VERIFICATION, trackMetaRouteChange } from './lib/metaPixel';
-
-const LazyClientUtilities = lazy(() =>
-  import('./components/ClientAppShell').then((m) => ({ default: m.ClientUtilities })),
-);
+import { BrandHeader } from './components/BrandChrome';
+import { PartnerContext } from './hooks/usePartner';
+import { faviconDataUri, pageTitle, partnerFromPathname, themeCss } from './lib/theme';
+import { startPath } from '../convex/lib/partners';
 
 export function Layout({ children }: { children: ReactNode }) {
-  const lang = useLangFromUrl();
+  // The partner theme follows the URL (/<partner>/...), so it is known on the
+  // server and the first paint is already in the partner's colours.
+  const { pathname } = useLocation();
+  const partner = partnerFromPathname(pathname);
 
   return (
-    <html lang={lang}>
+    <html lang="pl">
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        {/* Demo for B2B partners — keep it out of search engines. */}
+        <meta name="robots" content="noindex, nofollow" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Special+Elite&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap"
           rel="stylesheet"
         />
         <link
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         />
-        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <meta name="robots" content="index, follow" />
-        <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="Bajkoterapia" />
-        <meta property="og:image" content="https://bajkoterapia.org/android-chrome-512x512.png" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:image" content="https://bajkoterapia.org/android-chrome-512x512.png" />
+        <link rel="icon" type="image/svg+xml" href={faviconDataUri(partner)} />
+        <meta name="theme-color" content={partner.colors.primary} />
+        <style dangerouslySetInnerHTML={{ __html: themeCss(partner) }} />
         <Meta />
         <Links />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'Organization',
-              name: 'Bajkoterapia',
-              url: 'https://bajkoterapia.org',
-              logo: 'https://bajkoterapia.org/android-chrome-512x512.png',
-              description:
-                'Personalized therapeutic storybooks for children. AI-generated stories that help kids process emotions.',
-            }),
-          }}
-        />
-        {/* Google Analytics 4 + Consent Mode v2 — defaults to denied so
-            nothing fires until the user accepts in CookieBanner. The
-            `setAnalyticsConsent` helper flips analytics_storage to 'granted'
-            when consent is given. */}
-        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              window.gtag = gtag;
-              gtag('consent', 'default', {
-                ad_storage: 'denied',
-                analytics_storage: 'denied',
-                ad_user_data: 'denied',
-                ad_personalization: 'denied',
-                wait_for_update: 500
-              });
-              gtag('js', new Date());
-              gtag('config', '${GA_MEASUREMENT_ID}', { anonymize_ip: true });
-              ${GOOGLE_ADS_ID ? `gtag('config', '${GOOGLE_ADS_ID}');` : ''}
-            `,
-          }}
-        />
-        {/* Meta Pixel — retargeting for Facebook/Instagram. Consent is
-            REVOKED before init, so fbevents.js queues events and writes no
-            cookies until CookieBanner accepts; `setMarketingConsent` (fired
-            from the same place as GA4's consent flip) releases the queue.
-            Inert when VITE_META_PIXEL_ID is unset, so this ships safely
-            before the Meta ad account exists. */}
-        {META_PIXEL_ID ? (
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-              !function(f,b,e,v,n,t,s)
-              {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-              n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-              if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-              n.queue=[];t=b.createElement(e);t.async=!0;
-              t.src=v;s=b.getElementsByTagName(e)[0];
-              s.parentNode.insertBefore(t,s)}(window,document,'script',
-              'https://connect.facebook.net/en_US/fbevents.js');
-              fbq('consent', 'revoke');
-              fbq('init', '${META_PIXEL_ID}');
-              fbq('track', 'PageView');
-            `,
-            }}
-          />
-        ) : null}
-        {/* Meta domain verification — required for Aggregated Event
-            Measurement (the iOS event-priority list) and to stop anyone
-            else claiming bajkoterapia.org in their own Business Manager. */}
-        {META_DOMAIN_VERIFICATION ? (
-          <meta name="facebook-domain-verification" content={META_DOMAIN_VERIFICATION} />
-        ) : null}
       </head>
       <body>
-        {children}
+        <PartnerContext.Provider value={partner}>{children}</PartnerContext.Provider>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -137,101 +56,13 @@ export function Layout({ children }: { children: ReactNode }) {
   );
 }
 
-// Pages that render their own chrome (TopicNav on marketing routes, BrandHeader
-// on the landing book flow) should not stack the generic <Header> on top —
-// that would produce two navigation bars.
-function pageHasOwnHeader(pathname: string): boolean {
-  if (pathname === '/' || pathname === '/katalog' || pathname === '/cennik') return true;
-  if (pathname === '/opinie') return true;
-  if (pathname.startsWith('/problem/')) return true;
-  if (pathname.startsWith('/landing/book/')) return true;
-  return false;
-}
-
 export default function Root() {
-  useEffect(() => {
-    captureTokenFromUrl();
-    // Marketing attribution: snapshot gclid / utm_* on first visit and stamp
-    // PostHog so every subsequent event in this session inherits the source.
-    // Stripe round-trips kill document.referrer, so the localStorage snapshot
-    // is what survives back into the result page where conversions fire.
-    captureAttributionFromUrl();
-    const attribution = getAttributionProps();
-    if (Object.keys(attribution).length > 0) {
-      setFunnelSuperProperties(attribution);
-    }
-  }, []);
-  const { pathname } = useLocation();
-  const showGlobalHeader = !pageHasOwnHeader(pathname);
-
-  // SPA navigations don't trigger gtag auto page_view — fire it manually
-  // whenever the path changes. Consent gating happens inside gtag (default
-  // deny until CookieBanner accepts), so this is safe before opt-in.
-  // Meta's pixel has the same blind spot and the same consent guarantee
-  // (revoked until the banner grants), so it rides along.
-  useEffect(() => {
-    trackGaPageview(pathname);
-    trackMetaRouteChange(pathname);
-  }, [pathname]);
-
-  // Server-side analytics beacon. The edge middleware logs the initial page
-  // load; React Router swaps everything else client-side and the edge never
-  // sees it. Beacon hits /api/track which forwards to Convex with the shared
-  // secret + IP from Vercel headers. Skip the first effect run (already
-  // covered by edge middleware) to avoid double-counting initial loads.
-  const firstNavRef = useRef(true);
-  useEffect(() => {
-    if (firstNavRef.current) {
-      firstNavRef.current = false;
-      return;
-    }
-    if (typeof navigator === 'undefined' || !navigator.sendBeacon) return;
-    if (
-      pathname.startsWith('/admin') ||
-      pathname.startsWith('/book/') ||
-      pathname.startsWith('/api/')
-    ) {
-      return;
-    }
-    const payload = JSON.stringify({
-      path: pathname,
-      userAgent: navigator.userAgent,
-      referer: document.referrer || undefined,
-    });
-    try {
-      const blob = new Blob([payload], { type: 'application/json' });
-      navigator.sendBeacon('/api/track', blob);
-    } catch {
-      // Beacon failures must never bubble — analytics is best-effort.
-    }
-  }, [pathname]);
-
   return (
-    <div className="h-screen flex flex-col bg-white">
+    <div className="h-screen flex flex-col">
       <ScrollToTop />
-      {showGlobalHeader && <Header />}
-      <div className="flex flex-1 min-h-0 overflow-hidden">
-        <main className="flex-1 overflow-auto bg-neutral-50">
-          <Outlet />
-        </main>
-      </div>
-      <Toaster
-        position="bottom-right"
-        toastOptions={{
-          style: {
-            background: '#0f0f0f',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '13px',
-          },
-        }}
-      />
-      <ClientOnly>
-        <Suspense fallback={null}>
-          <LazyClientUtilities />
-        </Suspense>
-      </ClientOnly>
+      <main className="flex-1 overflow-auto bg-gray-50">
+        <Outlet />
+      </main>
     </div>
   );
 }
@@ -246,29 +77,30 @@ export function HydrateFallback() {
 
 export function ErrorBoundary() {
   const error = useRouteError();
-
-  let title = 'Something went wrong';
-  let message = 'An unexpected error occurred. Please try refreshing the page.';
-
-  if (isRouteErrorResponse(error)) {
-    title = error.status === 404 ? 'Page not found' : `Error ${error.status}`;
-    message =
-      error.status === 404
-        ? 'The page you were looking for does not exist.'
-        : error.statusText || message;
-  }
+  const { pathname } = useLocation();
+  const notFound = isRouteErrorResponse(error) && error.status === 404;
+  const heading = notFound ? 'Nie ma takiej strony' : 'Coś poszło nie tak';
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-50 px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-2xl font-semibold text-neutral-900 mb-2">{title}</h1>
-        <p className="text-neutral-500 mb-6">{message}</p>
-        <a
-          href="/"
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-lg hover:bg-neutral-800 transition-colors"
-        >
-          Go home
-        </a>
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <title>{pageTitle(pathname, heading)}</title>
+      <BrandHeader />
+      <div className="flex-1 flex items-center justify-center px-4 py-16">
+        <div className="max-w-md text-center">
+          <div className="text-6xl mb-4">{notFound ? '🧭' : '😕'}</div>
+          <h1 className="text-2xl font-black text-primary-900 mb-2">{heading}</h1>
+          <p className="text-gray-500 mb-8">
+            {notFound
+              ? 'Sprawdź link albo zacznij od wyboru tematu bajki.'
+              : 'Odśwież stronę i spróbuj ponownie.'}
+          </p>
+          <a
+            href={startPath(partnerFromPathname(pathname).id)}
+            className="inline-flex items-center gap-2 bg-accent-500 hover:bg-accent-600 text-on-accent font-bold px-6 py-3 rounded-2xl transition"
+          >
+            Wybierz temat bajki <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+          </a>
+        </div>
       </div>
     </div>
   );

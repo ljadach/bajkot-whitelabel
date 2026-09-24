@@ -25,7 +25,7 @@ import { chatJsonWithRetries } from './lib/llmClient';
 
 const GUARD_MODEL = 'google/gemini-2.5-flash';
 
-const moderationSystem = `Jesteś moderatorem treści dla platformy bajek terapeutycznych dla dzieci (bajkoterapia.org).
+const moderationSystem = `Jesteś moderatorem treści dla platformy bajek terapeutycznych dla dzieci.
 Otrzymujesz pola z formularza zamówienia bajki. Sprawdź, czy KTÓRYKOLWIEK z nich zawiera:
 - mowę nienawiści, groźby, przemoc, treści dyskryminacyjne;
 - treści obsceniczne, wulgarne lub seksualizujące dzieci;

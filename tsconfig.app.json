@@ -3,7 +3,7 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": ["ES2021", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
 
@@ -19,12 +19,11 @@
     "strict": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    "noUncheckedIndexedAccess": true,
     "noImplicitReturns": true,
 
     /* React Router 7 types */
     "rootDirs": [".", "./.react-router/types"],
-    "types": ["@react-router/dev"],
+    "types": ["@react-router/node", "vite/client"],
 
     /* Import paths */
     "paths": {

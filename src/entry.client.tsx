@@ -2,41 +2,21 @@ import { startTransition, StrictMode } from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { HydratedRouter } from 'react-router/dom';
 import './lib/i18n';
-import { ClerkProvider, useAuth } from '@clerk/clerk-react';
-import { ConvexProviderWithClerk } from 'convex/react-clerk';
-import { ConvexReactClient } from 'convex/react';
-import posthog from 'posthog-js';
-import { PostHogProvider } from '@posthog/react';
-import { posthogConfig, getPostHogOptions } from '@lib/posthogConfig';
+import { ConvexProvider, ConvexReactClient } from 'convex/react';
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
-const clerkPublishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string;
-
-if (posthogConfig.apiKey) {
-  posthog.init(posthogConfig.apiKey, getPostHogOptions());
+const convexUrl = import.meta.env.VITE_CONVEX_URL as string | undefined;
+if (!convexUrl) {
+  throw new Error('VITE_CONVEX_URL is not set (see .env.example)');
 }
-
-if (!clerkPublishableKey) {
-  throw new Error('VITE_CLERK_PUBLISHABLE_KEY is not set in .env.local');
-}
-
-function App() {
-  return (
-    <PostHogProvider client={posthog}>
-      <ClerkProvider publishableKey={clerkPublishableKey}>
-        <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-          <HydratedRouter />
-        </ConvexProviderWithClerk>
-      </ClerkProvider>
-    </PostHogProvider>
-  );
-}
+const convex = new ConvexReactClient(convexUrl);
 
 startTransition(() => {
   hydrateRoot(
     document,
     <StrictMode>
-      <App />
+      <ConvexProvider client={convex}>
+        <HydratedRouter />
+      </ConvexProvider>
     </StrictMode>,
   );
 });

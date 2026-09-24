@@ -1,44 +1,37 @@
 /**
- * Shared types for the prototype-fidelity order flow (auth + landing).
- * Mirrors the screens in docs/protos_v2/Bajkoterapia-Nowy-Flow.html.
+ * Shared types and helpers for the order flow (topic → form → checkout).
  */
 
-import type { Topic, CatalogCategory } from '../../../data/topics';
-import {
-  CONSENT_CLAUSE_SPECIAL_DATA,
-  CONSENT_CLAUSE_TERMS,
-  PRIVACY_VERSION,
-  TERMS_VERSION,
-} from '../../../data/legalDocs';
+import type { Topic } from '../../../../convex/lib/topics';
+import type { PartnerTheme } from '../../../../convex/lib/partners';
+import { CONSENT_VERSION, clauseText, consentClauses } from '../../../lib/consents';
 
 export type OrderFormat = 'pdf' | 'pdf_print';
 
 export type Gender = 'boy' | 'girl';
 
-/** Simplified appearance fields per prototype: 4×4×3 selects + glasses. */
+/** Appearance fields: 4×4×3 selects + glasses + free-text outfit. */
 export interface AppearanceData {
   /** 'Niebieskie' | 'Zielone' | 'Brązowe' | 'Szare' */
   eyeColor: string;
   /** 'Blond' | 'Brązowe' | 'Czarne' | 'Rude' */
   hairColor: string;
-  /** 'Krótkie' | 'Średnie' | 'Długie' — mapped to schema's hairStyle. */
+  /** 'Krótkie' | 'Średnie' | 'Długie' — mapped to the schema's hairStyle. */
   hairLength: string;
   glasses: boolean;
-  /** Free-text outfit description, replaces the preset dropdown. */
+  /** Free-text outfit description. */
   outfitText: string;
 }
 
-export type SelectedTopic = Topic;
-
 /** Aggregate intake state shared between flow steps. */
 export interface IntakeState {
-  /** Selected topic from catalog, or topic preselected by landing flow. */
-  topic: SelectedTopic | null;
+  /** Topic from the URL (/zamow/<slug>). */
+  topic: Topic | null;
   /** Free-text problem description ("Opis sytuacji"). */
   situation: string;
   /** Child name. */
   name: string;
-  /** Concrete age in years (2-12 in the prototype). */
+  /** Concrete age in years (2-12). */
   age: number | null;
   gender: Gender | null;
   appearance: AppearanceData;
@@ -46,7 +39,7 @@ export interface IntakeState {
   format: OrderFormat;
 }
 
-export const INITIAL_APPEARANCE: AppearanceData = {
+const INITIAL_APPEARANCE: AppearanceData = {
   eyeColor: 'Niebieskie',
   hairColor: 'Blond',
   hairLength: 'Krótkie',
@@ -73,7 +66,7 @@ export interface ShippingAddress {
   city: string;
 }
 
-export const INITIAL_ADDRESS: ShippingAddress = {
+const INITIAL_ADDRESS: ShippingAddress = {
   fullName: '',
   phone: '',
   street: '',
@@ -109,16 +102,9 @@ export function ageLabel(age: number): string {
   return `${age} lat`;
 }
 
-/** Tab id for the catalog filter ('all' for everything). */
-export type CatalogTab = CatalogCategory | 'all';
-
-export function resolveProblemId(topic: SelectedTopic): string {
-  return topic.problemId ?? 'general_resilience';
-}
-
 /**
- * Single definition of "the child profile is complete" — used by the wizard's
- * submit gate and the landing draft-restore gate, so the two can't drift.
+ * Single definition of "the child profile is complete" — used by the form's
+ * submit gate and the draft-restore gate, so the two can't drift.
  */
 export function isChildProfileComplete(
   intake: Pick<IntakeState, 'name' | 'age' | 'gender'>,
@@ -126,13 +112,6 @@ export function isChildProfileComplete(
   return intake.name.trim().length >= 2 && intake.age !== null && intake.gender !== null;
 }
 
-/**
- * Shared mapping from intake state to the args expected by both the auth
- * (`startOrder`) and landing (`startLandingOrder`) Convex actions.
- *
- * Caller is responsible for adding flow-specific fields:
- *   - landing flow: accessToken (intake gate, separate from per-order token)
- */
 export interface ConsentField {
   accepted: boolean;
   version: string;
@@ -144,23 +123,26 @@ export interface ConsentsPayload {
   specialData: ConsentField;
 }
 
-/** Use TERMS_VERSION for terms (covers Regulamin + Polityka — both linked from the clause). */
-export function buildConsentsPayload(input: {
-  termsAccepted: boolean;
-  specialDataAccepted: boolean;
-}): ConsentsPayload {
+/**
+ * Consent payload for `startLandingOrder`: the exact clause text the parent
+ * saw (partner-specific) plus a version tag naming the wording and partner.
+ */
+export function buildConsentsPayload(
+  partner: PartnerTheme,
+  input: { termsAccepted: boolean; specialDataAccepted: boolean },
+): ConsentsPayload {
+  const clauses = consentClauses(partner);
+  const version = `wl-${CONSENT_VERSION}|partner-${partner.id}`;
   return {
     terms: {
       accepted: input.termsAccepted,
-      // Polityka Prywatności jest częścią klauzuli — łączymy oba numery wersji
-      // w jedną etykietę, dzięki czemu audit widzi które dokumenty były akceptowane.
-      version: `terms-${TERMS_VERSION}|privacy-${PRIVACY_VERSION}`,
-      clauseText: CONSENT_CLAUSE_TERMS,
+      version,
+      clauseText: clauseText(clauses.terms),
     },
     specialData: {
       accepted: input.specialDataAccepted,
-      version: `privacy-${PRIVACY_VERSION}`,
-      clauseText: CONSENT_CLAUSE_SPECIAL_DATA,
+      version,
+      clauseText: clauseText(clauses.specialData),
     },
   };
 }
@@ -176,8 +158,6 @@ export interface IntakeOrderArgs {
   hairColor: string;
   hairStyle: string;
   eyeColor: string;
-  /** Spec section 3.4 dropped skin tone from intake. Optional for legacy callers. */
-  skinTone?: string;
   outfit: string;
   email: string;
   format: OrderFormat;
@@ -185,7 +165,7 @@ export interface IntakeOrderArgs {
   consents: ConsentsPayload;
 }
 
-/** Intake → Convex action args. Throws if required fields are missing. */
+/** Intake → `startLandingOrder` args. Throws if required fields are missing. */
 export function intakeToOrderArgs(
   intake: IntakeState,
   payload: {
@@ -203,7 +183,7 @@ export function intakeToOrderArgs(
     childName: intake.name.trim(),
     ageNumber: intake.age,
     gender: intake.gender,
-    problemId: resolveProblemId(intake.topic),
+    problemId: intake.topic.problemId,
     problemDetail: intake.situation.trim() || undefined,
     favoriteToy: intake.favoriteToy.trim() || undefined,
     glasses: intake.appearance.glasses,
@@ -212,7 +192,7 @@ export function intakeToOrderArgs(
     // treats it as free-text descriptor, so the literal Polish word is fine.
     hairStyle: intake.appearance.hairLength,
     eyeColor: intake.appearance.eyeColor,
-    // Spec section 3.4 dropped skin tone — pipeline defaults to 'jasna' downstream.
+    // Skin tone isn't asked — pipeline defaults to 'jasna' downstream.
     outfit: trimmedOutfit || 'Wygodne ubranie',
     email: payload.email,
     format: payload.format,
