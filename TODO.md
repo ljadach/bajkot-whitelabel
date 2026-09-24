@@ -25,9 +25,8 @@ full PDF. Intended for pitches. A partner going live needs `STRIPE_MODE=live`
 `llmLogs` stores full prompts (child's name, problem description, dedication).
 All orders share one user id and the table keeps the last 50 rows per id, so
 it's a rolling window of the latest calls — but they are raw. Langfuse would
-send the same to a third party: keep `LANGFUSE_*` unset here. Fix: log hashes
-
-- metadata only (same open item as bajkot's TODO #2).
+send the same to a third party: keep `LANGFUSE_*` unset here. Fix: log only
+hashes and metadata (same open item as bajkot's TODO #2).
 
 ## 4. Inherited from bajkot's audits (still in this code)
 
