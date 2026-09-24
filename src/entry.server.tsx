@@ -12,7 +12,7 @@ export default async function handleRequest(
     {
       onError(error: unknown) {
         // Log SSR errors but don't fail the response — components that need
-        // browser-only providers (Convex, Clerk) will show Suspense fallbacks.
+        // browser-only providers (Convex) will show Suspense fallbacks.
         console.error('SSR render error:', error);
       },
     },

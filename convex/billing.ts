@@ -1,13 +1,15 @@
 import { internalMutation, internalQuery, query } from './_generated/server';
 import { internal } from './_generated/api';
 import { v } from 'convex/values';
-import { metaAttributionValidator } from './schema';
+import { currentStripeMode } from './lib/stripeMode';
 
 export const paymentStatusValidator = v.union(
   v.literal('pending'),
   v.literal('completed'),
   v.literal('failed'),
 );
+
+export const paymentModeValidator = v.union(v.literal('test'), v.literal('live'));
 
 export const bookFormatValidator = v.union(v.literal('pdf'), v.literal('pdf_print'));
 
@@ -21,63 +23,19 @@ export const shippingAddressValidator = v.object({
 });
 
 /**
- * Narrow read for the Meta Conversions API sender: the match keys captured
- * at order creation plus the email it hashes. Deliberately not the whole
- * document — this data leaves our infrastructure, and a projection is the
- * cheapest guarantee that a future schema field cannot be leaked to Meta
- * by accident.
+ * Which Stripe mode new payments run in (`STRIPE_MODE`). Public: the paywall
+ * shows a test-card banner in test mode. Holds no secret.
  */
-export const getOrderForMetaCapi = internalQuery({
-  args: {
-    bookOrderId: v.id('bookOrders'),
-  },
-  returns: v.union(
-    v.null(),
-    v.object({
-      email: v.union(v.string(), v.null()),
-      metaAttribution: v.union(v.null(), metaAttributionValidator),
-    }),
-  ),
-  handler: async (ctx, args) => {
-    const order = await ctx.db.get(args.bookOrderId);
-    if (!order) return null;
-    return {
-      email: order.email ?? null,
-      metaAttribution: order.metaAttribution ?? null,
-    };
-  },
-});
-
-export const getBookOrderForCheckout = internalQuery({
-  args: {
-    bookOrderId: v.id('bookOrders'),
-  },
-  returns: v.union(
-    v.null(),
-    v.object({
-      clerkUserId: v.string(),
-      paymentStatus: v.union(paymentStatusValidator, v.null()),
-      stripeSessionId: v.union(v.string(), v.null()),
-      format: v.union(bookFormatValidator, v.null()),
-    }),
-  ),
-  handler: async (ctx, args) => {
-    const order = await ctx.db.get(args.bookOrderId);
-    if (!order) return null;
-    return {
-      clerkUserId: order.clerkUserId,
-      paymentStatus: order.paymentStatus ?? null,
-      stripeSessionId: order.stripeSessionId ?? null,
-      format: order.format ?? null,
-    };
-  },
+export const getPaymentMode = query({
+  args: {},
+  returns: paymentModeValidator,
+  handler: async () => currentStripeMode(),
 });
 
 /**
- * Internal helper for landing-flow Stripe checkout: also exposes the
- * order's email so the public landing action can pre-fill Stripe's
- * `customer_email`. Landing orders have no Clerk identity, so the
- * caller validates against LANDING_ACCESS_TOKEN instead.
+ * Order fields the Checkout action needs, including the e-mail for Stripe's
+ * `customer_email` and the partner whose return URL and name it uses. The
+ * caller has already verified the per-order access token.
  */
 export const getLandingBookOrderForCheckout = internalQuery({
   args: {
@@ -92,6 +50,7 @@ export const getLandingBookOrderForCheckout = internalQuery({
       stripeSessionId: v.union(v.string(), v.null()),
       format: v.union(bookFormatValidator, v.null()),
       hasShippingAddress: v.boolean(),
+      partnerId: v.union(v.string(), v.null()),
     }),
   ),
   handler: async (ctx, args) => {
@@ -104,6 +63,7 @@ export const getLandingBookOrderForCheckout = internalQuery({
       stripeSessionId: order.stripeSessionId ?? null,
       format: order.format ?? null,
       hasShippingAddress: Boolean(order.shippingAddress),
+      partnerId: order.partnerId ?? null,
     };
   },
 });
@@ -180,14 +140,13 @@ export const markBookOrderPaid = internalMutation({
   args: {
     bookOrderId: v.id('bookOrders'),
     stripeSessionId: v.string(),
+    /** Stripe mode of the payment — tells demo orders from real sales. */
+    paymentMode: paymentModeValidator,
     /**
      * What Stripe actually billed, in minor units (grosze), plus its
-     * currency. Passed through from `checkout.session.completed` rather
-     * than recomputed from a price constant: `src/lib/pricing.ts` and
-     * `convex/lib/email.ts` have already drifted (139 vs 99 PLN for print),
-     * and the value we report to an ad platform must be the money that
-     * moved, not whichever copy of the price list we happened to read.
-     * Optional so pre-existing callers and tests keep working.
+     * currency. Taken from `checkout.session.completed` rather than a price
+     * constant, so promotion codes and price changes in the Stripe dashboard
+     * show up correctly in the confirmation e-mail.
      */
     amountTotalMinor: v.optional(v.number()),
     currency: v.optional(v.string()),
@@ -204,28 +163,18 @@ export const markBookOrderPaid = internalMutation({
     }
     await ctx.db.patch(args.bookOrderId, {
       paymentStatus: 'completed',
+      paymentMode: args.paymentMode,
+      paidAmountMinor: args.amountTotalMinor,
+      paidCurrency: args.currency,
       stripeSessionId: args.stripeSessionId,
       updatedAt: Date.now(),
     });
-    // Hand off the "Mamy Twoje zamówienie" confirmation email. Scheduled
-    // rather than awaited so a Resend hiccup doesn't fail the webhook
-    // (Stripe would retry, double-flipping paid status).
+    // Hand off the payment confirmation email. Scheduled rather than awaited
+    // so a Resend hiccup doesn't fail the webhook (Stripe would retry,
+    // double-flipping paid status).
     await ctx.scheduler.runAfter(0, internal.email.sendOrderConfirmation, {
       bookOrderId: args.bookOrderId,
     });
-    // Meta Conversions API. Deliberately below the `already completed`
-    // short-circuit above: Stripe retries the webhook for up to three days,
-    // and this placement means a retry cannot produce a second Purchase
-    // even before Meta's own event_id deduplication is consulted. Silently
-    // no-ops when the Meta env vars are absent or the customer rejected
-    // marketing consent.
-    if (args.amountTotalMinor !== undefined) {
-      await ctx.scheduler.runAfter(0, internal.metaCapi.sendPurchase, {
-        bookOrderId: args.bookOrderId,
-        value: args.amountTotalMinor / 100,
-        currency: (args.currency ?? 'pln').toUpperCase(),
-      });
-    }
     // Generate-before-payment: by the time the webhook lands the pipeline has
     // usually finished, so the delivery email (full PDF link) goes out here —
     // never earlier. The reverse order (paid before the PDF exists) is
@@ -235,38 +184,12 @@ export const markBookOrderPaid = internalMutation({
         bookOrderId: args.bookOrderId,
       });
     }
-    // PDF+Print: fire a parallel internal alert to the fulfillment inbox so
-    // the team can start printing/packing while the customer's PDF download
-    // is still in flight. Pipeline already ran — physical book ships in 3–5d.
+    // PDF+Print: alert whoever fulfils print orders (ADMIN_ALERT_EMAIL).
     if (order.format === 'pdf_print') {
       await ctx.scheduler.runAfter(0, internal.email.sendAdminPrintAlert, {
         bookOrderId: args.bookOrderId,
       });
     }
     return null;
-  },
-});
-
-export const getBookOrderPaymentStatus = query({
-  args: {
-    bookOrderId: v.id('bookOrders'),
-  },
-  returns: v.union(
-    v.null(),
-    v.object({
-      paymentStatus: v.union(paymentStatusValidator, v.null()),
-      stripeSessionId: v.union(v.string(), v.null()),
-    }),
-  ),
-  handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) return null;
-    const order = await ctx.db.get(args.bookOrderId);
-    if (!order) return null;
-    if (order.clerkUserId !== identity.subject) return null;
-    return {
-      paymentStatus: order.paymentStatus ?? null,
-      stripeSessionId: order.stripeSessionId ?? null,
-    };
   },
 });

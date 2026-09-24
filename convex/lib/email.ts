@@ -1,46 +1,39 @@
 'use node';
 
 /**
- * Resend email integration. Internal helper around the SDK so the rest of
- * the pipeline never has to think about the API key, sender domain or
- * branding boilerplate.
+ * Resend email integration plus the transactional templates. Every
+ * customer-facing template is rendered in the order's partner theme
+ * (lib/partners.ts): name, logo, colours, support address.
  *
- * Env vars (Convex dashboard, both prod and dev):
- *   RESEND_API_KEY    — required for actual sends
- *   EMAIL_FROM        — defaults to "Bajkoterapia <info@bajkoterapia.org>"
+ * Env vars (Convex dashboard):
+ *   RESEND_API_KEY  — required for actual sends
+ *   EMAIL_FROM      — sender on a domain verified in Resend, e.g.
+ *                     "bajki@twoja-domena.pl". The display name is replaced
+ *                     with the partner's name per e-mail.
+ *   EMAIL_REPLY_TO  — optional fallback reply-to when the partner has no
+ *                     supportEmail
  *
- * If RESEND_API_KEY is missing the helper logs a warning and no-ops, so
- * dev environments without the key don't break the pipeline.
+ * If RESEND_API_KEY or EMAIL_FROM is missing the helper logs a warning and
+ * no-ops, so environments without e-mail don't break the pipeline.
  */
 
 import { Resend } from 'resend';
 import { dlaName } from './childNameInflect';
+import { paletteFromHex, textColorOn, type Palette } from './palette';
+import type { PartnerTheme } from './partners';
+import { formatPricePLN, priceForFormatPLN } from './pricing';
 
-const DEFAULT_FROM = 'Bajkoterapia <info@bajkoterapia.org>';
-const DEFAULT_REPLY_TO = 'info@bajkoterapia.org';
-
-// Display-only prices. Stripe is the source of truth via STRIPE_BOOK_PRICE_ID.
-// Mirrors src/lib/pricing.ts — if one changes, change the other.
-const BOOK_PRICE_PDF_PLN = 49;
-const BOOK_PRICE_PRINT_PLN = 99;
-
-const DOWNLOAD_LINK_TTL_DAYS = 30;
-
-export interface EmailAttachment {
-  filename: string;
-  /** File content, base64-encoded. */
-  contentBase64: string;
-}
+/** TTL of the presigned PDF link in the book-ready e-mail (see convex/email.ts). */
+export const DOWNLOAD_LINK_TTL_HOURS = 24;
 
 interface SendEmailParams {
   to: string | string[];
-  cc?: string[];
-  bcc?: string[];
-  replyTo?: string;
   subject: string;
   html: string;
   text?: string;
-  attachments?: EmailAttachment[];
+  /** Display name for the sender; the address always comes from EMAIL_FROM. */
+  fromName?: string;
+  replyTo?: string;
 }
 
 let resendInstance: Resend | null = null;
@@ -51,27 +44,38 @@ function getResend(): Resend | null {
   return resendInstance;
 }
 
+/** `Name <addr>` or bare `addr` → `addr`. */
+function senderAddress(raw: string): string {
+  const match = raw.match(/<([^>]+)>/);
+  return (match ? match[1] : raw).trim();
+}
+
+function formatFrom(name: string | undefined, fromEnv: string): string {
+  if (!name) return fromEnv;
+  const quoted = name.replace(/["\\]/g, '');
+  return `"${quoted}" <${senderAddress(fromEnv)}>`;
+}
+
 export async function sendEmail(params: SendEmailParams): Promise<{ ok: boolean; error?: string }> {
   const client = getResend();
   if (!client) {
     console.warn('[email] RESEND_API_KEY missing — skipping send to', params.to);
     return { ok: false, error: 'RESEND_API_KEY not configured' };
   }
-  const from = process.env.EMAIL_FROM || DEFAULT_FROM;
+  const fromEnv = process.env.EMAIL_FROM;
+  if (!fromEnv) {
+    console.warn('[email] EMAIL_FROM missing — skipping send to', params.to);
+    return { ok: false, error: 'EMAIL_FROM not configured' };
+  }
+  const replyTo = params.replyTo ?? process.env.EMAIL_REPLY_TO ?? undefined;
   try {
     const { data, error } = await client.emails.send({
-      from,
+      from: formatFrom(params.fromName, fromEnv),
       to: params.to,
-      cc: params.cc,
-      bcc: params.bcc,
-      replyTo: params.replyTo ?? DEFAULT_REPLY_TO,
+      ...(replyTo ? { replyTo } : {}),
       subject: params.subject,
       html: params.html,
       text: params.text,
-      attachments: params.attachments?.map((a) => ({
-        filename: a.filename,
-        content: a.contentBase64,
-      })),
     });
     if (error) {
       console.error('[email] Resend returned error:', error);
@@ -90,82 +94,188 @@ export type BookFormat = 'pdf' | 'pdf_print';
 
 export function formatOrderNumber(orderId: string): string {
   // Public-facing short code — last 12 chars of the Convex id, matches CLI.
-  const tail = orderId.slice(-12).toUpperCase();
-  return `BJK-${tail}`;
+  return orderId.slice(-12).toUpperCase();
 }
 
 function formatLabel(format: BookFormat): string {
   return format === 'pdf_print' ? 'PDF + Druk' : 'PDF';
 }
 
-function priceForFormat(format: BookFormat): number {
-  return format === 'pdf_print' ? BOOK_PRICE_PRINT_PLN : BOOK_PRICE_PDF_PLN;
+// ── Partner branding ────────────────────────────────────────
+
+export interface EmailBrand {
+  name: string;
+  /** Absolute URL of a raster logo, or null to render the name as text. */
+  logoUrl: string | null;
+  supportEmail: string | null;
+  primary: Palette;
+  accent: Palette;
+  /** Text colour that reads on the accent (CTA) colour. */
+  onAccent: string;
 }
 
-function formatPlExpiryDate(createdAtMs: number): string {
-  const expiry = new Date(createdAtMs + DOWNLOAD_LINK_TTL_DAYS * 24 * 60 * 60 * 1000);
-  return new Intl.DateTimeFormat('pl-PL', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(expiry);
+/**
+ * Resolve a partner theme into what the templates need. SVG logos fall back
+ * to the text wordmark — Gmail and Outlook don't render SVG images.
+ */
+export function emailBrand(partner: PartnerTheme, appUrl: string): EmailBrand {
+  let logoUrl: string | null = null;
+  if (partner.logoUrl && !/\.svg(\?|#|$)/i.test(partner.logoUrl)) {
+    logoUrl = /^https?:\/\//.test(partner.logoUrl)
+      ? partner.logoUrl
+      : `${appUrl.replace(/\/+$/, '')}${partner.logoUrl}`;
+  }
+  return {
+    name: partner.name,
+    logoUrl,
+    supportEmail: partner.supportEmail ?? null,
+    primary: paletteFromHex(partner.colors.primary),
+    accent: paletteFromHex(partner.colors.accent),
+    onAccent: textColorOn(partner.colors.accent),
+  };
+}
+
+function wordmarkHtml(brand: EmailBrand): string {
+  if (brand.logoUrl) {
+    return `<img src="${escapeAttr(brand.logoUrl)}" alt="${escapeAttr(brand.name)}" height="44" style="height:44px;width:auto;border:0;display:inline-block;">`;
+  }
+  return `<div style="color:${brand.primary[800]};font-weight:800;font-size:22px;">${escapeHtml(brand.name)}</div>`;
+}
+
+/** Common shell: header with the partner's wordmark, body, footer. */
+function renderShell({
+  brand,
+  preheader,
+  body,
+  footerNote,
+}: {
+  brand: EmailBrand;
+  preheader: string;
+  body: string;
+  footerNote: string;
+}): string {
+  const supportLine = brand.supportEmail
+    ? `<div><a href="mailto:${escapeAttr(brand.supportEmail)}" style="color:${brand.primary[600]};text-decoration:none;">${escapeHtml(brand.supportEmail)}</a></div>`
+    : '';
+  return `<!doctype html>
+<html lang="pl" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <!--[if gte mso 9]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
+  </head>
+  <body style="margin:0;padding:0;background:#F5F7FA;font-family:Nunito,Arial,sans-serif;color:#334155;">
+    <span style="display:none!important;visibility:hidden;mso-hide:all;font-size:1px;color:#F5F7FA;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${escapeHtml(preheader)}</span>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F7FA;padding:32px 16px;">
+      <tr><td align="center">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:12px;box-shadow:0 8px 24px -8px rgba(15,23,42,0.12);overflow:hidden;">
+          <tr><td style="background:${brand.primary[50]};padding:28px 24px;text-align:center;border-bottom:1px solid ${brand.primary[100]};">
+            ${wordmarkHtml(brand)}
+          </td></tr>
+${body}
+          <tr><td style="background:#f8fafc;padding:24px;text-align:center;border-top:1px solid #e2e8f0;font-size:12px;color:#64748b;">
+            <div style="margin-bottom:8px;"><strong style="color:${brand.primary[900]};">${escapeHtml(brand.name)}</strong></div>
+            ${supportLine}
+            <div style="margin-top:12px;max-width:400px;margin-left:auto;margin-right:auto;">${escapeHtml(footerNote)}</div>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+</html>`;
 }
 
 /**
  * Bullet-proof email CTA. Outlook Desktop on Windows uses the Word render
- * engine and silently drops CSS backgrounds on `<a>` elements (and most other
- * modern styling), so the button "disappears" — white label on a transparent
- * background. We wrap a VML `<v:roundrect>` in an mso-only conditional comment
- * which Outlook honors, and gate the real `<a>` tag behind `[if !mso]` so
- * Outlook never sees both at once. Everywhere else (Gmail, Apple Mail,
- * mobile) the HTML branch renders normally with the solid fill as a fallback
- * for clients that don't paint gradients.
+ * engine and silently drops CSS backgrounds on `<a>` elements, so the button
+ * "disappears". We wrap a VML `<v:roundrect>` in an mso-only conditional
+ * comment which Outlook honors, and gate the real `<a>` tag behind
+ * `[if !mso]` so Outlook never sees both at once.
  *
  * Reference: https://buttons.cm — same pattern Litmus / Email on Acid push.
  */
 function buildCtaButton({
   href,
   label,
-  fillColor = '#d97706',
-  gradient = 'linear-gradient(135deg,#f59e0b 0%,#d97706 100%)',
-  fontFamily = 'Nunito,Arial,sans-serif',
+  brand,
 }: {
   href: string;
   label: string;
-  fillColor?: string;
-  gradient?: string;
-  fontFamily?: string;
+  brand: EmailBrand;
 }): string {
   const hrefAttr = escapeAttr(href);
   const labelHtml = escapeHtml(label);
+  const fill = brand.accent[500];
+  const gradient = `linear-gradient(135deg,${brand.accent[400]} 0%,${brand.accent[600]} 100%)`;
   return `
               <!--[if mso]>
-              <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${hrefAttr}" style="height:52px;v-text-anchor:middle;width:280px;" arcsize="50%" stroke="f" fillcolor="${fillColor}">
+              <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${hrefAttr}" style="height:52px;v-text-anchor:middle;width:280px;" arcsize="50%" stroke="f" fillcolor="${fill}">
                 <w:anchorlock/>
-                <center style="color:#ffffff;font-family:Arial,sans-serif;font-size:17px;font-weight:bold;">${labelHtml}</center>
+                <center style="color:${brand.onAccent};font-family:Arial,sans-serif;font-size:17px;font-weight:bold;">${labelHtml}</center>
               </v:roundrect>
               <![endif]-->
               <!--[if !mso]><!-- -->
-              <a href="${hrefAttr}" style="display:inline-block;background-color:${fillColor};background-image:${gradient};color:#ffffff;font-family:${fontFamily};font-weight:800;font-size:17px;line-height:20px;padding:16px 36px;border-radius:999px;text-decoration:none;box-shadow:0 8px 20px -8px rgba(245,158,11,0.5);mso-hide:all;">
+              <a href="${hrefAttr}" style="display:inline-block;background-color:${fill};background-image:${gradient};color:${brand.onAccent};font-family:Nunito,Arial,sans-serif;font-weight:800;font-size:17px;line-height:20px;padding:16px 36px;border-radius:999px;text-decoration:none;mso-hide:all;">
                 ${labelHtml}
               </a>
               <!--<![endif]-->`;
 }
 
+function signOffHtml(brand: EmailBrand): string {
+  return `
+            <p style="margin:16px 0 0 0;">
+              Pozdrawiamy ciepło,<br>
+              <strong style="color:${brand.primary[900]};">Zespół ${escapeHtml(brand.name)}</strong>
+            </p>`;
+}
+
+function contactLineHtml(brand: EmailBrand): string {
+  if (!brand.supportEmail) return '';
+  return `
+            <p style="margin:16px 0 0 0;">
+              Coś nie gra? Odpisz na tę wiadomość albo napisz na <a href="mailto:${escapeAttr(brand.supportEmail)}" style="color:${brand.primary[600]};">${escapeHtml(brand.supportEmail)}</a>.
+            </p>`;
+}
+
+function printNoticeHtml(brand: EmailBrand): string {
+  return `
+            <div style="background:${brand.accent[50]};border:1px solid ${brand.accent[200]};border-radius:12px;padding:16px 18px;margin:24px 0;font-size:14px;color:${brand.accent[900]};">
+              <strong>📦 Drukowana wersja w drodze!</strong> Książeczkę wyślemy kurierem do 10 dni roboczych na wskazany adres.
+            </div>`;
+}
+
+/** "49 zł", "12,50 zł", "10 EUR" — the charged amount, or the list price if unknown. */
+export function formatPaid(
+  amountMinor: number | null,
+  currency: string | null,
+  fallbackPLN: number,
+): string {
+  if (amountMinor == null) return formatPricePLN(fallbackPLN);
+  const major = amountMinor / 100;
+  const value = Number.isInteger(major) ? String(major) : major.toFixed(2).replace('.', ',');
+  const cur = (currency ?? 'pln').toLowerCase();
+  return cur === 'pln' ? `${value} zł` : `${value} ${cur.toUpperCase()}`;
+}
+
 // ────────────────────────────────────────────────────────────────
-// Email 1 — Payment confirmation, sent after Stripe webhook flips
-// paymentStatus to 'completed'. By that point the PDF already exists
-// (pipeline runs pre-payment), so this is a "dziękujemy + here's your
-// book" thank-you, not an order-receipt placeholder.
+// Email 1 — Payment confirmation, sent after the Stripe webhook flips
+// paymentStatus to 'completed'. The PDF usually already exists (pipeline
+// runs pre-payment), so this is a thank-you with the link to the order page.
 // ────────────────────────────────────────────────────────────────
 
 export interface OrderConfirmationParams {
+  brand: EmailBrand;
   childName: string;
   childAge: number | string | null;
-  problemTitle: string;
+  topicTitle: string;
   format: BookFormat;
   orderNumber: string;
-  /** Page where the parent can re-download the PDF (auth or landing+token). */
+  /** Minor units actually charged, when the webhook reported it. */
+  paidAmountMinor: number | null;
+  paidCurrency: string | null;
+  /** True for Stripe test-mode payments — nothing was charged. */
+  testPayment: boolean;
+  /** Order page where the parent can download the PDF again. */
   resultUrl: string;
 }
 
@@ -174,140 +284,100 @@ export function buildOrderConfirmationEmail(params: OrderConfirmationParams): {
   html: string;
   text: string;
 } {
-  const { childName, childAge, problemTitle, format, orderNumber, resultUrl } = params;
+  const { brand, childName, childAge, topicTitle, format, orderNumber, resultUrl } = params;
   const childNameEsc = escapeHtml(childName);
-  const problemEsc = escapeHtml(problemTitle);
   const ageDisplay = childAge != null && childAge !== '' ? String(childAge) : '—';
   const formatStr = formatLabel(format);
-  const price = priceForFormat(format);
-  const dla = dlaName(childName);
-  const dlaPhrase = dla ?? `dla ${childName}`;
+  const paid = formatPaid(params.paidAmountMinor, params.paidCurrency, priceForFormatPLN(format));
+  const paidNote = params.testPayment ? ' (płatność testowa)' : '';
+  const dlaPhrase = dlaName(childName) ?? `dla ${childName}`;
   const dlaPhraseEsc = escapeHtml(dlaPhrase);
-  const printRow =
-    format === 'pdf_print'
-      ? `
-        <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:16px 18px;margin:24px 0;font-size:14px;color:#78350f;">
-          <strong>📦 Drukowana wersja w drodze!</strong> Profesjonalnie oprawiona książeczka jest właśnie pakowana — wyślemy ją kurierem do 10 dni roboczych na wskazany przez Ciebie adres.
-        </div>`
-      : '';
+  const labelStyle = `padding:4px 0;color:#64748b;`;
+  const valueStyle = `text-align:right;font-weight:700;color:${brand.primary[900]};`;
 
   const subject = `Dziękujemy za zakup ✨ — bajka ${dlaPhrase} jest Twoja`;
   const preheader = `Płatność potwierdzona. Numer zamówienia ${orderNumber}.`;
 
-  const html = `<!doctype html>
-<html lang="pl" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <!--[if gte mso 9]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
-  </head>
-  <body style="margin:0;padding:0;background:#F5F7FA;font-family:Nunito,Arial,sans-serif;color:#334155;">
-    <span style="display:none!important;visibility:hidden;mso-hide:all;font-size:1px;color:#F5F7FA;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${escapeHtml(preheader)}</span>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F7FA;padding:32px 16px;">
-      <tr><td align="center">
-        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:12px;box-shadow:0 8px 24px -8px rgba(15,23,42,0.12);overflow:hidden;">
-          <tr><td style="background:linear-gradient(135deg,#f0f9ff 0%,#ffffff 100%);padding:32px 24px;text-align:center;border-bottom:1px solid #e0f2fe;">
-            <div style="color:#075985;font-weight:800;font-size:22px;">📖 Bajkoterapia</div>
-          </td></tr>
-
+  const body = `
           <tr><td style="padding:36px 28px;font-size:16px;line-height:1.65;color:#334155;">
-            <h1 style="font-size:28px;font-weight:900;color:#0c4a6e;margin:0 0 20px 0;line-height:1.2;">Dziękujemy! 💙</h1>
+            <h1 style="font-size:28px;font-weight:900;color:${brand.primary[900]};margin:0 0 20px 0;line-height:1.2;">Dziękujemy!</h1>
 
             <p style="margin:0 0 16px 0;">
-              Płatność za bajkę <strong>${dlaPhraseEsc}</strong> przeszła — wszystko po Waszej stronie zrobione. Pełną wersję PDF znajdziesz pod przyciskiem niżej, a kopia zawsze czeka na stronie zamówienia.
+              Płatność za bajkę <strong>${dlaPhraseEsc}</strong> przeszła. Pełną wersję PDF znajdziesz pod przyciskiem niżej — strona zamówienia zawsze na Ciebie czeka.
             </p>
 
-            <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:16px;padding:20px;margin:24px 0;">
-              <div style="font-size:12px;font-weight:800;color:#0284c7;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;">Potwierdzenie zakupu</div>
+            <div style="background:${brand.primary[50]};border:1px solid ${brand.primary[200]};border-radius:16px;padding:20px;margin:24px 0;">
+              <div style="font-size:12px;font-weight:800;color:${brand.primary[600]};text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;">Potwierdzenie zakupu</div>
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:15px;">
-                <tr><td style="padding:4px 0;color:#64748b;">Numer zamówienia</td><td style="text-align:right;font-weight:700;color:#0c4a6e;">${escapeHtml(orderNumber)}</td></tr>
-                <tr><td style="padding:4px 0;color:#64748b;">Bohater bajki</td><td style="text-align:right;font-weight:700;color:#0c4a6e;">${childNameEsc}, lat ${escapeHtml(ageDisplay)}</td></tr>
-                <tr><td style="padding:4px 0;color:#64748b;">Temat</td><td style="text-align:right;font-weight:700;color:#0c4a6e;">${problemEsc}</td></tr>
-                <tr><td style="padding:4px 0;color:#64748b;">Format</td><td style="text-align:right;font-weight:700;color:#0c4a6e;">${escapeHtml(formatStr)}</td></tr>
-                <tr><td style="padding:4px 0;color:#64748b;">Zapłacono</td><td style="text-align:right;font-weight:800;color:#16a34a;font-size:17px;">${price} zł ✓</td></tr>
+                <tr><td style="${labelStyle}">Numer zamówienia</td><td style="${valueStyle}">${escapeHtml(orderNumber)}</td></tr>
+                <tr><td style="${labelStyle}">Bohater bajki</td><td style="${valueStyle}">${childNameEsc}, lat ${escapeHtml(ageDisplay)}</td></tr>
+                <tr><td style="${labelStyle}">Temat</td><td style="${valueStyle}">${escapeHtml(topicTitle)}</td></tr>
+                <tr><td style="${labelStyle}">Format</td><td style="${valueStyle}">${escapeHtml(formatStr)}</td></tr>
+                <tr><td style="${labelStyle}">Zapłacono</td><td style="text-align:right;font-weight:800;color:#16a34a;font-size:17px;">${escapeHtml(paid + paidNote)} ✓</td></tr>
               </table>
             </div>
 
             <div style="text-align:center;margin:28px 0;">${buildCtaButton({
               href: resultUrl,
               label: '⬇ Pobierz bajkę (PDF)',
+              brand,
             })}
-              <div style="margin-top:14px;font-size:13px;color:#64748b;">Otwórz w przeglądarce i kliknij „Pobierz".</div>
-            </div>${printRow}
+              <div style="margin-top:14px;font-size:13px;color:#64748b;">Otwórz w przeglądarce i kliknij „Pobierz PDF".</div>
+            </div>${format === 'pdf_print' ? printNoticeHtml(brand) : ''}
 
             <p style="margin:24px 0 0 0;">
-              Czytajcie razem, w spokoju, najlepiej wieczorem. Na końcu PDF-u znajdziecie 5 pytań do rozmowy z dzieckiem — sprawdzają się świetnie po pierwszej lekturze.
+              Czytajcie razem, w spokoju, najlepiej wieczorem. Na końcu książki znajdziecie pytania do rozmowy z dzieckiem — sprawdzają się świetnie po pierwszej lekturze.
             </p>
+${contactLineHtml(brand)}
+${signOffHtml(brand)}
+          </td></tr>`;
 
-            <p style="margin:16px 0 0 0;">
-              Coś nie gra? Po prostu odpisz na tę wiadomość — Łukasz albo Andrzej zajmiemy się Wami osobiście.
-            </p>
+  const html = renderShell({
+    brand,
+    preheader,
+    body,
+    footerNote:
+      'Otrzymujesz tę wiadomość, ponieważ złożyłeś zamówienie. To wiadomość transakcyjna — nie wymaga rezygnacji.',
+  });
 
-            <p style="margin:16px 0 0 0;">
-              Trzymajcie się ciepło,<br>
-              <strong style="color:#0c4a6e;">Andrzej i Łukasz</strong><br>
-              <span style="color:#64748b;font-size:14px;">założyciele Bajkoterapii i przede wszystkim — tatusiowie 💙</span>
-            </p>
-          </td></tr>
-
-          <tr><td style="background:#f8fafc;padding:24px;text-align:center;border-top:1px solid #e2e8f0;font-size:12px;color:#64748b;">
-            <div style="margin-bottom:8px;"><strong style="color:#0c4a6e;">Bajkoterapia</strong> by Trustee Interactive · Plac Inwalidów 10, 01-552 Warszawa</div>
-            <div><a href="mailto:info@bajkoterapia.org" style="color:#0284c7;text-decoration:none;">info@bajkoterapia.org</a> · <a href="https://www.bajkoterapia.org" style="color:#0284c7;text-decoration:none;">bajkoterapia.org</a></div>
-            <div style="margin-top:12px;">Otrzymujesz tę wiadomość, ponieważ złożyłeś u nas zamówienie. To mail transakcyjny — nie wymaga rezygnacji.</div>
-          </td></tr>
-        </table>
-      </td></tr>
-    </table>
-  </body>
-</html>`;
-
-  const printLine =
-    format === 'pdf_print'
-      ? '\nDRUKOWANA WERSJA: Książeczka jest pakowana — wyślemy ją kurierem do 10 dni roboczych.\n'
-      : '';
   const text = [
-    `Dziękujemy!`,
+    'Dziękujemy!',
     '',
-    `Płatność za bajkę ${dlaPhrase} przeszła — wszystko po Waszej stronie zrobione. Pełną wersję PDF pobierzesz spod tego linku:`,
+    `Płatność za bajkę ${dlaPhrase} przeszła. Pełną wersję PDF pobierzesz ze strony zamówienia:`,
     '',
-    `>> POBIERZ BAJKĘ <<`,
     resultUrl,
     '',
     'POTWIERDZENIE ZAKUPU',
     `- Numer zamówienia: ${orderNumber}`,
     `- Bohater bajki: ${childName}, lat ${ageDisplay}`,
-    `- Temat: ${problemTitle}`,
+    `- Temat: ${topicTitle}`,
     `- Format: ${formatStr}`,
-    `- Zapłacono: ${price} zł`,
-    printLine,
-    'Czytajcie razem, w spokoju. Na końcu PDF-u są 4-5 pytań do rozmowy z dzieckiem — sprawdzają się świetnie po pierwszej lekturze.',
+    `- Zapłacono: ${paid}${paidNote}`,
+    ...(format === 'pdf_print'
+      ? ['', 'DRUKOWANA WERSJA: wyślemy ją kurierem do 10 dni roboczych.']
+      : []),
     '',
-    'Coś nie gra? Po prostu odpisz na tę wiadomość.',
+    'Czytajcie razem, w spokoju. Na końcu książki są pytania do rozmowy z dzieckiem.',
+    ...(brand.supportEmail ? ['', `Pytania? Napisz na ${brand.supportEmail}.`] : []),
     '',
-    'Trzymajcie się ciepło,',
-    'Andrzej i Łukasz',
-    'założyciele Bajkoterapii i tatusiowie',
-    '',
-    '—',
-    'Bajkoterapia by Trustee Interactive',
-    'Plac Inwalidów 10, 01-552 Warszawa',
-    'info@bajkoterapia.org · bajkoterapia.org',
+    'Pozdrawiamy ciepło,',
+    `Zespół ${brand.name}`,
   ].join('\n');
 
   return { subject, html, text };
 }
 
 // ────────────────────────────────────────────────────────────────
-// Email 3 — Book ready, link to download (no attachment).
+// Email 2 — Book ready, link to download (no attachment).
 // ────────────────────────────────────────────────────────────────
 
 export interface BookReadyParams {
+  brand: EmailBrand;
   childName: string;
   bookTitle: string | null;
   downloadUrl: string;
   resultUrl: string;
   format: BookFormat;
-  orderCreatedAtMs: number;
 }
 
 export function buildBookReadyEmail(params: BookReadyParams): {
@@ -315,50 +385,28 @@ export function buildBookReadyEmail(params: BookReadyParams): {
   html: string;
   text: string;
 } {
-  const { childName, bookTitle, downloadUrl, resultUrl, format, orderCreatedAtMs } = params;
+  const { brand, childName, bookTitle, downloadUrl, resultUrl, format } = params;
   // Polish "dla X" needs the genitive form of the name. Helper returns the
   // full "dla {Genitive}" phrase or null when the heuristic can't produce one.
-  const dla = dlaName(childName);
-  const dlaPhrase = dla ?? `dla ${childName}`;
+  const dlaPhrase = dlaName(childName) ?? `dla ${childName}`;
   const dlaPhraseEsc = escapeHtml(dlaPhrase);
-  const expiryDate = formatPlExpiryDate(orderCreatedAtMs);
   const titleStr = bookTitle?.trim() || null;
   const titleEsc = titleStr ? escapeHtml(titleStr) : null;
 
   const subject = `📖 Bajka ${dlaPhrase} czeka na pobranie`;
-  const preheader = `Kliknij i pobierz PDF z gotową książeczką. Link aktywny do ${expiryDate}.`;
+  const preheader = 'Kliknij i pobierz PDF z gotową książeczką.';
 
   const titleClause = titleEsc
     ? `Bajka <em>„${titleEsc}"</em> jest gotowa.`
     : `Spersonalizowana bajka ${dlaPhraseEsc} jest gotowa.`;
+  const tipBox = (heading: string, body: string, last = false) =>
+    `<div style="background:${brand.primary[50]};border-radius:12px;padding:16px 18px;${last ? '' : 'margin-bottom:10px;'}"><strong style="color:${brand.primary[900]};">${heading}</strong> <span style="color:#475569;">${body}</span></div>`;
 
-  const printBlock =
-    format === 'pdf_print'
-      ? `<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:16px 18px;margin:24px 0;font-size:14px;color:#78350f;">
-            <strong>📦 Drukowana wersja w drodze!</strong> Profesjonalnie oprawiona książeczka jest właśnie pakowana — wyślemy ją kurierem do 10 dni roboczych.
-          </div>`
-      : '';
-
-  const html = `<!doctype html>
-<html lang="pl" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <!--[if gte mso 9]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
-  </head>
-  <body style="margin:0;padding:0;background:#F5F7FA;font-family:Nunito,Arial,sans-serif;color:#334155;">
-    <span style="display:none!important;visibility:hidden;mso-hide:all;font-size:1px;color:#F5F7FA;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${escapeHtml(preheader)}</span>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F7FA;padding:32px 16px;">
-      <tr><td align="center">
-        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:12px;box-shadow:0 8px 24px -8px rgba(15,23,42,0.12);overflow:hidden;">
-          <tr><td style="background:linear-gradient(135deg,#f0f9ff 0%,#ffffff 100%);padding:32px 24px;text-align:center;border-bottom:1px solid #e0f2fe;">
-            <div style="color:#075985;font-weight:800;font-size:22px;">📖 Bajkoterapia</div>
-          </td></tr>
-
-          <tr><td style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);padding:36px 28px;text-align:center;">
+  const body = `
+          <tr><td style="background:linear-gradient(135deg,${brand.accent[50]} 0%,${brand.accent[100]} 100%);padding:36px 28px;text-align:center;">
             <div style="font-size:56px;line-height:1;margin-bottom:14px;">📖✨</div>
-            <h1 style="font-size:30px;font-weight:900;color:#92400e;margin:0 0 8px 0;line-height:1.2;">Twoja bajka jest gotowa!</h1>
-            <p style="font-size:17px;color:#78350f;margin:0;font-weight:600;">Książeczka ${dlaPhraseEsc} czeka pod jednym kliknięciem.</p>
+            <h1 style="font-size:30px;font-weight:900;color:${brand.primary[900]};margin:0 0 8px 0;line-height:1.2;">Twoja bajka jest gotowa!</h1>
+            <p style="font-size:17px;color:${brand.primary[800]};margin:0;font-weight:600;">Książeczka ${dlaPhraseEsc} czeka pod jednym kliknięciem.</p>
           </td></tr>
 
           <tr><td style="padding:36px 28px;font-size:16px;line-height:1.65;color:#334155;">
@@ -368,101 +416,73 @@ export function buildBookReadyEmail(params: BookReadyParams): {
             <div style="text-align:center;margin:28px 0;">${buildCtaButton({
               href: downloadUrl,
               label: '⬇ Pobierz bajkę (PDF)',
+              brand,
             })}
-              <div style="margin-top:14px;font-size:13px;color:#64748b;">PDF</div>
-            </div>
-
-            <div style="background:#fef2f2;border-left:3px solid #dc2626;padding:14px 18px;border-radius:8px;margin:24px 0;font-size:14px;color:#7f1d1d;">
-              <strong>⏱️ Link aktywny do ${escapeHtml(expiryDate)}</strong> (${DOWNLOAD_LINK_TTL_DAYS} dni od zakupu). Po tym czasie pobranie wymaga kontaktu z nami — ale spokojnie, plik jest u nas zarchiwizowany na zawsze.
             </div>
 
             <p style="margin:18px 0;font-size:13px;color:#64748b;">
-              Przycisk nie działa? Otwórz <a href="${escapeAttr(resultUrl)}" style="color:#0284c7;">stronę z bajką</a> albo wklej link do przeglądarki:<br>
-              <a href="${escapeAttr(downloadUrl)}" style="color:#0284c7;word-break:break-all;">${escapeHtml(downloadUrl)}</a>
+              Link do pliku działa przez ${DOWNLOAD_LINK_TTL_HOURS} godziny. Później pobierzesz bajkę ze <a href="${escapeAttr(resultUrl)}" style="color:${brand.primary[600]};">strony zamówienia</a> — ta działa zawsze.
             </p>
 
-            <h2 style="font-size:18px;font-weight:800;color:#0c4a6e;margin:28px 0 12px 0;">💡 Zanim zaczniecie czytać</h2>
+            <h2 style="font-size:18px;font-weight:800;color:${brand.primary[900]};margin:28px 0 12px 0;">💡 Zanim zaczniecie czytać</h2>
             <div style="margin:16px 0;">
-              <div style="background:#f0f9ff;border-radius:12px;padding:16px 18px;margin-bottom:10px;"><strong style="color:#0c4a6e;">Czytajcie razem, w spokoju.</strong> <span style="color:#475569;">Najlepiej wieczorem, bez pośpiechu, bez telefonów.</span></div>
-              <div style="background:#f0f9ff;border-radius:12px;padding:16px 18px;margin-bottom:10px;"><strong style="color:#0c4a6e;">Pytajcie o emocje.</strong> <span style="color:#475569;">„Co czuł bohater?", „Co mu pomogło?" — te pytania potrajają skuteczność bajki.</span></div>
-              <div style="background:#f0f9ff;border-radius:12px;padding:16px 18px;"><strong style="color:#0c4a6e;">Wracajcie do bajki.</strong> <span style="color:#475569;">Im częściej, tym lepiej. Na końcu PDF-u znajdziesz 5 pytań do rozmowy.</span></div>
+              ${tipBox('Czytajcie razem, w spokoju.', 'Najlepiej wieczorem, bez pośpiechu, bez telefonów.')}
+              ${tipBox('Pytajcie o emocje.', '„Co czuł bohater?", „Co mu pomogło?" — takie pytania pogłębiają efekt bajki.')}
+              ${tipBox('Wracajcie do bajki.', 'Im częściej, tym lepiej. Na końcu książki znajdziesz pytania do rozmowy.', true)}
             </div>
+${format === 'pdf_print' ? printNoticeHtml(brand) : ''}
+${contactLineHtml(brand)}
+${signOffHtml(brand)}
+          </td></tr>`;
 
-            ${printBlock}
-
-            <p style="margin:24px 0 0 0;">Po przeczytaniu — daj nam znać, jak poszło. Możesz po prostu odpisać na tę wiadomość ✉️</p>
-
-            <p style="margin:16px 0 0 0;">
-              Dobrego wieczoru,<br>
-              <strong style="color:#0c4a6e;">Andrzej i Łukasz</strong><br>
-              <span style="color:#64748b;font-size:14px;">założyciele Bajkoterapii i przede wszystkim — tatusiowie 💙</span>
-            </p>
-          </td></tr>
-
-          <tr><td style="background:#f8fafc;padding:24px;text-align:center;border-top:1px solid #e2e8f0;font-size:12px;color:#64748b;">
-            <div style="margin-bottom:8px;"><strong style="color:#0c4a6e;">Bajkoterapia</strong> by Trustee Interactive · Plac Inwalidów 10, 01-552 Warszawa</div>
-            <div><a href="mailto:info@bajkoterapia.org" style="color:#0284c7;text-decoration:none;">info@bajkoterapia.org</a> · <a href="https://www.bajkoterapia.org" style="color:#0284c7;text-decoration:none;">bajkoterapia.org</a></div>
-            <div style="margin-top:12px;max-width:380px;margin-left:auto;margin-right:auto;">Plik PDF jest objęty 14-dniową gwarancją zwrotu. Bajka jest psychoedukacyjna i nie zastępuje konsultacji ze specjalistą.</div>
-          </td></tr>
-        </table>
-      </td></tr>
-    </table>
-  </body>
-</html>`;
+  const html = renderShell({
+    brand,
+    preheader,
+    body,
+    footerNote: 'Bajka ma charakter psychoedukacyjny i nie zastępuje konsultacji ze specjalistą.',
+  });
 
   const titleLine = titleStr
     ? `Bajka „${titleStr}" jest gotowa.`
     : `Spersonalizowana bajka ${dlaPhrase} jest gotowa.`;
-  const printLine =
-    format === 'pdf_print'
-      ? '\nDRUKOWANA WERSJA: Książeczka jest pakowana — wyślemy ją kurierem do 10 dni roboczych.\n'
-      : '';
   const text = [
-    `Cześć!`,
+    'Cześć!',
     '',
-    `${titleLine} Plik PDF czeka pod tym linkiem — pobierzcie go na komputer, telefon albo wydrukujcie w domu:`,
+    `${titleLine} Plik PDF pobierzesz spod tego linku (działa ${DOWNLOAD_LINK_TTL_HOURS} godziny):`,
     '',
-    `>> POBIERZ BAJKĘ (PDF) <<`,
     downloadUrl,
     '',
-    `PDF`,
-    '',
-    `UWAGA: Link aktywny do ${expiryDate} (${DOWNLOAD_LINK_TTL_DAYS} dni od zakupu). Po tym czasie pobranie wymaga kontaktu z nami.`,
-    '',
-    `Strona z bajką: ${resultUrl}`,
+    `Później pobierzesz bajkę ze strony zamówienia: ${resultUrl}`,
     '',
     'ZANIM ZACZNIECIE CZYTAĆ',
     '- Czytajcie razem, wieczorem, bez pośpiechu.',
-    '- Pytajcie o emocje: „Co czuł bohater?", „Co mu pomogło?". To podwaja skuteczność.',
-    '- Wracajcie do bajki. Na końcu PDF-u znajdziecie 5 pytań do rozmowy.',
-    printLine,
-    'Po przeczytaniu daj nam znać, jak poszło. Po prostu odpisz na tę wiadomość.',
+    '- Pytajcie o emocje: „Co czuł bohater?", „Co mu pomogło?".',
+    '- Wracajcie do bajki. Na końcu książki znajdziecie pytania do rozmowy.',
+    ...(format === 'pdf_print'
+      ? ['', 'DRUKOWANA WERSJA: wyślemy ją kurierem do 10 dni roboczych.']
+      : []),
+    ...(brand.supportEmail ? ['', `Pytania? Napisz na ${brand.supportEmail}.`] : []),
     '',
-    'Dobrego wieczoru,',
-    'Andrzej i Łukasz',
-    'założyciele Bajkoterapii i tatusiowie',
-    '',
-    '—',
-    'Bajkoterapia by Trustee Interactive',
-    'Plac Inwalidów 10, 01-552 Warszawa',
-    'info@bajkoterapia.org · bajkoterapia.org',
+    'Pozdrawiamy ciepło,',
+    `Zespół ${brand.name}`,
   ].join('\n');
 
   return { subject, html, text };
 }
 
 // ────────────────────────────────────────────────────────────────
-// Email 3 — Internal admin alert: customer ordered the printed book.
-// Sent to bajkoterapia.org@gmail.com after Stripe confirms payment,
-// only when order.format === 'pdf_print'. Includes shipping address +
-// contact so the fulfillment team can ship without digging into admin.
+// Email 3 — Internal alert: a customer paid for PDF + print. Goes to
+// ADMIN_ALERT_EMAIL so whoever fulfils print orders can ship the book.
+// Not customer-facing, so plain styling and no partner theme.
 // ────────────────────────────────────────────────────────────────
 
 export interface AdminPrintAlertParams {
   orderId: string;
   orderNumber: string;
+  partnerName: string;
+  testPayment: boolean;
   childName: string;
-  problemTitle: string;
+  topicTitle: string;
   customerEmail: string | null;
   shippingAddress: {
     fullName: string;
@@ -471,7 +491,6 @@ export interface AdminPrintAlertParams {
     zip: string;
     city: string;
   } | null;
-  adminUrl: string;
 }
 
 export function buildAdminPrintAlertEmail(params: AdminPrintAlertParams): {
@@ -479,69 +498,50 @@ export function buildAdminPrintAlertEmail(params: AdminPrintAlertParams): {
   html: string;
   text: string;
 } {
-  const { orderNumber, childName, problemTitle, customerEmail, shippingAddress, adminUrl } = params;
-  const childEsc = escapeHtml(childName);
-  const problemEsc = escapeHtml(problemTitle);
-  const subject = `📦 DRUK — nowe zamówienie ${orderNumber} (${childName})`;
+  const { orderId, orderNumber, partnerName, testPayment, childName, topicTitle, customerEmail } =
+    params;
+  const { shippingAddress } = params;
+  const testTag = testPayment ? '[TEST — nie drukować] ' : '';
+  const subject = `${testTag}📦 Druk — zamówienie ${orderNumber} (${childName}, ${partnerName})`;
+  const row = (label: string, value: string) =>
+    `<tr><td style="padding:4px 0;color:#64748b;width:140px;">${escapeHtml(label)}</td><td style="font-weight:700;color:#0f172a;">${value}</td></tr>`;
 
   const addressRows = shippingAddress
-    ? `
-        <tr><td style="padding:4px 0;color:#64748b;width:120px;">Imię i nazwisko</td><td style="font-weight:700;color:#0c4a6e;">${escapeHtml(shippingAddress.fullName)}</td></tr>
-        <tr><td style="padding:4px 0;color:#64748b;">Telefon</td><td style="font-weight:700;color:#0c4a6e;">${escapeHtml(shippingAddress.phone)}</td></tr>
-        <tr><td style="padding:4px 0;color:#64748b;">Ulica</td><td style="font-weight:700;color:#0c4a6e;">${escapeHtml(shippingAddress.street)}</td></tr>
-        <tr><td style="padding:4px 0;color:#64748b;">Kod / miasto</td><td style="font-weight:700;color:#0c4a6e;">${escapeHtml(shippingAddress.zip)} ${escapeHtml(shippingAddress.city)}</td></tr>`
-    : `<tr><td colspan="2" style="padding:8px 0;color:#dc2626;font-weight:700;">⚠️ Brak adresu wysyłki — sprawdź w adminie!</td></tr>`;
+    ? [
+        row('Imię i nazwisko', escapeHtml(shippingAddress.fullName)),
+        row('Telefon', escapeHtml(shippingAddress.phone)),
+        row('Ulica', escapeHtml(shippingAddress.street)),
+        row(
+          'Kod / miasto',
+          `${escapeHtml(shippingAddress.zip)} ${escapeHtml(shippingAddress.city)}`,
+        ),
+      ].join('')
+    : `<tr><td colspan="2" style="padding:8px 0;color:#dc2626;font-weight:700;">⚠️ Brak adresu wysyłki — sprawdź zamówienie w Convex.</td></tr>`;
+
+  const testBanner = testPayment
+    ? `<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 16px;margin:0 0 20px 0;color:#991b1b;font-weight:700;">Płatność testowa (Stripe test mode) — to zamówienie demo, niczego nie drukujemy.</div>`
+    : '';
 
   const html = `<!doctype html>
-<html lang="pl" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <!--[if gte mso 9]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
-  </head>
-  <body style="margin:0;padding:0;background:#F5F7FA;font-family:Nunito,Arial,sans-serif;color:#334155;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F7FA;padding:32px 16px;">
-      <tr><td align="center">
-        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:12px;box-shadow:0 8px 24px -8px rgba(15,23,42,0.12);overflow:hidden;">
-          <tr><td style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);padding:24px 28px;border-bottom:2px solid #f59e0b;">
-            <div style="font-size:24px;font-weight:900;color:#92400e;">📦 Druk + Wysyłka</div>
-            <div style="font-size:14px;color:#78350f;margin-top:4px;">Klient opłacił zamówienie i czeka na drukowaną książeczkę</div>
-          </td></tr>
-
-          <tr><td style="padding:28px;font-size:15px;line-height:1.6;color:#334155;">
-            <p style="margin:0 0 16px 0;">Cześć,</p>
-            <p style="margin:0 0 20px 0;">Klient opłacił bajkę dla <strong>${childEsc}</strong> w wariancie <strong>PDF + Druk</strong>. PDF został już wysłany automatycznie — wasze zadanie to wydrukować i wysłać fizyczną książeczkę w ciągu <strong>3–5 dni roboczych</strong>.</p>
-
-            <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:18px;margin:20px 0;">
-              <div style="font-size:11px;font-weight:800;color:#92400e;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;">Zamówienie</div>
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;">
-                <tr><td style="padding:4px 0;color:#64748b;width:120px;">Numer</td><td style="font-weight:700;color:#0c4a6e;">${escapeHtml(orderNumber)}</td></tr>
-                <tr><td style="padding:4px 0;color:#64748b;">Bohater</td><td style="font-weight:700;color:#0c4a6e;">${childEsc}</td></tr>
-                <tr><td style="padding:4px 0;color:#64748b;">Temat</td><td style="font-weight:700;color:#0c4a6e;">${problemEsc}</td></tr>
-                <tr><td style="padding:4px 0;color:#64748b;">Kontakt</td><td style="font-weight:700;color:#0c4a6e;">${customerEmail ? `<a href="mailto:${escapeAttr(customerEmail)}" style="color:#0284c7;">${escapeHtml(customerEmail)}</a>` : '<span style="color:#dc2626;">brak</span>'}</td></tr>
-              </table>
-            </div>
-
-            <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;padding:18px;margin:20px 0;">
-              <div style="font-size:11px;font-weight:800;color:#075985;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;">Adres wysyłki</div>
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;">
-                ${addressRows}
-              </table>
-            </div>
-
-            <div style="text-align:center;margin:28px 0;">
-              <a href="${escapeAttr(adminUrl)}" style="display:inline-block;background:#0c4a6e;color:#ffffff;font-weight:800;font-size:15px;padding:12px 28px;border-radius:8px;text-decoration:none;">
-                🔧 Otwórz w adminie
-              </a>
-            </div>
-
-            <p style="margin:20px 0 0 0;font-size:13px;color:#64748b;">PDF gotowy do druku znajdziesz w panelu adminskim (zakładka „Książki" → szczegóły zamówienia → Pobierz pełny PDF).</p>
-          </td></tr>
-
-          <tr><td style="background:#f8fafc;padding:18px;text-align:center;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;">
-            Bajkoterapia · automatyczne powiadomienie wewnętrzne
-          </td></tr>
+<html lang="pl">
+  <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+  <body style="margin:0;padding:24px;background:#F5F7FA;font-family:Arial,sans-serif;color:#334155;">
+    <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:12px;margin:0 auto;">
+      <tr><td style="padding:28px;font-size:15px;line-height:1.6;">
+        <h1 style="font-size:22px;margin:0 0 16px 0;color:#0f172a;">📦 Druk + wysyłka</h1>
+        ${testBanner}
+        <p style="margin:0 0 20px 0;">Opłacono bajkę dla <strong>${escapeHtml(childName)}</strong> w wariancie <strong>PDF + Druk</strong>. PDF poszedł do klienta automatycznie — trzeba wydrukować i wysłać książeczkę.</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;margin-bottom:20px;">
+          ${row('Numer', escapeHtml(orderNumber))}
+          ${row('Partner', escapeHtml(partnerName))}
+          ${row('Temat', escapeHtml(topicTitle))}
+          ${row('Kontakt', customerEmail ? `<a href="mailto:${escapeAttr(customerEmail)}">${escapeHtml(customerEmail)}</a>` : '<span style="color:#dc2626;">brak</span>')}
         </table>
+        <h2 style="font-size:16px;margin:0 0 8px 0;color:#0f172a;">Adres wysyłki</h2>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;">
+          ${addressRows}
+        </table>
+        <p style="margin:24px 0 0 0;font-size:13px;color:#64748b;">PDF do druku: <code>npm run cli -- download ${escapeHtml(orderId)}</code> (szczegóły: <code>npm run cli -- detail ${escapeHtml(orderId)}</code>).</p>
       </td></tr>
     </table>
   </body>
@@ -554,60 +554,26 @@ export function buildAdminPrintAlertEmail(params: AdminPrintAlertParams): {
         `Ulica: ${shippingAddress.street}`,
         `Kod / miasto: ${shippingAddress.zip} ${shippingAddress.city}`,
       ].join('\n')
-    : '⚠️ BRAK ADRESU WYSYŁKI — sprawdź w adminie!';
+    : '⚠️ BRAK ADRESU WYSYŁKI — sprawdź zamówienie w Convex.';
 
   const text = [
-    'NOWE ZAMÓWIENIE PDF + DRUK',
+    `${testTag}ZAMÓWIENIE PDF + DRUK`,
     '',
-    `Klient opłacił bajkę dla ${childName} w wariancie PDF + Druk.`,
-    'PDF wysłany automatycznie. Wasze zadanie: wydrukować i wysłać w 3-5 dni roboczych.',
+    ...(testPayment ? ['Płatność testowa — zamówienie demo, niczego nie drukujemy.', ''] : []),
+    `Opłacono bajkę dla ${childName} w wariancie PDF + Druk.`,
     '',
-    'ZAMÓWIENIE',
     `- Numer: ${orderNumber}`,
-    `- Bohater: ${childName}`,
-    `- Temat: ${problemTitle}`,
+    `- Partner: ${partnerName}`,
+    `- Temat: ${topicTitle}`,
     `- Kontakt: ${customerEmail ?? 'brak'}`,
     '',
     'ADRES WYSYŁKI',
     addressText,
     '',
-    `Admin: ${adminUrl}`,
-    '',
-    'PDF do druku w panelu adminskim → Książki → szczegóły zamówienia → Pobierz pełny PDF.',
+    `PDF do druku: npm run cli -- download ${orderId}`,
   ].join('\n');
 
   return { subject, html, text };
-}
-
-// ────────────────────────────────────────────────────────────────
-// Admin one-off email (admin panel → Mail tab). Plain-text body wrapped
-// in the same branded shell as the transactional emails above, so ad-hoc
-// messages from the team look like they come from the same place.
-// ────────────────────────────────────────────────────────────────
-
-export function buildAdminBroadcastEmail(body: string): { html: string } {
-  const bodyHtml = escapeHtml(body).replace(/\n/g, '<br>');
-  const html = `<!doctype html>
-<html lang="pl">
-  <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-  <body style="margin:0;padding:0;background:#F5F7FA;font-family:Nunito,Arial,sans-serif;color:#334155;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F7FA;padding:32px 16px;">
-      <tr><td align="center">
-        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:12px;box-shadow:0 8px 24px -8px rgba(15,23,42,0.12);overflow:hidden;">
-          <tr><td style="background:linear-gradient(135deg,#f0f9ff 0%,#ffffff 100%);padding:24px;text-align:center;border-bottom:1px solid #e0f2fe;">
-            <div style="color:#075985;font-weight:800;font-size:20px;">📖 Bajkoterapia</div>
-          </td></tr>
-          <tr><td style="padding:32px 28px;font-size:15px;line-height:1.65;color:#334155;">${bodyHtml}</td></tr>
-          <tr><td style="background:#f8fafc;padding:20px;text-align:center;border-top:1px solid #e2e8f0;font-size:12px;color:#64748b;">
-            <div style="margin-bottom:6px;"><strong style="color:#0c4a6e;">Bajkoterapia</strong> by Trustee Interactive · Plac Inwalidów 10, 01-552 Warszawa</div>
-            <div><a href="mailto:info@bajkoterapia.org" style="color:#0284c7;text-decoration:none;">info@bajkoterapia.org</a> · <a href="https://www.bajkoterapia.org" style="color:#0284c7;text-decoration:none;">bajkoterapia.org</a></div>
-          </td></tr>
-        </table>
-      </td></tr>
-    </table>
-  </body>
-</html>`;
-  return { html };
 }
 
 function escapeHtml(s: string): string {

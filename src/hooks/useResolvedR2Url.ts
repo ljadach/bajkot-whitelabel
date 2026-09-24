@@ -28,23 +28,21 @@ const STALE_AFTER_MS = 20 * 60 * 1000;
  */
 export function useResolvedR2Url(opts: {
   orderId: Id<'bookOrders'> | undefined;
-  flow: 'auth' | 'landing';
   kind: 'full' | 'preview';
   r2Key: string | null | undefined;
   directUrl: string | null | undefined;
-  /** Required for landing flow — capability token bound to the order. */
-  accessToken?: string | null;
+  /** Capability token bound to the order. */
+  accessToken: string | null;
 }): string | null {
-  const { orderId, flow, kind, r2Key, directUrl, accessToken } = opts;
+  const { orderId, kind, r2Key, directUrl, accessToken } = opts;
   const [resolved, setResolved] = useState<string | null>(null);
   const [nonce, setNonce] = useState(0);
   const resolvedAtRef = useRef(Date.now());
-  const resolveAuth = useAction(api.bookPipeline.resolveR2DownloadUrl);
-  const resolveLanding = useAction(api.bookPipeline.resolveLandingR2DownloadUrl);
+  const resolve = useAction(api.bookPipeline.resolveLandingR2DownloadUrl);
 
-  // Legacy zamówienia mają `directUrl` z Convex storage i nie potrzebują
+  // Zamówienia z pdfkit mają `directUrl` z Convex storage i nie potrzebują
   // presignu — wtedy ani nie wołamy akcji, ani nie zawieszamy timera.
-  const needsResolve = !directUrl && !!orderId && !!r2Key && (flow !== 'landing' || !!accessToken);
+  const needsResolve = !directUrl && !!orderId && !!r2Key && !!accessToken;
 
   useEffect(() => {
     if (!needsResolve || !orderId) {
@@ -52,11 +50,7 @@ export function useResolvedR2Url(opts: {
       return;
     }
     let cancelled = false;
-    const promise =
-      flow === 'landing'
-        ? resolveLanding({ orderId, kind, accessToken: accessToken ?? '' })
-        : resolveAuth({ orderId, kind });
-    promise
+    resolve({ orderId, kind, accessToken: accessToken ?? '' })
       .then((url) => {
         if (cancelled) return;
         resolvedAtRef.current = Date.now();
@@ -70,7 +64,7 @@ export function useResolvedR2Url(opts: {
     return () => {
       cancelled = true;
     };
-  }, [needsResolve, orderId, kind, flow, accessToken, nonce, resolveAuth, resolveLanding]);
+  }, [needsResolve, orderId, kind, accessToken, nonce, resolve]);
 
   // Odświeżanie: cyklicznie oraz po powrocie do zakładki, jeśli URL zdążył
   // się zestarzeć. Bez tego link wyrenderowany raz zostaje w DOM-ie na zawsze

@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 // Vite serves the worker bundle as an asset URL — keeps the worker out of
 // the main app bundle and works across dev + prod builds.
-// @ts-expect-error — `?url` is a Vite asset suffix, no TS declaration shipped.
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 import 'react-pdf/dist/Page/AnnotationLayer.css';
@@ -87,7 +86,7 @@ export function BookPdfFlipbook({ pdfUrl }: BookPdfFlipbookProps) {
           // nowa. Bez tego „spróbuj ponownie" tylko chowało komunikat —
           // `file` miało tę samą tożsamość i nic się nie ładowało.
           onClick={retry}
-          className="text-sm font-bold text-magic-600 hover:text-magic-700 underline"
+          className="text-sm font-bold text-accent-ink hover:opacity-80 underline"
         >
           Spróbuj ponownie
         </button>
@@ -98,7 +97,7 @@ export function BookPdfFlipbook({ pdfUrl }: BookPdfFlipbookProps) {
   return (
     <div ref={containerRef} className="relative w-full max-w-[560px] mx-auto">
       <div
-        className="relative w-full overflow-hidden rounded-2xl bg-gradient-to-br from-calm-50 via-white to-magic-50 shadow-inner"
+        className="relative w-full overflow-hidden rounded-2xl bg-gradient-to-br from-primary-50 via-white to-accent-50 shadow-inner"
         style={{ aspectRatio: pageAspect ?? 5 / 7 }}
       >
         <Document
@@ -128,7 +127,7 @@ export function BookPdfFlipbook({ pdfUrl }: BookPdfFlipbookProps) {
         </Document>
 
         {numPages > 0 && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-calm-900/85 backdrop-blur-sm text-white text-xs font-semibold tabular-nums px-3 py-1.5 rounded-full shadow-md z-10">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-primary-900/85 backdrop-blur-sm text-white text-xs font-semibold tabular-nums px-3 py-1.5 rounded-full shadow-md z-10">
             {currentPage + 1} / {numPages}
           </div>
         )}
@@ -140,7 +139,7 @@ export function BookPdfFlipbook({ pdfUrl }: BookPdfFlipbookProps) {
             type="button"
             onClick={goPrev}
             disabled={!canPrev}
-            className="absolute left-1 sm:-left-14 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm text-magic-600 shadow-lg ring-1 ring-black/10 hover:bg-white hover:scale-110 disabled:opacity-0 disabled:pointer-events-none transition flex items-center justify-center z-10"
+            className="absolute left-1 sm:-left-14 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm text-accent-ink shadow-lg ring-1 ring-black/10 hover:bg-white hover:scale-110 disabled:opacity-0 disabled:pointer-events-none transition flex items-center justify-center z-10"
             aria-label="Poprzednia strona"
           >
             <i className="fa-solid fa-chevron-left text-base" />
@@ -149,7 +148,7 @@ export function BookPdfFlipbook({ pdfUrl }: BookPdfFlipbookProps) {
             type="button"
             onClick={goNext}
             disabled={!canNext}
-            className="absolute right-1 sm:-right-14 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm text-magic-600 shadow-lg ring-1 ring-black/10 hover:bg-white hover:scale-110 disabled:opacity-0 disabled:pointer-events-none transition flex items-center justify-center z-10"
+            className="absolute right-1 sm:-right-14 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm text-accent-ink shadow-lg ring-1 ring-black/10 hover:bg-white hover:scale-110 disabled:opacity-0 disabled:pointer-events-none transition flex items-center justify-center z-10"
             aria-label="Następna strona"
           >
             <i className="fa-solid fa-chevron-right text-base" />

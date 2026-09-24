@@ -1,13 +1,16 @@
 /**
- * Public API for the book pipeline.
- * Entry points: startOrder, getOrderProgress, getStyleVoteImages, submitStyleVote, getDownloadUrl
+ * Public API for the book pipeline — the order flow without login.
+ *
+ * Entry point: startLandingOrder (returns a per-order capability token).
+ * Every later read/write proves ownership with that token: progress, style
+ * vote, dedication, preview, download. Payment lives in stripe.ts/billing.ts.
  */
 
 import { action, internalMutation, internalQuery, mutation, query } from './_generated/server';
 import { internal } from './_generated/api';
-import { ConvexError, v, type Infer } from 'convex/values';
+import { ConvexError, v } from 'convex/values';
 import { Id } from './_generated/dataModel';
-import { assertOrderOwner, assertLandingOrder, LANDING_USER_ID } from './lib/roles';
+import { assertLandingOrder, LANDING_USER_ID } from './lib/roles';
 import { toAgeBracket, type AgeBracket } from './lib/ageBracket';
 import { sanitizeUserText, sanitizeRequiredUserText } from './lib/security';
 import { generateLandingAccessToken, sha256Hex } from './lib/landingToken';
@@ -16,7 +19,7 @@ import {
   consentsArgsValidator,
   consentRecordStoreValidator,
 } from './lib/consents';
-import { metaAttributionValidator } from './schema';
+import { DEFAULT_PARTNER_ID, getPartner } from './lib/partners';
 
 // Schema validators reused across entry-point mutations.
 const ageBracketValidator = v.union(v.literal('3-5'), v.literal('6-8'), v.literal('9+'));
@@ -131,97 +134,6 @@ async function runIntakeGuards(
   });
 }
 
-// ── Start a new book order ─────────────────────────────────
-
-export const startOrder = action({
-  args: {
-    childName: v.string(),
-    ageBracket: v.optional(ageBracketValidator),
-    ageNumber: v.optional(v.number()),
-    gender: v.union(v.literal('boy'), v.literal('girl')),
-    problemId: v.string(),
-    problemDetail: v.optional(v.string()),
-    favoriteToy: v.optional(v.string()),
-    glasses: v.boolean(),
-    hairColor: v.string(),
-    hairStyle: v.string(),
-    eyeColor: v.string(),
-    skinTone: v.optional(v.string()),
-    outfit: v.string(),
-    email: v.optional(v.string()),
-    format: v.optional(formatValidator),
-    shippingAddress: v.optional(shippingAddressValidator),
-    consents: consentsArgsValidator,
-  },
-  returns: v.object({ orderId: v.id('bookOrders') }),
-  handler: async (ctx, args): Promise<{ orderId: Id<'bookOrders'> }> => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error('Not authenticated');
-    const clerkUserId = identity.subject;
-
-    const consents = buildConsentsRecord(args.consents);
-
-    const ageBracket = deriveAgeBracket({
-      ageBracket: args.ageBracket,
-      ageNumber: args.ageNumber,
-    });
-    const format = args.format ?? 'pdf';
-
-    // Rate limiting
-    await ctx.runMutation(internal.rateLimitMutation.checkAndRecordLLMRateLimit, {
-      actionType: 'llm_call',
-      clerkUserId,
-    });
-
-    validateOrderInput(args);
-    const cleaned = sanitizeOrderTextFields(args);
-
-    // Pre-pipeline guards: block disallowed content before we burn money on
-    // A0-A11, and rewrite brand/IP references in visual fields so the image
-    // generator's brand filter doesn't reject the prompts downstream.
-    const guarded = await runIntakeGuards(ctx, {
-      clerkUserId,
-      childName: cleaned.childName,
-      problemDetail: cleaned.problemDetail,
-      favoriteToy: cleaned.favoriteToy,
-      outfit: args.outfit,
-    });
-
-    // Create order in DB
-    const orderId: Id<'bookOrders'> = await ctx.runMutation(internal.bookPipeline.createOrder, {
-      clerkUserId,
-      childName: cleaned.childName,
-      ageBracket,
-      ageNumber: args.ageNumber,
-      gender: args.gender,
-      problemId: args.problemId,
-      problemDetail: cleaned.problemDetail,
-      favoriteToy: guarded.favoriteToy,
-      glasses: args.glasses,
-      hairColor: args.hairColor,
-      hairStyle: args.hairStyle,
-      eyeColor: args.eyeColor,
-      skinTone: args.skinTone,
-      outfit: guarded.outfit,
-      email: args.email,
-      format,
-      shippingAddress: format === 'pdf_print' ? args.shippingAddress : undefined,
-      consents,
-      // Auth flow runs same FAST default as landing: skip QA passes for
-      // speed/cost, but keep real Gemini image gen. Admin batch / CLI
-      // override on internal paths when full QA is wanted.
-      skipQaReviews: true,
-    });
-
-    // Schedule A0 (intake) — both PDF and PDF+Print run the same pipeline.
-    // Physical print fulfillment is triggered by Stripe webhook (admin alert
-    // email after payment confirms format === 'pdf_print').
-    await ctx.scheduler.runAfter(0, internal.bookAgents.intake, { orderId });
-
-    return { orderId };
-  },
-});
-
 // ── Internal mutation to create order record ───────────────
 
 export const createOrder = internalMutation({
@@ -256,8 +168,8 @@ export const createOrder = internalMutation({
      */
     skipQaReviews: v.optional(v.boolean()),
     fastImage: v.optional(v.boolean()),
-    /** Meta Conversions API match keys — see the schema comment on the column. */
-    metaAttribution: v.optional(metaAttributionValidator),
+    /** White-label partner (convex/lib/partners.ts) — validated by the caller. */
+    partnerId: v.optional(v.string()),
   },
   returns: v.id('bookOrders'),
   handler: async (ctx, args) => {
@@ -284,115 +196,12 @@ export const createOrder = internalMutation({
       accessTokenRaw: args.accessTokenRaw,
       skipQaReviews: args.skipQaReviews,
       fastImage: args.fastImage,
-      metaAttribution: args.metaAttribution,
+      partnerId: args.partnerId,
       status: 'intake',
       createdAt: Date.now(),
     });
 
     return orderId;
-  },
-});
-
-// ── Get order progress (real-time subscription) ────────────
-
-export const getOrderProgress = query({
-  args: { orderId: v.id('bookOrders') },
-  returns: v.object({
-    status: v.string(),
-    currentAgent: v.union(v.string(), v.null()),
-    error: v.union(v.string(), v.null()),
-    createdAt: v.number(),
-    updatedAt: v.union(v.number(), v.null()),
-    completedAt: v.union(v.number(), v.null()),
-    hasStyleVoteImages: v.boolean(),
-    chosenStyle: v.union(v.string(), v.null()),
-    /** Rodzic wpisał dedykację albo ją pominął — frontend odtwarza z tego krok. */
-    dedicationDecided: v.boolean(),
-    hasPdf: v.boolean(),
-    childName: v.string(),
-    ageNumber: v.union(v.number(), v.null()),
-    problemId: v.string(),
-  }),
-  handler: async (ctx, { orderId }) => {
-    const order = await assertOrderOwner(ctx, orderId);
-
-    return {
-      status: order.status,
-      currentAgent: order.currentAgent ?? null,
-      error: order.error ?? null,
-      createdAt: order.createdAt,
-      updatedAt: order.updatedAt ?? null,
-      completedAt: order.completedAt ?? null,
-      hasStyleVoteImages: !!(order.styleVoteImageA && order.styleVoteImageB),
-      chosenStyle: order.chosenStyle ?? null,
-      dedicationDecided: order.dedicationDecided === true,
-      hasPdf: !!order.pdfStorageId,
-      childName: order.childName,
-      ageNumber: order.ageNumber ?? null,
-      problemId: order.problemId,
-    };
-  },
-});
-
-// ── Get style vote images ──────────────────────────────────
-
-export const getStyleVoteImages = query({
-  args: { orderId: v.id('bookOrders') },
-  returns: v.object({
-    imageUrlA: v.union(v.string(), v.null()),
-    imageUrlB: v.union(v.string(), v.null()),
-    status: v.string(),
-    chosenStyle: v.union(v.string(), v.null()),
-  }),
-  handler: async (ctx, { orderId }) => {
-    const order = await assertOrderOwner(ctx, orderId);
-
-    let imageUrlA: string | null = null;
-    let imageUrlB: string | null = null;
-
-    if (order.styleVoteImageA) {
-      imageUrlA = await ctx.storage.getUrl(order.styleVoteImageA);
-    }
-    if (order.styleVoteImageB) {
-      imageUrlB = await ctx.storage.getUrl(order.styleVoteImageB);
-    }
-
-    return {
-      imageUrlA,
-      imageUrlB,
-      status: order.status,
-      chosenStyle: order.chosenStyle ?? null,
-    };
-  },
-});
-
-// ── Submit style vote ──────────────────────────────────────
-
-export const submitStyleVote = mutation({
-  args: {
-    orderId: v.id('bookOrders'),
-    choice: v.union(v.literal('A'), v.literal('B')),
-  },
-  returns: v.null(),
-  handler: async (ctx, { orderId, choice }) => {
-    const order = await assertOrderOwner(ctx, orderId);
-    if (order.chosenStyle) return null; // Already chosen (e.g. fast mode) — no-op
-    if (!order.styleVoteImageA || !order.styleVoteImageB)
-      throw new Error('Style vote images not ready');
-
-    await ctx.db.patch(orderId, {
-      chosenStyle: choice,
-      imageTrackDone: true,
-      updatedAt: Date.now(),
-    });
-
-    // imageTrackDone set inline above (atomic with chosenStyle).
-    // Actions use completeTrackAndCheck; mutations can patch + schedule directly.
-    await ctx.scheduler.runAfter(0, internal.bookPipelineHelpers.checkParallelTracksComplete, {
-      orderId,
-    });
-
-    return null;
   },
 });
 
@@ -468,19 +277,6 @@ export const autoSkipStaleDedication = internalMutation({
   },
 });
 
-export const submitParentDedication = mutation({
-  args: { orderId: v.id('bookOrders'), dedication: v.string() },
-  returns: v.null(),
-  handler: async (ctx, { orderId, dedication }) => {
-    const order = await assertOrderOwner(ctx, orderId);
-    assertDedicationWindow(order);
-    await applyDedicationDecision(ctx, orderId, {
-      parentDedication: normalizeDedication(dedication),
-    });
-    return null;
-  },
-});
-
 export const submitLandingParentDedication = mutation({
   args: { orderId: v.id('bookOrders'), accessToken: v.string(), dedication: v.string() },
   returns: v.null(),
@@ -490,17 +286,6 @@ export const submitLandingParentDedication = mutation({
     await applyDedicationDecision(ctx, orderId, {
       parentDedication: normalizeDedication(dedication),
     });
-    return null;
-  },
-});
-
-export const skipParentDedication = mutation({
-  args: { orderId: v.id('bookOrders') },
-  returns: v.null(),
-  handler: async (ctx, { orderId }) => {
-    const order = await assertOrderOwner(ctx, orderId);
-    assertDedicationWindow(order);
-    await applyDedicationDecision(ctx, orderId, {});
     return null;
   },
 });
@@ -663,15 +448,6 @@ async function buildPreviewResult(
   };
 }
 
-export const getOrderPreview = query({
-  args: { orderId: v.id('bookOrders') },
-  returns: previewReturnValidator,
-  handler: async (ctx, { orderId }) => {
-    const order = await assertOrderOwner(ctx, orderId);
-    return buildPreviewResult(ctx, order);
-  },
-});
-
 export const getLandingOrderPreview = query({
   args: { orderId: v.id('bookOrders'), accessToken: v.string() },
   returns: previewReturnValidator,
@@ -696,35 +472,13 @@ const downloadUrlReturnValidator = v.object({
   format: v.union(v.literal('pdf'), v.literal('pdf_print')),
   /** Shipping address for pdf_print orders. Null when format='pdf' or unset. */
   shippingAddress: v.union(shippingAddressValidator, v.null()),
-  /** When set, frontend should call resolveR2DownloadUrl action for the R2 path. */
+  /** When set, frontend should call resolveLandingR2DownloadUrl for the R2 path. */
   r2FullKey: v.union(v.string(), v.null()),
 });
 
-export const getDownloadUrl = query({
-  args: { orderId: v.id('bookOrders') },
-  returns: downloadUrlReturnValidator,
-  handler: async (ctx, { orderId }) => {
-    const order = await assertOrderOwner(ctx, orderId);
-    const paid = isPaid(order);
-    const url = paid && order.pdfStorageId ? await ctx.storage.getUrl(order.pdfStorageId) : null;
-    return {
-      url,
-      childName: order.childName,
-      bookTitle: extractBookTitle(order.storyDraft) ?? null,
-      paymentStatus: order.paymentStatus ?? null,
-      paid,
-      hasPdf: !!order.pdfStorageId || !!order.r2FullKey,
-      problemId: order.problemId,
-      format: order.format ?? 'pdf',
-      shippingAddress: order.shippingAddress ?? null,
-      r2FullKey: paid && order.r2FullKey ? order.r2FullKey : null,
-    };
-  },
-});
-
 // Presigned R2 URL for the typst-render service path. Frontend calls this after
-// getDownloadUrl reports r2FullKey != null. Preview URL is paywall-free; full
-// URL requires payment + ownership.
+// getLandingDownloadUrl reports r2FullKey != null. Preview URL is paywall-free;
+// full URL requires payment + ownership.
 async function presignForOrder(
   ctx: import('./_generated/server').ActionCtx,
   orderId: Id<'bookOrders'>,
@@ -739,19 +493,6 @@ async function presignForOrder(
   const { presignBookPdf } = await import('./lib/r2Presign');
   return presignBookPdf(order, kind);
 }
-
-export const resolveR2DownloadUrl = action({
-  args: {
-    orderId: v.id('bookOrders'),
-    kind: v.optional(v.union(v.literal('full'), v.literal('preview'))),
-  },
-  returns: v.union(v.string(), v.null()),
-  handler: async (ctx, { orderId, kind }): Promise<string | null> => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) return null;
-    return presignForOrder(ctx, orderId, kind ?? 'full', (uid) => uid === identity.subject);
-  },
-});
 
 export const resolveLandingR2DownloadUrl = action({
   args: {
@@ -786,11 +527,12 @@ export const verifyLandingTokenInternal = internalQuery({
   },
 });
 
-// ── Landing page order (no auth, token-gated) ───────────────
+// ── Order intake (no login) ──────────────────────────────────
 
 export const startLandingOrder = action({
   args: {
-    accessToken: v.string(),
+    /** Partner whose link the parent came through; omitted = default theme. */
+    partnerId: v.optional(v.string()),
     childName: v.string(),
     ageBracket: v.optional(ageBracketValidator),
     ageNumber: v.optional(v.number()),
@@ -808,30 +550,18 @@ export const startLandingOrder = action({
     format: v.optional(formatValidator),
     shippingAddress: v.optional(shippingAddressValidator),
     consents: consentsArgsValidator,
-    /**
-     * Meta Conversions API match keys, read from the browser at submit time.
-     * Optional: an order placed with the pixel unconfigured, blocked, or
-     * consent-rejected simply arrives without them, and the Purchase is
-     * then never sent server-side. Client-supplied and therefore untrusted —
-     * these values only ever travel back OUT to Meta, they gate nothing and
-     * grant nothing here.
-     */
-    metaAttribution: v.optional(metaAttributionValidator),
   },
   returns: v.object({ orderId: v.id('bookOrders'), accessToken: v.string() }),
   handler: async (ctx, args): Promise<{ orderId: Id<'bookOrders'>; accessToken: string }> => {
     const consents = buildConsentsRecord(args.consents);
-    // C3 intentionally disabled — env-token gate locked legit visitors out
-    // (Convex sanitizes `throw new Error()` to "Server Error" in prod) and
-    // the global rate limit's 10/hour cap chokes any real traffic spike.
-    // `args.accessToken` is kept on the contract for backward compatibility
-    // but no longer validated. `checkAndRecordLandingStart` mutation stays
-    // in the codebase so re-enabling is a one-line revert once we have a
-    // proper UX (ConvexError + frontend handling + magic-link recovery)
-    // and a non-global rate-limit key.
-    // Defence remains via: per-order tokens (C2) on every read/write,
-    // C1 bypass-flag removal, and the Stripe paywall on PDF unlock.
-    void args.accessToken;
+    // Open intake by design (the demo is public): no access gate and no rate
+    // limit. Every order costs LLM + image-generation money before the
+    // paywall — see TODO.md. Defence is the per-order token on every later
+    // read/write and the Stripe paywall on the full PDF.
+    const partner = args.partnerId ? getPartner(args.partnerId) : getPartner(DEFAULT_PARTNER_ID);
+    if (!partner) {
+      throw new ConvexError('Nieznany partner — otwórz stronę z poprawnego linku.');
+    }
 
     validateOrderInput(args);
     const cleaned = sanitizeOrderTextFields(args);
@@ -842,8 +572,8 @@ export const startLandingOrder = action({
     });
     const format = args.format ?? 'pdf';
 
-    // Same guards as the auth flow — moderation blocks disallowed content,
-    // debrand rewrites trademark references in visual fields.
+    // Moderation blocks disallowed content; debrand rewrites trademark
+    // references in visual fields.
     const guarded = await runIntakeGuards(ctx, {
       clerkUserId: LANDING_USER_ID,
       childName: cleaned.childName,
@@ -878,13 +608,12 @@ export const startLandingOrder = action({
       consents,
       accessTokenHash,
       accessTokenRaw: rawToken,
-      // Landing flow is the conversion funnel — skip QA passes (A4/A6 etc.)
-      // for speed and cost. `fastImage` stays off: that flag swaps Gemini
-      // for an ASCII raster (admin-only smoke test path), not what real
-      // users should ever see. Trusted server default; clients never touch
-      // these flags.
+      // Skip QA passes (A4/A6 etc.) for speed and cost. `fastImage` stays
+      // off: that flag swaps Gemini for an ASCII raster (CLI smoke-test
+      // path), not what parents should ever see. Trusted server default;
+      // clients never touch these flags.
       skipQaReviews: true,
-      metaAttribution: args.metaAttribution,
+      partnerId: partner.id,
     });
 
     await ctx.scheduler.runAfter(0, internal.bookAgents.intake, { orderId });
@@ -928,32 +657,6 @@ export const getLandingOrderProgress = query({
       ageNumber: order.ageNumber ?? null,
       problemId: order.problemId,
     };
-  },
-});
-
-export const getLandingOrderEvents = query({
-  args: { orderId: v.id('bookOrders'), accessToken: v.string() },
-  returns: v.array(
-    v.object({
-      _id: v.id('bookPipelineEvents'),
-      _creationTime: v.number(),
-      orderId: v.id('bookOrders'),
-      agent: v.string(),
-      event: v.string(),
-      narrative: v.string(),
-      details: v.optional(v.string()),
-      timestamp: v.number(),
-    }),
-  ),
-  handler: async (ctx, { orderId, accessToken }) => {
-    await assertLandingOrder(ctx, orderId, accessToken);
-
-    const events = await ctx.db
-      .query('bookPipelineEvents')
-      .withIndex('by_order', (q) => q.eq('orderId', orderId))
-      .collect();
-    events.sort((a, b) => a.timestamp - b.timestamp);
-    return events;
   },
 });
 
@@ -1022,37 +725,5 @@ export const getLandingStyleVoteImages = query({
     if (order.styleVoteImageB) imageUrlB = await ctx.storage.getUrl(order.styleVoteImageB);
 
     return { imageUrlA, imageUrlB, status: order.status, chosenStyle: order.chosenStyle ?? null };
-  },
-});
-
-// ── Get user's orders ──────────────────────────────────────
-
-export const getMyOrders = query({
-  args: {},
-  returns: v.array(
-    v.object({
-      _id: v.id('bookOrders'),
-      childName: v.string(),
-      status: v.string(),
-      createdAt: v.number(),
-      completedAt: v.union(v.number(), v.null()),
-    }),
-  ),
-  handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) return [];
-
-    const orders = await ctx.db
-      .query('bookOrders')
-      .withIndex('by_clerk_user', (q) => q.eq('clerkUserId', identity.subject))
-      .collect();
-
-    return orders.map((o) => ({
-      _id: o._id,
-      childName: o.childName,
-      status: o.status,
-      createdAt: o.createdAt,
-      completedAt: o.completedAt ?? null,
-    }));
   },
 });

@@ -1,27 +1,36 @@
 'use node';
 
 /**
- * Public email actions exposed to the rest of the pipeline. These are thin
- * wrappers over `lib/email.ts`: they pull whatever order data they need
- * from the DB, build the HTML, and hand off to the Resend SDK.
+ * Transactional e-mail actions. Thin wrappers over `lib/email.ts`: they load
+ * the order, resolve its partner theme, build the HTML and hand off to
+ * Resend. Links point at the partner's own URLs (lib/partners.ts) and carry
+ * the per-order token (`?t=`) so they work on a device that never saw the
+ * order form.
  */
 
 import { internalAction } from './_generated/server';
 import { internal } from './_generated/api';
 import { v } from 'convex/values';
 import {
+  DOWNLOAD_LINK_TTL_HOURS,
   buildAdminPrintAlertEmail,
   buildBookReadyEmail,
   buildOrderConfirmationEmail,
+  emailBrand,
   formatOrderNumber,
   sendEmail,
   type BookFormat,
 } from './lib/email';
+import { bookResultPath, resolvePartner } from './lib/partners';
 import { PROBLEMS } from './lib/bookData';
 
-const ADMIN_PRINT_ALERT_RECIPIENT = 'bajkoterapia.org@gmail.com';
+function appUrl(): string {
+  const url = process.env.APP_URL;
+  if (!url) throw new Error('APP_URL is not configured');
+  return url.replace(/\/+$/, '');
+}
 
-function resolveProblemTitle(problemId: string): string {
+function resolveTopicTitle(problemId: string): string {
   const problem = PROBLEMS[problemId];
   if (problem) return problem.title_pl;
   // Fallback: humanize the raw id so the customer doesn't see "fear_of_dark".
@@ -32,16 +41,22 @@ function resolveFormat(format: string | undefined | null): BookFormat {
   return format === 'pdf_print' ? 'pdf_print' : 'pdf';
 }
 
+/** Order page URL with the capability token, for the partner the order came through. */
+function orderResultUrl(order: {
+  _id: string;
+  partnerId?: string;
+  accessTokenRaw?: string;
+}): string {
+  const token = order.accessTokenRaw ? `?t=${encodeURIComponent(order.accessTokenRaw)}` : '';
+  return `${appUrl()}${bookResultPath(order.partnerId, order._id)}${token}`;
+}
+
 /**
- * Send the post-payment confirmation email — "Mamy Twoje zamówienie".
- * Triggered immediately after Stripe webhook flips paymentStatus to
- * 'completed' (see billing.ts:markBookOrderPaid). No PDF is expected at
- * this point — the pipeline is still working.
+ * Payment confirmation — sent right after the Stripe webhook flips
+ * paymentStatus to 'completed' (billing.markBookOrderPaid).
  *
- * No-ops gracefully when:
- *   - the order is missing
- *   - the parent never supplied an email
- *   - RESEND_API_KEY is not configured
+ * No-ops gracefully when the order is missing, has no e-mail, or e-mail
+ * isn't configured (see lib/email.ts).
  */
 export const sendOrderConfirmation = internalAction({
   args: { bookOrderId: v.id('bookOrders') },
@@ -59,45 +74,40 @@ export const sendOrderConfirmation = internalAction({
       return null;
     }
 
-    // Build the order-status URL parents follow from the confirmation
-    // email. Both flows route to the result page (which auto-redirects to
-    // progress if the pipeline is still mid-generation). For landing
-    // orders we append the per-order capability token so cross-device
-    // hand-offs work (mom on laptop, opens email on phone — there's no
-    // localStorage).
-    const isLanding = order.clerkUserId === 'landing-user';
-    const appUrl = process.env.APP_URL || 'https://bajkoterapia.org';
-    const resultPath = isLanding
-      ? `/landing/book/${bookOrderId}/result`
-      : `/book/${bookOrderId}/result`;
-    const tokenQuery =
-      isLanding && order.accessTokenRaw ? `?t=${encodeURIComponent(order.accessTokenRaw)}` : '';
-    const resultUrl = `${appUrl}${resultPath}${tokenQuery}`;
-
+    const partner = resolvePartner(order.partnerId);
+    const brand = emailBrand(partner, appUrl());
     const { subject, html, text } = buildOrderConfirmationEmail({
+      brand,
       childName: order.childName,
       childAge: order.ageNumber ?? order.ageBracket ?? null,
-      problemTitle: resolveProblemTitle(order.problemId),
+      topicTitle: resolveTopicTitle(order.problemId),
       format: resolveFormat(order.format),
       orderNumber: formatOrderNumber(bookOrderId),
-      resultUrl,
+      paidAmountMinor: order.paidAmountMinor ?? null,
+      paidCurrency: order.paidCurrency ?? null,
+      testPayment: order.paymentMode === 'test',
+      resultUrl: orderResultUrl(order),
     });
 
-    await sendEmail({ to: order.email, subject, html, text });
+    await sendEmail({
+      to: order.email,
+      subject,
+      html,
+      text,
+      fromName: partner.name,
+      replyTo: partner.supportEmail,
+    });
     return null;
   },
 });
 
 /**
- * Send the "Twoja bajka jest gotowa" email with a download link. Triggered
- * from markOrderComplete once the pipeline produces a final PDF.
+ * "Twoja bajka jest gotowa" with a download link. Sent once the order is
+ * both paid and composed — from markBookOrderPaid or markOrderComplete,
+ * whichever happens second.
  *
- * No-ops gracefully when:
- *   - the order is missing
- *   - the parent never supplied an email
- *   - the PDF isn't actually composed yet (defensive — shouldn't happen
- *     when called from markOrderComplete, but kept for safety)
- *   - RESEND_API_KEY is not configured
+ * No-ops gracefully when the order is missing or unpaid, has no e-mail, the
+ * PDF isn't composed yet, or e-mail isn't configured.
  */
 export const sendBookReady = internalAction({
   args: { bookOrderId: v.id('bookOrders') },
@@ -124,13 +134,11 @@ export const sendBookReady = internalAction({
       console.warn('[email.sendBookReady] PDF not ready, skipping send', bookOrderId);
       return null;
     }
-    // Recipient gets a one-shot link. Convex storage URLs are signed and
-    // short-lived; R2 needs explicit presigning. Use a longer TTL (24h)
-    // so users following the email later still hit a live link.
+    // R2 needs explicit presigning; Convex storage URLs work as they are.
     let downloadUrl: string | null;
     if (order.r2FullKey) {
       const { presignBookPdf } = await import('./lib/r2Presign');
-      downloadUrl = await presignBookPdf(order, 'full', 24 * 60 * 60);
+      downloadUrl = await presignBookPdf(order, 'full', DOWNLOAD_LINK_TTL_HOURS * 60 * 60);
     } else {
       downloadUrl = await ctx.storage.getUrl(order.pdfStorageId!);
     }
@@ -139,53 +147,42 @@ export const sendBookReady = internalAction({
       return null;
     }
 
-    // Landing orders live under /landing/book/<id>/result, auth orders under
-    // /book/<id>/result. We don't store flow metadata explicitly — derive
-    // from the synthetic landing user id (matches assertLandingOrder).
-    //
-    // Cross-device handoff: append `?t=<rawToken>` for landing orders so the
-    // parent can open the email on a device that never saw the intake (mom
-    // orders on laptop, opens email on phone — localStorage doesn't carry
-    // between browsers). Frontend captures the token from the URL, saves it
-    // to localStorage, and strips it from the address bar.
-    const isLanding = order.clerkUserId === 'landing-user';
-    const appUrl = process.env.APP_URL || 'https://bajkoterapia.org';
-    const resultPath = isLanding
-      ? `/landing/book/${bookOrderId}/result`
-      : `/book/${bookOrderId}/result`;
-    const tokenQuery =
-      isLanding && order.accessTokenRaw ? `?t=${encodeURIComponent(order.accessTokenRaw)}` : '';
-    const resultUrl = `${appUrl}${resultPath}${tokenQuery}`;
-
-    const bookTitle = extractBookTitle(order.storyDraft);
+    const partner = resolvePartner(order.partnerId);
     const { subject, html, text } = buildBookReadyEmail({
+      brand: emailBrand(partner, appUrl()),
       childName: order.childName,
-      bookTitle,
+      bookTitle: extractBookTitle(order.storyDraft),
       downloadUrl,
-      resultUrl,
+      resultUrl: orderResultUrl(order),
       format: resolveFormat(order.format),
-      orderCreatedAtMs: order.createdAt,
     });
 
-    await sendEmail({ to: order.email, subject, html, text });
+    await sendEmail({
+      to: order.email,
+      subject,
+      html,
+      text,
+      fromName: partner.name,
+      replyTo: partner.supportEmail,
+    });
     return null;
   },
 });
 
 /**
- * Internal admin alert: customer paid for the PDF+Print variant, fulfillment
- * team needs to print + ship a physical book in 3-5 working days. Triggered
- * exclusively from billing.markBookOrderPaid when format === 'pdf_print'.
- *
- * No-ops gracefully when:
- *   - the order is missing
- *   - format is not 'pdf_print' (defensive — should be filtered upstream)
- *   - RESEND_API_KEY is not configured
+ * Internal alert: a customer paid for PDF + print, so someone has to print
+ * and ship the book. Goes to ADMIN_ALERT_EMAIL; skipped when that's unset.
+ * Test-mode payments are flagged in the subject so nobody prints a demo.
  */
 export const sendAdminPrintAlert = internalAction({
   args: { bookOrderId: v.id('bookOrders') },
   returns: v.null(),
   handler: async (ctx, { bookOrderId }) => {
+    const recipient = process.env.ADMIN_ALERT_EMAIL;
+    if (!recipient) {
+      console.warn('[email.sendAdminPrintAlert] ADMIN_ALERT_EMAIL not set — skipping', bookOrderId);
+      return null;
+    }
     const order = await ctx.runQuery(internal.bookPipelineHelpers.getOrder, {
       orderId: bookOrderId,
     });
@@ -201,18 +198,18 @@ export const sendAdminPrintAlert = internalAction({
       return null;
     }
 
-    const appUrl = process.env.APP_URL || 'https://bajkoterapia.org';
     const { subject, html, text } = buildAdminPrintAlertEmail({
       orderId: bookOrderId,
       orderNumber: formatOrderNumber(bookOrderId),
+      partnerName: resolvePartner(order.partnerId).name,
+      testPayment: order.paymentMode === 'test',
       childName: order.childName,
-      problemTitle: resolveProblemTitle(order.problemId),
+      topicTitle: resolveTopicTitle(order.problemId),
       customerEmail: order.email ?? null,
       shippingAddress: order.shippingAddress ?? null,
-      adminUrl: `${appUrl}/admin/batch?tab=orders&orderId=${bookOrderId}`,
     });
 
-    await sendEmail({ to: ADMIN_PRINT_ALERT_RECIPIENT, subject, html, text });
+    await sendEmail({ to: recipient, subject, html, text });
     return null;
   },
 });

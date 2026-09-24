@@ -1,49 +1,7 @@
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
 
-/**
- * Meta Conversions API match keys, snapshotted at order creation.
- *
- * The Purchase conversion is sent server-side from the Stripe webhook, and
- * by then the browser is long gone — no cookies, no user agent, and an IP
- * belonging to Stripe rather than the customer. Meta cannot attribute a
- * server event to an ad click without at least one of these, so they are
- * captured while the parent is still on the page and read back at payment
- * time.
- *
- * `marketingConsent` gates the send: an order placed by someone who
- * rejected the cookie banner must never reach Meta, browser or server.
- *
- * Deliberately no `client_ip_address` — we do not hold the customer's real
- * IP on this path, and sending Stripe's would corrupt Meta's geo matching
- * rather than improve it.
- *
- * Exported so the column, `bookPipeline.createOrder` and the Conversions
- * API reader all describe the same shape instead of three hand-copies.
- */
-export const metaAttributionValidator = v.object({
-  fbp: v.optional(v.string()),
-  fbc: v.optional(v.string()),
-  userAgent: v.optional(v.string()),
-  eventSourceUrl: v.optional(v.string()),
-  marketingConsent: v.boolean(),
-});
-
 const applicationTables = {
-  config: defineTable({
-    type: v.string(),
-    key: v.string(),
-    value: v.string(),
-  }).index('by_key', ['key']),
-
-  // Rate limiting counters (sliding window)
-  rateLimits: defineTable({
-    clerkUserId: v.string(),
-    actionType: v.string(), // 'llm_call', etc.
-    calls: v.array(v.number()), // Timestamps of recent calls
-    windowStart: v.number(),
-  }).index('by_clerk_user_action', ['clerkUserId', 'actionType']),
-
   // LLM debug logs
   llmLogs: defineTable({
     clerkUserId: v.optional(v.string()),
@@ -65,117 +23,8 @@ const applicationTables = {
     timestamp: v.number(),
   }).index('by_clerk_user', ['clerkUserId']),
 
-  // Backend debug logs
-  backendLogs: defineTable({
-    level: v.union(v.literal('log'), v.literal('warn'), v.literal('error')),
-    source: v.string(),
-    message: v.string(),
-    data: v.optional(v.string()),
-    timestamp: v.number(),
-  })
-    .index('by_timestamp', ['timestamp'])
-    .index('by_level', ['level']),
-
-  // Server-side page-view tracking. Populated by Vercel edge middleware via
-  // POST /track (shared secret). RODO: raw IP retained, retention is manual
-  // (operator runs `convex run analytics:purgeOld` when convenient — no cron).
-  pageViews: defineTable({
-    timestamp: v.number(),
-    ip: v.string(),
-    country: v.optional(v.string()),
-    userAgent: v.string(),
-    path: v.string(),
-    referer: v.optional(v.string()),
-    acceptLanguage: v.optional(v.string()),
-    clerkUserId: v.optional(v.string()),
-    accessTokenHash: v.optional(v.string()),
-    isBot: v.boolean(),
-  })
-    .index('by_timestamp', ['timestamp'])
-    .index('by_ip_and_timestamp', ['ip', 'timestamp'])
-    .index('by_path_and_timestamp', ['path', 'timestamp'])
-    .index('by_isbot_and_timestamp', ['isBot', 'timestamp']),
-
   // ============================================
-  // Admin
-  // ============================================
-
-  adminConfig: defineTable({
-    key: v.string(),
-    value: v.string(),
-    updatedBy: v.string(),
-    updatedAt: v.number(),
-  }).index('by_key', ['key']),
-
-  adminAuditLog: defineTable({
-    actor: v.string(),
-    action: v.string(),
-    target: v.optional(v.string()),
-    details: v.optional(v.string()),
-    timestamp: v.number(),
-  })
-    .index('by_actor', ['actor'])
-    .index('by_timestamp', ['timestamp']),
-
-  // ============================================
-  // Lead Capture
-  // ============================================
-
-  leads: defineTable({
-    name: v.string(),
-    email: v.string(),
-    phone: v.optional(v.string()),
-    organization: v.string(),
-    role: v.string(),
-    message: v.optional(v.string()),
-    segment: v.union(v.literal('business'), v.literal('edu'), v.literal('executive')),
-    language: v.string(),
-    createdAt: v.number(),
-  })
-    .index('by_segment', ['segment'])
-    .index('by_created', ['createdAt'])
-    // Compound index for per-email rate limit checks — without this, the
-    // `by_created` index + `.filter(eq(email))` does a full window scan.
-    .index('by_email_and_created', ['email', 'createdAt']),
-
-  // ============================================
-  // Contact Form
-  // ============================================
-
-  contactSubmissions: defineTable({
-    name: v.string(),
-    email: v.string(),
-    inquiryType: v.union(
-      v.literal('enterprise_sales'),
-      v.literal('technical_support'),
-      v.literal('partnerships'),
-      v.literal('press_media'),
-      v.literal('general'),
-      v.literal('print_upgrade'),
-    ),
-    question: v.string(),
-    language: v.string(),
-    createdAt: v.number(),
-  })
-    .index('by_created', ['createdAt'])
-    .index('by_email_and_created', ['email', 'createdAt']),
-
-  // Lightweight feedback form (header + footer link). Separate table from
-  // contactSubmissions because the shape is intentionally minimal — email +
-  // optional phone + message. Every submission also fires off an email to
-  // bajkoterapia.org@gmail.com via Resend.
-  feedbackSubmissions: defineTable({
-    email: v.string(),
-    phone: v.optional(v.string()),
-    message: v.string(),
-    language: v.string(),
-    createdAt: v.number(),
-  })
-    .index('by_created', ['createdAt'])
-    .index('by_email_and_created', ['email', 'createdAt']),
-
-  // ============================================
-  // Book Pipeline (Bajkoterapia)
+  // Book Pipeline
   // ============================================
 
   bookOrders: defineTable({
@@ -223,10 +72,6 @@ const applicationTables = {
         city: v.string(),
       }),
     ),
-
-    // DEV flag: bypass Stripe checkout entirely (admin-only).
-    // TODO(c3z): pre-launch cleanup — remove this field before launch.
-    skipStripe: v.optional(v.boolean()),
 
     // Parallel track completion (A2-A5 story track, A6-vote image track)
     storyTrackDone: v.optional(v.boolean()),
@@ -317,44 +162,22 @@ const applicationTables = {
     // without redeploying.
     useRenderService: v.optional(v.boolean()),
 
-    // Print-ready PDF (Empire CMYK 350dpi albo Amazon KDP 300dpi) — generowany WYŁĄCZNIE
-    // z admina (convex/admin/printPdf.ts), przez /print-ready na typst-render.
-    // Osobny stan poza maszyną statusów pipeline'u; klucz print/<orderId>/
-    // <format>.pdf żyje pod lifecycle 30 dni i NIGDY nie wychodzi przez
-    // publiczne query — klient nie ma jak go dostać.
-    printPdfStatus: v.optional(
-      v.union(v.literal('queued'), v.literal('rendering'), v.literal('ready'), v.literal('failed')),
-    ),
-    printPdfFormat: v.optional(v.union(v.literal('a5'), v.literal('a4'), v.literal('kdp'))),
-    // Tryb upscalingu ostatniego joba: 'esrgan' = pełna jakość (godziny),
-    // 'none' = szybki proof bez AI (minuty, miękkie ilustracje). Proof ląduje
-    // pod osobnym kluczem R2 (-fast) i z suffiksem _FAST_PROOF w nazwie.
-    printPdfUpscale: v.optional(v.union(v.literal('esrgan'), v.literal('none'))),
-    printR2Key: v.optional(v.string()),
-    printCoverR2Key: v.optional(v.string()),
-    printLogR2Key: v.optional(v.string()),
-    printPdfError: v.optional(v.string()),
-    printPdfRequestedAt: v.optional(v.number()),
-    printPdfMeta: v.optional(
-      v.object({
-        sizeBytes: v.number(),
-        coverSizeBytes: v.optional(v.number()),
-        pages: v.optional(v.number()),
-        pipelineVersion: v.optional(v.string()),
-        durationMs: v.optional(v.number()),
-        generatedAt: v.number(),
-        cached: v.optional(v.boolean()),
-      }),
-    ),
+    // White-label partner the order was placed through (convex/lib/partners.ts).
+    // Drives e-mail branding and every link back to the order. Absent means
+    // the default theme (CLI orders).
+    partnerId: v.optional(v.string()),
 
     // Payment
     paymentStatus: v.optional(
       v.union(v.literal('pending'), v.literal('completed'), v.literal('failed')),
     ),
     stripeSessionId: v.optional(v.string()),
-
-    // Meta Conversions API match keys — see `metaAttributionValidator`.
-    metaAttribution: v.optional(metaAttributionValidator),
+    // Stripe mode the payment ran in — separates demo (test) orders from real
+    // sales. Set by the webhook together with paymentStatus='completed'.
+    paymentMode: v.optional(v.union(v.literal('test'), v.literal('live'))),
+    // Amount Stripe actually charged (minor units) and its currency.
+    paidAmountMinor: v.optional(v.number()),
+    paidCurrency: v.optional(v.string()),
 
     // GDPR consent log per order — RODO accountability (art. 7 ust. 1).
     // Exact wording + document version + server timestamp are persisted so
@@ -384,7 +207,7 @@ const applicationTables = {
     accessTokenHash: v.optional(v.string()),
 
     // Raw landing access token. Stored so transactional emails can embed it
-    // in the `?t=` query parameter on `/landing/book/:id/*` URLs, enabling
+    // in the `?t=` query parameter on `/bajka/:id` URLs, enabling
     // cross-device handoff (mom orders on laptop, opens email link on phone
     // — localStorage wouldn't carry the token between them). Server-side
     // validation always compares against accessTokenHash; the raw column is

@@ -18,7 +18,7 @@ jobs:
       - name: TypeScript (Convex)
         run: npx tsc -p convex --noEmit
       - name: TypeScript (Frontend)
-        run: npx tsc -p . --noEmit
+        run: npx tsc -p tsconfig.app.json --noEmit
       - name: ESLint
         run: npx eslint "src/**/*.{ts,tsx}"
       - name: Unit Tests

@@ -1,15 +1,12 @@
 /**
  * Pipeline narrative events — human-readable timeline of order progress.
  *
- * recordEvent: internalMutation (called by agents)
- * getOrderEvents: query (admin-protected)
- * getOrderEventsPublic: query (auth-protected, own orders only)
+ * recordEvent: internalMutation (called by agents). Read the timeline with
+ * `npm run cli -- events <orderId>`.
  */
 
-import { internalMutation, query } from './_generated/server';
+import { internalMutation } from './_generated/server';
 import { v } from 'convex/values';
-import { assertOrderOwner } from './lib/roles';
-import { assertAdmin } from './lib/roles';
 
 // ── Narrative map ────────────────────────────────────────────
 
@@ -120,67 +117,5 @@ export const recordEvent = internalMutation({
       timestamp: Date.now(),
     });
     return null;
-  },
-});
-
-// ── getOrderEvents (admin-protected query) ───────────────────
-
-export const getOrderEvents = query({
-  args: { orderId: v.id('bookOrders') },
-  returns: v.array(
-    v.object({
-      _id: v.id('bookPipelineEvents'),
-      _creationTime: v.number(),
-      orderId: v.id('bookOrders'),
-      agent: v.string(),
-      event: v.string(),
-      narrative: v.string(),
-      details: v.optional(v.string()),
-      timestamp: v.number(),
-    }),
-  ),
-  handler: async (ctx, { orderId }) => {
-    await assertAdmin(ctx);
-
-    const events = await ctx.db
-      .query('bookPipelineEvents')
-      .withIndex('by_order', (q) => q.eq('orderId', orderId))
-      .collect();
-
-    // Sort by timestamp ascending
-    events.sort((a, b) => a.timestamp - b.timestamp);
-
-    return events;
-  },
-});
-
-// ── getOrderEventsPublic (auth-protected, own orders only) ───
-
-export const getOrderEventsPublic = query({
-  args: { orderId: v.id('bookOrders') },
-  returns: v.array(
-    v.object({
-      _id: v.id('bookPipelineEvents'),
-      _creationTime: v.number(),
-      orderId: v.id('bookOrders'),
-      agent: v.string(),
-      event: v.string(),
-      narrative: v.string(),
-      details: v.optional(v.string()),
-      timestamp: v.number(),
-    }),
-  ),
-  handler: async (ctx, { orderId }) => {
-    await assertOrderOwner(ctx, orderId);
-
-    const events = await ctx.db
-      .query('bookPipelineEvents')
-      .withIndex('by_order', (q) => q.eq('orderId', orderId))
-      .collect();
-
-    // Sort by timestamp ascending
-    events.sort((a, b) => a.timestamp - b.timestamp);
-
-    return events;
   },
 });

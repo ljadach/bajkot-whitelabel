@@ -33,10 +33,10 @@ export function DedicationForm({ onSubmit, onSkip }: DedicationFormProps) {
     <div className="min-h-screen bg-gray-50 px-4 py-12 sm:px-6">
       <div className="max-w-xl mx-auto">
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-magic-100 text-magic-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-5">
+          <div className="w-20 h-20 bg-accent-100 text-accent-ink rounded-full flex items-center justify-center text-4xl mx-auto mb-5">
             <i className="fa-solid fa-pen-nib" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-black text-calm-900 mb-3">
+          <h1 className="text-2xl md:text-3xl font-black text-primary-900 mb-3">
             {t('dedication.heading')}
           </h1>
           <p className="text-gray-600 text-base max-w-md mx-auto">{t('dedication.description')}</p>
@@ -56,7 +56,7 @@ export function DedicationForm({ onSubmit, onSkip }: DedicationFormProps) {
             maxLength={MAX_LENGTH}
             rows={5}
             disabled={busy}
-            className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-magic-500 focus:bg-white outline-none transition font-semibold text-base resize-none disabled:opacity-60"
+            className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-accent-500 focus:bg-white outline-none transition font-semibold text-base resize-none disabled:opacity-60"
           />
           <div className="mt-1 flex justify-end text-xs text-gray-400 font-bold">
             {trimmed.length} / {MAX_LENGTH}
@@ -75,7 +75,7 @@ export function DedicationForm({ onSubmit, onSkip }: DedicationFormProps) {
               type="button"
               onClick={() => void handleSubmit()}
               disabled={!canSubmit}
-              className="w-2/3 bg-magic-500 hover:bg-magic-600 text-white font-bold py-4 rounded-2xl text-lg shadow-lg shadow-magic-500/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-2/3 bg-accent-500 hover:bg-accent-600 text-on-accent font-bold py-4 rounded-2xl text-lg shadow-lg shadow-accent-500/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <i className="fa-solid fa-heart mr-2" />
               {busy ? t('dedication.saving') : t('dedication.submit')}

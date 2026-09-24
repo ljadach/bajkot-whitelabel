@@ -1,26 +1,14 @@
 import { httpRouter } from 'convex/server';
 import { receiveWebhook } from './stripeHttp';
-import { receiveTrack } from './analyticsHttp';
-import { receivePrintCallback } from './printPdfHttp';
 
 const http = httpRouter();
 
-http.route({
-  path: '/print-ready/callback',
-  method: 'POST',
-  handler: receivePrintCallback,
-});
-
+// Register this URL (https://<deployment>.convex.site/stripe/webhook) as an
+// endpoint in BOTH the test and the live Stripe dashboard — see lib/stripeMode.ts.
 http.route({
   path: '/stripe/webhook',
   method: 'POST',
   handler: receiveWebhook,
-});
-
-http.route({
-  path: '/track',
-  method: 'POST',
-  handler: receiveTrack,
 });
 
 export default http;

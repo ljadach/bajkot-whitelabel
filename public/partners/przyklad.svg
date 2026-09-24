@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="236" height="48" viewBox="0 0 236 48" role="img" aria-label="Księgarnia Przykładowa">
+  <rect x="0" y="4" width="40" height="40" rx="10" fill="#15803d"/>
+  <path d="M10 15.5c3.6-1.6 7.2-1.6 10 0.6 2.8-2.2 6.4-2.2 10-0.6v18c-3.6-1.6-7.2-1.6-10 0.6-2.8-2.2-6.4-2.2-10-0.6z" fill="#facc15"/>
+  <path d="M20 16.1v18.6" stroke="#15803d" stroke-width="1.6"/>
+  <text x="50" y="22" font-family="Nunito, Arial, sans-serif" font-size="16" font-weight="900" fill="#14532d">Księgarnia</text>
+  <text x="50" y="40" font-family="Nunito, Arial, sans-serif" font-size="16" font-weight="700" fill="#15803d">Przykładowa</text>
+</svg>

@@ -1,35 +1,17 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-// Polish only
-import plCommon from '@/locales/pl/common.json';
-import plApp from '@/locales/pl/app.json';
-import plCookies from '@/locales/pl/cookies.json';
-import plContact from '@/locales/pl/contact.json';
-import plFaq from '@/locales/pl/faq.json';
+// Polish only — the book pipeline writes Polish stories.
 import plBook from '@/locales/pl/book.json';
-import plFeedback from '@/locales/pl/feedback.json';
-
-const resources = {
-  pl: {
-    common: plCommon,
-    app: plApp,
-    cookies: plCookies,
-    contact: plContact,
-    faq: plFaq,
-    book: plBook,
-    feedback: plFeedback,
-  },
-};
 
 void i18n.use(initReactI18next).init({
-  resources,
+  resources: { pl: { book: plBook } },
   lng: 'pl',
   fallbackLng: 'pl',
   supportedLngs: ['pl'],
 
-  ns: ['common', 'app', 'cookies', 'contact', 'faq', 'book', 'feedback'],
-  defaultNS: 'common',
+  ns: ['book'],
+  defaultNS: 'book',
 
   interpolation: {
     escapeValue: false,
@@ -39,5 +21,3 @@ void i18n.use(initReactI18next).init({
     useSuspense: false,
   },
 });
-
-export default i18n;
